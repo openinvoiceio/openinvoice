@@ -11,32 +11,12 @@ export const api = axios.create({
     "Content-Type": "application/json",
   },
   withCredentials: true,
+  xsrfHeaderName: "x-csrftoken",
+  xsrfCookieName: "csrftoken",
+  paramsSerializer: {
+    indexes: null,
+  },
 });
-
-// TODO: check if this is needed in case of django-vite
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== "undefined") {
-      const csrfToken = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("csrftoken="))
-        ?.split("=")[1];
-
-      if (csrfToken) {
-        config.headers["X-CSRFToken"] = csrfToken;
-      }
-    }
-
-    config.paramsSerializer = {
-      indexes: null,
-    };
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error); // Handle request errors
-  },
-);
 
 export const axiosInstance = <T>(
   config: AxiosRequestConfig,

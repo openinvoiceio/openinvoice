@@ -1,11 +1,9 @@
-import { expect, test } from "../utils/base.ts";
-import { UUID4 } from "../utils/regex.ts";
+import { expect, test } from "@tests/fixtures.ts";
+import { UUID4 } from "@tests/utils/regex.ts";
 
 test.describe("Create customer", () => {
-  test.beforeEach(async ({ page, setupAccount }) => {
-    await setupAccount();
-    await page.getByRole("link", { name: "Customers" }).click();
-    await expect(page).toHaveURL("/customers");
+  test.beforeEach(async ({ page, account }) => {
+    await page.goto("/customers");
     await page
       .locator("header")
       .getByRole("button", { name: "Add customer" })

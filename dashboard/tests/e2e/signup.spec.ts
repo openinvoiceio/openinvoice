@@ -1,6 +1,5 @@
-import { expect, test } from "@playwright/test";
-import { generateEmail } from "../utils/email.ts";
-import { getVerificationCode } from "../utils/mailpit.ts";
+import { expect, test } from "@tests/fixtures.ts";
+import { generateEmail } from "@tests/utils/email.ts";
 
 const VALID_PASSWORD = "Password123!";
 
@@ -72,9 +71,7 @@ test.describe("Signup", () => {
     await expect(page.getByText("Incorrect code.")).toBeVisible();
   });
 
-  test("Cannot verify email with expired code", async ({ page, request }, {
-    title,
-  }) => {
+  test("Cannot verify email with expired code", async ({ page }, { title }) => {
     const email = generateEmail(title);
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill(VALID_PASSWORD);
@@ -97,7 +94,9 @@ test.describe("Signup", () => {
     ).toBeVisible();
   });
 
-  test("Can signup with verification", async ({ page, request }, { title }) => {
+  test("Can signup with verification", async ({ page, mailpitAPI }, {
+    title,
+  }) => {
     const email = generateEmail(title);
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill(VALID_PASSWORD);
@@ -105,7 +104,8 @@ test.describe("Signup", () => {
 
     await expect(page).toHaveURL("/verification");
 
-    const code = await getVerificationCode(request, email);
+    const messageId = await mailpitAPI.getLastMessageId(email);
+    const code = await mailpitAPI.getVerificationCode(messageId);
     await page.getByLabel("Email verification").fill(code);
 
     await expect(page).toHaveURL("/setup");

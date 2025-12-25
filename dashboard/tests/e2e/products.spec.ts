@@ -1,8 +1,7 @@
-import { expect, test } from "../utils/base.ts";
+import { expect, test } from "@tests/fixtures.ts";
 
 test.describe("Create product", () => {
-  test.beforeEach(async ({ page, setupAccount }) => {
-    await setupAccount();
+  test.beforeEach(async ({ page, account }) => {
     await page.getByRole("link", { name: "Product catalogue" }).click();
     await expect(page).toHaveURL("/products");
     await page
