@@ -1,0 +1,12 @@
+{% extends "base_email_message.html" %}
+
+{% block header %}Join {{ account_name }} on Invoicence{% endblock header %}
+
+{% block content %}
+    <p>
+        You are receiving this email because you have been invited to join {{ account_name }} by {{ invitee_email }}.
+        To accept the invitation, please click the link below:
+    </p>
+
+    <a href="{{ invitation_url }}" class="btn">Join</a>
+{% endblock content %}

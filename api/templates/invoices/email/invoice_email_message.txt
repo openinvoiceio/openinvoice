@@ -1,0 +1,6 @@
+
+{% with payment=invoice.payments.first %}
+{% if payment and payment.url %}
+Pay now: {{ payment.url }}
+{% endif %}
+{% endwith %}

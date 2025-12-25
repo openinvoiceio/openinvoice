@@ -1,0 +1,15 @@
+from django.utils import timezone
+
+from common.enums import EntitlementCode
+from common.permissions import EntitlementLimit
+
+from .models import CreditNote
+
+
+class MaxCreditNotesLimit(EntitlementLimit):
+    key = EntitlementCode.MAX_CREDIT_NOTES_PER_MONTH
+    methods = ["POST"]
+
+    def get_usage(self, request) -> int:
+        now = timezone.now()
+        return CreditNote.objects.filter(account_id=request.account.id, created_at__month=now.month).count()

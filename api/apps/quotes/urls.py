@@ -1,0 +1,42 @@
+from django.urls import path
+
+from .views import (
+    QuoteAcceptAPIView,
+    QuoteCancelAPIView,
+    QuoteDiscountCreateAPIView,
+    QuoteDiscountDestroyAPIView,
+    QuoteFinalizeAPIView,
+    QuoteLineCreateAPIView,
+    QuoteLineDiscountCreateAPIView,
+    QuoteLineDiscountDestroyAPIView,
+    QuoteLineTaxCreateAPIView,
+    QuoteLineTaxDestroyAPIView,
+    QuoteLineUpdateDestroyAPIView,
+    QuoteListCreateAPIView,
+    QuotePreviewAPIView,
+    QuoteRetrieveUpdateDestroyAPIView,
+    QuoteTaxCreateAPIView,
+    QuoteTaxDestroyAPIView,
+)
+
+urlpatterns = [
+    path("quotes", QuoteListCreateAPIView.as_view()),
+    path("quotes/<uuid:pk>", QuoteRetrieveUpdateDestroyAPIView.as_view()),
+    path("quotes/<uuid:quote_id>/finalize", QuoteFinalizeAPIView.as_view()),
+    path("quotes/<uuid:quote_id>/accept", QuoteAcceptAPIView.as_view()),
+    path("quotes/<uuid:quote_id>/cancel", QuoteCancelAPIView.as_view()),
+    path("quotes/<uuid:quote_id>/preview", QuotePreviewAPIView.as_view()),
+    path("quote-lines", QuoteLineCreateAPIView.as_view()),
+    path("quote-lines/<uuid:quote_line_id>", QuoteLineUpdateDestroyAPIView.as_view()),
+    path("quote-lines/<uuid:quote_line_id>/discounts", QuoteLineDiscountCreateAPIView.as_view()),
+    path(
+        "quote-lines/<uuid:quote_line_id>/discounts/<uuid:quote_line_discount_id>",
+        QuoteLineDiscountDestroyAPIView.as_view(),
+    ),
+    path("quotes/<uuid:quote_id>/discounts", QuoteDiscountCreateAPIView.as_view()),
+    path("quotes/<uuid:quote_id>/discounts/<uuid:quote_discount_id>", QuoteDiscountDestroyAPIView.as_view()),
+    path("quote-lines/<uuid:quote_line_id>/taxes", QuoteLineTaxCreateAPIView.as_view()),
+    path("quote-lines/<uuid:quote_line_id>/taxes/<uuid:quote_line_tax_id>", QuoteLineTaxDestroyAPIView.as_view()),
+    path("quotes/<uuid:quote_id>/taxes", QuoteTaxCreateAPIView.as_view()),
+    path("quotes/<uuid:quote_id>/taxes/<uuid:quote_tax_id>", QuoteTaxDestroyAPIView.as_view()),
+]

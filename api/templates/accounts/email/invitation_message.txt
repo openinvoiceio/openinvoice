@@ -1,0 +1,5 @@
+{% extends "base_email_message.txt" %}
+
+{% block content %}You are receiving this email because you have been invited to join {{ account_name }} by {{ invitee_email }}. To accept the invitation, please click the link below:
+
+{{ invitation_url }}{% endblock content %}

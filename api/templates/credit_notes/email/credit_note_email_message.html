@@ -1,0 +1,125 @@
+{% extends "base_email_message.html" %}
+
+{% block extra_css %}
+    <style>
+        .credit-note {
+            padding: 32px 24px;
+            border-radius: 6px;
+            box-shadow: 0 8px 40px 0 rgba(179, 179, 185, 0.25);
+        }
+
+        .credit-note > hr {
+            margin: 32px 0;
+            border: 1px solid rgba(232, 234, 237, 1);
+        }
+
+        .credit-note a {
+            display: flex;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .credit-note-header {
+            font-size: 20px;
+            font-family: "Montserrat", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        .credit-note-details {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .credit-note-body hr {
+            margin: 16px 0;
+            border: 1px solid rgba(232, 234, 237, 1);
+        }
+
+        .credit-note-details div {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .credit-note-details > div > span:first-child {
+            font-size: 16px;
+            color: var(--color-text-muted);
+        }
+
+        .credit-note-details > div > span:last-child {
+            font-size: 16px;
+            color: var(--color-text-strong);
+            font-weight: 500;
+        }
+
+        .credit-note-total {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .credit-note-total > span:first-child {
+            font-size: 16px;
+            color: var(--color-text-muted);
+        }
+
+        .credit-note-total > span:last-child {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-text-strong);
+        }
+    </style>
+{% endblock extra_css %}
+
+{% with account=credit_note.invoice.account_on_invoice|default:credit_note.account %}
+{% block header %}Credit note {{ credit_note.effective_number }} from {{ account.name }}{% endblock header %}
+{% endwith %}
+
+{% block content %}
+    {% with customer=credit_note.invoice.customer_on_invoice|default:credit_note.customer account=credit_note.invoice.account_on_invoice|default:credit_note.account %}
+        <p>Hi {{ customer.name }}</p>
+
+        <p>{{ account.name }} has issued you a credit note {{ credit_note.effective_number }}.</p>
+
+        <p>Please review the details below.</p>
+
+        <div class="credit-note">
+            <header class="credit-note-header">Credit note {{ credit_note.effective_number }}</header>
+            <hr/>
+            <div class="credit-note-body">
+                <div class="credit-note-details">
+                    <div>
+                        <span>Reference number</span>
+                        <span>{{ credit_note.effective_number }}</span>
+                    </div>
+                    {% if credit_note.issue_date %}
+                        <div>
+                            <span>Issue date</span>
+                            <span>{{ credit_note.issue_date }}</span>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <span>Invoice</span>
+                        <span>{{ credit_note.invoice.effective_number|default:credit_note.invoice.id }}</span>
+                    </div>
+                    <div>
+                        <span>Reason</span>
+                        <span>{{ credit_note.get_reason_display }}</span>
+                    </div>
+                </div>
+                <hr/>
+                <div class="credit-note-total">
+                    <span>Total credited</span>
+                    <span>-{{ credit_note.total_amount }}</span>
+                </div>
+            </div>
+            {% if credit_note.pdf %}
+                <a class="btn" href="{{ credit_note.effective_number }}.pdf" download>
+                    Download
+                </a>
+            {% endif %}
+        </div>
+    {% endwith %}
+{% endblock content %}

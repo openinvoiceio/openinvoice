@@ -1,0 +1,8 @@
+Hi {{ quote.effective_customer.name }},
+
+{{ quote.effective_account.name }} has prepared a new quote {{ quote.effective_number }} for you.
+
+You can review the quote and reach out if you have any questions.
+
+Thanks,
+{{ quote.effective_account.name }}

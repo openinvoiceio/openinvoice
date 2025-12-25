@@ -1,0 +1,9 @@
+.venv
+.env
+.env.example
+.gitignore
+.git
+Dockerfile
+README.md
+staticfiles/
+mediafiles/

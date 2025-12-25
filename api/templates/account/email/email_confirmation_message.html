@@ -1,0 +1,18 @@
+{% extends "base_email_message.html" %}
+{% load account %}
+
+{% block header %}Email confirmation{% endblock header %}
+
+{% block content %}
+    {% user_display user as user_display %}
+
+    <p>Hi {{ user_display }}</p>
+
+    {% if code %}
+        <p>Your email verification code is listed below. Please enter it in your open browser window.</p>
+        <p><code>{{ code }}</code></p>
+    {% else %}
+        <p>Ready to start using your new Invoicence account? Just click</p>
+        <a href="{{ activate_url }}" class="btn">Confirm email address</a>
+    {% endif %}
+{% endblock content %}

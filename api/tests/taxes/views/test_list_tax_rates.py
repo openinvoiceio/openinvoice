@@ -1,0 +1,96 @@
+from datetime import timedelta
+
+import pytest
+from django.utils import timezone
+from drf_standardized_errors.types import ErrorType
+
+from apps.taxes.models import TaxRate
+from tests.factories import TaxRateFactory
+
+pytestmark = pytest.mark.django_db
+
+
+def test_list_tax_rates(api_client, user, account):
+    first = TaxRateFactory(account=account, name="A")
+    second = TaxRateFactory(account=account, name="B")
+    TaxRateFactory()  # other account
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/tax-rates")
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(second.id), str(first.id)]
+
+
+def test_list_tax_rates_filter_is_active(api_client, user, account):
+    TaxRateFactory(account=account, is_active=True)
+    inactive = TaxRateFactory(account=account, is_active=False)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/tax-rates", {"is_active": "false"})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(inactive.id)]
+
+
+def test_list_tax_rates_filter_created_at_gt(api_client, user, account):
+    base = timezone.now()
+    older = TaxRateFactory(account=account)
+    TaxRate.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
+    newer = TaxRateFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/tax-rates", {"created_at_gt": (base - timedelta(hours=12)).isoformat()})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(newer.id)]
+
+
+def test_list_tax_rates_rejects_foreign_account(api_client, user, account):
+    owned = TaxRateFactory(account=account)
+    TaxRateFactory()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/tax-rates")
+
+    assert response.status_code == 200
+    assert [item["id"] for item in response.data["results"]] == [str(owned.id)]
+
+
+def test_list_tax_rates_requires_account(api_client, user):
+    api_client.force_login(user)
+    response = api_client.get("/api/v1/tax-rates")
+
+    assert response.status_code == 403
+    assert response.data == {
+        "type": ErrorType.CLIENT_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "permission_denied",
+                "detail": "You do not have permission to perform this action.",
+            }
+        ],
+    }
+
+
+def test_list_tax_rates_requires_authentication(api_client, account):
+    TaxRateFactory(account=account)
+
+    response = api_client.get("/api/v1/tax-rates")
+
+    assert response.status_code == 403
+    assert response.data == {
+        "type": ErrorType.CLIENT_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "not_authenticated",
+                "detail": "Authentication credentials were not provided.",
+            }
+        ],
+    }

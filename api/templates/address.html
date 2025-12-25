@@ -1,0 +1,28 @@
+{% if address.line1 %}
+    <p>{{ address.line1 }}</p>
+{% endif %}
+{% if address.line2 %}
+    <p>{{ address.line2 }}</p>
+{% endif %}
+<p>
+    {% spaceless %}
+        {% if address.postal_code %}
+            <span>{{ address.postal_code }}</span>
+            {% if address.locality %}<span>, </span>{% endif %}
+        {% endif %}
+    {% endspaceless %}
+    {% if address.locality %}
+        <span>{{ address.locality }}</span>
+    {% endif %}
+</p>
+<p>
+    {% spaceless %}
+        {% if address.state %}
+            <span>{{ address.state }}</span>
+            {% if address.country %}<span>, </span>{% endif %}
+        {% endif %}
+    {% endspaceless %}
+    {% if address.country %}
+        <span>{{ address.country.name }}</span>
+    {% endif %}
+</p>

@@ -1,0 +1,10 @@
+{% extends "base_email_message.html" %}
+
+{% block header %}Sign-in code{% endblock header %}
+
+{% block content %}
+    <p>Your sign-in code is listed below. Please enter it in your open browser window.</p>
+    <code>{{ code }}</code>
+
+    <p>This mail can be safely ignored if you did not initiate this action.</p>
+{% endblock content %}

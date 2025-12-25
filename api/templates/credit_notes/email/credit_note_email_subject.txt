@@ -1,0 +1,3 @@
+{% with account=credit_note.invoice.account_on_invoice|default:credit_note.account %}
+Credit note {{ credit_note.effective_number }} from {{ account.name }}
+{% endwith %}

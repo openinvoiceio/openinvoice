@@ -1,0 +1,201 @@
+:root {
+    --grey700: #19212e;
+    --text-primary: white;
+    --grey300: #d9dee7;
+    --text-secondary: #60646c;
+    --text-green: #30a46c;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    background-color: var(--text-primary);
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Geist', sans-serif;
+    font-weight: 400;
+    font-size: 10px;
+    line-height: 16px;
+    color: var(--grey700);
+    padding: 0;
+    margin: 0;
+}
+
+main {
+    min-height: 700px;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 32px;
+    margin-bottom: 24px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 32px;
+    margin: 0;
+}
+
+/* Info sections (Invoice number, dates, metadata) */
+.info {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 24px;
+}
+
+.info-label {
+    font-weight: 600;
+}
+
+.info-value {
+}
+
+/* Parties (Account & Customer) section */
+.parties {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.party {
+    /* Wrapper for account and customer blocks */
+}
+
+.party-title {
+    margin: 0;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.party-detail {
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Table of items */
+.lines {
+    display: flex;
+    width: 100%;
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table th {
+    color: var(--text-secondary);
+    font-weight: 400;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--grey300);
+}
+
+.table td {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--grey300);
+}
+
+.line-description {
+    font-weight: 500;
+    font-size: 11px;
+    text-align: left;
+}
+
+.line-quantity, .line-price, .line-tax {
+    font-weight: 400;
+    text-align: end;
+}
+
+.line-total {
+    font-weight: 400;
+    text-align: end;
+}
+
+.line-discount {
+    color: var(--text-green);
+}
+
+.total {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+}
+
+.total-amount {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 20px;
+}
+
+.total-due {
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Summary section */
+.summary {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.summary-group {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    width: 50%;
+}
+
+.sum-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--grey300);
+    padding: 6px 0;
+}
+
+.sum-label {
+}
+
+.sum-value {
+    font-weight: 500;
+}
+
+.sum-credit,
+.sum-discount {
+    color: var(--text-green);
+}
+
+.divider {
+    margin: 10px 0;
+    border: 0;
+    height: 0;
+    border-top: 1px solid var(--grey300);
+    border-color: var(--grey300);
+}
+
+.info p {
+    margin: 0;
+}
+
+.party address {
+    font-style: normal;
+}
+
+.party address p {
+    margin: 0;
+}
+
+.sum-row dt,
+.sum-row dd {
+    margin: 0;
+}

@@ -1,0 +1,151 @@
+{% extends "base_email_message.html" %}
+
+{% block extra_css %}
+    <style>
+        .invoice {
+            padding: 32px 24px;
+            border-radius: 6px;
+            box-shadow: 0 8px 40px 0 rgba(179, 179, 185, 0.25);
+        }
+
+        .invoice > hr {
+            margin: 32px 0;
+            border: 1px solid rgba(232, 234, 237, 1);
+        }
+
+        .invoice a {
+            display: flex;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .invoice-header {
+            font-size: 20px;
+            font-family: "Montserrat", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        .invoice-details {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .invoice-body hr {
+            margin: 16px 0;
+            border: 1px solid rgba(232, 234, 237, 1);
+        }
+
+        .invoice-details div {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .invoice-details > div > span:first-child {
+            font-size: 16px;
+            color: var(--color-text-muted);
+        }
+
+        .invoice-details > div > span:last-child {
+            font-size: 16px;
+            color: var(--color-text-strong);
+            font-weight: 500;
+        }
+
+        .invoice-total {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .invoice-total > span:first-child {
+            font-size: 16px;
+            color: var(--color-text-muted);
+        }
+
+        .invoice-total > span:last-child {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-text-strong);
+        }
+    </style>
+{% endblock extra_css %}
+
+{% block header %}
+    {% if invoice.previous_revision %}Corrective invoice{% else %}Invoice{% endif %}
+    {{ invoice.effective_number }} from {{ invoice.effective_account.name }}
+{% endblock header %}
+
+{% block content %}
+    <p>Hi {{ invoice.effective_customer.name }}</p>
+
+    <p>
+        {{ invoice.effective_account.name }} has issued you a
+        {% if invoice.previous_revision %}corrective invoice{% else %}new invoice{% endif %}
+        {{ invoice.effective_number }}.
+    </p>
+
+    <p>Please review the details and make the payment.</p>
+
+    <div class="invoice">
+        <header class="invoice-header">
+            {% if invoice.previous_revision %}Corrective invoice{% else %}Invoice{% endif %}
+            {{ invoice.effective_number }}
+        </header>
+        <hr/>
+        <div class="invoice-body">
+            <div class="invoice-details">
+                <div>
+                    <span>Reference number</span>
+                    <span>{{ invoice.effective_number }}</span>
+                </div>
+                {% if invoice.previous_revision %}
+                    <div>
+                        <span>Corrects invoice</span>
+                        <span>{{ invoice.previous_revision.number }}</span>
+                    </div>
+                {% endif %}
+                {% if invoice.issue_date %}
+                    <div>
+                        <span>Issue date</span>
+                        <span>{{ invoice.issue_date }}</span>
+                    </div>
+                {% endif %}
+                {% if invoice.previous_revision and invoice.previous_revision.issue_date %}
+                    <div>
+                        <span>Original invoice issue date</span>
+                        <span>{{ invoice.previous_revision.issue_date }}</span>
+                    </div>
+                {% endif %}
+                {% if invoice.due_date %}
+                    <div>
+                        <span>Due date</span>
+                        <span>{{ invoice.due_date }}</span>
+                    </div>
+                {% endif %}
+            </div>
+            <hr/>
+            <div class="invoice-total">
+                <span>Total</span>
+                <span>{{ invoice.total_amount }}</span>
+            </div>
+        </div>
+        <a
+                class="btn"
+                {% if invoice.pdf is not None %}
+                href="{{ invoice.effective_number }}.pdf"
+                download
+                {% endif %}
+        >
+            Download
+        </a>
+        {% with payment=invoice.payments.first %}
+            {% if payment and payment.url %}
+                <a class="btn" href="{{ payment.url }}">Pay</a>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+{% endblock content %}

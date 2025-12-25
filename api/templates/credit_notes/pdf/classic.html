@@ -1,0 +1,183 @@
+{% load djmoney %}
+{% load invoice %}
+{% load inline_css %}
+{% load tax_id %}
+
+{% with credit_note.taxes.has_lines as has_line_taxes %}
+    <!DOCTYPE html>
+    <html lang="{{ language }}">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Credit Note</title>
+        {% inline_css "css/classic-pdf.css" %}
+        {% if include_fonts %}
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+        {% endif %}
+    </head>
+    <body>
+    <main>
+        <header class="header">
+            <h1 class="title">Credit Note</h1>
+            {% if credit_note.account.logo %}
+                <img
+                        src="{% encode_logo_base64 credit_note.account.logo %}"
+                        alt="logo"
+                        style="max-height: 32px;"
+                />
+            {% else %}
+                <div style="font-size:12px">{{ credit_note.account.name }}</div>
+            {% endif %}
+        </header>
+
+        <section class="info">
+            <div>
+                <p>
+                    <span class="info-label">Number:</span>
+                    <span class="info-value">{{ credit_note.effective_number|default:"–" }}</span>
+                </p>
+                {% if credit_note.issue_date %}
+                    <p>
+                        <span class="info-label">Issue date:</span>
+                        <span class="info-value">{{ credit_note.issue_date|date:"j E, Y" }}</span>
+                    </p>
+                {% endif %}
+                <p>
+                    <span class="info-label">Invoice number:</span>
+                    <span class="info-value">{{ credit_note.invoice.effective_number|default:credit_note.invoice.id }}</span>
+                </p>
+            </div>
+            <div>
+                <p>
+                    <span class="info-label">Reason:</span>
+                    <span class="info-value">{{ credit_note.get_reason_display }}</span>
+                </p>
+            </div>
+        </section>
+
+        <section class="parties">
+            {% with snapshot=credit_note.invoice.account_on_invoice account=snapshot|default:credit_note.account %}
+                <section class="party party-account">
+                    <h2 class="party-title">From</h2>
+                    <p class="party-detail">
+                        {{ account.legal_name|default:account.name }}
+                    </p>
+                    {% if account.legal_number %}
+                        <p class="party-detail">
+                            <span>{{ account.legal_number }}</span>
+                        </p>
+                    {% endif %}
+                    <address class="party-detail">
+                        {% include "address.html" with address=account.address %}
+                    </address>
+                    {% if account.email %}
+                        <p class="party-detail">
+                            <span>{{ account.email }}</span>
+                        </p>
+                    {% endif %}
+                    {% for tax_id in account.tax_ids.all %}
+                        <p class="party-detail">
+                            <span>{{ tax_id.type|format_tax_id_type }}: {{ tax_id.number }}</span>
+                        </p>
+                    {% endfor %}
+                </section>
+            {% endwith %}
+
+            {% with snapshot=credit_note.invoice.customer_on_invoice customer=snapshot|default:credit_note.customer %}
+                <section class="party party-customer">
+                    <h2 class="party-title">Credit to</h2>
+                    <p class="party-detail">
+                        {{ customer.legal_name|default:customer.name }}
+                    </p>
+                    {% if customer.legal_number %}
+                        <p class="party-detail">
+                            <span>{{ customer.legal_number }}</span>
+                        </p>
+                    {% endif %}
+                    <address class="party-detail">
+                        {% include "address.html" with address=customer.billing_address %}
+                    </address>
+                    {% if customer.email %}
+                        <p class="party-detail">
+                            <span>{{ customer.email }}</span>
+                        </p>
+                    {% endif %}
+                    {% for tax_id in customer.tax_ids.all %}
+                        <p class="party-detail">
+                            <span>{{ tax_id.type|format_tax_id_type }}: {{ tax_id.number }}</span>
+                        </p>
+                    {% endfor %}
+                </section>
+            {% endwith %}
+        </section>
+
+        <section class="lines">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th style="width:40%; text-align: start">Description</th>
+                    <th style="width:10%; text-align: end">Quantity</th>
+                    <th style="width:{% if has_line_taxes %}20%{% else %}25%{% endif %};text-align: end">Price</th>
+                    {% if has_line_taxes %}
+                        <th style="width:15%; text-align: end">Tax</th>
+                    {% endif %}
+                    <th style="width:{% if has_line_taxes %}15%{% else %}25%{% endif %}; text-align: end;">Amount</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for line in credit_note.lines.all %}
+                    <tr>
+                        <td class="line-description">{{ line.description }}</td>
+                        <td class="line-quantity">{{ line.quantity|default_if_none:"-" }}</td>
+                        <td class="line-price">{% money_localize line.unit_amount %}</td>
+                        {% if has_line_taxes %}
+                            {% if line.taxes.exists %}
+                                <td class="line-tax">{{ line.total_tax_rate|floatformat:"-2" }}%</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
+                        {% endif %}
+                        <td class="line-total">-{% money_localize line.amount %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="summary">
+            <dl class="summary-group">
+                <div class="sum-row">
+                    <dt class="sum-label">Subtotal</dt>
+                    <dd class="sum-value sum-credit">-{% money_localize credit_note.subtotal_amount %}</dd>
+                </div>
+                <div class="sum-row">
+                    <dt class="sum-label">Total excluding tax</dt>
+                    <dd class="sum-value sum-credit">-{% money_localize credit_note.total_amount_excluding_tax %}</dd>
+                </div>
+                {% for item in credit_note.taxes.breakdown %}
+                    <div class="sum-row">
+                        <dt class="sum-label">{{ item.name }} {{ item.rate|floatformat:"-2" }}%</dt>
+                        <dd class="sum-value sum-credit">-{% money_localize item.amount credit_note.currency %}</dd>
+                    </div>
+                {% endfor %}
+                <div class="sum-row">
+                    <dt class="sum-label">Total credited</dt>
+                    <dd class="sum-value sum-credit">-{% money_localize credit_note.total_amount %}</dd>
+                </div>
+            </dl>
+        </section>
+    </main>
+    <footer>
+        <hr class="divider"/>
+        {% if credit_note.invoice.footer %}
+            <div>
+                {{ credit_note.invoice.footer | linebreaks }}
+            </div>
+        {% endif %}
+    </footer>
+    </body>
+    </html>
+{% endwith %}

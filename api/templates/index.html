@@ -1,0 +1,23 @@
+{% load django_vite %}
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" href="{% vite_asset_url '/static/favicon.ico' %}"/>
+    <meta name="theme-color" content="#000000"/>
+    <meta
+            name="description"
+            content="OpenInvoice is an invoicing platform that simplifies your billing process."
+    />
+    <link rel="apple-touch-icon" href="{% vite_asset_url '/static/logo192.png' %}"/>
+    <link rel="manifest" href="{% vite_asset_url '/static/manifest.json' %}"/>
+    <title>OpenInvoice - Dashboard</title>
+    {% vite_hmr_client %}
+    {% vite_asset 'src/main.tsx' %}
+</head>
+<body class="dark">
+<div id="app"></div>
+</body>
+</html>

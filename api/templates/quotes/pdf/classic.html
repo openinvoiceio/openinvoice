@@ -1,0 +1,209 @@
+{% load djmoney %}
+{% load inline_css %}
+{% load invoice %}
+{% load tax_id %}
+
+{% with has_line_taxes=quote.taxes.has_lines %}
+    <!DOCTYPE html>
+    <html lang="{{ language|default:"en" }}">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Quote</title>
+        {% inline_css "css/classic-pdf.css" %}
+        {% if include_fonts %}
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+        {% endif %}
+    </head>
+    <body>
+    <main>
+        <header class="header">
+            <h1 class="title">Quote</h1>
+            {% if quote.effective_account.logo %}
+                <img
+                        src="{% encode_logo_base64 quote.effective_account.logo %}"
+                        alt="logo"
+                        style="max-height: 32px;"
+                />
+            {% else %}
+                <div style="font-size:12px">{{ quote.effective_account.name }}</div>
+            {% endif %}
+        </header>
+
+        <section class="info">
+            <div>
+                <p>
+                    <span class="info-label">Number:</span>
+                    <span class="info-value">{{ quote.effective_number }}</span>
+                </p>
+                {% if quote.issue_date %}
+                    <p>
+                        <span class="info-label">Issue date:</span>
+                        <span class="info-value">{{ quote.issue_date|date:"j E, Y" }}</span>
+                    </p>
+                {% endif %}
+                <p>
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">{{ quote.get_status_display }}</span>
+                </p>
+            </div>
+            <div>
+                {% if quote.description %}
+                    <p>
+                        <span class="info-label">Description:</span>
+                        <span class="info-value">{{ quote.description }}</span>
+                    </p>
+                {% endif %}
+                {% for key, value in quote.custom_fields.items %}
+                    <p>
+                        <span class="info-label">{{ key }}:</span>
+                        <span class="info-value">{{ value }}</span>
+                    </p>
+                {% endfor %}
+            </div>
+        </section>
+        <section class="parties">
+            <section class="party party-account">
+                <h2 class="party-title">From</h2>
+                <p class="party-detail">
+                    {{ quote.effective_account.legal_name|default:quote.effective_account.name }}
+                </p>
+                {% if quote.effective_account.legal_number %}
+                    <p class="party-detail">
+                        <span>{{ quote.effective_account.legal_number }}</span>
+                    </p>
+                {% endif %}
+                <address class="party-detail">
+                    {% include "address.html" with address=quote.effective_account.address %}
+                </address>
+                {% if quote.effective_account.email %}
+                    <p class="party-detail">{{ quote.effective_account.email }}</p>
+                {% endif %}
+                {% for tax_id in quote.effective_account.tax_ids.all %}
+                    <p class="party-detail">
+                        <span>{{ tax_id.type|format_tax_id_type }}: {{ tax_id.number }}</span>
+                    </p>
+                {% endfor %}
+            </section>
+
+            <section class="party party-customer">
+                <h2 class="party-title">Bill to</h2>
+                <p class="party-detail">
+                    {{ quote.effective_customer.legal_name|default:quote.effective_customer.name }}
+                </p>
+                {% if quote.effective_customer.legal_number %}
+                    <p class="party-detail">
+                        <span>{{ quote.effective_customer.legal_number }}</span>
+                    </p>
+                {% endif %}
+                <address class="party-detail">
+                    {% include "address.html" with address=quote.effective_customer.billing_address %}
+                </address>
+                {% if quote.effective_customer.email %}
+                    <p class="party-detail">{{ quote.effective_customer.email }}</p>
+                {% endif %}
+                {% for tax_id in quote.effective_customer.tax_ids.all %}
+                    <p class="party-detail">
+                        <span>{{ tax_id.type|format_tax_id_type }}: {{ tax_id.number }}</span>
+                    </p>
+                {% endfor %}
+            </section>
+        </section>
+
+        <section class="total">
+            <p class="total-amount">{% money_localize quote.total_amount %}</p>
+        </section>
+
+        <section class="lines">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th style="width:40%; text-align: start">Description</th>
+                    <th style="width:10%; text-align: end">Quantity</th>
+                    <th style="width:{% if has_line_taxes %}20%{% else %}25%{% endif %};text-align: end">Price</th>
+                    {% if has_line_taxes %}
+                        <th style="width:15%; text-align: end">Tax</th>
+                    {% endif %}
+                    <th style="width:{% if has_line_taxes %}15%{% else %}25%{% endif %}; text-align: end;">Amount</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for line in quote.lines.all %}
+                    <tr>
+                        <td class="line-description">{{ line.description }}</td>
+                        <td class="line-quantity">{{ line.quantity }}</td>
+                        <td class="line-price">{% money_localize line.unit_amount %}</td>
+                        {% if has_line_taxes %}
+                            {% if line.taxes.exists %}
+                                <td class="line-tax">{{ line.total_tax_rate|floatformat:"-2" }}%</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
+                        {% endif %}
+                        <td class="line-total">{% money_localize line.amount %}</td>
+                    </tr>
+                    {% for discount in line.discounts.all %}
+                        <tr>
+                            <td class="line-description" style="padding-left:20px;">{{ discount.coupon.name }}</td>
+                            <td></td>
+                            <td></td>
+                            {% if has_line_taxes %}
+                                <td></td>
+                            {% endif %}
+                            <td class="line-total line-discount">-{% money_localize discount.amount %}</td>
+                        </tr>
+                    {% endfor %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if has_line_taxes %}5{% else %}4{% endif %}" class="line-description">No line
+                            items yet.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="summary">
+            <dl class="summary-group">
+                <div class="sum-row">
+                    <dt class="sum-label">Subtotal</dt>
+                    <dd class="sum-value">{% money_localize quote.subtotal_amount %}</dd>
+                </div>
+                {% for item in quote.discounts.breakdown %}
+                    <div class="sum-row">
+                        <dt class="sum-label">{{ item.name }}</dt>
+                        <dd class="sum-value sum-discount">-{% money_localize item.amount quote.currency %}</dd>
+                    </div>
+                {% endfor %}
+                <div class="sum-row">
+                    <dt class="sum-label">Total excluding tax</dt>
+                    <dd class="sum-value">{% money_localize quote.total_amount_excluding_tax %}</dd>
+                </div>
+                {% for item in quote.taxes.breakdown %}
+                    <div class="sum-row">
+                        <dt class="sum-label">{{ item.name }} {{ item.rate|floatformat:"-2" }}%</dt>
+                        <dd class="sum-value">{% money_localize item.amount quote.currency %}</dd>
+                    </div>
+                {% endfor %}
+                <div class="sum-row">
+                    <dt class="sum-label">Total</dt>
+                    <dd class="sum-value">{% money_localize quote.total_amount %}</dd>
+                </div>
+            </dl>
+        </section>
+    </main>
+    <footer>
+        <hr class="divider"/>
+        {% if quote.footer %}
+            <div>
+                {{ quote.footer | linebreaks }}
+            </div>
+        {% endif %}
+    </footer>
+    </body>
+    </html>
+{% endwith %}

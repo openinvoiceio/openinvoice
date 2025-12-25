@@ -1,0 +1,12 @@
+{% with customer=credit_note.invoice.customer_on_invoice|default:credit_note.customer account=credit_note.invoice.account_on_invoice|default:credit_note.account %}
+Hi {{ customer.name }},
+
+{{ account.name }} has issued credit note {{ credit_note.effective_number }}.
+
+{% if credit_note.issue_date %}Issue date: {{ credit_note.issue_date }}
+{% endif %}Invoice: {{ credit_note.invoice.effective_number|default:credit_note.invoice.id }}
+Reason: {{ credit_note.get_reason_display }}
+Total credited: -{{ credit_note.total_amount }}
+
+The details are available in the attached PDF.
+{% endwith %}

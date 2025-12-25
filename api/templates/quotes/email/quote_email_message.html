@@ -1,0 +1,22 @@
+{% extends "base_email_message.html" %}
+
+{% block header %}
+    Quote {{ quote.effective_number }}
+{% endblock header %}
+
+{% block content %}
+    <p>Hi {{ quote.effective_customer.name }},</p>
+
+    <p>
+        {{ quote.effective_account.name }} has prepared a new quote
+        <strong>{{ quote.effective_number }}</strong> for you.
+    </p>
+
+    <p>You can review the quote and reach out if you have any questions.</p>
+
+    {% if quote.total_amount %}
+        <p><strong>Total:</strong> {{ quote.total_amount }}</p>
+    {% endif %}
+
+    <p>Thanks,<br/>{{ quote.effective_account.name }}</p>
+{% endblock content %}

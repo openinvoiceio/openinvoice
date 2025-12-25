@@ -1,0 +1,3 @@
+{% block content %}{% endblock content %}
+
+Questions or concerns? Get in touch with us at contact@openinvoice.io.

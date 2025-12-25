@@ -1,0 +1,117 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.1.4",
+    "django-allauth>=65.4.1",
+    "django-anymail[sendgrid]>=12.0",
+    "django-cors-headers>=4.6.0",
+    "django-countries>=7.6.1",
+    "django-environ>=0.11.2",
+    "django-fernet-encrypted-fields>=0.3.0",
+    "django-filter>=24.3",
+    "django-health-check>=3.18.3",
+    "django-money>=3.5.3",
+    "django-storages[s3]>=1.14.4",
+    "django-structlog>=9.0.0",
+    "django-vite>=3.1.0",
+    "djangorestframework>=3.15.2",
+    "drf-spectacular[sidecar]>=0.28.0",
+    "drf-standardized-errors[openapi]>=0.14.1",
+    "gotenberg-client>=0.9.0",
+    "gunicorn>=23.0.0",
+    "psycopg[binary]>=3.2.3",
+    "sentry-sdk>=2.20.0",
+    "setuptools>=75.6.0",
+    "stripe>=11.4.1",
+    "structlog>=24.4.0",
+    "weasyprint>=67.0",
+]
+
+[dependency-groups]
+dev = [
+    "django-stubs>=5.1.1",
+    "djangorestframework-stubs>=3.15.2",
+    "factory-boy>=3.3.3",
+    "freezegun>=1.5.5",
+    "mypy>=1.16.0",
+    "pytest>=8.4.0",
+    "pytest-django>=4.11.1",
+    "pytest-randomly>=3.16.0",
+    "ruff>=0.8.4",
+    "types-python-dateutil>=2.9.0.20250516",
+    "watchfiles>=1.0.3",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "S", # flake8-namdot
+    "BLE", # flake8-blind-except
+    "B", # flake8-bugbear
+    "A", # flake8-builtin
+    "C4", # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "T10", # flake8-debugger
+    "FA", # flake8-future-annotations
+    "ISC", # flake8-implicit-str-concat
+    "LOG", # flake8-logging
+    "INP", # flake8-no-pep420
+    "PIE", # flake8-pie
+    "T20", # flake8-print
+    "PT", # flake8-pytest
+    "Q", # flake8-quotes
+    "RSE", # flake8-raise
+    "RET", # flake8-return
+    "SLF", # flake8-self
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+    "ARG", # flake8-unused-arguments
+    "PTH", # flake8-use-pathlib
+    "I", # flake8-isort
+    "C90", # mccabe
+    "N", # flake8-naming
+    "E", # pycodestyle
+    "F", # pyflakes
+    "UP", # pyupgrade
+    "RUF", # ruff
+]
+ignore = [
+    "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]  # Disable flake8-bandit use of assert
+"tests/invoices/views/test_send_invoice.py" = [
+    "ARG001", # Unused argument
+]
+"tests/invoices/views/test_finalize_invoice.py" = [
+    "ARG001", # Unused argument
+]
+"apps/invoices/queries.py" = [
+    "SLF001", # Private attribute accessed
+]
+
+[tool.mypy]
+python_version = "3.12"
+packages = ["apps", "config", "common"]
+plugins = ["mypy_django_plugin.main"]
+
+[[tool.mypy.overrides]]
+module = ["anymail.*", "allauth.*", "django_filters.*", "environ.*"]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.development"
+
+[tool.pytest.ini_options]
+addopts = "-v --reuse-db"
+testpaths = ["tests"]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+
