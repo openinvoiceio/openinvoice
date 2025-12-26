@@ -180,7 +180,7 @@ function QuoteLineForm({ line, quote }: { line: QuoteLine; quote: Quote }) {
   async function onSubmit(values: FormValuesOutput) {
     if (isPending) return;
     await updateQuoteLine.mutateAsync({
-      id: line.id,
+      quoteLineId: line.id,
       data: {
         description: values.description,
         quantity: values.quantity,
@@ -342,7 +342,7 @@ function QuoteLineForm({ line, quote }: { line: QuoteLine; quote: Quote }) {
                     className="text-muted-foreground size-8"
                     onClick={() =>
                       removeQuoteLineTax.mutateAsync({
-                        id: tax.id,
+                        quoteLineTaxId: tax.id,
                         quoteLineId: line.id,
                       })
                     }
@@ -386,7 +386,7 @@ function QuoteLineForm({ line, quote }: { line: QuoteLine; quote: Quote }) {
                     className="text-muted-foreground size-8"
                     onClick={() =>
                       removeQuoteLineDiscount.mutateAsync({
-                        id: discount.id,
+                        quoteLineDiscountId: discount.id,
                         quoteLineId: line.id,
                       })
                     }
@@ -408,7 +408,7 @@ function QuoteLineForm({ line, quote }: { line: QuoteLine; quote: Quote }) {
                   onSelect={async (selected) => {
                     if (!selected) return;
                     await addQuoteLineDiscount.mutateAsync({
-                      id: line.id,
+                      quoteLineId: line.id,
                       data: { coupon_id: selected.id },
                     });
                   }}
@@ -443,7 +443,7 @@ function QuoteLineForm({ line, quote }: { line: QuoteLine; quote: Quote }) {
                   onSelect={async (selected) => {
                     if (!selected) return;
                     await addQuoteLineTax.mutateAsync({
-                      id: line.id,
+                      quoteLineId: line.id,
                       data: { tax_rate_id: selected.id },
                     });
                   }}
@@ -580,7 +580,7 @@ export function QuoteLinesCard({ quote }: { quote: Quote }) {
                   className="text-muted-foreground mr-4 size-8"
                   onClick={async (e) => {
                     e.preventDefault();
-                    await deleteQuoteLine.mutateAsync({ id: line.id });
+                    await deleteQuoteLine.mutateAsync({ quoteLineId: line.id });
                   }}
                 >
                   <XIcon />

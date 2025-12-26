@@ -100,9 +100,7 @@ export function EmailPreview({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState<number | undefined>();
 
-  const subjectPrefix = quote.previous_revision_id
-    ? "Corrective quote"
-    : "Quote";
+  const subjectPrefix = "Quote";
   const subject = `${subjectPrefix} ${quote.number} from ${quote.account.name}`;
 
   useEffect(() => {

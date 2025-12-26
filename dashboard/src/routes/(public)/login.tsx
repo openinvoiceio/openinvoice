@@ -63,7 +63,7 @@ function RouteComponent() {
           return navigate({ to: "/verification" });
         } else if (response?.status === 400) {
           response?.errors?.map((e) => {
-            form.setError(e.param || "root", {
+            form.setError((e.param as "email" | "password") || "root", {
               type: "custom",
               message: e.message.toString(),
             });

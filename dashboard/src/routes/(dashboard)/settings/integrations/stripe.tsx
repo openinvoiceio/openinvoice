@@ -1,4 +1,3 @@
-import { useIntegrationsStripeRetrieve } from "@/api/endpoints/integrations/integrations.ts";
 import {
   Avatar,
   AvatarFallback,
@@ -21,8 +20,6 @@ export const Route = createFileRoute(
 });
 
 function RouteComponent() {
-  const { data: connection } = useIntegrationsStripeRetrieve();
-
   return (
     <SectionGroup>
       <Section>

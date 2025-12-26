@@ -52,6 +52,7 @@ export function getFilterOperators(filterVariant: FilterVariant) {
     multiSelect: dataTableConfig.multiSelectOperators,
     customer: [],
     product: [],
+    invoice: [],
   };
 
   return operatorMap[filterVariant] ?? dataTableConfig.textOperators;

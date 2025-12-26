@@ -99,7 +99,7 @@ export function QuoteTaxesCard({ quote }: { quote: Quote }) {
               onClick={() =>
                 removeQuoteTax.mutateAsync({
                   quoteId: quote.id,
-                  id: tax.id,
+                  quoteTaxId: tax.id,
                 })
               }
             >
@@ -128,7 +128,7 @@ export function QuoteTaxesCard({ quote }: { quote: Quote }) {
                 onSelect={async (selected) => {
                   if (!selected) return;
                   await addQuoteTax.mutateAsync({
-                    id: quote.id,
+                    quoteId: quote.id,
                     data: { tax_rate_id: selected.id },
                   });
                 }}

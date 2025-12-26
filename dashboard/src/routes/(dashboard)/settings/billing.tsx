@@ -5,6 +5,7 @@ import {
   useCreateStripeBillingPortal,
   useCreateStripeCheckout,
 } from "@/api/endpoints/stripe/stripe";
+import type { Account } from "@/api/models";
 import { BillingProgress } from "@/components/billing-progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,6 @@ import { plans } from "@/config/plans";
 import { usePlan } from "@/hooks/use-plan";
 import { getErrorSummary } from "@/lib/api/errors";
 import { formatDate, formatISODate } from "@/lib/formatters";
-import { stripePromise } from "@/lib/stripe";
 import { cn } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { addMonths, startOfMonth } from "date-fns";
@@ -62,7 +62,7 @@ function RouteComponent() {
   const datetime = formatISODate(startOfMonth(new Date()));
   const navigate = Route.useNavigate();
   const { data: invoices } = useInvoicesListSuspense({
-    created_at_gt: datetime,
+    created_at_after: datetime,
   });
   const { data: customers } = useCustomersListSuspense({
     created_at_gt: datetime,
@@ -71,7 +71,7 @@ function RouteComponent() {
     created_at_gt: datetime,
   });
   const recommendedPlanId = "standard";
-  const { currentPlan, subscription } = usePlan(account);
+  const { currentPlan, subscription } = usePlan(account as Account);
   const renewalDate = subscription?.ended_at
     ? new Date(subscription.ended_at)
     : startOfMonth(addMonths(new Date(), 1));
@@ -79,9 +79,7 @@ function RouteComponent() {
   const createStripeCheckout = useCreateStripeCheckout({
     mutation: {
       onSuccess: async (response) => {
-        const stripe = await stripePromise;
-        if (!stripe) return;
-        await stripe.redirectToCheckout({ sessionId: response.session_id });
+        window.location.href = response.session_url;
       },
       onError: (error) => {
         const { message, description } = getErrorSummary(error);

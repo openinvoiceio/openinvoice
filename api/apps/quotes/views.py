@@ -240,6 +240,7 @@ class QuotePreviewAPIView(generics.GenericAPIView):
 
     @extend_schema(
         operation_id="preview_quote",
+        responses={(200, "text/html"): {"type": "string"}},
         parameters=[
             OpenApiParameter(name="format", required=False, type=str, enum=QuotePreviewFormat.values),
         ],

@@ -4574,7 +4574,7 @@ paths:
           content:
             text/html:
               schema:
-                $ref: '#/components/schemas/QuotePreview'
+                type: string
           description: ''
   /api/v1/quotes/{quote_id}/taxes:
     post:
@@ -7720,14 +7720,6 @@ components:
         * `account_logo` - Account Logo
         * `profile_avatar` - Profile Avatar
         * `customer_logo` - Customer Logo
-    FormatEnum:
-      enum:
-      - pdf
-      - email
-      type: string
-      description: |-
-        * `pdf` - PDF
-        * `email` - Email
     GrossRevenue:
       type: object
       properties:
@@ -9954,13 +9946,6 @@ components:
       required:
       - description
       - quantity
-    QuotePreview:
-      type: object
-      properties:
-        format:
-          allOf:
-          - $ref: '#/components/schemas/FormatEnum'
-          default: pdf
     QuoteStatusEnum:
       enum:
       - draft
@@ -10089,10 +10074,10 @@ components:
     StripeCheckoutSession:
       type: object
       properties:
-        session_id:
+        session_url:
           type: string
       required:
-      - session_id
+      - session_url
     StripeConnection:
       type: object
       properties:

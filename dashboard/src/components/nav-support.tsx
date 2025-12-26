@@ -16,7 +16,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Link } from "@tanstack/react-router";
 import {
   Book,
   Braces,
@@ -54,19 +53,17 @@ export function NavSupport({ user }: { user: User }) {
                   Support
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild disabled>
-                  <Link to="#">
+                  <a href="https://openinvoice.io/docs">
                     <Book /> Docs
-                  </Link>
+                  </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild disabled>
-                  <Link to="#">
+                  <a href="https://openinvoice.io/api-reference">
                     <Braces /> API Reference
-                  </Link>
+                  </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild disabled>
-                  <Link to="#">
-                    <CalendarClock /> Book a Call
-                  </Link>
+                  <CalendarClock /> Book a Call
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -98,7 +98,7 @@ export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        mutateAsync({ id: customer.id, taxIdId: taxId.id })
+                        mutateAsync({ id: taxId.id, customerId: customer.id })
                       }
                       disabled={isPending}
                     >

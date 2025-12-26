@@ -1,3 +1,4 @@
+// @ts-ignore
 import "vite/modulepreload-polyfill";
 import "@vitejs/plugin-react/preamble";
 import * as Sentry from "@sentry/react";

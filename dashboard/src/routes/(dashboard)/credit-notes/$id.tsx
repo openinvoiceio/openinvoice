@@ -359,7 +359,8 @@ function RouteComponent() {
                       (line.taxes.length > 0 ? (
                         <TableCell className="text-right">
                           {/* TODO: fix this*/}
-                          {formatPercentage(line?.total_tax_rate || 0)}
+                          {/*{formatPercentage(line?.total_tax_rate || 0)}*/}
+                          {formatPercentage("0")}
                         </TableCell>
                       ) : (
                         <TableCell />

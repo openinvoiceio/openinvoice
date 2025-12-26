@@ -51,7 +51,7 @@ function RouteComponent() {
         const response = error.response?.data;
         if (response?.status === 400) {
           response?.errors?.map((e) => {
-            form.setError(e.param || "root", {
+            form.setError((e.param as "email") || "root", {
               type: "custom",
               message: e.message.toString(),
             });

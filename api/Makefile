@@ -22,6 +22,7 @@ test:
 
 .PHONY: openapi
 openapi:
+	export DJANGO_SETTINGS_MODULE=config.settings.development && \
 	uv run manage.py spectacular --file ../dashboard/openapi.yaml --format openapi
 
 .PHONY: migrations

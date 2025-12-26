@@ -107,7 +107,7 @@ export function QuoteDiscountsCard({ quote }: { quote: Quote }) {
               onClick={() =>
                 removeQuoteDiscount.mutateAsync({
                   quoteId: quote.id,
-                  id: discount.id,
+                  quoteDiscountId: discount.id,
                 })
               }
             >
@@ -137,7 +137,7 @@ export function QuoteDiscountsCard({ quote }: { quote: Quote }) {
                 onSelect={async (selected) => {
                   if (!selected) return;
                   await addQuoteDiscount.mutateAsync({
-                    id: quote.id,
+                    quoteId: quote.id,
                     data: { coupon_id: selected.id },
                   });
                 }}

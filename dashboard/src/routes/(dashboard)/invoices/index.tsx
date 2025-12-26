@@ -56,6 +56,7 @@ import { formatEnum } from "@/lib/formatters.ts";
 import { getSortingStateParser } from "@/lib/parsers";
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import type { ColumnSort } from "@tanstack/react-table";
 import { addDays, formatISO } from "date-fns";
 import {
   Clock3Icon,
@@ -67,13 +68,13 @@ import {
 } from "lucide-react";
 import {
   parseAsArrayOf,
+  parseAsFloat,
   parseAsInteger,
   parseAsIsoDateTime,
   parseAsString,
   parseAsStringEnum,
   useQueryStates,
 } from "nuqs";
-import { z } from "zod";
 
 type DeadlineFilterValue = "all" | "overdue" | "on_time";
 
@@ -93,12 +94,12 @@ const searchParams = {
   currency: parseAsArrayOf(
     parseAsStringEnum([...Object.values(CurrencyEnum), "all"]),
   ).withDefault(["all"]),
-  total_amount: parseAsArrayOf(z.coerce.number()).withDefault([]),
-  subtotal_amount: parseAsArrayOf(z.coerce.number()).withDefault([]),
-  total_paid_amount: parseAsArrayOf(z.coerce.number()).withDefault([]),
-  outstanding_amount: parseAsArrayOf(z.coerce.number()).withDefault([]),
+  total_amount: parseAsArrayOf(parseAsFloat).withDefault([]),
+  subtotal_amount: parseAsArrayOf(parseAsFloat).withDefault([]),
+  total_paid_amount: parseAsArrayOf(parseAsFloat).withDefault([]),
+  outstanding_amount: parseAsArrayOf(parseAsFloat).withDefault([]),
   created_at: parseAsArrayOf(parseAsIsoDateTime).withDefault([]),
-  lines: z.uuid(),
+  lines: parseAsString,
   deadline: parseAsStringEnum(["all", "overdue", "on_time"]).withDefault("all"),
 };
 
@@ -148,7 +149,9 @@ function RouteComponent() {
   const { data } = useInvoicesList({
     page,
     page_size: perPage,
-    ordering: sort.map((s) => `${s.desc ? "-" : ""}${s.id}`).join(","),
+    ordering: sort
+      .map((s: ColumnSort) => `${s.desc ? "-" : ""}${s.id}`)
+      .join(","),
     ...(search && { search: debouncedSearch }),
     ...(customer && { customer_id: customer }),
     ...(due_date.length == 2 && {

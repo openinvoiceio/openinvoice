@@ -107,7 +107,7 @@ export function AccountTaxIdsCard({ account }: { account: Account }) {
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        mutateAsync({ id: account.id, taxIdId: taxId.id })
+                        mutateAsync({ id: taxId.id, accountId: account.id })
                       }
                       disabled={isPending}
                     >
