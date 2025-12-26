@@ -72,7 +72,7 @@ export function InvoiceDiscountsCard({ invoice }: { invoice: Invoice }) {
   });
 
   return (
-    <FormCard>
+    <FormCard data-testid="invoice-discounts-card">
       <FormCardHeader>
         <FormCardTitle>Discounts</FormCardTitle>
         <FormCardDescription>
@@ -104,6 +104,7 @@ export function InvoiceDiscountsCard({ invoice }: { invoice: Invoice }) {
               variant="ghost"
               size="icon"
               className="text-muted-foreground size-8"
+              aria-label={`Remove discount ${discount.coupon.name}`}
               onClick={() =>
                 deleteInvoiceDiscount.mutateAsync({
                   invoiceId: invoice.id,

@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker/locale/en";
 import { expect, test } from "@tests/fixtures.ts";
 import { UUID4 } from "@tests/utils.ts";
 
@@ -17,7 +18,7 @@ test.describe("Create invoice", () => {
   });
 
   test("Create invoice with customer only", async ({ page, context }) => {
-    const customerName = "Test Customer";
+    const customerName = faker.company.name();
     await context.request.post("/api/v1/customers", {
       data: { name: customerName },
     });

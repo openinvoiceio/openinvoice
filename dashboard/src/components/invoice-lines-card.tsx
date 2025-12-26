@@ -344,6 +344,7 @@ function InvoiceLineForm({
                     variant="ghost"
                     size="icon"
                     className="text-muted-foreground size-8"
+                    aria-label={`Remove tax ${tax.name}`}
                     onClick={() =>
                       deleteInvoiceLineTax.mutateAsync({
                         id: tax.id,
@@ -388,6 +389,7 @@ function InvoiceLineForm({
                     variant="ghost"
                     size="icon"
                     className="text-muted-foreground size-8"
+                    aria-label={`Remove discount ${discount.coupon.name}`}
                     onClick={() =>
                       deleteInvoiceLineDiscount.mutateAsync({
                         id: discount.id,
@@ -520,15 +522,15 @@ export function InvoiceLinesCard({ invoice }: { invoice: Invoice }) {
   });
 
   return (
-    <FormCard className="gap-0">
+    <FormCard className="gap-0" data-testid="invoice-lines-card">
       <FormCardHeader className="pb-4">
         <FormCardTitle>Lines</FormCardTitle>
         <FormCardDescription>Add items to your invoice</FormCardDescription>
       </FormCardHeader>
       <Accordion
         type="single"
-        value={openItem}
         className="[&>:first-child]:border-t"
+        value={openItem}
         onValueChange={setOpenItem}
         collapsible
       >
@@ -538,7 +540,10 @@ export function InvoiceLinesCard({ invoice }: { invoice: Invoice }) {
             value={line.id}
             className="data-[state=open]:bg-accent/35 relative border-x-0 transition outline-none"
           >
-            <div className="flex w-full items-center justify-between">
+            <div
+              className="flex w-full items-center justify-between"
+              aria-label={`Invoice line header ${line.description}`}
+            >
               <div className="w-full [&_h3]:w-full">
                 <AccordionTrigger className="items-center justify-start px-4 py-3 leading-6 font-normal hover:no-underline focus-visible:ring-0 [&>svg]:-order-1">
                   {line.description} × {line.quantity}
@@ -582,6 +587,7 @@ export function InvoiceLinesCard({ invoice }: { invoice: Invoice }) {
                   variant="ghost"
                   size="icon"
                   className="text-muted-foreground mr-4 size-8"
+                  aria-label={`Remove line ${line.description}`}
                   onClick={async (e) => {
                     e.preventDefault();
                     await deleteInvoiceLine.mutateAsync({ id: line.id });
@@ -591,7 +597,9 @@ export function InvoiceLinesCard({ invoice }: { invoice: Invoice }) {
                 </Button>
               </div>
             </div>
-            <AccordionContent>
+            <AccordionContent
+              aria-label={`Invoice line content ${line.description}`}
+            >
               <InvoiceLineForm line={line} invoice={invoice} />
             </AccordionContent>
           </AccordionItem>

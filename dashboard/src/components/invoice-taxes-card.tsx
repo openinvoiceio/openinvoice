@@ -72,7 +72,7 @@ export function InvoiceTaxesCard({ invoice }: { invoice: Invoice }) {
   });
 
   return (
-    <FormCard>
+    <FormCard data-testid="invoice-taxes-card">
       <FormCardHeader>
         <FormCardTitle>Taxes</FormCardTitle>
         <FormCardDescription>
@@ -96,6 +96,7 @@ export function InvoiceTaxesCard({ invoice }: { invoice: Invoice }) {
               variant="ghost"
               size="icon"
               className="text-muted-foreground size-8"
+              aria-label={`Remove tax ${tax.name}`}
               onClick={() =>
                 deleteInvoiceTax.mutateAsync({
                   invoiceId: invoice.id,
