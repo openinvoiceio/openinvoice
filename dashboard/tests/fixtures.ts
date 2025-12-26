@@ -1,78 +1,96 @@
+import fs from "fs";
+import path from "path";
 import { test as base, expect, request } from "@playwright/test";
 import { MailpitAPI } from "@tests/api/mailpit.api.ts";
-import { CustomersPage } from "@tests/pages/customers.page.ts";
-import { InvoicesPage } from "@tests/pages/invoices.page.ts";
-import { SetupPage } from "@tests/pages/setup.page.ts";
-import { SignupPage } from "@tests/pages/signup.page.ts";
-import { VerificationPage } from "@tests/pages/verification.page.ts";
-import { generateEmail } from "@tests/utils/email.ts";
+import { generateEmail, setCsrfHeader } from "@tests/utils.ts";
 
-type Fixtures = {
-  email: string;
+export type TestOptions = {};
+export type WorkerOptions = {
+  workerStorageState: string;
+  mailpitURL: string;
   mailpitAPI: MailpitAPI;
-  signupPage: SignupPage;
-  verificationPage: VerificationPage;
-  setupPage: SetupPage;
-  customersPage: CustomersPage;
-  invoicesPage: InvoicesPage;
-  user: { email: string; password: string };
-  account: { name: string; email: string; country: string };
-  signup: (opts?: {
-    password?: string;
-    goto?: boolean;
-  }) => Promise<{ email: string }>;
-  setupAccount: (opts?: { goto?: boolean }) => Promise<{ email: string }>;
 };
 
-export const test = base.extend<Fixtures>({
-  email: async ({}, use, testInfo) => {
-    const email = generateEmail(testInfo.title);
-    await use(email);
-  },
-  mailpitAPI: async ({}, use) => {
-    const context = await request.newContext({
-      baseURL: process.env.MAILPIT_URL ?? "http://localhost:8025",
-    });
-    await use(new MailpitAPI(context));
-  },
-  signupPage: async ({ page }, use) => {
-    await use(new SignupPage(page));
-  },
-  verificationPage: async ({ page }, use) => {
-    await use(new VerificationPage(page));
-  },
-  setupPage: async ({ page }, use) => {
-    await use(new SetupPage(page));
-  },
-  customersPage: async ({ page }, use) => {
-    await use(new CustomersPage(page));
-  },
-  invoicesPage: async ({ page }, use) => {
-    await use(new InvoicesPage(page));
-  },
-  user: async (
-    { page, signupPage, verificationPage, mailpitAPI },
-    use,
-    testInfo,
-  ) => {
-    const email = generateEmail(testInfo.title);
-    const password = "Password123!";
-    await signupPage.goto();
-    await signupPage.signup(email, password);
-    await expect(page).toHaveURL("/verification");
-    const messageId = await mailpitAPI.getLastMessageId(email);
-    const code = await mailpitAPI.getVerificationCode(messageId);
-    await verificationPage.verify(code);
-    await expect(page).toHaveURL("/setup");
-    await use({ email, password });
-  },
-  account: async ({ page, setupPage, user }, use) => {
-    await page.screenshot();
-    const name = "Acme Corporation";
-    const country = "United States";
-    await setupPage.goto();
-    await setupPage.setup(name, country);
-    await use({ name, email: user.email, country });
+export const test = base.extend<TestOptions, WorkerOptions>({
+  mailpitURL: ["", { option: true, scope: "worker" }],
+  mailpitAPI: [
+    async ({ mailpitURL }, use) => {
+      const context = await request.newContext({
+        baseURL: mailpitURL,
+      });
+      await use(new MailpitAPI(context));
+    },
+    { scope: "worker" },
+  ],
+  storageState: ({ workerStorageState }, use) => use(workerStorageState),
+  workerStorageState: [
+    async ({ browser, mailpitAPI }, use) => {
+      // Use parallelIndex as a unique identifier for each worker.
+      const id = test.info().parallelIndex;
+      const fileName = path.resolve(
+        test.info().project.outputDir,
+        `.auth/${id}.json`,
+      );
+      const baseURL = test.info().project.use.baseURL;
+
+      if (fs.existsSync(fileName)) {
+        // Reuse existing authentication state if any.
+        await use(fileName);
+        return;
+      }
+
+      // Important: make sure we authenticate in a clean environment by unsetting storage state.
+      const page = await browser.newPage({
+        storageState: undefined,
+        baseURL,
+      });
+      const context = page.context();
+
+      // Acquire a unique account, for example create a new one.
+      // Alternatively, you can have a list of precreated accounts for testing.
+      // Make sure that accounts are unique, so that multiple team members
+      // can run tests at the same time without interference.
+      const email = generateEmail();
+      const password = "Password123!";
+      // Get csrf cookie
+      await page.request.head("/api/browser/v1/auth/signup", {
+        data: { email, password },
+      });
+      await setCsrfHeader(context);
+
+      // Sign up
+      let response = await page.request.post("/api/browser/v1/auth/signup", {
+        data: { email, password },
+      });
+      if (response.status() !== 401) throw new Error("Failed to sign up");
+
+      const messageId = await mailpitAPI.getLastMessageId(email);
+      const code = await mailpitAPI.getVerificationCode(messageId);
+
+      // Verify
+      response = await page.request.post("/api/browser/v1/auth/email/verify", {
+        data: { key: code },
+      });
+      if (response.status() !== 200)
+        throw new Error("Failed to verify account");
+
+      await setCsrfHeader(context);
+
+      await page.request.post("/api/v1/accounts", {
+        data: { name: `Account ${id}`, country: "US", email },
+      });
+
+      // End of authentication steps.
+
+      await context.storageState({ path: fileName });
+      await page.close();
+      await use(fileName);
+    },
+    { scope: "worker" },
+  ],
+  context: async ({ context }, use) => {
+    await setCsrfHeader(context);
+    await use(context);
   },
 });
 

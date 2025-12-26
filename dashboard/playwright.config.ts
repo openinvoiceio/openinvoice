@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import type { TestOptions, WorkerOptions } from "@tests/fixtures.ts";
 
 /**
  * Read environment variables from file.
@@ -11,7 +12,7 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-export default defineConfig({
+export default defineConfig<TestOptions & WorkerOptions>({
   testDir: "./tests",
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -26,7 +27,8 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: "http://localhost:8000",
+    baseURL: process.env.BASE_URL || "http://localhost:8000",
+    mailpitURL: process.env.MAILPIT_URL || "http://localhost:8025",
 
     // Capture screenshot after each test failure.
     screenshot: "only-on-failure",

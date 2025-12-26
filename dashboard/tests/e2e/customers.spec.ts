@@ -1,8 +1,8 @@
 import { expect, test } from "@tests/fixtures.ts";
-import { UUID4 } from "@tests/utils/regex.ts";
+import { UUID4 } from "@tests/utils.ts";
 
 test.describe("Create customer", () => {
-  test.beforeEach(async ({ page, account }) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto("/customers");
     await page
       .locator("header")

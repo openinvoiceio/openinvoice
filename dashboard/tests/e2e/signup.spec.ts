@@ -1,9 +1,11 @@
 import { expect, test } from "@tests/fixtures.ts";
-import { generateEmail } from "@tests/utils/email.ts";
+import { generateEmail } from "@tests/utils.ts";
 
 const VALID_PASSWORD = "Password123!";
 
 test.describe("Signup", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test.beforeEach(async ({ page }) => {
     await page.goto("/signup");
   });
@@ -16,8 +18,8 @@ test.describe("Signup", () => {
     await expect(page.getByText("Invalid email address")).toBeVisible();
   });
 
-  test("Cannot signup with weak password", async ({ page }, { title }) => {
-    const email = generateEmail(title);
+  test("Cannot signup with weak password", async ({ page }) => {
+    const email = generateEmail();
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill("weak");
     await page.getByRole("button", { name: "Signup" }).click();
@@ -27,8 +29,8 @@ test.describe("Signup", () => {
     ).toBeVisible();
   });
 
-  test("Cannot signup with numeric password", async ({ page }, { title }) => {
-    const email = generateEmail(title);
+  test("Cannot signup with numeric password", async ({ page }) => {
+    const email = generateEmail();
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill("12345678");
     await page.getByRole("button", { name: "Signup" }).click();
@@ -38,8 +40,8 @@ test.describe("Signup", () => {
     ).toBeVisible();
   });
 
-  test("Cannot signup when signup is closed", async ({ page }, { title }) => {
-    const email = generateEmail(title);
+  test("Cannot signup when signup is closed", async ({ page }) => {
+    const email = generateEmail();
     await page.route("**/api/browser/v1/auth/signup", (route) => {
       route.fulfill({
         status: 403,
@@ -58,8 +60,8 @@ test.describe("Signup", () => {
     await expect(page.getByText("Signup failed")).toBeVisible();
   });
 
-  test("Cannot verify email with invalid code", async ({ page }, { title }) => {
-    const email = generateEmail(title);
+  test("Cannot verify email with invalid code", async ({ page }) => {
+    const email = generateEmail();
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill(VALID_PASSWORD);
     await page.getByRole("button", { name: "Signup" }).click();
@@ -71,8 +73,8 @@ test.describe("Signup", () => {
     await expect(page.getByText("Incorrect code.")).toBeVisible();
   });
 
-  test("Cannot verify email with expired code", async ({ page }, { title }) => {
-    const email = generateEmail(title);
+  test("Cannot verify email with expired code", async ({ page }) => {
+    const email = generateEmail();
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill(VALID_PASSWORD);
     await page.getByRole("button", { name: "Signup" }).click();
@@ -94,10 +96,8 @@ test.describe("Signup", () => {
     ).toBeVisible();
   });
 
-  test("Can signup with verification", async ({ page, mailpitAPI }, {
-    title,
-  }) => {
-    const email = generateEmail(title);
+  test("Can signup with verification", async ({ page, mailpitAPI }) => {
+    const email = generateEmail();
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill(VALID_PASSWORD);
     await page.getByRole("button", { name: "Signup" }).click();
