@@ -137,6 +137,7 @@ PLANS = {
             FeatureCode.STRIPE_INTEGRATION: False,
         },
         "limits": {
+            LimitCode.MAX_ACCOUNTS: 1,
             LimitCode.MAX_MEMBERS: 1,
             LimitCode.MAX_CUSTOMERS: 10,
             LimitCode.MAX_PRODUCTS: 20,
@@ -146,6 +147,7 @@ PLANS = {
             LimitCode.MAX_CREDIT_NOTES_PER_MONTH: 10,
             LimitCode.MAX_QUOTES_PER_MONTH: 10,
         },
+        "price_id": None,
     },
     STANDARD_PLAN: {
         "name": "Standard",
@@ -158,6 +160,7 @@ PLANS = {
             FeatureCode.STRIPE_INTEGRATION: True,
         },
         "limits": {
+            LimitCode.MAX_ACCOUNTS: 5,
             LimitCode.MAX_MEMBERS: 5,
             LimitCode.MAX_CUSTOMERS: None,
             LimitCode.MAX_PRODUCTS: None,
@@ -167,6 +170,7 @@ PLANS = {
             LimitCode.MAX_CREDIT_NOTES_PER_MONTH: 200,
             LimitCode.MAX_QUOTES_PER_MONTH: 200,
         },
+        "price_id": STRIPE_STANDARD_PRICE_ID,
     },
     ENTERPRISE_PLAN: {
         "name": "Enterprise",
@@ -179,6 +183,7 @@ PLANS = {
             FeatureCode.STRIPE_INTEGRATION: True,
         },
         "limits": {
+            LimitCode.MAX_ACCOUNTS: None,
             LimitCode.MAX_MEMBERS: None,
             LimitCode.MAX_CUSTOMERS: None,
             LimitCode.MAX_PRODUCTS: None,
@@ -188,5 +193,6 @@ PLANS = {
             LimitCode.MAX_CREDIT_NOTES_PER_MONTH: None,
             LimitCode.MAX_QUOTES_PER_MONTH: None,
         },
+        "price_id": STRIPE_ENTERPRISE_PRICE_ID,
     },
 }

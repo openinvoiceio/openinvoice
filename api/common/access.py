@@ -12,10 +12,10 @@ def resolve_plan(account: Account) -> str:
     if subscription is None:
         return settings.DEFAULT_PLAN
 
-    if subscription.price_id == settings.STRIPE_STANDARD_PRICE_ID:
-        return settings.STANDARD_PLAN
-    if subscription.price_id == settings.STRIPE_ENTERPRISE_PRICE_ID:
-        return settings.ENTERPRISE_PLAN
+    for code, plan in settings.PLANS.items():
+        if subscription.price_id == plan.get("price_id"):
+            return code
+
     return settings.DEFAULT_PLAN
 
 

@@ -1630,6 +1630,21 @@ paths:
                 items:
                   $ref: '#/components/schemas/OverdueBalance'
           description: ''
+  /api/v1/config:
+    get:
+      operationId: get_config
+      tags:
+      - config
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+          description: ''
   /api/v1/coupons:
     get:
       operationId: coupons_list
@@ -5709,6 +5724,22 @@ components:
       type: string
       enum:
       - client_error
+    Config:
+      type: object
+      properties:
+        is_billing_enabled:
+          type: boolean
+        current_plan_code:
+          type: string
+          maxLength: 100
+        plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/Plan'
+      required:
+      - current_plan_code
+      - is_billing_enabled
+      - plans
     CountryEnum:
       enum:
       - AF
@@ -9072,6 +9103,91 @@ components:
         * `pending` - Pending
         * `failed` - Failed
         * `rejected` - Rejected
+    Plan:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 100
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanFeature'
+        limits:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanLimit'
+        price_id:
+          type: string
+          nullable: true
+          maxLength: 100
+      required:
+      - code
+      - features
+      - limits
+      - name
+      - price_id
+    PlanFeature:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/PlanFeatureCodeEnum'
+        is_enabled:
+          type: boolean
+      required:
+      - code
+      - is_enabled
+    PlanFeatureCodeEnum:
+      enum:
+      - automatic_invoice_delivery
+      - automatic_credit_note_delivery
+      - automatic_quote_delivery
+      - custom_numbering_systems
+      - customer_portal
+      - stripe_integration
+      type: string
+      description: |-
+        * `automatic_invoice_delivery` - Automatic Invoice Delivery
+        * `automatic_credit_note_delivery` - Automatic Credit Note Delivery
+        * `automatic_quote_delivery` - Automatic Quote Delivery
+        * `custom_numbering_systems` - Custom Numbering Systems
+        * `customer_portal` - Customer Portal
+        * `stripe_integration` - Stripe Integration
+    PlanLimit:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/PlanLimitCodeEnum'
+        limit:
+          type: integer
+      required:
+      - code
+      - limit
+    PlanLimitCodeEnum:
+      enum:
+      - max_accounts
+      - max_members
+      - max_customers
+      - max_products
+      - max_coupons
+      - max_tax_rates
+      - max_invoices_per_month
+      - max_credit_notes_per_month
+      - max_quotes_per_month
+      type: string
+      description: |-
+        * `max_accounts` - Max Accounts
+        * `max_members` - Max Members
+        * `max_customers` - Max Customers
+        * `max_products` - Max Products
+        * `max_coupons` - Max Coupons
+        * `max_tax_rates` - Max Tax Rates
+        * `max_invoices_per_month` - Max Invoices Per Month
+        * `max_credit_notes_per_month` - Max Credit Notes Per Month
+        * `max_quotes_per_month` - Max Quotes Per Month
     PortalCustomer:
       type: object
       properties:

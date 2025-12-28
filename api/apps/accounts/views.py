@@ -12,7 +12,7 @@ from apps.taxes.serializers import TaxIdCreateSerializer, TaxIdSerializer
 
 from .mail import send_invitation_email
 from .models import Account, Invitation, Member
-from .permissions import CanCreateAccount, IsAccountMember
+from .permissions import IsAccountMember, MaxAccountsLimit
 from .serializers import (
     AccountCreateSerializer,
     AccountSerializer,
@@ -31,7 +31,7 @@ logger = structlog.get_logger(__name__)
 class AccountListCreateAPIView(generics.ListAPIView):
     queryset = Account.objects.none()
     serializer_class = AccountSerializer
-    permission_classes = [IsAuthenticated, CanCreateAccount]
+    permission_classes = [IsAuthenticated, MaxAccountsLimit]
 
     def get_queryset(self):
         return self.request.accounts

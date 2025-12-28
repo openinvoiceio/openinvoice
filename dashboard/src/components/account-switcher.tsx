@@ -2,7 +2,7 @@ import {
   useAccountsList,
   useSwitchAccount,
 } from "@/api/endpoints/accounts/accounts";
-import type { Account } from "@/api/models";
+import { PlanLimitCodeEnum, type Account } from "@/api/models";
 import { pushModal } from "@/components/push-modals";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -19,7 +19,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { usePlan } from "@/hooks/use-plan";
+import { usePlan } from "@/hooks/use-plan.tsx";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { BuildingIcon, CheckIcon, ChevronsUpDown, Plus } from "lucide-react";
@@ -37,8 +37,9 @@ export function AccountSwitcher({ activeAccount }: { activeAccount: Account }) {
       },
     },
   });
+  const { currentPlan, withinLimit } = usePlan();
 
-  const { currentPlan } = usePlan(activeAccount);
+  if (!accounts || !currentPlan) return null;
 
   return (
     <SidebarMenu>
@@ -59,7 +60,7 @@ export function AccountSwitcher({ activeAccount }: { activeAccount: Account }) {
                 <span className="truncate font-medium">
                   {activeAccount.name}
                 </span>
-                <span className="truncate text-xs">{currentPlan?.title}</span>
+                <span className="truncate text-xs">{currentPlan?.name}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -86,7 +87,7 @@ export function AccountSwitcher({ activeAccount }: { activeAccount: Account }) {
                 {account.id === activeAccount.id && <CheckIcon />}
               </DropdownMenuItem>
             ))}
-            {currentPlan && (
+            {withinLimit(PlanLimitCodeEnum.max_accounts, accounts.count) && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

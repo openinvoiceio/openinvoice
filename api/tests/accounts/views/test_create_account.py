@@ -1,17 +1,17 @@
 from unittest.mock import ANY
 
 import pytest
-from django.conf import settings
 from drf_standardized_errors.types import ErrorType
 
 from apps.accounts.session import ACTIVE_ACCOUNT_SESSION_KEY
 from apps.numbering_systems.enums import NumberingSystemAppliesTo, NumberingSystemResetInterval
 from apps.numbering_systems.models import NumberingSystem
+from common.enums import LimitCode
 
 pytestmark = pytest.mark.django_db
 
 
-def test_create_account(api_client, user):
+def test_create_account(api_client, user, settings):
     api_client.force_login(user)
     assert ACTIVE_ACCOUNT_SESSION_KEY not in api_client.session
     response = api_client.post(
@@ -80,6 +80,29 @@ def test_create_account_requires_authentication(api_client):
                 "attr": None,
                 "code": "not_authenticated",
                 "detail": "Authentication credentials were not provided.",
+            }
+        ],
+    }
+
+
+def test_create_account_limit_exceeded(api_client, user, settings):
+    settings.DEFAULT_PLAN = "test"
+    settings.PLANS = {"test": {"limits": {LimitCode.MAX_ACCOUNTS: 0}}}
+
+    api_client.force_login(user)
+    response = api_client.post(
+        "/api/v1/accounts",
+        data={"name": "Test", "email": "test@example.com", "country": "PL"},
+    )
+
+    assert response.status_code == 403
+    assert response.data == {
+        "type": ErrorType.CLIENT_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "limit_exceeded",
+                "detail": "Limit has been exceeded for your account.",
             }
         ],
     }

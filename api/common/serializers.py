@@ -18,8 +18,10 @@ class PlanSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=100)
     features = PlanFeatureSerializer(many=True)
     limits = PlanLimitSerializer(many=True)
+    price_id = serializers.CharField(max_length=100, allow_null=True)
 
 
 class ConfigSerializer(serializers.Serializer):
     is_billing_enabled = serializers.BooleanField()
+    current_plan_code = serializers.CharField(max_length=100)
     plans = PlanSerializer(many=True)

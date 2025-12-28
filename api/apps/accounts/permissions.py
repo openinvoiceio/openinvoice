@@ -1,10 +1,12 @@
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import BasePermission
 
+from common.access import is_limit_exceeded
+from common.enums import LimitCode
+from common.permissions import WithinLimit
+
 from .enums import MemberRole
 from .models import Member
-
-MAX_ACCOUNTS = 5
 
 
 class IsAccountMember(BasePermission):
@@ -24,13 +26,16 @@ class IsAccountOwner(BasePermission):
         return member and member.role == MemberRole.OWNER
 
 
-class CanCreateAccount(BasePermission):
+class MaxAccountsLimit(WithinLimit):
+    key = LimitCode.MAX_ACCOUNTS
+    methods = ["POST"]
+
+    def get_usage(self, request) -> int:
+        return request.accounts.count()
+
     def has_permission(self, request, _):
-        if request.method != "POST":
+        if request.method not in self.methods:
             return True
 
-        accounts = request.accounts.all()
-        if any(len(account.active_subscriptions) > 0 for account in accounts):
-            return len(accounts) < MAX_ACCOUNTS
-
-        return len(accounts) == 0
+        usage = self.get_usage(request)
+        return not is_limit_exceeded(request.account, self.key, usage)

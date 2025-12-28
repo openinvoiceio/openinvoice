@@ -6,6 +6,7 @@ import {
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { SidebarTrigger } from "@/components/ui/sidebar.tsx";
+import { usePlan } from "@/hooks/use-plan.tsx";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import {
   BuildingIcon,
@@ -19,6 +20,8 @@ export const Route = createFileRoute("/(dashboard)/settings")({
 });
 
 function RouteComponent() {
+  const { isBillingEnabled } = usePlan();
+
   return (
     <div>
       <AppHeader>
@@ -40,11 +43,15 @@ function RouteComponent() {
                     label: "Profile",
                     icon: UserIcon,
                   },
-                  {
-                    value: "/settings/billing",
-                    label: "Billing",
-                    icon: CreditCardIcon,
-                  },
+                  ...(isBillingEnabled
+                    ? [
+                        {
+                          value: "/settings/billing",
+                          label: "Billing",
+                          icon: CreditCardIcon,
+                        },
+                      ]
+                    : []),
                   {
                     value: "/settings/integrations",
                     label: "Integrations",

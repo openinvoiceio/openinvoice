@@ -556,6 +556,7 @@ PLANS = {
             FeatureCode.STRIPE_INTEGRATION: True,
         },
         "limits": {
+            LimitCode.MAX_ACCOUNTS: None,
             LimitCode.MAX_MEMBERS: None,
             LimitCode.MAX_CUSTOMERS: None,
             LimitCode.MAX_PRODUCTS: None,
@@ -565,6 +566,7 @@ PLANS = {
             LimitCode.MAX_CREDIT_NOTES_PER_MONTH: None,
             LimitCode.MAX_QUOTES_PER_MONTH: None,
         },
+        "price_id": None,
     }
 }
 

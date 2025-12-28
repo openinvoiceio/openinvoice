@@ -5,7 +5,7 @@ import {
   useCreateStripeBillingPortal,
   useCreateStripeCheckout,
 } from "@/api/endpoints/stripe/stripe";
-import type { Account } from "@/api/models";
+import { PlanLimitCodeEnum } from "@/api/models";
 import { BillingProgress } from "@/components/billing-progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,11 +44,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { plans } from "@/config/plans";
-import { usePlan } from "@/hooks/use-plan";
+import { usePlan } from "@/hooks/use-plan.tsx";
 import { getErrorSummary } from "@/lib/api/errors";
 import { formatDate, formatISODate } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { addMonths, startOfMonth } from "date-fns";
 import { CheckIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -71,9 +71,9 @@ function RouteComponent() {
     created_at_gt: datetime,
   });
   const recommendedPlanId = "standard";
-  const { currentPlan, subscription } = usePlan(account as Account);
-  const renewalDate = subscription?.ended_at
-    ? new Date(subscription.ended_at)
+  const { currentPlan, isBillingEnabled, getLimit } = usePlan();
+  const renewalDate = account?.subscription?.ended_at
+    ? new Date(account.subscription.ended_at)
     : startOfMonth(addMonths(new Date(), 1));
 
   const createStripeCheckout = useCreateStripeCheckout({
@@ -114,6 +114,9 @@ function RouteComponent() {
     return value;
   }
 
+  if (!isBillingEnabled) return <Navigate to="/settings" />;
+  if (!currentPlan) return null;
+
   return (
     <SectionGroup>
       <Section>
@@ -138,50 +141,52 @@ function RouteComponent() {
               >
                 <DataListItem>
                   <DataListLabel>Plan</DataListLabel>
-                  <DataListValue>{currentPlan?.title}</DataListValue>
+                  <DataListValue>{currentPlan.name}</DataListValue>
                 </DataListItem>
-                {subscription && (
+                {account?.subscription && (
                   <DataListItem>
                     <DataListLabel>Status</DataListLabel>
                     <DataListValue>
                       <Badge className="capitalize">
-                        {subscription.status}
+                        {account?.subscription.status}
                       </Badge>
                     </DataListValue>
                   </DataListItem>
                 )}
                 <DataListItem>
                   <DataListLabel>Price</DataListLabel>
-                  <DataListValue>{currentPlan?.price}€/month</DataListValue>
+                  {/* TODO: fix it */}
+                  <DataListValue>{currentPlan?.price_id}€/month</DataListValue>
                 </DataListItem>
-                {subscription && subscription.ended_at !== null && (
-                  <DataListItem>
-                    <DataListLabel>Renewal date</DataListLabel>
-                    <DataListValue>{formatDate(renewalDate)}</DataListValue>
-                  </DataListItem>
-                )}
-                {subscription?.canceled_at && (
+                {account?.subscription &&
+                  account?.subscription.ended_at !== null && (
+                    <DataListItem>
+                      <DataListLabel>Renewal date</DataListLabel>
+                      <DataListValue>{formatDate(renewalDate)}</DataListValue>
+                    </DataListItem>
+                  )}
+                {account?.subscription?.canceled_at && (
                   <DataListItem>
                     <DataListLabel>Cancel date</DataListLabel>
                     <DataListValue>
-                      {formatDate(subscription.canceled_at)}
+                      {formatDate(account.subscription.canceled_at)}
                     </DataListValue>
                   </DataListItem>
                 )}
-                {subscription?.ended_at && (
+                {account?.subscription?.ended_at && (
                   <DataListItem>
                     <DataListLabel>End date</DataListLabel>
                     <DataListValue>
-                      {formatDate(subscription.ended_at)}
+                      {formatDate(account.subscription.ended_at)}
                     </DataListValue>
                   </DataListItem>
                 )}
-                {subscription?.ended_at &&
-                  subscription?.status === "trialing" && (
+                {account?.subscription?.ended_at &&
+                  account?.subscription?.status === "trialing" && (
                     <DataListItem>
                       <DataListLabel>Trial end date</DataListLabel>
                       <DataListValue>
-                        {formatDate(subscription?.ended_at)}
+                        {formatDate(account.subscription?.ended_at)}
                       </DataListValue>
                     </DataListItem>
                   )}
@@ -193,17 +198,17 @@ function RouteComponent() {
                 <BillingProgress
                   label="Invoices"
                   value={invoices.count}
-                  max={currentPlan?.limits?.invoices || 0}
+                  max={getLimit(PlanLimitCodeEnum.max_invoices_per_month)}
                 />
                 <BillingProgress
                   label="Customers"
                   value={customers.count}
-                  max={currentPlan?.limits?.customers || 0}
+                  max={getLimit(PlanLimitCodeEnum.max_customers)}
                 />
                 <BillingProgress
                   label="Products"
                   value={products.count}
-                  max={currentPlan?.limits?.products || 0}
+                  max={getLimit(PlanLimitCodeEnum.max_products)}
                 />
               </div>
             </FormCardContent>
@@ -272,7 +277,7 @@ function RouteComponent() {
                                 id === recommendedPlanId ? "default" : "outline"
                               }
                               onClick={async () => {
-                                if (id === currentPlan?.id) return;
+                                if (id === currentPlan?.price_id) return;
                                 await createStripeCheckout.mutateAsync({
                                   data: { price_id: plan.priceId || "" },
                                 });

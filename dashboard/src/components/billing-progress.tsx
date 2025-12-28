@@ -3,7 +3,7 @@ import { Progress } from "@/components/ui/progress";
 interface BillingProgressProps {
   label: string;
   value: number;
-  max: number;
+  max: number | null;
 }
 
 export function BillingProgress({ label, value, max }: BillingProgressProps) {
@@ -13,10 +13,15 @@ export function BillingProgress({ label, value, max }: BillingProgressProps) {
         <div className="text-muted-foreground flex justify-between text-sm">
           <div className="font-medium">{label}</div>
           <div className="font-mono">
-            <span className="text-foreground">{value}</span>/{max}
+            <span className="text-foreground">{value}</span>/
+            {max === null ? "∞" : max}
           </div>
         </div>
-        <Progress value={(value / max) * 100} />
+        {max === null ? (
+          <Progress value={0} />
+        ) : (
+          <Progress value={(value / max) * 100} />
+        )}
       </div>
     </div>
   );
