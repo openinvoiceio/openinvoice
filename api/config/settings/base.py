@@ -18,7 +18,7 @@ import structlog
 from corsheaders.defaults import default_headers
 from drf_standardized_errors.openapi_serializers import ClientErrorEnum, ServerErrorEnum, ValidationErrorEnum
 
-from common.enums import EntitlementCode
+from common.enums import FeatureCode, LimitCode
 
 env = environ.Env()
 
@@ -541,25 +541,30 @@ ACCOUNT_CREDIT_NOTE_NUMBERING_SYSTEM_DESCRIPTION = "Default"
 
 INVITATION_EXPIRATION_DAYS = env("DJANGO_INVITATION_EXPIRATION_DAYS", default=7)
 
-# Entitlements
+# Plans
 
-DEFAULT_ENTITLEMENT_GROUP = "default"
-ENTITLEMENTS = {
-    DEFAULT_ENTITLEMENT_GROUP: {
-        EntitlementCode.AUTOMATIC_INVOICE_DELIVERY: True,
-        EntitlementCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: True,
-        EntitlementCode.AUTOMATIC_QUOTE_DELIVERY: True,
-        EntitlementCode.CUSTOM_NUMBERING_SYSTEMS: True,
-        EntitlementCode.CUSTOMER_PORTAL: True,
-        EntitlementCode.MAX_MEMBERS: None,
-        EntitlementCode.MAX_CUSTOMERS: None,
-        EntitlementCode.MAX_PRODUCTS: None,
-        EntitlementCode.MAX_COUPONS: None,
-        EntitlementCode.MAX_TAX_RATES: None,
-        EntitlementCode.MAX_INVOICES_PER_MONTH: None,
-        EntitlementCode.MAX_CREDIT_NOTES_PER_MONTH: None,
-        EntitlementCode.MAX_QUOTES_PER_MONTH: None,
-        EntitlementCode.STRIPE_INTEGRATION: True,
+DEFAULT_PLAN = "default"
+PLANS = {
+    DEFAULT_PLAN: {
+        "name": "",
+        "features": {
+            FeatureCode.AUTOMATIC_INVOICE_DELIVERY: True,
+            FeatureCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: True,
+            FeatureCode.AUTOMATIC_QUOTE_DELIVERY: True,
+            FeatureCode.CUSTOM_NUMBERING_SYSTEMS: True,
+            FeatureCode.CUSTOMER_PORTAL: True,
+            FeatureCode.STRIPE_INTEGRATION: True,
+        },
+        "limits": {
+            LimitCode.MAX_MEMBERS: None,
+            LimitCode.MAX_CUSTOMERS: None,
+            LimitCode.MAX_PRODUCTS: None,
+            LimitCode.MAX_COUPONS: None,
+            LimitCode.MAX_TAX_RATES: None,
+            LimitCode.MAX_INVOICES_PER_MONTH: None,
+            LimitCode.MAX_CREDIT_NOTES_PER_MONTH: None,
+            LimitCode.MAX_QUOTES_PER_MONTH: None,
+        },
     }
 }
 

@@ -12,9 +12,9 @@ from apps.numbering_systems.enums import NumberingSystemAppliesTo
 from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.taxes.fields import TaxRateRelatedField
 from apps.taxes.serializers import TaxIdSerializer
+from common.access import has_feature
 from common.calculations import clamp_money
-from common.entitlements import has_feature
-from common.enums import EntitlementCode
+from common.enums import FeatureCode
 from common.fields import CurrencyField, MetadataField
 
 from .calculations import calculate_credit_note_line_amounts
@@ -146,7 +146,7 @@ class CreditNoteCreateSerializer(serializers.Serializer):
         account = self.context["request"].account
 
         if value == CreditNoteDeliveryMethod.AUTOMATIC and not has_feature(
-            account, EntitlementCode.AUTOMATIC_CREDIT_NOTE_DELIVERY
+            account, FeatureCode.AUTOMATIC_CREDIT_NOTE_DELIVERY
         ):
             raise serializers.ValidationError("Automatic delivery is forbidden for your account.")
 
@@ -171,7 +171,7 @@ class CreditNoteUpdateSerializer(serializers.Serializer):
         account = self.context["request"].account
 
         if value == CreditNoteDeliveryMethod.AUTOMATIC and not has_feature(
-            account, EntitlementCode.AUTOMATIC_CREDIT_NOTE_DELIVERY
+            account, FeatureCode.AUTOMATIC_CREDIT_NOTE_DELIVERY
         ):
             raise serializers.ValidationError("Automatic delivery is forbidden for your account.")
 

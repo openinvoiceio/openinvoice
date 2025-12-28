@@ -7,7 +7,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
 from .base import *  # noqa
-from .base import LOG_LEVEL, PRIVACY_URL, TERMS_URL, EntitlementCode, env
+from .base import LOG_LEVEL, PRIVACY_URL, TERMS_URL, FeatureCode, LimitCode, env
 
 # Production checklist https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -122,56 +122,71 @@ STRIPE_BILLING_PORTAL_CONFIGURATION: stripe.billing_portal.Configuration.CreateP
 
 # Entitlements
 
-DEFAULT_ENTITLEMENT_GROUP = "free"
-STANDARD_ENTITLEMENT_GROUP = "standard"
-ENTERPRISE_ENTITLEMENT_GROUP = "enterprise"
-ENTITLEMENTS: dict[str, dict[EntitlementCode, bool | int | None]] = {  # type: ignore[no-redef]
-    DEFAULT_ENTITLEMENT_GROUP: {
-        EntitlementCode.AUTOMATIC_INVOICE_DELIVERY: False,
-        EntitlementCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: False,
-        EntitlementCode.AUTOMATIC_QUOTE_DELIVERY: False,
-        EntitlementCode.CUSTOM_NUMBERING_SYSTEMS: False,
-        EntitlementCode.CUSTOMER_PORTAL: True,
-        EntitlementCode.MAX_MEMBERS: 1,
-        EntitlementCode.MAX_CUSTOMERS: 10,
-        EntitlementCode.MAX_PRODUCTS: 20,
-        EntitlementCode.MAX_COUPONS: 5,
-        EntitlementCode.MAX_TAX_RATES: 5,
-        EntitlementCode.MAX_INVOICES_PER_MONTH: 10,
-        EntitlementCode.MAX_CREDIT_NOTES_PER_MONTH: 10,
-        EntitlementCode.MAX_QUOTES_PER_MONTH: 10,
-        EntitlementCode.STRIPE_INTEGRATION: False,
+DEFAULT_PLAN = "free"
+STANDARD_PLAN = "standard"
+ENTERPRISE_PLAN = "enterprise"
+PLANS = {
+    DEFAULT_PLAN: {
+        "name": "Free",
+        "features": {
+            FeatureCode.AUTOMATIC_INVOICE_DELIVERY: False,
+            FeatureCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: False,
+            FeatureCode.AUTOMATIC_QUOTE_DELIVERY: False,
+            FeatureCode.CUSTOM_NUMBERING_SYSTEMS: False,
+            FeatureCode.CUSTOMER_PORTAL: True,
+            FeatureCode.STRIPE_INTEGRATION: False,
+        },
+        "limits": {
+            LimitCode.MAX_MEMBERS: 1,
+            LimitCode.MAX_CUSTOMERS: 10,
+            LimitCode.MAX_PRODUCTS: 20,
+            LimitCode.MAX_COUPONS: 5,
+            LimitCode.MAX_TAX_RATES: 5,
+            LimitCode.MAX_INVOICES_PER_MONTH: 10,
+            LimitCode.MAX_CREDIT_NOTES_PER_MONTH: 10,
+            LimitCode.MAX_QUOTES_PER_MONTH: 10,
+        },
     },
-    STANDARD_ENTITLEMENT_GROUP: {
-        EntitlementCode.AUTOMATIC_INVOICE_DELIVERY: True,
-        EntitlementCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: True,
-        EntitlementCode.AUTOMATIC_QUOTE_DELIVERY: True,
-        EntitlementCode.CUSTOM_NUMBERING_SYSTEMS: True,
-        EntitlementCode.CUSTOMER_PORTAL: True,
-        EntitlementCode.MAX_MEMBERS: 5,
-        EntitlementCode.MAX_CUSTOMERS: None,
-        EntitlementCode.MAX_PRODUCTS: None,
-        EntitlementCode.MAX_COUPONS: None,
-        EntitlementCode.MAX_TAX_RATES: None,
-        EntitlementCode.MAX_INVOICES_PER_MONTH: 200,
-        EntitlementCode.MAX_CREDIT_NOTES_PER_MONTH: 200,
-        EntitlementCode.MAX_QUOTES_PER_MONTH: 200,
-        EntitlementCode.STRIPE_INTEGRATION: True,
+    STANDARD_PLAN: {
+        "name": "Standard",
+        "features": {
+            FeatureCode.AUTOMATIC_INVOICE_DELIVERY: True,
+            FeatureCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: True,
+            FeatureCode.AUTOMATIC_QUOTE_DELIVERY: True,
+            FeatureCode.CUSTOM_NUMBERING_SYSTEMS: True,
+            FeatureCode.CUSTOMER_PORTAL: True,
+            FeatureCode.STRIPE_INTEGRATION: True,
+        },
+        "limits": {
+            LimitCode.MAX_MEMBERS: 5,
+            LimitCode.MAX_CUSTOMERS: None,
+            LimitCode.MAX_PRODUCTS: None,
+            LimitCode.MAX_COUPONS: None,
+            LimitCode.MAX_TAX_RATES: None,
+            LimitCode.MAX_INVOICES_PER_MONTH: 200,
+            LimitCode.MAX_CREDIT_NOTES_PER_MONTH: 200,
+            LimitCode.MAX_QUOTES_PER_MONTH: 200,
+        },
     },
-    ENTERPRISE_ENTITLEMENT_GROUP: {
-        EntitlementCode.AUTOMATIC_INVOICE_DELIVERY: True,
-        EntitlementCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: True,
-        EntitlementCode.AUTOMATIC_QUOTE_DELIVERY: True,
-        EntitlementCode.CUSTOM_NUMBERING_SYSTEMS: True,
-        EntitlementCode.CUSTOMER_PORTAL: True,
-        EntitlementCode.MAX_MEMBERS: None,
-        EntitlementCode.MAX_CUSTOMERS: None,
-        EntitlementCode.MAX_PRODUCTS: None,
-        EntitlementCode.MAX_COUPONS: None,
-        EntitlementCode.MAX_TAX_RATES: None,
-        EntitlementCode.MAX_INVOICES_PER_MONTH: None,
-        EntitlementCode.MAX_CREDIT_NOTES_PER_MONTH: None,
-        EntitlementCode.MAX_QUOTES_PER_MONTH: None,
-        EntitlementCode.STRIPE_INTEGRATION: True,
+    ENTERPRISE_PLAN: {
+        "name": "Enterprise",
+        "features": {
+            FeatureCode.AUTOMATIC_INVOICE_DELIVERY: True,
+            FeatureCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: True,
+            FeatureCode.AUTOMATIC_QUOTE_DELIVERY: True,
+            FeatureCode.CUSTOM_NUMBERING_SYSTEMS: True,
+            FeatureCode.CUSTOMER_PORTAL: True,
+            FeatureCode.STRIPE_INTEGRATION: True,
+        },
+        "limits": {
+            LimitCode.MAX_MEMBERS: None,
+            LimitCode.MAX_CUSTOMERS: None,
+            LimitCode.MAX_PRODUCTS: None,
+            LimitCode.MAX_COUPONS: None,
+            LimitCode.MAX_TAX_RATES: None,
+            LimitCode.MAX_INVOICES_PER_MONTH: None,
+            LimitCode.MAX_CREDIT_NOTES_PER_MONTH: None,
+            LimitCode.MAX_QUOTES_PER_MONTH: None,
+        },
     },
 }

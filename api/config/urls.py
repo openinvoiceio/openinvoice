@@ -22,10 +22,13 @@ from django.urls import URLPattern, URLResolver, include, path, re_path
 from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from common.views import ConfigAPIView
+
 urlpatterns: list[URLPattern | URLResolver] = [
     path("admin/", admin.site.urls),
     path("health/", include("health_check.urls")),
     path("api/", include("allauth.headless.urls")),
+    path("api/v1/config", ConfigAPIView.as_view()),
     path("api/v1/", include("apps.stripe.urls")),
     path("api/v1/", include("apps.search.urls")),
     path("api/v1/", include("apps.accounts.urls")),

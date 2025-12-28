@@ -7,7 +7,7 @@ from drf_standardized_errors.types import ErrorType
 
 from apps.credit_notes.enums import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
 from apps.invoices.models import InvoiceAccount, InvoiceCustomer
-from common.enums import EntitlementCode
+from common.enums import FeatureCode
 from tests.factories import (
     AddressFactory,
     CreditNoteFactory,
@@ -149,8 +149,8 @@ def test_update_credit_note(api_client, user, account):
 
 
 def test_update_credit_note_with_automatic_delivery_and_without_entitlement(api_client, user, account, settings):
-    settings.DEFAULT_ENTITLEMENT_GROUP = "test"
-    settings.ENTITLEMENTS = {"test": {EntitlementCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: False}}
+    settings.DEFAULT_PLAN = "test"
+    settings.PLANS = {"test": {"features": {FeatureCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: False}}}
     credit_note = CreditNoteFactory(
         invoice=InvoiceFactory(account=account),
         number="CN-1",

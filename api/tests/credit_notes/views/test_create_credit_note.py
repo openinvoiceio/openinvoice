@@ -7,7 +7,7 @@ from drf_standardized_errors.types import ErrorType
 
 from apps.invoices.enums import InvoiceStatus
 from apps.numbering_systems.enums import NumberingSystemAppliesTo
-from common.enums import EntitlementCode
+from common.enums import FeatureCode, LimitCode
 from tests.factories import (
     AccountFactory,
     CreditNoteFactory,
@@ -95,8 +95,8 @@ def test_create_credit_note_from_invoice_with_lines(api_client, user, account):
 
 
 def test_create_credit_note_with_automatic_delivery_and_without_entitlement(api_client, user, account, settings):
-    settings.DEFAULT_ENTITLEMENT_GROUP = "test"
-    settings.ENTITLEMENTS = {"test": {EntitlementCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: False}}
+    settings.DEFAULT_PLAN = "test"
+    settings.PLANS = {"test": {"features": {FeatureCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: False}}}
     invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN, outstanding_amount=10)
 
     api_client.force_login(user)
@@ -405,8 +405,8 @@ def test_create_credit_note_with_numbering_system(api_client, user, account):
 
 
 def test_create_credit_note_limit_exceeded(api_client, user, account, settings):
-    settings.DEFAULT_ENTITLEMENT_GROUP = "test"
-    settings.ENTITLEMENTS = {"test": {EntitlementCode.MAX_CREDIT_NOTES_PER_MONTH: 0}}
+    settings.DEFAULT_PLAN = "test"
+    settings.PLANS = {"test": {"limits": {LimitCode.MAX_CREDIT_NOTES_PER_MONTH: 0}}}
     invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN, outstanding_amount=10)
 
     api_client.force_login(user)

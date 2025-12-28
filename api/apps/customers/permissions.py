@@ -1,11 +1,11 @@
-from common.enums import EntitlementCode
-from common.permissions import EntitlementLimit
+from common.enums import LimitCode
+from common.permissions import WithinLimit
 
 from .models import Customer
 
 
-class MaxCustomersLimit(EntitlementLimit):
-    key = EntitlementCode.MAX_CUSTOMERS
+class MaxCustomersLimit(WithinLimit):
+    key = LimitCode.MAX_CUSTOMERS
     methods = ["POST"]
 
     def get_usage(self, request) -> int:

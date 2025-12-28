@@ -1,13 +1,13 @@
 from django.utils import timezone
 
-from common.enums import EntitlementCode
-from common.permissions import EntitlementLimit
+from common.enums import LimitCode
+from common.permissions import WithinLimit
 
 from .models import Quote
 
 
-class MaxQuotesLimit(EntitlementLimit):
-    key = EntitlementCode.MAX_QUOTES_PER_MONTH
+class MaxQuotesLimit(WithinLimit):
+    key = LimitCode.MAX_QUOTES_PER_MONTH
     methods = ["POST"]
 
     def get_usage(self, request) -> int:

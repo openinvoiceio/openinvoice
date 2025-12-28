@@ -1,7 +1,7 @@
-from common.enums import EntitlementCode
-from common.permissions import EntitlementFeature
+from common.enums import FeatureCode
+from common.permissions import HasFeature
 
 
-class CustomNumberingSystemFeature(EntitlementFeature):
-    key = EntitlementCode.CUSTOM_NUMBERING_SYSTEMS
+class CustomNumberingSystemFeature(HasFeature):
+    key = FeatureCode.CUSTOM_NUMBERING_SYSTEMS
     methods = ["POST", "PUT", "DELETE"]

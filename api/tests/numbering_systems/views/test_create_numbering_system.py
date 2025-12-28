@@ -4,7 +4,7 @@ import pytest
 from drf_standardized_errors.types import ErrorType
 
 from apps.numbering_systems.enums import NumberingSystemAppliesTo, NumberingSystemResetInterval
-from common.enums import EntitlementCode
+from common.enums import FeatureCode
 
 pytestmark = pytest.mark.django_db
 
@@ -121,8 +121,8 @@ def test_create_numbering_system_invalid_template_unmatched_braces(api_client, u
 
 
 def test_create_numbering_system_custom_forbidden(api_client, user, account, settings):
-    settings.DEFAULT_ENTITLEMENT_GROUP = "test"
-    settings.ENTITLEMENTS = {"test": {EntitlementCode.CUSTOM_NUMBERING_SYSTEMS: False}}
+    settings.DEFAULT_PLAN = "test"
+    settings.PLANS = {"test": {"features": {FeatureCode.CUSTOM_NUMBERING_SYSTEMS: False}}}
 
     api_client.force_login(user)
     api_client.force_account(account)

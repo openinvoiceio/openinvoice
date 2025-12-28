@@ -13,8 +13,8 @@ from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.prices.fields import PriceRelatedField
 from apps.prices.validators import PriceIsActive, PriceProductIsActive
 from apps.taxes.fields import TaxRateRelatedField
-from common.entitlements import has_feature
-from common.enums import EntitlementCode
+from common.access import has_feature
+from common.enums import FeatureCode
 from common.fields import CurrencyField, MetadataField
 
 from .enums import InvoiceDeliveryMethod, InvoiceStatus
@@ -200,7 +200,7 @@ class InvoiceCreateSerializer(serializers.Serializer):
         account = self.context["request"].account
 
         if value == InvoiceDeliveryMethod.AUTOMATIC and not has_feature(
-            account, EntitlementCode.AUTOMATIC_INVOICE_DELIVERY
+            account, FeatureCode.AUTOMATIC_INVOICE_DELIVERY
         ):
             raise serializers.ValidationError("Automatic delivery is forbidden for your account.")
 
@@ -238,7 +238,7 @@ class InvoiceUpdateSerializer(serializers.Serializer):
         account = self.context["request"].account
 
         if value == InvoiceDeliveryMethod.AUTOMATIC and not has_feature(
-            account, EntitlementCode.AUTOMATIC_INVOICE_DELIVERY
+            account, FeatureCode.AUTOMATIC_INVOICE_DELIVERY
         ):
             raise serializers.ValidationError("Automatic delivery is forbidden for your account.")
 

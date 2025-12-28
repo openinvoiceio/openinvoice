@@ -1,11 +1,11 @@
-from common.enums import EntitlementCode
-from common.permissions import EntitlementLimit
+from common.enums import LimitCode
+from common.permissions import WithinLimit
 
 from .models import TaxRate
 
 
-class MaxTaxRatesLimit(EntitlementLimit):
-    key = EntitlementCode.MAX_TAX_RATES
+class MaxTaxRatesLimit(WithinLimit):
+    key = LimitCode.MAX_TAX_RATES
     methods = ["POST"]
 
     def get_usage(self, request) -> int:

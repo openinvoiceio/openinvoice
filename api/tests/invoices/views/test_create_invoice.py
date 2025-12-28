@@ -11,7 +11,7 @@ from drf_standardized_errors.types import ErrorType
 from apps.integrations.enums import PaymentProvider
 from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
 from apps.invoices.models import Invoice, InvoiceDiscount, InvoiceTax
-from common.enums import EntitlementCode
+from common.enums import FeatureCode, LimitCode
 from tests.factories import (
     CouponFactory,
     CustomerFactory,
@@ -175,8 +175,8 @@ def test_create_invoice_ignores_inactive_customer_tax_rates(api_client, user, ac
 
 
 def test_create_invoice_with_automatic_delivery_and_without_entitlement(api_client, user, account, settings):
-    settings.DEFAULT_ENTITLEMENT_GROUP = "test"
-    settings.ENTITLEMENTS = {"test": {EntitlementCode.AUTOMATIC_INVOICE_DELIVERY: False}}
+    settings.DEFAULT_PLAN = "test"
+    settings.PLANS = {"test": {"features": {FeatureCode.AUTOMATIC_INVOICE_DELIVERY: False}}}
     customer = CustomerFactory(account=account)
 
     api_client.force_login(user)
@@ -674,8 +674,8 @@ def test_create_invoice_rejects_customer_and_previous_revision(api_client, user,
 
 
 def test_create_invoice_limit_exceeded(api_client, user, account, settings):
-    settings.DEFAULT_ENTITLEMENT_GROUP = "test"
-    settings.ENTITLEMENTS = {"test": {EntitlementCode.MAX_INVOICES_PER_MONTH: 0}}
+    settings.DEFAULT_PLAN = "test"
+    settings.PLANS = {"test": {"limits": {LimitCode.MAX_INVOICES_PER_MONTH: 0}}}
 
     customer = CustomerFactory(account=account)
 

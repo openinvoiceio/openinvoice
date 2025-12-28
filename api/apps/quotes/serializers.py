@@ -11,8 +11,8 @@ from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.prices.fields import PriceRelatedField
 from apps.prices.validators import PriceIsActive, PriceProductIsActive
 from apps.taxes.fields import TaxRateRelatedField
-from common.entitlements import has_feature
-from common.enums import EntitlementCode
+from common.access import has_feature
+from common.enums import FeatureCode
 from common.fields import CurrencyField, MetadataField
 
 from .enums import QuoteDeliveryMethod, QuotePreviewFormat, QuoteStatus
@@ -140,9 +140,7 @@ class QuoteCreateSerializer(serializers.Serializer):
     def validate_delivery_method(self, value):
         account = self.context["request"].account
 
-        if value == QuoteDeliveryMethod.AUTOMATIC and not has_feature(
-            account, EntitlementCode.AUTOMATIC_QUOTE_DELIVERY
-        ):
+        if value == QuoteDeliveryMethod.AUTOMATIC and not has_feature(account, FeatureCode.AUTOMATIC_QUOTE_DELIVERY):
             raise serializers.ValidationError("Automatic delivery is forbidden for your account.")
 
         return value
@@ -166,9 +164,7 @@ class QuoteUpdateSerializer(serializers.Serializer):
     def validate_delivery_method(self, value):
         account = self.context["request"].account
 
-        if value == QuoteDeliveryMethod.AUTOMATIC and not has_feature(
-            account, EntitlementCode.AUTOMATIC_QUOTE_DELIVERY
-        ):
+        if value == QuoteDeliveryMethod.AUTOMATIC and not has_feature(account, FeatureCode.AUTOMATIC_QUOTE_DELIVERY):
             raise serializers.ValidationError("Automatic delivery is forbidden for your account.")
 
         return value

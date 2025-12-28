@@ -1,12 +1,12 @@
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 
-from .entitlements import has_feature, is_limit_exceeded
-from .enums import EntitlementCode
+from .access import has_feature, is_limit_exceeded
+from .enums import FeatureCode, LimitCode
 
 
-class EntitlementFeature(BasePermission):
-    key: EntitlementCode
+class HasFeature(BasePermission):
+    key: FeatureCode
     methods: list[str]
     code = "feature_unavailable"
     message = "Feature is not available for your account."
@@ -21,8 +21,8 @@ class EntitlementFeature(BasePermission):
         return has_feature(request.account, self.key)
 
 
-class EntitlementLimit(BasePermission):
-    key: EntitlementCode
+class WithinLimit(BasePermission):
+    key: LimitCode
     methods: list[str]
     code = "limit_exceeded"
     message = "Limit has been exceeded for your account."

@@ -1,13 +1,16 @@
-from enum import Enum
+from django.db import models
 
 
-class EntitlementCode(str, Enum):
+class FeatureCode(models.TextChoices):
     AUTOMATIC_INVOICE_DELIVERY = "automatic-invoice-delivery"
     AUTOMATIC_CREDIT_NOTE_DELIVERY = "automatic-credit-note-delivery"
     AUTOMATIC_QUOTE_DELIVERY = "automatic-quote-delivery"
     CUSTOM_NUMBERING_SYSTEMS = "custom-numbering-systems"
     CUSTOMER_PORTAL = "customer-portal"
     STRIPE_INTEGRATION = "stripe-integration"
+
+
+class LimitCode(models.TextChoices):
     MAX_MEMBERS = "max-members"
     MAX_CUSTOMERS = "max-customers"
     MAX_PRODUCTS = "max-products"

@@ -5,7 +5,7 @@ import pytest
 from freezegun import freeze_time
 
 from apps.quotes.enums import QuoteDeliveryMethod
-from common.enums import EntitlementCode
+from common.enums import FeatureCode, LimitCode
 from tests.factories import CustomerFactory
 
 pytestmark = pytest.mark.django_db
@@ -106,8 +106,8 @@ def test_create_quote(api_client, user, account):
 
 
 def test_create_quote_with_automatic_delivery_and_without_entitlement(api_client, user, account, settings):
-    settings.DEFAULT_ENTITLEMENT_GROUP = "test"
-    settings.ENTITLEMENTS = {"test": {EntitlementCode.AUTOMATIC_QUOTE_DELIVERY: False}}
+    settings.DEFAULT_PLAN = "test"
+    settings.PLANS = {"test": {"features": {FeatureCode.AUTOMATIC_QUOTE_DELIVERY: False}}}
     customer = CustomerFactory(account=account)
 
     api_client.force_login(user)
@@ -218,8 +218,8 @@ def test_create_quote_requires_authentication(api_client, account):
 
 
 def test_create_quote_limit_exceeded(api_client, user, account, settings):
-    settings.DEFAULT_ENTITLEMENT_GROUP = "test"
-    settings.ENTITLEMENTS = {"test": {EntitlementCode.MAX_QUOTES_PER_MONTH: 0}}
+    settings.DEFAULT_PLAN = "test"
+    settings.PLANS = {"test": {"limits": {LimitCode.MAX_QUOTES_PER_MONTH: 0}}}
     customer = CustomerFactory(account=account)
 
     api_client.force_login(user)

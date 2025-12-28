@@ -7,7 +7,7 @@ from drf_standardized_errors.types import ErrorType
 
 from apps.integrations.enums import PaymentProvider
 from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
-from common.enums import EntitlementCode
+from common.enums import FeatureCode
 from tests.factories import (
     CustomerFactory,
     InvoiceFactory,
@@ -516,8 +516,8 @@ def test_update_invoice_switch_to_manual_number(api_client, user, account):
 
 
 def test_update_invoice_with_automatic_delivery_and_without_entitlement(api_client, user, account, settings):
-    settings.DEFAULT_ENTITLEMENT_GROUP = "test"
-    settings.ENTITLEMENTS = {"test": {EntitlementCode.AUTOMATIC_INVOICE_DELIVERY: False}}
+    settings.DEFAULT_PLAN = "test"
+    settings.PLANS = {"test": {"features": {FeatureCode.AUTOMATIC_INVOICE_DELIVERY: False}}}
     invoice = InvoiceFactory(account=account)
 
     api_client.force_login(user)

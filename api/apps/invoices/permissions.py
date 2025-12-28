@@ -1,13 +1,13 @@
 from django.utils import timezone
 
-from common.enums import EntitlementCode
-from common.permissions import EntitlementLimit
+from common.enums import LimitCode
+from common.permissions import WithinLimit
 
 from .models import Invoice
 
 
-class MaxInvoicesLimit(EntitlementLimit):
-    key = EntitlementCode.MAX_INVOICES_PER_MONTH
+class MaxInvoicesLimit(WithinLimit):
+    key = LimitCode.MAX_INVOICES_PER_MONTH
     methods = ["POST"]
 
     def get_usage(self, request) -> int:

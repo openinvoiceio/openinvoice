@@ -1,7 +1,7 @@
-from common.enums import EntitlementCode
-from common.permissions import EntitlementFeature
+from common.enums import FeatureCode
+from common.permissions import HasFeature
 
 
-class StripeIntegrationFeature(EntitlementFeature):
-    key = EntitlementCode.STRIPE_INTEGRATION
+class StripeIntegrationFeature(HasFeature):
+    key = FeatureCode.STRIPE_INTEGRATION
     methods = ["POST", "PUT", "DELETE"]
