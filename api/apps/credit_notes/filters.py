@@ -19,4 +19,4 @@ class CreditNoteFilter(django_filters.FilterSet):
 
     class Meta:
         model = CreditNote
-        fields = []
+        fields: list[str] = []

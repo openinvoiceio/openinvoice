@@ -10,4 +10,4 @@ class CouponFilter(django_filters.FilterSet):
 
     class Meta:
         model = Coupon
-        fields = []
+        fields: list[str] = []

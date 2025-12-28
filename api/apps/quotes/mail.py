@@ -15,7 +15,7 @@ def send_quote(quote: Quote) -> None:
         body=body_txt,
         to=quote.recipients,
     )
-
-    message.attach(f"{quote.effective_number}.pdf", quote.pdf.data.read(), quote.pdf.content_type)
     message.attach_alternative(body_html, "text/html")
+    if quote.pdf:
+        message.attach(f"{quote.effective_number}.pdf", quote.pdf.data.read(), quote.pdf.content_type)
     message.send()

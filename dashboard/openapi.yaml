@@ -3824,11 +3824,6 @@ paths:
       operationId: products_list
       parameters:
       - in: query
-        name: created_at
-        schema:
-          type: string
-          format: date-time
-      - in: query
         name: created_at_eq
         schema:
           type: string

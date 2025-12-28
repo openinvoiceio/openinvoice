@@ -7,7 +7,6 @@
  */
 
 export type ProductsListParams = {
-  created_at?: string;
   created_at_eq?: string;
   created_at_gt?: string;
   created_at_gte?: string;

@@ -8,4 +8,4 @@ class PaymentFilter(django_filters.FilterSet):
 
     class Meta:
         model = Payment
-        fields = ["invoice_id"]
+        fields: list[str] = []

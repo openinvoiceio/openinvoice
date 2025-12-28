@@ -15,4 +15,4 @@ class PriceFilter(django_filters.FilterSet):
 
     class Meta:
         model = Price
-        fields = []
+        fields: list[str] = []

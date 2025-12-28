@@ -22,4 +22,4 @@ class QuoteFilter(django_filters.FilterSet):
 
     class Meta:
         model = Quote
-        fields = []
+        fields: list[str] = []

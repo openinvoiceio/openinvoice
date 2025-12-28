@@ -15,4 +15,5 @@ class CustomerFilter(django_filters.FilterSet):
 
     class Meta:
         model = Customer
+        # TODO: refactor use of it
         fields = ["currency", "created_at"]

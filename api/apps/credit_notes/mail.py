@@ -16,9 +16,10 @@ def send_credit_note(credit_note: CreditNote) -> None:
         to=list(credit_note.recipients),
     )
     message.attach_alternative(body_html, "text/html")
-    message.attach(
-        f"{credit_note.effective_number}.pdf",
-        credit_note.pdf.data.read(),
-        credit_note.pdf.content_type,
-    )
+    if credit_note.pdf:
+        message.attach(
+            f"{credit_note.effective_number}.pdf",
+            credit_note.pdf.data.read(),
+            credit_note.pdf.content_type,
+        )
     message.send()

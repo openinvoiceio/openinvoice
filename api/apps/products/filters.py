@@ -15,7 +15,7 @@ class ProductFilter(django_filters.FilterSet):
 
     class Meta:
         model = Product
-        fields = ["price_currency", "is_active", "created_at"]
+        fields: list[str] = []
 
     def filter_price_currency(self, queryset, _, value):
         return queryset.filter(prices__currency=value).distinct()

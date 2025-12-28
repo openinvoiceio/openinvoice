@@ -16,5 +16,6 @@ def send_invoice(invoice: Invoice) -> None:
         to=invoice.recipients,
     )
     message.attach_alternative(body_html, "text/html")
-    message.attach(f"{invoice.number}.pdf", invoice.pdf.data.read(), invoice.pdf.content_type)
+    if invoice.pdf:
+        message.attach(f"{invoice.number}.pdf", invoice.pdf.data.read(), invoice.pdf.content_type)
     message.send()

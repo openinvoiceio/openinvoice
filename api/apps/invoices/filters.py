@@ -30,4 +30,4 @@ class InvoiceFilter(django_filters.FilterSet):
 
     class Meta:
         model = Invoice
-        fields = []
+        fields: list[str] = []

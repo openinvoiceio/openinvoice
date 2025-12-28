@@ -125,7 +125,7 @@ STRIPE_BILLING_PORTAL_CONFIGURATION: stripe.billing_portal.Configuration.CreateP
 DEFAULT_ENTITLEMENT_GROUP = "free"
 STANDARD_ENTITLEMENT_GROUP = "standard"
 ENTERPRISE_ENTITLEMENT_GROUP = "enterprise"
-ENTITLEMENTS = {
+ENTITLEMENTS: dict[str, dict[EntitlementCode, bool | int | None]] = {  # type: ignore[no-redef]
     DEFAULT_ENTITLEMENT_GROUP: {
         EntitlementCode.AUTOMATIC_INVOICE_DELIVERY: False,
         EntitlementCode.AUTOMATIC_CREDIT_NOTE_DELIVERY: False,

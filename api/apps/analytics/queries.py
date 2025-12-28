@@ -56,7 +56,7 @@ def fetch_gross_revenue(
     date_before: date | None = None,
     customer_id: UUID | None = None,
 ) -> list[dict]:
-    params = {
+    params: dict[str, str | UUID | date | None] = {
         "account_id": account_id,
         "currency": currency,
         "date_after": date_after,
@@ -124,7 +124,7 @@ def fetch_overdue_balance(
     date_before: date | None = None,
     customer_id: UUID | None = None,
 ) -> list[dict]:
-    params = {
+    params: dict[str, str | UUID | date | None] = {
         "account_id": account_id,
         "currency": currency,
         "today": today,

@@ -13,4 +13,4 @@ class NumberingSystemFilter(django_filters.FilterSet):
 
     class Meta:
         model = NumberingSystem
-        fields = ["applies_to"]
+        fields: list[str] = []
