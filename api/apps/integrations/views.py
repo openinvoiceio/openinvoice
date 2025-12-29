@@ -7,18 +7,17 @@ from rest_framework.response import Response
 from apps.accounts.permissions import IsAccountMember
 
 from .enums import IntegrationType
-from .models import StripeConnection
 from .serializers import IntegrationConnectionSerializer
 
 
 class IntegrationConnectionsListAPIView(generics.GenericAPIView):
-    queryset = StripeConnection.objects.none()
+    # queryset = StripeConnection.objects.none()
     serializer_class = IntegrationConnectionSerializer
     pagination_class = None
     permission_classes = [IsAuthenticated, IsAccountMember]
-    connections = [
-        (StripeConnection, IntegrationType.STRIPE),
-    ]
+    # connections = [
+    #     (StripeConnection, IntegrationType.STRIPE),
+    # ]
 
     def get_model_qs(self, model: Model, integration_type: IntegrationType):
         return (

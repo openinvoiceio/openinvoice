@@ -1,9 +1,7 @@
-import json
+from datetime import UTC, datetime
 
 import stripe
 import structlog
-from django.conf import settings
-from django.http import HttpResponseRedirect
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
@@ -11,14 +9,49 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsAccountMember
-from apps.integrations.models import StripeConnection
-from apps.integrations.permissions import StripeIntegrationFeature
-from apps.payments.backends.stripe import StripeBackend
+from apps.payments.models import Payment
 
-from .serializers import StripeConnectionSerializer, StripeConnectionUpdateSerializer
-from .services import delete_stripe_connection, update_stripe_connection
+from .models import StripeConnection
+from .permissions import StripeIntegrationFeature
+from .serializers import (
+    StripeConnectionCreateSerializer,
+    StripeConnectionSerializer,
+    StripeConnectionUpdateSerializer,
+)
 
 logger = structlog.get_logger(__name__)
+
+
+@extend_schema_view(list=extend_schema(operation_id="list_stripe_connections"))
+class StripeConnectionListCreateAPIView(generics.ListAPIView):
+    queryset = StripeConnection.objects.none()
+    serializer_class = StripeConnectionSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember, StripeIntegrationFeature]
+
+    def get_queryset(self):
+        return StripeConnection.objects.filter(account_id=self.request.account.id)
+
+    @extend_schema(
+        operation_id="create_stripe_connection",
+        request=StripeConnectionCreateSerializer,
+        responses={201: StripeConnectionSerializer},
+    )
+    def post(self, request):
+        serializer = StripeConnectionCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        connection = StripeConnection.objects.create_connection(
+            account=request.account,
+            name=serializer.validated_data["name"],
+            code=serializer.validated_data["code"],
+            api_key=serializer.validated_data["api_key"],
+            redirect_url=serializer.validated_data.get("redirect_url"),
+        )
+
+        logger.info("Stripe connection created", connection_id=connection.id)
+
+        serializer = StripeConnectionSerializer(connection)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @extend_schema_view(retrieve=extend_schema(operation_id="retrieve_stripe_connection"))
@@ -30,9 +63,6 @@ class StripeConnectionRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     def get_queryset(self):
         return StripeConnection.objects.filter(account_id=self.request.account.id)
 
-    def get_object(self):
-        return generics.get_object_or_404(self.get_queryset())
-
     @extend_schema(
         operation_id="update_stripe_connection",
         request=StripeConnectionUpdateSerializer,
@@ -43,10 +73,12 @@ class StripeConnectionRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         serializer = StripeConnectionUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        connection = update_stripe_connection(
-            connection,
+        connection.update(
+            name=serializer.validated_data.get("name", connection.name),
             redirect_url=serializer.validated_data.get("redirect_url", connection.redirect_url),
         )
+
+        logger.info("Stripe connection updated", connection_id=connection.id)
 
         serializer = StripeConnectionSerializer(connection)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -55,31 +87,12 @@ class StripeConnectionRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     def delete(self, _, **__):
         connection = self.get_object()
 
-        delete_stripe_connection(connection)
+        # TODO: consider archiving instead of deleting
+        connection.delete()
+
+        logger.info("Stripe connection deleted", connection_id=connection.id)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class StripeConnectionOAuthCallback(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated, IsAccountMember]
-
-    @extend_schema(request=None, responses={200: {}}, exclude=True)
-    def get(self, request, **_):
-        code = request.query_params.get("code")
-        error = request.query_params.get("error")
-        error_description = request.query_params.get("error_description")
-
-        if code:
-            response = stripe.OAuth.token(grant_type="authorization_code", code=code)
-            connected_account_id = response["stripe_user_id"]
-            StripeConnection.objects.create(
-                account=request.account,
-                connected_account_id=connected_account_id,
-            )
-
-        return HttpResponseRedirect(
-            redirect_to=f"{settings.BASE_URL}/settings/integrations/stripe?error={error}&error_description={error_description}"
-        )
 
 
 class StripeWebhookAPIView(APIView):
@@ -87,22 +100,58 @@ class StripeWebhookAPIView(APIView):
     permission_classes: list = []
 
     @extend_schema(request=None, responses={200: {}}, exclude=True)
-    def post(self, request):
+    def post(self, request, pk):
         try:
-            payload = json.loads(request.body)
-        except json.JSONDecodeError:
+            connection = StripeConnection.objects.get(id=pk)
+        except StripeConnection.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         try:
             event = stripe.Webhook.construct_event(
-                payload=payload,
-                sig_header=request.headers.get("Stripe-Signature", ""),
-                secret=settings.STRIPE_WEBHOOK_SECRET,
+                payload=request.body,
+                sig_header=request.META["HTTP_STRIPE_SIGNATURE"],
+                secret=connection.webhook_secret,
             )
-        except (ValueError, stripe.SignatureVerificationError) as e:
-            logger.warning("Stripe webhook verification failed", error=str(e))
+        except ValueError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except stripe.SignatureVerificationError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        StripeBackend.process_event(event)
+        entity = event["data"]["object"]
+        created_at = datetime.fromtimestamp(entity["created"], tz=UTC)
+        match event.get("type"):
+            case "checkout.session.completed" | "checkout.session.async_payment_succeeded":
+                try:
+                    payment = Payment.objects.get(id=entity.get("client_reference_id"))
+                except Payment.DoesNotExist:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+                payment.complete(extra_data=event, received_at=created_at)
+                logger.info("Stripe payment succeeded", payment_id=str(payment.id))
+
+            case "checkout.session.async_payment_failed":
+                try:
+                    payment = Payment.objects.get(id=entity.get("client_reference_id"))
+                except Payment.DoesNotExist:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+                message = (
+                    entity.get("last_payment_error", {}).get("message") or entity.get("status") or "payment_failed"
+                )
+                payment.fail(message=message, extra_data=event, received_at=created_at)
+                logger.info("Stripe payment failed", payment_id=str(payment.id))
+
+            case "checkout.session.expired":
+                try:
+                    payment = Payment.objects.get(id=entity.get("client_reference_id"))
+                except Payment.DoesNotExist:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+                message = entity.get("message", "Checkout session expired")
+                payment.reject(message=message, extra_data=event, received_at=created_at)
+                logger.info("Stripe payment expired", payment_id=str(payment.id))
+
+            case _:
+                logger.info("Stripe event ignored", event_type=event.get("type"))
 
         return Response(status=status.HTTP_200_OK)

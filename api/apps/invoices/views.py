@@ -10,7 +10,6 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
-from apps.integrations.exceptions import PaymentProviderConnectionNotFoundError
 
 from .enums import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
 from .filters import InvoiceFilter
@@ -93,6 +92,7 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
                 footer=data.get("footer"),
                 description=data.get("description"),
                 payment_provider=data.get("payment_provider"),
+                payment_connection_id=getattr(data.get("payment_connection"), "id", None),
                 delivery_method=data.get("delivery_method"),
                 recipients=data.get("recipients"),
             )
@@ -117,6 +117,7 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
                 footer=data.get("footer"),
                 description=data.get("description"),
                 payment_provider=data.get("payment_provider"),
+                payment_connection_id=getattr(data.get("payment_connection"), "id", None),
                 delivery_method=data.get("delivery_method"),
                 recipients=data.get("recipients"),
             )
@@ -176,6 +177,7 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             footer=data.get("footer", invoice.footer),
             description=data.get("description", invoice.description),
             payment_provider=data.get("payment_provider", invoice.payment_provider),
+            payment_connection_id=getattr(data.get("payment_connection"), "id", invoice.payment_connection_id),
             delivery_method=data.get("delivery_method", invoice.delivery_method),
             recipients=data.get("recipients", invoice.recipients),
         )
@@ -270,10 +272,7 @@ class InvoiceFinalizeAPIView(generics.GenericAPIView):
         if invoice.effective_number is None:
             raise ValidationError("Invoice number or numbering system is missing")
 
-        try:
-            invoice.finalize()
-        except PaymentProviderConnectionNotFoundError as e:
-            raise ValidationError("Payment provider configuration not found") from e
+        invoice.finalize()
 
         if invoice.delivery_method == InvoiceDeliveryMethod.AUTOMATIC and len(invoice.recipients) > 0:
             send_invoice(invoice=invoice)

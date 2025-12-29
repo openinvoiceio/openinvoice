@@ -7,6 +7,7 @@ from django.db import models
 from django.utils import timezone
 from djmoney.money import Money
 
+from .backend import get_payment_backend
 from .enums import PaymentStatus
 from .exceptions import (
     InvoicePaymentAmountExceededError,
@@ -48,9 +49,11 @@ class PaymentManager(models.Manager.from_queryset(PaymentQuerySet)):
         return payment
 
     def checkout_invoice(self, invoice: Invoice) -> Payment:
-        from .backends import get_payment_backend
-
-        backend = get_payment_backend(account_id=invoice.account, payment_provider=invoice.payment_provider)
+        backend = get_payment_backend(
+            account_id=invoice.account,
+            connection_id=invoice.payment_connection_id,
+            payment_provider=invoice.payment_provider,
+        )
         payment = self.create(
             account=invoice.account,
             status=PaymentStatus.PENDING,
@@ -58,16 +61,16 @@ class PaymentManager(models.Manager.from_queryset(PaymentQuerySet)):
             currency=invoice.currency,
             description=invoice.number,
             provider=invoice.payment_provider,
+            connection_id=invoice.payment_connection_id,
         )
 
         try:
             transaction_id, checkout_url = backend.checkout(invoice=invoice, payment=payment)
-        except PaymentCheckoutError as error:
-            payment.status = PaymentStatus.FAILED
-            payment.message = str(error)
-            payment.extra_data = {"error": str(error)}
-            payment.save(update_fields=["status", "message", "extra_data"])
-            raise
+        except PaymentCheckoutError as e:
+            payment.fail(message=str(e), extra_data={}, received_at=timezone.now())
+            payment.invoices.add(invoice)
+            # TODO: refine this behavior, do we actually want to silently fail?
+            return payment
 
         payment.transaction_id = transaction_id
         payment.url = checkout_url

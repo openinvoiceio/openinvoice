@@ -97,6 +97,7 @@ def test_list_invoices(api_client, user, account):
                 "total_paid_amount": "0.00",
                 "outstanding_amount": "0.00",
                 "payment_provider": None,
+                "payment_connection_id": None,
                 "created_at": ANY,
                 "updated_at": ANY,
                 "opened_at": None,

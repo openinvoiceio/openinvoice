@@ -171,6 +171,7 @@ def test_search_all(api_client, user, account):
                 "total_paid_amount": f"{invoice_alpha.total_paid_amount.amount:.2f}",
                 "outstanding_amount": f"{invoice_alpha.outstanding_amount.amount:.2f}",
                 "payment_provider": None,
+                "payment_connection_id": None,
                 "created_at": ANY,
                 "updated_at": ANY,
                 "opened_at": None,

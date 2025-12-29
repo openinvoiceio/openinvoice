@@ -1,8 +1,10 @@
+import uuid
 from unittest.mock import ANY
 
 import pytest
 from drf_standardized_errors.types import ErrorType
 
+from common.enums import FeatureCode
 from tests.factories import (
     StripeConnectionFactory,
 )
@@ -10,14 +12,15 @@ from tests.factories import (
 pytestmark = pytest.mark.django_db
 
 
-def test_update_stripe_connection(api_client, user, subscribed_account):
-    connection = StripeConnectionFactory(account=subscribed_account)
+def test_update_stripe_connection(api_client, user, account):
+    connection = StripeConnectionFactory(account=account, name="Original name", redirect_url=None)
 
     api_client.force_login(user)
-    api_client.force_account(subscribed_account)
+    api_client.force_account(account)
     response = api_client.put(
-        "/api/v1/integrations/stripe",
+        f"/api/v1/integrations/stripe/connections/{connection.id}",
         data={
+            "name": "Updated name",
             "redirect_url": "https://example.com/updated",
         },
     )
@@ -25,39 +28,41 @@ def test_update_stripe_connection(api_client, user, subscribed_account):
     assert response.status_code == 200
     assert response.data == {
         "id": str(connection.id),
-        "connected_account_id": connection.connected_account_id,
+        "name": "Updated name",
+        "code": connection.code,
         "redirect_url": "https://example.com/updated",
         "created_at": ANY,
         "updated_at": ANY,
     }
 
 
-def test_update_stripe_connection_requires_account(api_client, user, account):
-    StripeConnectionFactory(account=account)
+def test_update_stripe_connection_not_found(api_client, user, account):
+    connection_id = uuid.uuid4()
 
     api_client.force_login(user)
-    response = api_client.put("/api/v1/integrations/stripe", data={"name": "Updated"})
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/integrations/stripe/connections/{connection_id}",
+        data={"name": "Updated"},
+    )
 
-    assert response.status_code == 403
+    assert response.status_code == 404
     assert response.data == {
         "type": ErrorType.CLIENT_ERROR,
         "errors": [
             {
                 "attr": None,
-                "code": "permission_denied",
-                "detail": "You do not have permission to perform this action.",
+                "code": "not_found",
+                "detail": "Not found.",
             }
         ],
     }
 
 
-def test_update_stripe_connection_requires_authentication(api_client, subscribed_account):
-    StripeConnectionFactory(account=subscribed_account)
+def test_update_stripe_connection_requires_authentication(api_client, account):
+    connection = StripeConnectionFactory(account=account)
 
-    response = api_client.put(
-        "/api/v1/integrations/stripe",
-        data={"redirect_url": "https://example.com/callback"},
-    )
+    response = api_client.put(f"/api/v1/integrations/stripe/connections/{connection.id}", data={"name": "Connection"})
 
     assert response.status_code == 403
     assert response.data == {
@@ -72,13 +77,32 @@ def test_update_stripe_connection_requires_authentication(api_client, subscribed
     }
 
 
-def test_update_stripe_connection_rejects_foreign_account(api_client, user, subscribed_account):
-    StripeConnectionFactory()
+def test_update_stripe_connection_requires_account(api_client, user):
+    connection_id = uuid.uuid4()
 
     api_client.force_login(user)
-    api_client.force_account(subscribed_account)
+    response = api_client.put(f"/api/v1/integrations/stripe/connections/{connection_id}", data={"name": "Updated"})
+
+    assert response.status_code == 403
+    assert response.data == {
+        "type": ErrorType.CLIENT_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "permission_denied",
+                "detail": "You do not have permission to perform this action.",
+            }
+        ],
+    }
+
+
+def test_update_stripe_connection_rejects_foreign_account(api_client, user, account):
+    connection = StripeConnectionFactory()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
     response = api_client.put(
-        "/api/v1/integrations/stripe",
+        f"/api/v1/integrations/stripe/connections/{connection.id}",
         data={"redirect_url": "https://example.com/updated"},
     )
 
@@ -90,6 +114,31 @@ def test_update_stripe_connection_rejects_foreign_account(api_client, user, subs
                 "attr": None,
                 "code": "not_found",
                 "detail": "Not found.",
+            }
+        ],
+    }
+
+
+def test_update_stripe_connection_without_available_feature(api_client, user, account, settings):
+    connection_id = uuid.uuid4()
+    settings.DEFAULT_PLAN = "test"
+    settings.PLANS = {"test": {"features": {FeatureCode.STRIPE_INTEGRATION: False}}}
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/integrations/stripe/connections/{connection_id}",
+        data={"redirect_url": "https://example.com/updated"},
+    )
+
+    assert response.status_code == 403
+    assert response.data == {
+        "type": ErrorType.CLIENT_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "feature_unavailable",
+                "detail": "Feature is not available for your account.",
             }
         ],
     }

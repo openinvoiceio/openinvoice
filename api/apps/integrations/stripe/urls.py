@@ -1,13 +1,13 @@
 from django.urls import path
 
-from .views import (
-    StripeConnectionOAuthCallback,
+from apps.integrations.stripe.views import (
+    StripeConnectionListCreateAPIView,
     StripeConnectionRetrieveUpdateDestroyAPIView,
     StripeWebhookAPIView,
 )
 
 urlpatterns = [
-    path("integrations/stripe", StripeConnectionRetrieveUpdateDestroyAPIView.as_view()),
-    path("integrations/stripe/webhook", StripeWebhookAPIView.as_view()),
-    path("integrations/stripe/oauth/callback", StripeConnectionOAuthCallback.as_view()),
+    path("integrations/stripe/connections", StripeConnectionListCreateAPIView.as_view()),
+    path("integrations/stripe/connections/<uuid:pk>", StripeConnectionRetrieveUpdateDestroyAPIView.as_view()),
+    path("integrations/stripe/connections/<uuid:pk>/webhook", StripeWebhookAPIView.as_view()),
 ]

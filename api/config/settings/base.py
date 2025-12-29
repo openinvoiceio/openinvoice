@@ -40,7 +40,7 @@ LOCAL_APPS = [
     "apps.files.apps.FilesConfig",
     "apps.invoices.apps.InvoicesConfig",
     "apps.credit_notes.apps.CreditNotesConfig",
-    "apps.integrations.apps.IntegrationsConfig",
+    "apps.integrations.stripe.apps.StripeIntegrationsConfig",
     "apps.numbering_systems.apps.NumberingSystemsConfig",
     "apps.payments.apps.PaymentsConfig",
     "apps.portal.apps.PortalConfig",
@@ -586,3 +586,9 @@ MAX_TAX_IDS = 5
 # Customer portal
 
 PORTAL_TOKEN_MAX_AGE = env.int("DJANGO_PORTAL_TOKEN_MAX_AGE", 60 * 60 * 12)  # 12 hours
+
+# Integrations
+
+PAYMENT_BACKENDS = {
+    "stripe": "apps.integrations.stripe.backends.StripePaymentBackend",
+}

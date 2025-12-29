@@ -105,6 +105,7 @@ def test_create_invoice(api_client, user, account):
         "total_paid_amount": "0.00",
         "outstanding_amount": "0.00",
         "payment_provider": None,
+        "payment_connection_id": None,
         "created_at": ANY,
         "updated_at": ANY,
         "opened_at": None,
@@ -295,7 +296,7 @@ def test_create_invoice_numbering_system_not_found(api_client, user, account):
 
 def test_create_invoice_with_payment_provider(api_client, user, account):
     customer = CustomerFactory(account=account)
-    StripeConnectionFactory(account=account)
+    connection = StripeConnectionFactory(account=account)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -304,15 +305,46 @@ def test_create_invoice_with_payment_provider(api_client, user, account):
         {
             "customer_id": str(customer.id),
             "payment_provider": PaymentProvider.STRIPE,
+            "payment_connection_id": str(connection.id),
         },
     )
 
     assert response.status_code == 201
     assert response.data["payment_provider"] == PaymentProvider.STRIPE
+    assert response.data["payment_connection_id"] == str(connection.id)
 
 
-def test_create_invoice_without_connected_payment_provider(api_client, user, account):
+def test_create_invoice_with_unknown_payment_connection(api_client, user, account):
+    connection_id = str(uuid.uuid4())
     customer = CustomerFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.post(
+        "/api/v1/invoices",
+        {
+            "customer_id": str(customer.id),
+            "payment_provider": PaymentProvider.STRIPE,
+            "payment_connection_id": connection_id,
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": "payment_connection_id",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{connection_id}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_create_invoice_payment_provider_without_connection(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    StripeConnectionFactory(account=account)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -329,9 +361,9 @@ def test_create_invoice_without_connected_payment_provider(api_client, user, acc
         "type": ErrorType.VALIDATION_ERROR,
         "errors": [
             {
-                "attr": "payment_provider",
+                "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Payment provider connection not found",
+                "detail": "payment_provider and payment_connection_id must be provided together",
             }
         ],
     }
