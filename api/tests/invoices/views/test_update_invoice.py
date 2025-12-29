@@ -112,6 +112,7 @@ def test_update_invoice(api_client, user, account):
         "total_paid_amount": f"{invoice.total_paid_amount.amount:.2f}",
         "outstanding_amount": f"{invoice.outstanding_amount.amount:.2f}",
         "payment_provider": None,
+        "payment_connection_id": None,
         "created_at": ANY,
         "updated_at": ANY,
         "opened_at": None,
@@ -158,27 +159,29 @@ def test_update_invoice_change_customer(api_client, user, account):
 
 def test_update_invoice_payment_provider(api_client, user, account):
     invoice = InvoiceFactory(account=account, currency="PLN")
-    StripeConnectionFactory(account=account)
+    connection = StripeConnectionFactory(account=account)
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoices/{invoice.id}",
-        {"payment_provider": PaymentProvider.STRIPE},
+        {"payment_provider": PaymentProvider.STRIPE, "payment_connection_id": str(connection.id)},
     )
 
     assert response.status_code == 200
     assert response.data["payment_provider"] == PaymentProvider.STRIPE
+    assert response.data["payment_connection_id"] == str(connection.id)
 
 
-def test_update_invoice_without_connected_payment_provider(api_client, user, account):
+def test_update_invoice_with_unknown_payment_connection(api_client, user, account):
+    connection_id = uuid.uuid4()
     invoice = InvoiceFactory(account=account, currency="PLN")
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoices/{invoice.id}",
-        {"payment_provider": PaymentProvider.STRIPE},
+        {"payment_provider": PaymentProvider.STRIPE, "payment_connection_id": str(connection_id)},
     )
 
     assert response.status_code == 400
@@ -186,9 +189,35 @@ def test_update_invoice_without_connected_payment_provider(api_client, user, acc
         "type": ErrorType.VALIDATION_ERROR,
         "errors": [
             {
-                "attr": "payment_provider",
+                "attr": "payment_connection_id",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{connection_id}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_update_invoice_payment_provider_without_connection(api_client, user, account):
+    connection = StripeConnectionFactory(account=account)
+    invoice = InvoiceFactory(
+        account=account, currency="PLN", payment_provider=PaymentProvider.STRIPE, payment_connection_id=connection.id
+    )
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"payment_provider": PaymentProvider.STRIPE, "payment_connection_id": None},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Payment provider connection not found",
+                "detail": "payment_provider and payment_connection_id must be provided together",
             }
         ],
     }

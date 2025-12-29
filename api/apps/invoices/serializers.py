@@ -7,7 +7,7 @@ from apps.coupons.fields import CouponRelatedField
 from apps.coupons.serializers import CouponSerializer
 from apps.customers.fields import CustomerRelatedField
 from apps.integrations.enums import PaymentProvider
-from apps.integrations.validators import PaymentProviderConnected
+from apps.integrations.fields import IntegrationConnectionField
 from apps.numbering_systems.enums import NumberingSystemAppliesTo
 from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.prices.fields import PriceRelatedField
@@ -137,6 +137,7 @@ class InvoiceSerializer(serializers.Serializer):
     total_paid_amount = MoneyField(max_digits=19, decimal_places=2)
     outstanding_amount = MoneyField(max_digits=19, decimal_places=2)
     payment_provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True)
+    payment_connection_id = serializers.UUIDField(allow_null=True)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
     opened_at = serializers.DateTimeField(allow_null=True)
@@ -166,8 +167,9 @@ class InvoiceCreateSerializer(serializers.Serializer):
     custom_fields = MetadataField(allow_null=True, required=False)
     footer = serializers.CharField(allow_null=True, required=False, max_length=600)
     description = serializers.CharField(allow_null=True, required=False, max_length=600)
-    payment_provider = serializers.ChoiceField(
-        choices=PaymentProvider.choices, validators=[PaymentProviderConnected()], allow_null=True, required=False
+    payment_provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True, required=False)
+    payment_connection_id = IntegrationConnectionField(
+        source="payment_connection", type_field="payment_provider", allow_null=True, required=False
     )
     delivery_method = serializers.ChoiceField(choices=InvoiceDeliveryMethod.choices, required=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
@@ -175,12 +177,17 @@ class InvoiceCreateSerializer(serializers.Serializer):
     def validate(self, data):
         customer = data.get("customer")
         previous_revision = data.get("previous_revision")
+        payment_provider = data.get("payment_provider")
+        payment_connection = data.get("payment_connection")
 
         if customer is None and previous_revision is None:
             raise serializers.ValidationError("customer_id or previous_revision_id is required")
 
         if customer is not None and previous_revision is not None:
             raise serializers.ValidationError("Provide either customer_id or previous_revision_id")
+
+        if (payment_provider is None) ^ (payment_connection is None):
+            raise serializers.ValidationError("payment_provider and payment_connection_id must be provided together")
 
         return data
 
@@ -222,11 +229,26 @@ class InvoiceUpdateSerializer(serializers.Serializer):
     custom_fields = MetadataField(required=False)
     footer = serializers.CharField(max_length=600, allow_null=True, required=False)
     description = serializers.CharField(max_length=600, allow_null=True, required=False)
-    payment_provider = serializers.ChoiceField(
-        choices=PaymentProvider.choices, validators=[PaymentProviderConnected()], allow_null=True, required=False
+    payment_provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True, required=False)
+    payment_connection_id = IntegrationConnectionField(
+        source="payment_connection", type_field="payment_provider", allow_null=True, required=False
     )
     delivery_method = serializers.ChoiceField(choices=InvoiceDeliveryMethod.choices, required=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
+
+    def validate(self, data):
+        payment_provider = data.get("payment_provider", self.instance.payment_provider)
+        if "payment_connection" not in data:
+            payment_connection_id = self.instance.payment_connection_id
+        elif data["payment_connection"] is not None:
+            payment_connection_id = data["payment_connection"].id
+        else:
+            payment_connection_id = None
+
+        if (payment_provider is None) ^ (payment_connection_id is None):
+            raise serializers.ValidationError("payment_provider and payment_connection_id must be provided together")
+
+        return data
 
     def validate_customer_id(self, value):
         if self.instance.previous_revision and self.instance.customer_id != value.id:

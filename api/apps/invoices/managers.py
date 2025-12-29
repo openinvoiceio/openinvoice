@@ -4,6 +4,7 @@ from collections.abc import Iterable, Mapping
 from datetime import date
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any
+from uuid import UUID
 
 from django.apps import apps
 from django.db import models
@@ -81,6 +82,7 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
         footer: str | None = None,
         description: str | None = None,
         payment_provider: PaymentProvider | None = None,
+        payment_connection_id: UUID | None = None,
         delivery_method: InvoiceDeliveryMethod | None = None,
         recipients: list[str] | None = None,
     ) -> Invoice:
@@ -110,6 +112,7 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
             footer=footer or account.invoice_footer,
             description=description,
             payment_provider=payment_provider,
+            payment_connection_id=payment_connection_id,
             subtotal_amount=zero(currency),
             total_discount_amount=zero(currency),
             total_amount_excluding_tax=zero(currency),
@@ -143,6 +146,7 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
         footer: str | None = None,
         description: str | None = None,
         payment_provider: PaymentProvider | None = None,
+        payment_connection_id: UUID | None = None,
         delivery_method: InvoiceDeliveryMethod | None = None,
         recipients: Iterable[str] | None = None,
     ) -> Invoice:
@@ -176,6 +180,7 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
             footer=footer or previous_revision.footer,
             description=description or previous_revision.description,
             payment_provider=payment_provider or previous_revision.payment_provider,
+            payment_connection_id=payment_connection_id or previous_revision.payment_connection_id,
             previous_revision=previous_revision,
             subtotal_amount=zero(currency),
             total_discount_amount=zero(currency),

@@ -53,6 +53,7 @@ class CreditNote(models.Model):
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     payment_provider = models.CharField(max_length=50, choices=PaymentProvider.choices, null=True)
+    payment_connection_id = models.UUIDField(null=True)
     metadata = models.JSONField(default=dict)
     delivery_method = models.CharField(
         max_length=20,

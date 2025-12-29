@@ -89,6 +89,7 @@ def test_retrieve_credit_note(api_client, user, account):
         "total_tax_amount": f"{credit_note.total_tax_amount.amount:.2f}",
         "total_amount": f"{credit_note.total_amount.amount:.2f}",
         "payment_provider": None,
+        "payment_connection_id": None,
         "created_at": ANY,
         "updated_at": ANY,
         "issued_at": None,

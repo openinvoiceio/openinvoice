@@ -11,7 +11,6 @@ from factory import (
     SubFactory,
     post_generation,
 )
-from factory import List as FactoryList
 from factory.django import DjangoModelFactory, FileField, Password
 
 from apps.accounts.enums import InvitationStatus, MemberRole
@@ -419,23 +418,6 @@ class NumberingSystemFactory(DjangoModelFactory):
     reset_interval = NumberingSystemResetInterval.NEVER
 
 
-class StripeFeatureFactory(DictFactory):
-    name = "Feature 1"
-
-
-class StripeProductFactory(DictFactory):
-    name = "Pro"
-    marketing_features = FactoryList([SubFactory(StripeFeatureFactory)])
-
-
-class StripePriceFactory(DictFactory):
-    id = "price_test"
-    currency = "usd"
-    unit_amount = 1000
-    recurring = {"interval": "month", "interval_count": 1}
-    product = SubFactory(StripeProductFactory)
-
-
 class StripeCustomerFactory(DjangoModelFactory):
     class Meta:
         model = "stripe.StripeCustomer"
@@ -460,10 +442,14 @@ class StripeSubscriptionFactory(DjangoModelFactory):
 
 class StripeConnectionFactory(DjangoModelFactory):
     class Meta:
-        model = "integrations.StripeConnection"
+        model = "stripe_integrations.StripeConnection"
 
     account = SubFactory(AccountFactory)
-    connected_account_id = "acct_123"
+    name = "My Stripe Connection"
+    code = "code_123"
+    api_key = "sk_test_123"
+    webhook_endpoint_id = "we_123"
+    webhook_secret = "sk_test_456"  # noqa: S105
     redirect_url = None
 
 

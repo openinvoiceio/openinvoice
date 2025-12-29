@@ -13,6 +13,7 @@ from .base import LOG_LEVEL, env
 
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 SECRET_KEY = env.str("DJANGO_SECRET_KEY")
+SALT_KEY = env.str("DJANGO_SALT_KEY")
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 
 # CORS

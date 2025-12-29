@@ -68,6 +68,7 @@ class CreditNoteManager(models.Manager.from_queryset(CreditNoteQuerySet)):
             total_tax_amount=zero(invoice.currency),
             total_amount=zero(invoice.currency),
             payment_provider=invoice.payment_provider,
+            payment_connection_id=invoice.payment_connection_id,
             delivery_method=delivery_method or CreditNoteDeliveryMethod.MANUAL,
             recipients=recipients or default_recipients,
         )

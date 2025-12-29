@@ -148,6 +148,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     metadata = models.JSONField(default=dict)
     custom_fields = models.JSONField(default=dict)
     payment_provider = models.CharField(max_length=50, choices=PaymentProvider.choices, null=True)
+    payment_connection_id = models.UUIDField(null=True)
     delivery_method = models.CharField(
         max_length=20,
         choices=InvoiceDeliveryMethod.choices,
@@ -453,7 +454,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         if not self.is_payable:
             self.mark_as_paid()
-        elif self.payment_provider:
+        elif self.payment_provider and self.payment_connection_id:
             Payment.objects.checkout_invoice(invoice=self)
 
     def void(self) -> None:
@@ -503,6 +504,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         footer: str | None = None,
         description: str | None = None,
         payment_provider: PaymentProvider | None = None,
+        payment_connection_id: uuid.UUID | None = None,
         delivery_method: InvoiceDeliveryMethod | None = None,
         recipients: list[str] | None = None,
     ) -> None:
@@ -526,6 +528,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.footer = footer
         self.description = description
         self.payment_provider = payment_provider
+        self.payment_connection_id = payment_connection_id
         self.customer = customer
         self.delivery_method = delivery_method
         self.recipients = recipients

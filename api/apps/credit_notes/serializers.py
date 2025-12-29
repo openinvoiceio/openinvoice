@@ -103,6 +103,7 @@ class CreditNoteSerializer(serializers.Serializer):
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2)
     total_amount = MoneyField(max_digits=19, decimal_places=2)
     payment_provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True)
+    payment_connection_id = serializers.UUIDField(allow_null=True)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
     issued_at = serializers.DateTimeField(allow_null=True)

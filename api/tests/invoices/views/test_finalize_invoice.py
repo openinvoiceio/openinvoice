@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, timedelta
 from decimal import Decimal
-from unittest.mock import ANY
+from unittest.mock import ANY, patch
 
 import pytest
 from django.utils import timezone
@@ -10,9 +10,16 @@ from drf_standardized_errors.types import ErrorType
 from apps.integrations.enums import PaymentProvider
 from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
 from apps.payments.enums import PaymentStatus
+from apps.payments.exceptions import PaymentCheckoutError
 from tests.factories import InvoiceFactory, InvoiceLineFactory, StripeConnectionFactory
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture
+def stripe_checkout_mock():
+    with patch("apps.integrations.stripe.backends.StripePaymentBackend.checkout") as mock:
+        yield mock
 
 
 def test_finalize_invoice(api_client, user, account):
@@ -96,6 +103,7 @@ def test_finalize_invoice(api_client, user, account):
         "total_paid_amount": "0.00",
         "outstanding_amount": "10.00",
         "payment_provider": None,
+        "payment_connection_id": None,
         "created_at": ANY,
         "updated_at": ANY,
         "opened_at": ANY,
@@ -212,6 +220,7 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
         "total_paid_amount": "0.00",
         "outstanding_amount": "0.00",
         "payment_provider": None,
+        "payment_connection_id": None,
         "created_at": ANY,
         "updated_at": ANY,
         "opened_at": ANY,
@@ -261,15 +270,17 @@ def test_finalize_revision_voids_original(api_client, user, account):
     assert original.latest_revision_id == revision.id
 
 
-def test_finalize_invoice_with_payment_provider(api_client, user, account, monkeypatch):
-    StripeConnectionFactory(account=account)
-    invoice = InvoiceFactory(account=account, payment_provider=PaymentProvider.STRIPE, total_amount=Decimal("10.00"))
+def test_finalize_invoice_with_payment_provider(api_client, user, account, stripe_checkout_mock):
+    connection = StripeConnectionFactory(account=account)
+    invoice = InvoiceFactory(
+        account=account,
+        payment_provider=PaymentProvider.STRIPE,
+        payment_connection_id=connection.id,
+        total_amount=Decimal("10.00"),
+        outstanding_amount=Decimal("10.00"),
+    )
     InvoiceLineFactory(invoice=invoice, description="Test line", quantity=1, unit_amount=Decimal("10.00"))
-
-    def fake_checkout(self, *, invoice, payment):
-        return "cs_123", "https://stripe.example/checkout"
-
-    monkeypatch.setattr("apps.payments.backends.stripe.StripeBackend.checkout", fake_checkout)
+    stripe_checkout_mock.return_value = ("cs_123", "https://stripe.example/checkout")
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -282,6 +293,37 @@ def test_finalize_invoice_with_payment_provider(api_client, user, account, monke
     assert payment.url == "https://stripe.example/checkout"
     assert payment.status == PaymentStatus.PENDING
     assert payment.provider == PaymentProvider.STRIPE
+    assert payment.connection_id == connection.id
+    stripe_checkout_mock.assert_called_once_with(invoice=invoice, payment=payment)
+
+
+def test_finalize_invoice_with_payment_provider_checkout_error(api_client, user, account, stripe_checkout_mock):
+    connection = StripeConnectionFactory(account=account)
+    invoice = InvoiceFactory(
+        account=account,
+        payment_provider=PaymentProvider.STRIPE,
+        payment_connection_id=connection.id,
+        total_amount=Decimal("10.00"),
+        outstanding_amount=Decimal("10.00"),
+    )
+    InvoiceLineFactory(invoice=invoice, description="Test line", quantity=1, unit_amount=Decimal("10.00"))
+    stripe_checkout_mock.side_effect = PaymentCheckoutError("Checkout error")
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.post(f"/api/v1/invoices/{invoice.id}/finalize")
+
+    assert response.status_code == 200
+    invoice.refresh_from_db()
+    assert invoice.payments.count() == 1
+    payment = invoice.payments.first()
+    assert payment.status == PaymentStatus.FAILED
+    assert payment.transaction_id is None
+    assert payment.url is None
+    assert payment.message == "Checkout error"
+    assert payment.extra_data == {}
+    assert payment.received_at is not None
+    stripe_checkout_mock.assert_called_once_with(invoice=invoice, payment=payment)
 
 
 def test_finalize_invoice_without_due_date(api_client, user, account):
