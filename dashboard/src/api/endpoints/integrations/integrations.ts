@@ -25,87 +25,76 @@ import type {
 import { axiosInstance } from "../../../lib/api/client";
 import type { ErrorType } from "../../../lib/api/client";
 import type {
-  IntegrationConnection,
-  ListIntegrationConnectionsParams,
+  Integration,
+  IntegrationsStripeConnectionsListParams,
+  PaginatedStripeConnectionList,
   StripeConnection,
+  StripeConnectionCreate,
   StripeConnectionUpdate,
 } from "../../models";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
-export const listIntegrationConnections = (
-  params?: ListIntegrationConnectionsParams,
+export const listIntegrations = (
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return axiosInstance<IntegrationConnection[]>(
-    { url: `/api/v1/integrations`, method: "GET", params, signal },
+  return axiosInstance<Integration[]>(
+    { url: `/api/v1/integrations`, method: "GET", signal },
     options,
   );
 };
 
-export const getListIntegrationConnectionsQueryKey = (
-  params?: ListIntegrationConnectionsParams,
-) => {
-  return [`/api/v1/integrations`, ...(params ? [params] : [])] as const;
+export const getListIntegrationsQueryKey = () => {
+  return [`/api/v1/integrations`] as const;
 };
 
-export const getListIntegrationConnectionsQueryOptions = <
-  TData = Awaited<ReturnType<typeof listIntegrationConnections>>,
+export const getListIntegrationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listIntegrations>>,
   TError = ErrorType<unknown>,
->(
-  params?: ListIntegrationConnectionsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof listIntegrationConnections>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof axiosInstance>;
-  },
-) => {
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof listIntegrations>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getListIntegrationConnectionsQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getListIntegrationsQueryKey();
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof listIntegrationConnections>>
-  > = ({ signal }) =>
-    listIntegrationConnections(params, requestOptions, signal);
+    Awaited<ReturnType<typeof listIntegrations>>
+  > = ({ signal }) => listIntegrations(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof listIntegrationConnections>>,
+    Awaited<ReturnType<typeof listIntegrations>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type ListIntegrationConnectionsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof listIntegrationConnections>>
+export type ListIntegrationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listIntegrations>>
 >;
-export type ListIntegrationConnectionsQueryError = ErrorType<unknown>;
+export type ListIntegrationsQueryError = ErrorType<unknown>;
 
-export function useListIntegrationConnections<
-  TData = Awaited<ReturnType<typeof listIntegrationConnections>>,
+export function useListIntegrations<
+  TData = Awaited<ReturnType<typeof listIntegrations>>,
   TError = ErrorType<unknown>,
 >(
-  params: undefined | ListIntegrationConnectionsParams,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof listIntegrationConnections>>,
+        Awaited<ReturnType<typeof listIntegrations>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listIntegrationConnections>>,
+          Awaited<ReturnType<typeof listIntegrations>>,
           TError,
-          Awaited<ReturnType<typeof listIntegrationConnections>>
+          Awaited<ReturnType<typeof listIntegrations>>
         >,
         "initialData"
       >;
@@ -115,24 +104,23 @@ export function useListIntegrationConnections<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useListIntegrationConnections<
-  TData = Awaited<ReturnType<typeof listIntegrationConnections>>,
+export function useListIntegrations<
+  TData = Awaited<ReturnType<typeof listIntegrations>>,
   TError = ErrorType<unknown>,
 >(
-  params?: ListIntegrationConnectionsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof listIntegrationConnections>>,
+        Awaited<ReturnType<typeof listIntegrations>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listIntegrationConnections>>,
+          Awaited<ReturnType<typeof listIntegrations>>,
           TError,
-          Awaited<ReturnType<typeof listIntegrationConnections>>
+          Awaited<ReturnType<typeof listIntegrations>>
         >,
         "initialData"
       >;
@@ -142,15 +130,14 @@ export function useListIntegrationConnections<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useListIntegrationConnections<
-  TData = Awaited<ReturnType<typeof listIntegrationConnections>>,
+export function useListIntegrations<
+  TData = Awaited<ReturnType<typeof listIntegrations>>,
   TError = ErrorType<unknown>,
 >(
-  params?: ListIntegrationConnectionsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof listIntegrationConnections>>,
+        Awaited<ReturnType<typeof listIntegrations>>,
         TError,
         TData
       >
@@ -162,15 +149,14 @@ export function useListIntegrationConnections<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useListIntegrationConnections<
-  TData = Awaited<ReturnType<typeof listIntegrationConnections>>,
+export function useListIntegrations<
+  TData = Awaited<ReturnType<typeof listIntegrations>>,
   TError = ErrorType<unknown>,
 >(
-  params?: ListIntegrationConnectionsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof listIntegrationConnections>>,
+        Awaited<ReturnType<typeof listIntegrations>>,
         TError,
         TData
       >
@@ -181,7 +167,296 @@ export function useListIntegrationConnections<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getListIntegrationConnectionsQueryOptions(
+  const queryOptions = getListIntegrationsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getListIntegrationsSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof listIntegrations>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<
+      Awaited<ReturnType<typeof listIntegrations>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListIntegrationsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listIntegrations>>
+  > = ({ signal }) => listIntegrations(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof listIntegrations>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ListIntegrationsSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listIntegrations>>
+>;
+export type ListIntegrationsSuspenseQueryError = ErrorType<unknown>;
+
+export function useListIntegrationsSuspense<
+  TData = Awaited<ReturnType<typeof listIntegrations>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof listIntegrations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListIntegrationsSuspense<
+  TData = Awaited<ReturnType<typeof listIntegrations>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof listIntegrations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListIntegrationsSuspense<
+  TData = Awaited<ReturnType<typeof listIntegrations>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof listIntegrations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useListIntegrationsSuspense<
+  TData = Awaited<ReturnType<typeof listIntegrations>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof listIntegrations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getListIntegrationsSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(
+    queryOptions,
+    queryClient,
+  ) as UseSuspenseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const integrationsStripeConnectionsList = (
+  params?: IntegrationsStripeConnectionsListParams,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<PaginatedStripeConnectionList>(
+    {
+      url: `/api/v1/integrations/stripe/connections`,
+      method: "GET",
+      params,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getIntegrationsStripeConnectionsListQueryKey = (
+  params?: IntegrationsStripeConnectionsListParams,
+) => {
+  return [
+    `/api/v1/integrations/stripe/connections`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getIntegrationsStripeConnectionsListQueryOptions = <
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: IntegrationsStripeConnectionsListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getIntegrationsStripeConnectionsListQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof integrationsStripeConnectionsList>>
+  > = ({ signal }) =>
+    integrationsStripeConnectionsList(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type IntegrationsStripeConnectionsListQueryResult = NonNullable<
+  Awaited<ReturnType<typeof integrationsStripeConnectionsList>>
+>;
+export type IntegrationsStripeConnectionsListQueryError = ErrorType<unknown>;
+
+export function useIntegrationsStripeConnectionsList<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+  TError = ErrorType<unknown>,
+>(
+  params: undefined | IntegrationsStripeConnectionsListParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+          TError,
+          Awaited<ReturnType<typeof integrationsStripeConnectionsList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useIntegrationsStripeConnectionsList<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: IntegrationsStripeConnectionsListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+          TError,
+          Awaited<ReturnType<typeof integrationsStripeConnectionsList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useIntegrationsStripeConnectionsList<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: IntegrationsStripeConnectionsListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useIntegrationsStripeConnectionsList<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: IntegrationsStripeConnectionsListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getIntegrationsStripeConnectionsListQueryOptions(
     params,
     options,
   );
@@ -196,15 +471,15 @@ export function useListIntegrationConnections<
   return query;
 }
 
-export const getListIntegrationConnectionsSuspenseQueryOptions = <
-  TData = Awaited<ReturnType<typeof listIntegrationConnections>>,
+export const getIntegrationsStripeConnectionsListSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: ListIntegrationConnectionsParams,
+  params?: IntegrationsStripeConnectionsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof listIntegrationConnections>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
         TError,
         TData
       >
@@ -215,34 +490,36 @@ export const getListIntegrationConnectionsSuspenseQueryOptions = <
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getListIntegrationConnectionsQueryKey(params);
+    queryOptions?.queryKey ??
+    getIntegrationsStripeConnectionsListQueryKey(params);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof listIntegrationConnections>>
+    Awaited<ReturnType<typeof integrationsStripeConnectionsList>>
   > = ({ signal }) =>
-    listIntegrationConnections(params, requestOptions, signal);
+    integrationsStripeConnectionsList(params, requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
-    Awaited<ReturnType<typeof listIntegrationConnections>>,
+    Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type ListIntegrationConnectionsSuspenseQueryResult = NonNullable<
-  Awaited<ReturnType<typeof listIntegrationConnections>>
+export type IntegrationsStripeConnectionsListSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof integrationsStripeConnectionsList>>
 >;
-export type ListIntegrationConnectionsSuspenseQueryError = ErrorType<unknown>;
+export type IntegrationsStripeConnectionsListSuspenseQueryError =
+  ErrorType<unknown>;
 
-export function useListIntegrationConnectionsSuspense<
-  TData = Awaited<ReturnType<typeof listIntegrationConnections>>,
+export function useIntegrationsStripeConnectionsListSuspense<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
   TError = ErrorType<unknown>,
 >(
-  params: undefined | ListIntegrationConnectionsParams,
+  params: undefined | IntegrationsStripeConnectionsListParams,
   options: {
     query: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof listIntegrationConnections>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
         TError,
         TData
       >
@@ -253,15 +530,15 @@ export function useListIntegrationConnectionsSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useListIntegrationConnectionsSuspense<
-  TData = Awaited<ReturnType<typeof listIntegrationConnections>>,
+export function useIntegrationsStripeConnectionsListSuspense<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: ListIntegrationConnectionsParams,
+  params?: IntegrationsStripeConnectionsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof listIntegrationConnections>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
         TError,
         TData
       >
@@ -272,15 +549,15 @@ export function useListIntegrationConnectionsSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useListIntegrationConnectionsSuspense<
-  TData = Awaited<ReturnType<typeof listIntegrationConnections>>,
+export function useIntegrationsStripeConnectionsListSuspense<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: ListIntegrationConnectionsParams,
+  params?: IntegrationsStripeConnectionsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof listIntegrationConnections>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
         TError,
         TData
       >
@@ -292,15 +569,15 @@ export function useListIntegrationConnectionsSuspense<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useListIntegrationConnectionsSuspense<
-  TData = Awaited<ReturnType<typeof listIntegrationConnections>>,
+export function useIntegrationsStripeConnectionsListSuspense<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: ListIntegrationConnectionsParams,
+  params?: IntegrationsStripeConnectionsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof listIntegrationConnections>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsList>>,
         TError,
         TData
       >
@@ -311,7 +588,7 @@ export function useListIntegrationConnectionsSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getListIntegrationConnectionsSuspenseQueryOptions(
+  const queryOptions = getIntegrationsStripeConnectionsListSuspenseQueryOptions(
     params,
     options,
   );
@@ -328,71 +605,175 @@ export function useListIntegrationConnectionsSuspense<
   return query;
 }
 
-export const integrationsStripeRetrieve = (
+export const createStripeConnection = (
+  stripeConnectionCreate: StripeConnectionCreate,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
   return axiosInstance<StripeConnection>(
-    { url: `/api/v1/integrations/stripe`, method: "GET", signal },
+    {
+      url: `/api/v1/integrations/stripe/connections`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: stripeConnectionCreate,
+      signal,
+    },
     options,
   );
 };
 
-export const getIntegrationsStripeRetrieveQueryKey = () => {
-  return [`/api/v1/integrations/stripe`] as const;
-};
-
-export const getIntegrationsStripeRetrieveQueryOptions = <
-  TData = Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+export const getCreateStripeConnectionMutationOptions = <
   TError = ErrorType<unknown>,
+  TContext = unknown,
 >(options?: {
-  query?: Partial<
-    UseQueryOptions<
-      Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
-      TError,
-      TData
-    >
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createStripeConnection>>,
+    TError,
+    { data: StripeConnectionCreate },
+    TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
-}) => {
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createStripeConnection>>,
+  TError,
+  { data: StripeConnectionCreate },
+  TContext
+> => {
+  const mutationKey = ["createStripeConnection"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createStripeConnection>>,
+    { data: StripeConnectionCreate }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createStripeConnection(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateStripeConnectionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createStripeConnection>>
+>;
+export type CreateStripeConnectionMutationBody = StripeConnectionCreate;
+export type CreateStripeConnectionMutationError = ErrorType<unknown>;
+
+export const useCreateStripeConnection = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createStripeConnection>>,
+      TError,
+      { data: StripeConnectionCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createStripeConnection>>,
+  TError,
+  { data: StripeConnectionCreate },
+  TContext
+> => {
+  const mutationOptions = getCreateStripeConnectionMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const integrationsStripeConnectionsRetrieve = (
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<StripeConnection>(
+    {
+      url: `/api/v1/integrations/stripe/connections/${id}`,
+      method: "GET",
+      signal,
+    },
+    options,
+  );
+};
+
+export const getIntegrationsStripeConnectionsRetrieveQueryKey = (
+  id?: string,
+) => {
+  return [`/api/v1/integrations/stripe/connections/${id}`] as const;
+};
+
+export const getIntegrationsStripeConnectionsRetrieveQueryOptions = <
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getIntegrationsStripeRetrieveQueryKey();
+    queryOptions?.queryKey ??
+    getIntegrationsStripeConnectionsRetrieveQueryKey(id);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof integrationsStripeRetrieve>>
-  > = ({ signal }) => integrationsStripeRetrieve(requestOptions, signal);
+    Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>
+  > = ({ signal }) =>
+    integrationsStripeConnectionsRetrieve(id, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type IntegrationsStripeRetrieveQueryResult = NonNullable<
-  Awaited<ReturnType<typeof integrationsStripeRetrieve>>
+export type IntegrationsStripeConnectionsRetrieveQueryResult = NonNullable<
+  Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>
 >;
-export type IntegrationsStripeRetrieveQueryError = ErrorType<unknown>;
+export type IntegrationsStripeConnectionsRetrieveQueryError =
+  ErrorType<unknown>;
 
-export function useIntegrationsStripeRetrieve<
-  TData = Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+export function useIntegrationsStripeConnectionsRetrieve<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
   TError = ErrorType<unknown>,
 >(
+  id: string,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+          Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
           TError,
-          Awaited<ReturnType<typeof integrationsStripeRetrieve>>
+          Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>
         >,
         "initialData"
       >;
@@ -402,23 +783,24 @@ export function useIntegrationsStripeRetrieve<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useIntegrationsStripeRetrieve<
-  TData = Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+export function useIntegrationsStripeConnectionsRetrieve<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
   TError = ErrorType<unknown>,
 >(
+  id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+          Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
           TError,
-          Awaited<ReturnType<typeof integrationsStripeRetrieve>>
+          Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>
         >,
         "initialData"
       >;
@@ -428,14 +810,15 @@ export function useIntegrationsStripeRetrieve<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useIntegrationsStripeRetrieve<
-  TData = Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+export function useIntegrationsStripeConnectionsRetrieve<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
   TError = ErrorType<unknown>,
 >(
+  id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
         TError,
         TData
       >
@@ -447,14 +830,15 @@ export function useIntegrationsStripeRetrieve<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useIntegrationsStripeRetrieve<
-  TData = Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+export function useIntegrationsStripeConnectionsRetrieve<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
   TError = ErrorType<unknown>,
 >(
+  id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
         TError,
         TData
       >
@@ -465,7 +849,10 @@ export function useIntegrationsStripeRetrieve<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getIntegrationsStripeRetrieveQueryOptions(options);
+  const queryOptions = getIntegrationsStripeConnectionsRetrieveQueryOptions(
+    id,
+    options,
+  );
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -477,48 +864,56 @@ export function useIntegrationsStripeRetrieve<
   return query;
 }
 
-export const getIntegrationsStripeRetrieveSuspenseQueryOptions = <
-  TData = Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+export const getIntegrationsStripeConnectionsRetrieveSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: Partial<
-    UseSuspenseQueryOptions<
-      Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
-      TError,
-      TData
-    >
-  >;
-  request?: SecondParameter<typeof axiosInstance>;
-}) => {
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getIntegrationsStripeRetrieveQueryKey();
+    queryOptions?.queryKey ??
+    getIntegrationsStripeConnectionsRetrieveQueryKey(id);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof integrationsStripeRetrieve>>
-  > = ({ signal }) => integrationsStripeRetrieve(requestOptions, signal);
+    Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>
+  > = ({ signal }) =>
+    integrationsStripeConnectionsRetrieve(id, requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
-    Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+    Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type IntegrationsStripeRetrieveSuspenseQueryResult = NonNullable<
-  Awaited<ReturnType<typeof integrationsStripeRetrieve>>
->;
-export type IntegrationsStripeRetrieveSuspenseQueryError = ErrorType<unknown>;
+export type IntegrationsStripeConnectionsRetrieveSuspenseQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>
+  >;
+export type IntegrationsStripeConnectionsRetrieveSuspenseQueryError =
+  ErrorType<unknown>;
 
-export function useIntegrationsStripeRetrieveSuspense<
-  TData = Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+export function useIntegrationsStripeConnectionsRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
   TError = ErrorType<unknown>,
 >(
+  id: string,
   options: {
     query: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
         TError,
         TData
       >
@@ -529,14 +924,15 @@ export function useIntegrationsStripeRetrieveSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useIntegrationsStripeRetrieveSuspense<
-  TData = Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+export function useIntegrationsStripeConnectionsRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
   TError = ErrorType<unknown>,
 >(
+  id: string,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
         TError,
         TData
       >
@@ -547,14 +943,15 @@ export function useIntegrationsStripeRetrieveSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useIntegrationsStripeRetrieveSuspense<
-  TData = Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+export function useIntegrationsStripeConnectionsRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
   TError = ErrorType<unknown>,
 >(
+  id: string,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
         TError,
         TData
       >
@@ -566,14 +963,15 @@ export function useIntegrationsStripeRetrieveSuspense<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useIntegrationsStripeRetrieveSuspense<
-  TData = Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+export function useIntegrationsStripeConnectionsRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
   TError = ErrorType<unknown>,
 >(
+  id: string,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof integrationsStripeRetrieve>>,
+        Awaited<ReturnType<typeof integrationsStripeConnectionsRetrieve>>,
         TError,
         TData
       >
@@ -585,7 +983,7 @@ export function useIntegrationsStripeRetrieveSuspense<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions =
-    getIntegrationsStripeRetrieveSuspenseQueryOptions(options);
+    getIntegrationsStripeConnectionsRetrieveSuspenseQueryOptions(id, options);
 
   const query = useSuspenseQuery(
     queryOptions,
@@ -600,12 +998,13 @@ export function useIntegrationsStripeRetrieveSuspense<
 }
 
 export const updateStripeConnection = (
+  id: string,
   stripeConnectionUpdate: StripeConnectionUpdate,
   options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<StripeConnection>(
     {
-      url: `/api/v1/integrations/stripe`,
+      url: `/api/v1/integrations/stripe/connections/${id}`,
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       data: stripeConnectionUpdate,
@@ -621,14 +1020,14 @@ export const getUpdateStripeConnectionMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateStripeConnection>>,
     TError,
-    { data: StripeConnectionUpdate },
+    { id: string; data: StripeConnectionUpdate },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateStripeConnection>>,
   TError,
-  { data: StripeConnectionUpdate },
+  { id: string; data: StripeConnectionUpdate },
   TContext
 > => {
   const mutationKey = ["updateStripeConnection"];
@@ -642,11 +1041,11 @@ export const getUpdateStripeConnectionMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateStripeConnection>>,
-    { data: StripeConnectionUpdate }
+    { id: string; data: StripeConnectionUpdate }
   > = (props) => {
-    const { data } = props ?? {};
+    const { id, data } = props ?? {};
 
-    return updateStripeConnection(data, requestOptions);
+    return updateStripeConnection(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -666,7 +1065,7 @@ export const useUpdateStripeConnection = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateStripeConnection>>,
       TError,
-      { data: StripeConnectionUpdate },
+      { id: string; data: StripeConnectionUpdate },
       TContext
     >;
     request?: SecondParameter<typeof axiosInstance>;
@@ -675,7 +1074,7 @@ export const useUpdateStripeConnection = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof updateStripeConnection>>,
   TError,
-  { data: StripeConnectionUpdate },
+  { id: string; data: StripeConnectionUpdate },
   TContext
 > => {
   const mutationOptions = getUpdateStripeConnectionMutationOptions(options);
@@ -683,10 +1082,11 @@ export const useUpdateStripeConnection = <
   return useMutation(mutationOptions, queryClient);
 };
 export const deleteStripeConnection = (
+  id: string,
   options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<void>(
-    { url: `/api/v1/integrations/stripe`, method: "DELETE" },
+    { url: `/api/v1/integrations/stripe/connections/${id}`, method: "DELETE" },
     options,
   );
 };
@@ -698,14 +1098,14 @@ export const getDeleteStripeConnectionMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deleteStripeConnection>>,
     TError,
-    void,
+    { id: string },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof deleteStripeConnection>>,
   TError,
-  void,
+  { id: string },
   TContext
 > => {
   const mutationKey = ["deleteStripeConnection"];
@@ -719,9 +1119,11 @@ export const getDeleteStripeConnectionMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof deleteStripeConnection>>,
-    void
-  > = () => {
-    return deleteStripeConnection(requestOptions);
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteStripeConnection(id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -741,7 +1143,7 @@ export const useDeleteStripeConnection = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deleteStripeConnection>>,
       TError,
-      void,
+      { id: string },
       TContext
     >;
     request?: SecondParameter<typeof axiosInstance>;
@@ -750,7 +1152,7 @@ export const useDeleteStripeConnection = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof deleteStripeConnection>>,
   TError,
-  void,
+  { id: string },
   TContext
 > => {
   const mutationOptions = getDeleteStripeConnectionMutationOptions(options);

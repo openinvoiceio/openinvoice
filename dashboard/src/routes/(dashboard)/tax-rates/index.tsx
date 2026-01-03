@@ -41,7 +41,13 @@ import { useDataTable } from "@/hooks/use-data-table";
 import { getSortingStateParser } from "@/lib/parsers";
 import { createFileRoute } from "@tanstack/react-router";
 import { addDays, formatISO } from "date-fns";
-import { BoxIcon, PercentIcon, PlusIcon, TagIcon } from "lucide-react";
+import {
+  BoxIcon,
+  PercentIcon,
+  PlusIcon,
+  TagIcon,
+  TruckIcon,
+} from "lucide-react";
 import {
   parseAsArrayOf,
   parseAsInteger,
@@ -136,6 +142,10 @@ function RouteComponent() {
                 <TabsTrigger value="/tax-rates">
                   <PercentIcon />
                   Tax rates
+                </TabsTrigger>
+                <TabsTrigger value="/shipping-rates">
+                  <TruckIcon />
+                  Shipping rates
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="/tax-rates">

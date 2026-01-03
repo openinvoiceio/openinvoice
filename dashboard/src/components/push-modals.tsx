@@ -17,6 +17,8 @@ import { ProductCreateSheet } from "@/components/product-create-sheet";
 import { ProductEditSheet } from "@/components/product-edit-sheet";
 import { QuoteCreateDialog } from "@/components/quote-create-dialog.tsx";
 import { QuotePreviewDialog } from "@/components/quote-preview-dialog.tsx";
+import { ShippingRateCreateSheet } from "@/components/shipping-rate-create-sheet.tsx";
+import { ShippingRateEditSheet } from "@/components/shipping-rate-edit-sheet.tsx";
 import { SupportDialog } from "@/components/support-dialog";
 import { TaxRateCreateSheet } from "@/components/tax-rate-create-sheet";
 import { TaxRateEditSheet } from "@/components/tax-rate-edit-sheet";
@@ -43,6 +45,8 @@ export const { pushModal, popModal, ModalProvider } = createPushModal({
     ProductEditSheet,
     QuoteCreateDialog,
     QuotePreviewDialog,
+    ShippingRateCreateSheet,
+    ShippingRateEditSheet,
     SupportDialog,
     TaxRateCreateSheet,
     TaxRateEditSheet,

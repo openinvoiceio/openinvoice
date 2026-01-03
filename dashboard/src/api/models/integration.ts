@@ -6,8 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface StripeConnectionUpdate {
-  name?: string;
-  /** @nullable */
-  redirect_url?: string | null;
+export interface Integration {
+  name: string;
+  slug: string;
+  description: string;
+  is_enabled: boolean;
 }

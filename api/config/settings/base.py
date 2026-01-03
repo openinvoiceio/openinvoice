@@ -329,7 +329,7 @@ SPECTACULAR_SETTINGS = {
         "CreditNoteReasonEnum": "apps.credit_notes.enums.CreditNoteReason.choices",
         "NumberingSystemAppliesToEnum": "apps.numbering_systems.enums.NumberingSystemAppliesTo.choices",
         "QuoteStatusEnum": "apps.quotes.enums.QuoteStatus.choices",
-        # "IntegrationTypeEnum": "apps.integrations.enums.IntegrationType.choices",
+        "ShippingRateTaxPolicyEnum": "apps.shipping_rates.enums.ShippingRateTaxPolicy.choices",
     },
 }
 

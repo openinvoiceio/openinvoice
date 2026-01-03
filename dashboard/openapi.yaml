@@ -10494,7 +10494,7 @@ components:
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
         tax_policy:
-          $ref: '#/components/schemas/TaxPolicyEnum'
+          $ref: '#/components/schemas/ShippingRateTaxPolicyEnum'
         is_active:
           type: boolean
         metadata: {}
@@ -10539,11 +10539,19 @@ components:
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
         tax_policy:
-          $ref: '#/components/schemas/TaxPolicyEnum'
+          $ref: '#/components/schemas/ShippingRateTaxPolicyEnum'
         metadata:
           nullable: true
       required:
       - name
+    ShippingRateTaxPolicyEnum:
+      enum:
+      - match_goods
+      - exempt
+      type: string
+      description: |-
+        * `match_goods` - Match Goods
+        * `exempt` - Exempt
     ShippingRateUpdate:
       type: object
       properties:
@@ -10561,7 +10569,7 @@ components:
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
         tax_policy:
-          $ref: '#/components/schemas/TaxPolicyEnum'
+          $ref: '#/components/schemas/ShippingRateTaxPolicyEnum'
         metadata: {}
     StripeBillingPortal:
       type: object
@@ -10929,14 +10937,6 @@ components:
         * `za_vat` - za_vat
         * `zm_tin` - zm_tin
         * `zw_tin` - zw_tin
-    TaxPolicyEnum:
-      enum:
-      - match_goods
-      - exempt
-      type: string
-      description: |-
-        * `match_goods` - Match Goods
-        * `exempt` - Exempt
     TaxRate:
       type: object
       properties:

@@ -64,6 +64,8 @@ export interface Invoice {
   outstanding_amount: string;
   /** @nullable */
   payment_provider: InvoicePaymentProvider;
+  /** @nullable */
+  payment_connection_id: string | null;
   created_at: string;
   /** @nullable */
   updated_at: string | null;

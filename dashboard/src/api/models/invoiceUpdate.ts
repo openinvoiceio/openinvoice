@@ -40,6 +40,8 @@ export interface InvoiceUpdate {
   description?: string | null;
   /** @nullable */
   payment_provider?: InvoiceUpdatePaymentProvider;
+  /** @nullable */
+  payment_connection_id?: string | null;
   delivery_method?: DeliveryMethodEnum;
   recipients?: string[];
 }

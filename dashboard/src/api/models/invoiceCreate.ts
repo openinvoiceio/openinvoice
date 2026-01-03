@@ -47,6 +47,8 @@ export interface InvoiceCreate {
   description?: string | null;
   /** @nullable */
   payment_provider?: InvoiceCreatePaymentProvider;
+  /** @nullable */
+  payment_connection_id?: string | null;
   delivery_method?: DeliveryMethodEnum;
   recipients?: string[];
 }

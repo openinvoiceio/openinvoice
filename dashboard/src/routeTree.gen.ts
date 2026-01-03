@@ -23,6 +23,7 @@ import { Route as dashboardOverviewRouteImport } from './routes/(dashboard)/over
 import { Route as dashboardOnboardingRouteImport } from './routes/(dashboard)/onboarding'
 import { Route as dashboardSettingsRouteRouteImport } from './routes/(dashboard)/settings/route'
 import { Route as dashboardTaxRatesIndexRouteImport } from './routes/(dashboard)/tax-rates/index'
+import { Route as dashboardShippingRatesIndexRouteImport } from './routes/(dashboard)/shipping-rates/index'
 import { Route as dashboardSettingsIndexRouteImport } from './routes/(dashboard)/settings/index'
 import { Route as dashboardQuotesIndexRouteImport } from './routes/(dashboard)/quotes/index'
 import { Route as dashboardProductsIndexRouteImport } from './routes/(dashboard)/products/index'
@@ -114,6 +115,12 @@ const dashboardTaxRatesIndexRoute = dashboardTaxRatesIndexRouteImport.update({
   path: '/tax-rates/',
   getParentRoute: () => dashboardRouteRoute,
 } as any)
+const dashboardShippingRatesIndexRoute =
+  dashboardShippingRatesIndexRouteImport.update({
+    id: '/shipping-rates/',
+    path: '/shipping-rates/',
+    getParentRoute: () => dashboardRouteRoute,
+  } as any)
 const dashboardSettingsIndexRoute = dashboardSettingsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -261,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/products': typeof dashboardProductsIndexRoute
   '/quotes': typeof dashboardQuotesIndexRoute
   '/settings/': typeof dashboardSettingsIndexRoute
+  '/shipping-rates': typeof dashboardShippingRatesIndexRoute
   '/tax-rates': typeof dashboardTaxRatesIndexRoute
   '/credit-notes/$id/edit': typeof dashboardCreditNotesIdEditRoute
   '/customers/$id/edit': typeof dashboardCustomersIdEditRoute
@@ -295,6 +303,7 @@ export interface FileRoutesByTo {
   '/products': typeof dashboardProductsIndexRoute
   '/quotes': typeof dashboardQuotesIndexRoute
   '/settings': typeof dashboardSettingsIndexRoute
+  '/shipping-rates': typeof dashboardShippingRatesIndexRoute
   '/tax-rates': typeof dashboardTaxRatesIndexRoute
   '/credit-notes/$id/edit': typeof dashboardCreditNotesIdEditRoute
   '/customers/$id/edit': typeof dashboardCustomersIdEditRoute
@@ -334,6 +343,7 @@ export interface FileRoutesById {
   '/(dashboard)/products/': typeof dashboardProductsIndexRoute
   '/(dashboard)/quotes/': typeof dashboardQuotesIndexRoute
   '/(dashboard)/settings/': typeof dashboardSettingsIndexRoute
+  '/(dashboard)/shipping-rates/': typeof dashboardShippingRatesIndexRoute
   '/(dashboard)/tax-rates/': typeof dashboardTaxRatesIndexRoute
   '/(dashboard)/credit-notes/$id_/edit': typeof dashboardCreditNotesIdEditRoute
   '/(dashboard)/customers/$id_/edit': typeof dashboardCustomersIdEditRoute
@@ -372,6 +382,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/quotes'
     | '/settings/'
+    | '/shipping-rates'
     | '/tax-rates'
     | '/credit-notes/$id/edit'
     | '/customers/$id/edit'
@@ -406,6 +417,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/quotes'
     | '/settings'
+    | '/shipping-rates'
     | '/tax-rates'
     | '/credit-notes/$id/edit'
     | '/customers/$id/edit'
@@ -444,6 +456,7 @@ export interface FileRouteTypes {
     | '/(dashboard)/products/'
     | '/(dashboard)/quotes/'
     | '/(dashboard)/settings/'
+    | '/(dashboard)/shipping-rates/'
     | '/(dashboard)/tax-rates/'
     | '/(dashboard)/credit-notes/$id_/edit'
     | '/(dashboard)/customers/$id_/edit'
@@ -559,6 +572,13 @@ declare module '@tanstack/react-router' {
       path: '/tax-rates'
       fullPath: '/tax-rates'
       preLoaderRoute: typeof dashboardTaxRatesIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/shipping-rates/': {
+      id: '/(dashboard)/shipping-rates/'
+      path: '/shipping-rates'
+      fullPath: '/shipping-rates'
+      preLoaderRoute: typeof dashboardShippingRatesIndexRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
     '/(dashboard)/settings/': {
@@ -759,6 +779,7 @@ interface dashboardRouteRouteChildren {
   dashboardInvoicesIndexRoute: typeof dashboardInvoicesIndexRoute
   dashboardProductsIndexRoute: typeof dashboardProductsIndexRoute
   dashboardQuotesIndexRoute: typeof dashboardQuotesIndexRoute
+  dashboardShippingRatesIndexRoute: typeof dashboardShippingRatesIndexRoute
   dashboardTaxRatesIndexRoute: typeof dashboardTaxRatesIndexRoute
   dashboardCreditNotesIdEditRoute: typeof dashboardCreditNotesIdEditRoute
   dashboardCustomersIdEditRoute: typeof dashboardCustomersIdEditRoute
@@ -781,6 +802,7 @@ const dashboardRouteRouteChildren: dashboardRouteRouteChildren = {
   dashboardInvoicesIndexRoute: dashboardInvoicesIndexRoute,
   dashboardProductsIndexRoute: dashboardProductsIndexRoute,
   dashboardQuotesIndexRoute: dashboardQuotesIndexRoute,
+  dashboardShippingRatesIndexRoute: dashboardShippingRatesIndexRoute,
   dashboardTaxRatesIndexRoute: dashboardTaxRatesIndexRoute,
   dashboardCreditNotesIdEditRoute: dashboardCreditNotesIdEditRoute,
   dashboardCustomersIdEditRoute: dashboardCustomersIdEditRoute,

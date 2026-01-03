@@ -8,7 +8,8 @@
 
 export interface StripeConnection {
   id: string;
-  connected_account_id: string;
+  name: string;
+  code: string;
   /** @nullable */
   redirect_url: string | null;
   created_at: string;

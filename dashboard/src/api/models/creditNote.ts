@@ -43,6 +43,8 @@ export interface CreditNote {
   total_amount: string;
   /** @nullable */
   payment_provider: CreditNotePaymentProvider;
+  /** @nullable */
+  payment_connection_id: string | null;
   created_at: string;
   /** @nullable */
   updated_at: string | null;

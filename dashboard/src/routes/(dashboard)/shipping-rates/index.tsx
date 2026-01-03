@@ -1,11 +1,10 @@
-import { useCouponsList } from "@/api/endpoints/coupons/coupons";
-import type { Coupon } from "@/api/models";
+import { useShippingRatesList } from "@/api/endpoints/shipping-rates/shipping-rates.ts";
+import type { ShippingRate } from "@/api/models";
 import {
   AppHeader,
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
-import { columns } from "@/components/coupon-table";
 import {
   DataTable,
   DataTableContainer,
@@ -21,6 +20,7 @@ import { DataTableViewOptions } from "@/components/data-table/data-table-view-op
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { pushModal } from "@/components/push-modals";
 import { SearchCommand } from "@/components/search-command.tsx";
+import { columns } from "@/components/shipping-rate-table";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -56,7 +56,7 @@ import {
   useQueryStates,
 } from "nuqs";
 
-export const Route = createFileRoute("/(dashboard)/coupons/")({
+export const Route = createFileRoute("/(dashboard)/shipping-rates/")({
   component: RouteComponent,
 });
 
@@ -65,14 +65,14 @@ function RouteComponent() {
   const [{ page, perPage, sort, name, created_at }] = useQueryStates({
     page: parseAsInteger.withDefault(1),
     perPage: parseAsInteger.withDefault(20),
-    sort: getSortingStateParser<Coupon>().withDefault([
+    sort: getSortingStateParser<ShippingRate>().withDefault([
       { id: "created_at", desc: true },
     ]),
     name: parseAsString.withDefault(""),
     created_at: parseAsArrayOf(parseAsIsoDateTime).withDefault([]),
   });
 
-  const { data } = useCouponsList({
+  const { data } = useShippingRatesList({
     page,
     page_size: perPage,
     ordering: sort.map((s) => `${s.desc ? "-" : ""}${s.id}`).join(","),
@@ -104,7 +104,7 @@ function RouteComponent() {
       <AppHeader>
         <AppHeaderContent>
           <SidebarTrigger />
-          <NavBreadcrumb items={[{ type: "page", label: "Coupons" }]} />
+          <NavBreadcrumb items={[{ type: "page", label: "Shipping rates" }]} />
         </AppHeaderContent>
         <AppHeaderActions>
           <div className="flex items-center gap-2 text-sm">
@@ -112,10 +112,10 @@ function RouteComponent() {
             <Button
               type="button"
               size="sm"
-              onClick={() => pushModal("CouponCreateSheet", { name: "" })}
+              onClick={() => pushModal("ShippingRateCreateSheet", { name: "" })}
             >
               <PlusIcon />
-              Add coupon
+              Add shipping rate
             </Button>
           </div>
         </AppHeaderActions>
@@ -127,7 +127,7 @@ function RouteComponent() {
               <SectionTitle>Product catalogue</SectionTitle>
             </SectionHeader>
             <Tabs
-              defaultValue="/coupons"
+              defaultValue="/shipping-rates"
               onValueChange={(value) => navigate({ to: value })}
             >
               <TabsList>
@@ -148,7 +148,7 @@ function RouteComponent() {
                   Shipping rates
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="/coupons">
+              <TabsContent value="/shipping-rates">
                 <DataTableContainer>
                   <DataTableToolbar table={table}>
                     <DataTableFilterList table={table} />
@@ -158,23 +158,25 @@ function RouteComponent() {
                   <DataTable table={table}>
                     <Empty>
                       <EmptyHeader>
-                        <EmptyTitle>Add your first coupon</EmptyTitle>
-                        <EmptyDescription>
-                          Coupons are a great way to offer discounts to your
-                          customers.
-                        </EmptyDescription>
+                        <EmptyHeader>
+                          <EmptyTitle>Add your first shipping rate</EmptyTitle>
+                          <EmptyDescription>
+                            Shipping rates help you manage how much to charge
+                            for shipping.
+                          </EmptyDescription>
+                        </EmptyHeader>
+                        <EmptyContent>
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              pushModal("ShippingRateCreateSheet", { name: "" })
+                            }
+                          >
+                            <PlusIcon />
+                            Add shipping rate
+                          </Button>
+                        </EmptyContent>
                       </EmptyHeader>
-                      <EmptyContent>
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            pushModal("CouponCreateSheet", { name: "" })
-                          }
-                        >
-                          <PlusIcon />
-                          Add coupon
-                        </Button>
-                      </EmptyContent>
                     </Empty>
                   </DataTable>
                   <DataTableFooter>

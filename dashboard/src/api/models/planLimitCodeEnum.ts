@@ -13,6 +13,7 @@
  * `max_products` - Max Products
  * `max_coupons` - Max Coupons
  * `max_tax_rates` - Max Tax Rates
+ * `max_shipping_rates` - Max Shipping Rates
  * `max_invoices_per_month` - Max Invoices Per Month
  * `max_credit_notes_per_month` - Max Credit Notes Per Month
  * `max_quotes_per_month` - Max Quotes Per Month
@@ -28,6 +29,7 @@ export const PlanLimitCodeEnum = {
   max_products: "max_products",
   max_coupons: "max_coupons",
   max_tax_rates: "max_tax_rates",
+  max_shipping_rates: "max_shipping_rates",
   max_invoices_per_month: "max_invoices_per_month",
   max_credit_notes_per_month: "max_credit_notes_per_month",
   max_quotes_per_month: "max_quotes_per_month",
