@@ -20,6 +20,7 @@ from apps.numbering_systems.enums import NumberingSystemAppliesTo, NumberingSyst
 from apps.portal.crypto import generate_portal_token
 from apps.prices.enums import PriceModel
 from apps.quotes.enums import QuoteDeliveryMethod, QuoteStatus
+from apps.shipping_rates.enums import ShippingRateTaxPolicy
 from apps.taxes.enums import TaxIdType
 
 
@@ -155,6 +156,20 @@ class PriceTierFactory(DjangoModelFactory):
     currency = LazyAttribute(lambda obj: obj.price.currency)
     from_value = 1
     to_value = None
+
+
+class ShippingRateFactory(DjangoModelFactory):
+    class Meta:
+        model = "shipping_rates.ShippingRate"
+
+    account = SubFactory(AccountFactory)
+    name = "Standard Shipping"
+    code = None
+    currency = "PLN"
+    amount = Decimal("20.00")
+    tax_policy = ShippingRateTaxPolicy.MATCH_GOODS
+    is_active = True
+    metadata = {}
 
 
 class InvoiceFactory(DjangoModelFactory):

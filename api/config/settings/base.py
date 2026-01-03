@@ -49,6 +49,7 @@ LOCAL_APPS = [
     "apps.prices.apps.PricesConfig",
     "apps.products.apps.ProductsConfig",
     "apps.search.apps.SearchConfig",
+    "apps.shipping_rates.apps.ShippingRatesConfig",
     "apps.stripe.apps.StripeConfig",
     "apps.taxes.apps.TaxesConfig",
     "apps.users.apps.UsersConfig",

@@ -17,6 +17,7 @@ class LimitCode(models.TextChoices):
     MAX_PRODUCTS = "max_products"
     MAX_COUPONS = "max_coupons"
     MAX_TAX_RATES = "max_tax_rates"
+    MAX_SHIPPING_RATES = "max_shipping_rates"
     MAX_INVOICES_PER_MONTH = "max_invoices_per_month"
     MAX_CREDIT_NOTES_PER_MONTH = "max_credit_notes_per_month"
     MAX_QUOTES_PER_MONTH = "max_quotes_per_month"

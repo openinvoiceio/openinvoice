@@ -4727,6 +4727,175 @@ paths:
               schema:
                 $ref: '#/components/schemas/Search'
           description: ''
+  /api/v1/shipping-rates:
+    get:
+      operationId: shipping_rates_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - shipping-rates
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShippingRateList'
+          description: ''
+    post:
+      operationId: create_shipping_rate
+      tags:
+      - shipping-rates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingRateCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingRate'
+          description: ''
+  /api/v1/shipping-rates/{id}:
+    get:
+      operationId: shipping_rates_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - shipping-rates
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingRate'
+          description: ''
+    put:
+      operationId: update_shipping_rate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - shipping-rates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingRateUpdate'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingRate'
+          description: ''
+    delete:
+      operationId: delete_shipping_rate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - shipping-rates
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/shipping-rates/{id}/archive:
+    post:
+      operationId: archive_shipping_rate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - shipping-rates
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingRate'
+          description: ''
+  /api/v1/shipping-rates/{id}/unarchive:
+    post:
+      operationId: unarchive_shipping_rate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - shipping-rates
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingRate'
+          description: ''
   /api/v1/stripe/billing-portal:
     post:
       operationId: create_stripe_billing_portal
@@ -9068,6 +9237,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Quote'
+    PaginatedShippingRateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShippingRate'
     PaginatedStripeConnectionList:
       type: object
       required:
@@ -9283,6 +9475,7 @@ components:
       - max_products
       - max_coupons
       - max_tax_rates
+      - max_shipping_rates
       - max_invoices_per_month
       - max_credit_notes_per_month
       - max_quotes_per_month
@@ -9294,6 +9487,7 @@ components:
         * `max_products` - Max Products
         * `max_coupons` - Max Coupons
         * `max_tax_rates` - Max Tax Rates
+        * `max_shipping_rates` - Max Shipping Rates
         * `max_invoices_per_month` - Max Invoices Per Month
         * `max_credit_notes_per_month` - Max Credit Notes Per Month
         * `max_quotes_per_month` - Max Quotes Per Month
@@ -10277,6 +10471,98 @@ components:
       type: string
       enum:
       - server_error
+    ShippingRate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        code:
+          type: string
+          nullable: true
+          maxLength: 255
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
+        tax_policy:
+          $ref: '#/components/schemas/TaxPolicyEnum'
+        is_active:
+          type: boolean
+        metadata: {}
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        archived_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - account_id
+      - amount
+      - archived_at
+      - code
+      - created_at
+      - currency
+      - id
+      - is_active
+      - metadata
+      - name
+      - tax_policy
+      - updated_at
+    ShippingRateCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        code:
+          type: string
+          nullable: true
+          maxLength: 255
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
+        tax_policy:
+          $ref: '#/components/schemas/TaxPolicyEnum'
+        metadata:
+          nullable: true
+      required:
+      - name
+    ShippingRateUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        code:
+          type: string
+          nullable: true
+          maxLength: 255
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
+        tax_policy:
+          $ref: '#/components/schemas/TaxPolicyEnum'
+        metadata: {}
     StripeBillingPortal:
       type: object
       properties:
@@ -10643,6 +10929,14 @@ components:
         * `za_vat` - za_vat
         * `zm_tin` - zm_tin
         * `zw_tin` - zw_tin
+    TaxPolicyEnum:
+      enum:
+      - match_goods
+      - exempt
+      type: string
+      description: |-
+        * `match_goods` - Match Goods
+        * `exempt` - Exempt
     TaxRate:
       type: object
       properties:

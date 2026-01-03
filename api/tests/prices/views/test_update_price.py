@@ -13,12 +13,12 @@ pytestmark = pytest.mark.django_db
 
 
 def test_update_flat_price(api_client, user, account):
-    existing_price = PriceFactory(account=account)
+    price = PriceFactory(account=account)
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.put(
-        f"/api/v1/prices/{existing_price.id}",
+        f"/api/v1/prices/{price.id}",
         data={
             "currency": "USD",
             "amount": "20.00",
@@ -29,11 +29,11 @@ def test_update_flat_price(api_client, user, account):
 
     assert response.status_code == 200
     assert response.data == {
-        "id": str(existing_price.id),
+        "id": str(price.id),
         "account_id": str(account.id),
         "product": {
-            "id": str(existing_price.product.id),
-            "name": existing_price.product.name,
+            "id": str(price.product.id),
+            "name": price.product.name,
             "description": "Test product",
             "is_active": True,
             "default_price_id": None,
