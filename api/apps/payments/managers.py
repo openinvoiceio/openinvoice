@@ -7,7 +7,8 @@ from django.db import models
 from django.utils import timezone
 from djmoney.money import Money
 
-from .backend import get_payment_backend
+from apps.integrations.base import get_payment_integration
+
 from .enums import PaymentStatus
 from .exceptions import (
     InvoicePaymentAmountExceededError,
@@ -49,11 +50,7 @@ class PaymentManager(models.Manager.from_queryset(PaymentQuerySet)):
         return payment
 
     def checkout_invoice(self, invoice: Invoice) -> Payment:
-        backend = get_payment_backend(
-            account_id=invoice.account,
-            connection_id=invoice.payment_connection_id,
-            payment_provider=invoice.payment_provider,
-        )
+        backend = get_payment_integration(slug=invoice.payment_provider)
         payment = self.create(
             account=invoice.account,
             status=PaymentStatus.PENDING,

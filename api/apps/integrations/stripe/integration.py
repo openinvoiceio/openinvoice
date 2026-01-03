@@ -6,9 +6,8 @@ import structlog
 from djmoney.money import Money
 from stripe import StripeError
 
-from apps.payments.backend import PaymentBackend
-from apps.payments.exceptions import PaymentBackendNotFoundError, PaymentCheckoutError
-from apps.payments.models import Payment
+from apps.integrations.base import PaymentProviderIntegration
+from apps.integrations.exceptions import IntegrationConnectionError, IntegrationError
 
 from .models import StripeConnection
 
@@ -43,28 +42,28 @@ def convert_amount(amount: Money) -> int:
     return int((amount.amount * factor).to_integral_value())
 
 
-class StripePaymentBackend(PaymentBackend):
+class StripeIntegration(PaymentProviderIntegration):
+    name = "Stripe"
+    slug = "stripe"
+    description = "Stripe Payment Integration"
     default_success_url = "https://stripe.com"
 
-    def __init__(self, connection: StripeConnection) -> None:
-        self.connection = connection
-        self.client = stripe.StripeClient(api_key=connection.api_key)
+    def is_enabled(self, account_id: UUID) -> bool:
+        return StripeConnection.objects.filter(account_id=account_id).exists()
 
-    @classmethod
-    def from_account(cls, account_id: UUID, connection_id: UUID) -> "StripePaymentBackend":
+    def checkout(self, invoice: "Invoice", payment_id: UUID) -> tuple[str, str | None]:
         try:
-            connection = StripeConnection.objects.get(account_id=account_id, id=connection_id)
+            connection = StripeConnection.objects.get(account_id=invoice.account_id, id=invoice.payment_connection_id)
         except StripeConnection.DoesNotExist as e:
-            raise PaymentBackendNotFoundError from e
-        return cls(connection)
+            raise IntegrationConnectionError from e
 
-    def checkout(self, invoice: "Invoice", payment: Payment) -> tuple[str, str | None]:
+        client = stripe.StripeClient(api_key=connection.api_key)
         try:
-            session = self.client.checkout.Session.create(
+            session = client.checkout.Session.create(
                 mode="payment",
                 customer_email=invoice.customer.email,
-                client_reference_id=str(payment.id),
-                success_url=self.connection.redirect_url or self.default_success_url,
+                client_reference_id=str(payment_id),
+                success_url=connection.redirect_url or self.default_success_url,
                 invoice_creation={"enabled": False},
                 line_items=[
                     {
@@ -79,6 +78,6 @@ class StripePaymentBackend(PaymentBackend):
                 ],
             )
         except StripeError as e:
-            raise PaymentCheckoutError from e
+            raise IntegrationError from e
 
         return session.id, getattr(session, "url", None)

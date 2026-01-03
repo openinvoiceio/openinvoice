@@ -1,39 +1,32 @@
-from django.db.models import CharField, Model, Value
+from django.conf import settings
 from drf_spectacular.utils import extend_schema
-from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsAccountMember
 
-from .enums import IntegrationType
-from .serializers import IntegrationConnectionSerializer
+from .base import get_integration
+from .serializers import IntegrationSerializer
 
 
-class IntegrationConnectionsListAPIView(generics.GenericAPIView):
-    # queryset = StripeConnection.objects.none()
-    serializer_class = IntegrationConnectionSerializer
-    pagination_class = None
+class IntegrationsListAPIView(APIView):
+    serializer_class = IntegrationSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
-    # connections = [
-    #     (StripeConnection, IntegrationType.STRIPE),
-    # ]
 
-    def get_model_qs(self, model: Model, integration_type: IntegrationType):
-        return (
-            model.objects.filter(account_id=self.request.account.id)
-            .annotate(type=Value(integration_type, output_field=CharField()))
-            .values("id", "type", "created_at")
-        )
-
-    @extend_schema(
-        operation_id="list_integration_connections", responses={200: IntegrationConnectionSerializer(many=True)}
-    )
+    @extend_schema(operation_id="list_integrations", responses={200: IntegrationSerializer(many=True)})
     def get(self, _):
-        queryset = None
-        for model, integration_type in self.connections:
-            qs = self.get_model_qs(model, integration_type)
-            queryset = qs if queryset is None else queryset.union(qs)
+        integrations = []
+        for slug in settings.INTEGRATIONS:
+            integration = get_integration(slug=slug)
+            integrations.append(
+                {
+                    "name": integration.name,
+                    "slug": integration.slug,
+                    "description": integration.description,
+                    "is_enabled": integration.is_enabled(self.request.account.id),
+                }
+            )
 
-        serializer = self.get_serializer(queryset or [], many=True)
+        serializer = IntegrationSerializer(integrations, many=True)
         return Response(serializer.data)

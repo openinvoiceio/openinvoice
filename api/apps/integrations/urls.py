@@ -1,8 +1,8 @@
 from django.urls import include, path
 
-from .views import IntegrationConnectionsListAPIView
+from .views import IntegrationsListAPIView
 
 urlpatterns = [
-    path("integrations", IntegrationConnectionsListAPIView.as_view()),
+    path("integrations", IntegrationsListAPIView.as_view()),
     path("", include("apps.integrations.stripe.urls")),
 ]

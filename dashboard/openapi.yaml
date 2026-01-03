@@ -2523,7 +2523,24 @@ paths:
           description: ''
   /api/v1/integrations:
     get:
-      operationId: list_integration_connections
+      operationId: list_integrations
+      tags:
+      - integrations
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Integration'
+          description: ''
+  /api/v1/integrations/stripe/connections:
+    get:
+      operationId: integrations_stripe_connections_list
       parameters:
       - name: ordering
         required: false
@@ -2531,6 +2548,18 @@ paths:
         description: Which field to use when ordering the results.
         schema:
           type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - name: search
         required: false
         in: query
@@ -2547,13 +2576,38 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/IntegrationConnection'
+                $ref: '#/components/schemas/PaginatedStripeConnectionList'
           description: ''
-  /api/v1/integrations/stripe:
+    post:
+      operationId: create_stripe_connection
+      tags:
+      - integrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StripeConnectionCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StripeConnection'
+          description: ''
+  /api/v1/integrations/stripe/connections/{id}:
     get:
-      operationId: integrations_stripe_retrieve
+      operationId: integrations_stripe_connections_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
       tags:
       - integrations
       security:
@@ -2568,6 +2622,13 @@ paths:
           description: ''
     put:
       operationId: update_stripe_connection
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
       tags:
       - integrations
       requestBody:
@@ -2587,6 +2648,13 @@ paths:
           description: ''
     delete:
       operationId: delete_stripe_connection
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
       tags:
       - integrations
       security:
@@ -6365,6 +6433,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/PaymentProviderEnum'
           nullable: true
+        payment_connection_id:
+          type: string
+          format: uuid
+          nullable: true
         created_at:
           type: string
           format: date-time
@@ -6422,6 +6494,7 @@ components:
       - metadata
       - number
       - numbering_system_id
+      - payment_connection_id
       - payment_provider
       - pdf_id
       - reason
@@ -7765,22 +7838,22 @@ components:
       - date
       - invoice_count
       - total_amount
-    IntegrationConnection:
+    Integration:
       type: object
       properties:
-        id:
+        name:
           type: string
-          format: uuid
-        type:
-          $ref: '#/components/schemas/PaymentProviderEnum'
-        created_at:
+        slug:
           type: string
-          format: date-time
-          readOnly: true
+        description:
+          type: string
+        is_enabled:
+          type: boolean
       required:
-      - created_at
-      - id
-      - type
+      - description
+      - is_enabled
+      - name
+      - slug
     Invitation:
       type: object
       properties:
@@ -7936,6 +8009,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/PaymentProviderEnum'
           nullable: true
+        payment_connection_id:
+          type: string
+          format: uuid
+          nullable: true
         created_at:
           type: string
           format: date-time
@@ -8006,6 +8083,7 @@ components:
       - opened_at
       - outstanding_amount
       - paid_at
+      - payment_connection_id
       - payment_provider
       - pdf_id
       - previous_revision_id
@@ -8109,6 +8187,10 @@ components:
         payment_provider:
           allOf:
           - $ref: '#/components/schemas/PaymentProviderEnum'
+          nullable: true
+        payment_connection_id:
+          type: string
+          format: uuid
           nullable: true
         delivery_method:
           $ref: '#/components/schemas/DeliveryMethodEnum'
@@ -8509,6 +8591,10 @@ components:
         payment_provider:
           allOf:
           - $ref: '#/components/schemas/PaymentProviderEnum'
+          nullable: true
+        payment_connection_id:
+          type: string
+          format: uuid
           nullable: true
         delivery_method:
           $ref: '#/components/schemas/DeliveryMethodEnum'
@@ -8982,6 +9068,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Quote'
+    PaginatedStripeConnectionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StripeConnection'
     PaginatedTaxRateList:
       type: object
       required:
@@ -10195,7 +10304,9 @@ components:
         id:
           type: string
           format: uuid
-        connected_account_id:
+        name:
+          type: string
+        code:
           type: string
         redirect_url:
           type: string
@@ -10208,14 +10319,34 @@ components:
           type: string
           format: date-time
       required:
-      - connected_account_id
+      - code
       - created_at
       - id
+      - name
       - redirect_url
       - updated_at
+    StripeConnectionCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        api_key:
+          type: string
+        redirect_url:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - api_key
+      - code
+      - name
     StripeConnectionUpdate:
       type: object
       properties:
+        name:
+          type: string
         redirect_url:
           type: string
           format: uri

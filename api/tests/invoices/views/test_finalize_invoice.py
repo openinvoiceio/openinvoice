@@ -18,7 +18,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def stripe_checkout_mock():
-    with patch("apps.integrations.stripe.backends.StripePaymentBackend.checkout") as mock:
+    with patch("apps.integrations.stripe.integration.StripeIntegration.checkout") as mock:
         yield mock
 
 
