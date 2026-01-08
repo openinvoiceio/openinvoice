@@ -3,8 +3,7 @@ from decimal import Decimal
 import pytest
 from djmoney.money import Money
 
-from apps.invoices.models import InvoiceDiscount, InvoiceTax
-from common.calculations import MAX_AMOUNT, calculate_percentage_amount
+from common.calculations import MAX_AMOUNT
 from tests.factories import (
     CouponFactory,
     InvoiceDiscountFactory,
@@ -19,62 +18,66 @@ pytestmark = pytest.mark.django_db
 
 def test_calculate_discount_amount_fixed():
     coupon = CouponFactory(currency="USD", amount=Money(10, "USD"), percentage=None)
-    base = Money(50, "USD")
-    assert InvoiceDiscount.calculate_amount(base, coupon) == Money("10.00", "USD")
+    discount = InvoiceDiscountFactory(coupon=coupon, currency=coupon.currency)
+    base_amount = Money(50, "USD")
+    assert discount.calculate_amount(base_amount) == Money("10.00", "USD")
 
 
 def test_calculate_discount_amount_percentage():
     coupon = CouponFactory(currency="USD", amount=None, percentage=Decimal("10"))
-    base = Money(50, "USD")
-    assert InvoiceDiscount.calculate_amount(base, coupon) == Money("5.00", "USD")
+    discount = InvoiceDiscountFactory(coupon=coupon, currency=coupon.currency)
+    base_amount = Money(50, "USD")
+    assert discount.calculate_amount(base_amount) == Money("5.00", "USD")
 
 
 def test_calculate_discount_amount_percentage_cap():
     coupon = CouponFactory(currency="USD", amount=None, percentage=Decimal("150"))
-    base = Money(50, "USD")
-    assert InvoiceDiscount.calculate_amount(base, coupon) == Money("50.00", "USD")
+    discount = InvoiceDiscountFactory(coupon=coupon, currency=coupon.currency)
+    base_amount = Money(50, "USD")
+    assert discount.calculate_amount(base_amount) == Money("50.00", "USD")
 
 
 def test_discount_amount_non_positive_values():
-    base = Money(100, "USD")
+    base_amount = Money(100, "USD")
     zero_coupon = CouponFactory(currency="USD", amount=Money(0, "USD"), percentage=None)
     negative_coupon = CouponFactory(currency="USD", amount=None, percentage=Decimal("-10"))
-    assert InvoiceDiscount.calculate_amount(base, zero_coupon) == Money("0.00", "USD")
-    assert InvoiceDiscount.calculate_amount(base, negative_coupon) == Money("0.00", "USD")
-
-
-def test_calculate_percentage_amount_non_positive():
-    base = Money(100, "USD")
-    assert calculate_percentage_amount(base, Decimal("0")) == Money("0.00", "USD")
-    assert calculate_percentage_amount(base, Decimal("-5")) == Money("0.00", "USD")
+    zero_discount = InvoiceDiscountFactory(coupon=zero_coupon, currency=zero_coupon.currency)
+    negative_discount = InvoiceDiscountFactory(coupon=negative_coupon, currency=negative_coupon.currency)
+    assert zero_discount.calculate_amount(base_amount) == Money("0.00", "USD")
+    assert negative_discount.calculate_amount(base_amount) == Money("0.00", "USD")
 
 
 def test_calculate_tax_amount_percentage():
-    base = Money(50, "USD")
-    assert InvoiceTax.calculate_amount(base, Decimal("20")) == Money("10.00", "USD")
+    base_amount = Money(50, "USD")
+    tax = InvoiceTaxFactory(rate=Decimal("20"))
+    assert tax.calculate_amount(base_amount) == Money("10.00", "USD")
 
 
 def test_calculate_tax_amount_zero_percentage():
-    base = Money(50, "USD")
-    assert InvoiceTax.calculate_amount(base, Decimal("0")) == Money("0.00", "USD")
+    base_amount = Money(50, "USD")
+    tax = InvoiceTaxFactory(rate=Decimal("0"), currency=base_amount.currency)
+    assert tax.calculate_amount(base_amount) == Money("0.00", "USD")
 
 
 def test_calculate_tax_amount_tax_rate():
+    base_amount = Money(50, "USD")
     tax_rate = TaxRateFactory(percentage=Decimal("20"))
-    base = Money(50, "USD")
-    assert InvoiceTax.calculate_amount(base, tax_rate) == Money("10.00", "USD")
+    tax = InvoiceTaxFactory(tax_rate=tax_rate, rate=tax_rate.percentage)
+    assert tax.calculate_amount(base_amount) == Money("10.00", "USD")
 
 
 def test_calculate_tax_amount_negative_rate():
+    base_amount = Money(100, "USD")
     line = InvoiceLineFactory()
     tax = InvoiceTaxFactory(invoice_line=line, rate=Decimal("-5"))
-    assert InvoiceTax.calculate_amount(Money(100, line.currency), tax.rate) == Money("0", line.currency)
+    assert tax.calculate_amount(base_amount) == Money("0", line.currency)
 
 
 def test_calculate_tax_amount_zero_rate():
+    base_amount = Money(100, "USD")
     line = InvoiceLineFactory()
     tax = InvoiceTaxFactory(invoice_line=line, rate=Decimal("0"))
-    assert InvoiceTax.calculate_amount(Money(100, line.currency), tax.rate) == Money("0", line.currency)
+    assert tax.calculate_amount(base_amount) == Money("0", line.currency)
 
 
 def test_apply_line_discounts_sequential_percentages():

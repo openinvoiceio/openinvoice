@@ -29,7 +29,7 @@ from apps.numbering_systems.models import NumberingSystem
 from apps.payments.models import Payment
 from apps.prices.models import Price
 from apps.taxes.models import TaxRate
-from common.calculations import calculate_percentage_amount, clamp_money, zero
+from common.calculations import clamp_money, zero
 from common.pdf import generate_pdf
 
 from .enums import InvoiceDeliveryMethod, InvoiceStatus
@@ -289,7 +289,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         total_amount_excluding_tax = lines_amount_excluding_tax
         discounts = self.discounts.select_related("coupon").for_invoice()
         for discount in discounts:
-            discount.amount = discount.calculate_amount(total_amount_excluding_tax, discount.coupon)
+            discount.amount = discount.calculate_amount(total_amount_excluding_tax)
             invoice_discount_amount += discount.amount
             total_amount_excluding_tax = max(total_amount_excluding_tax - discount.amount, zero(self.currency))
 
@@ -313,7 +313,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         invoice_tax_amount = zero(self.currency)
         taxes = self.taxes.select_related("tax_rate").for_invoice()
         for tax in taxes:
-            tax.amount = tax.calculate_amount(invoice_taxable_amount, tax.rate)
+            tax.amount = tax.calculate_amount(invoice_taxable_amount)
             invoice_tax_amount += tax.amount
 
         InvoiceTax.objects.bulk_update(taxes, ["amount"])
@@ -606,7 +606,7 @@ class InvoiceLine(models.Model):
         total_amount_excluding_tax = amount
         discounts = self.discounts.select_related("coupon").for_lines()
         for discount in discounts:
-            discount.amount = discount.calculate_amount(total_amount_excluding_tax, discount.coupon)
+            discount.amount = discount.calculate_amount(total_amount_excluding_tax)
             total_discount_amount += discount.amount
             total_amount_excluding_tax = max(total_amount_excluding_tax - discount.amount, zero(self.currency))
 
@@ -618,7 +618,7 @@ class InvoiceLine(models.Model):
         total_tax_rate = Decimal(0)
         taxes = self.taxes.select_related("tax_rate").for_lines()
         for tax in taxes:
-            tax.amount = tax.calculate_amount(total_amount_excluding_tax, tax.rate)
+            tax.amount = tax.calculate_amount(total_amount_excluding_tax)
             total_tax_amount += tax.amount
             total_tax_rate += tax.rate
 
@@ -742,18 +742,19 @@ class InvoiceDiscount(models.Model):  # type: ignore[django-manager-missing]
             ),
         ]
 
-    @staticmethod
-    def calculate_amount(base: Money, coupon: Coupon) -> Money:
-        if coupon.amount is not None:
-            if coupon.amount <= zero(base.currency):
-                return zero(base.currency)
-            return clamp_money(min(coupon.amount, base))
+    def calculate_amount(self, base_amount: Money) -> Money:
+        if self.coupon.amount is not None:
+            if self.coupon.amount <= zero(self.currency):
+                return zero(self.currency)
+            return min(self.coupon.amount, base_amount)
 
-        if coupon.percentage is not None:
-            percentage_amount = calculate_percentage_amount(base, coupon.percentage)
-            return clamp_money(min(percentage_amount, base))
+        if self.coupon.percentage is not None:
+            percentage_amount = base_amount * (self.coupon.percentage / Decimal(100))
+            if percentage_amount <= zero(self.currency):
+                return zero(self.currency)
+            return min(percentage_amount, base_amount)
 
-        return zero(base.currency)
+        return zero(self.currency)
 
 
 class InvoiceTax(models.Model):  # type: ignore[django-manager-missing]
@@ -790,11 +791,8 @@ class InvoiceTax(models.Model):  # type: ignore[django-manager-missing]
             ),
         ]
 
-    @staticmethod
-    def calculate_amount(base: Money, rate: TaxRate | Decimal) -> Money:
-        percentage = rate if isinstance(rate, Decimal) else rate.percentage
+    def calculate_amount(self, base_amount: Money) -> Money:
+        if self.rate <= 0:
+            return zero(self.currency)
 
-        if percentage <= 0:
-            return zero(base.currency)
-
-        return clamp_money(calculate_percentage_amount(base, percentage))
+        return base_amount * (self.rate / Decimal(100))
