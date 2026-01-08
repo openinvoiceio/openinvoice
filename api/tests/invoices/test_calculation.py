@@ -84,10 +84,10 @@ def test_apply_line_discounts_sequential_percentages():
     discount_1 = InvoiceDiscountFactory(invoice_line=line, coupon=coupon_1, amount=Decimal("0"))
     discount_2 = InvoiceDiscountFactory(invoice_line=line, coupon=coupon_2, amount=Decimal("0"))
 
-    total, taxable = line.discounts.select_related("coupon").all().recalculate(Money(100, line.currency))
+    line.recalculate()
 
-    assert total == Money("75.00", line.currency)
-    assert taxable == Money("25.00", line.currency)
+    assert line.total_discount_amount == Money("75.00", line.currency)
+    assert line.total_amount_excluding_tax == Money("25.00", line.currency)
     discount_1.refresh_from_db()
     discount_2.refresh_from_db()
     assert discount_1.amount == Money("50.00", line.currency)
@@ -312,11 +312,11 @@ def test_apply_line_discounts_exceeding_base():
     )
     discount = InvoiceDiscountFactory(invoice_line=line, coupon=big_coupon, amount=Decimal("0"))
 
-    total, taxable = line.discounts.select_related("coupon").all().recalculate(Money(50, line.currency))
+    line.recalculate()
 
     discount.refresh_from_db()
-    assert total == Money("50.00", line.currency)
-    assert taxable == Money("0.00", line.currency)
+    assert line.total_discount_amount == Money("50.00", line.currency)
+    assert line.total_amount_excluding_tax == Money("0.00", line.currency)
     assert discount.amount == Money("50.00", line.currency)
 
 
@@ -388,6 +388,7 @@ def test_recalculate_invoice_with_invoice_discount_and_tax():
 
 def test_apply_invoice_discounts_sequential_and_amount():
     invoice = InvoiceFactory()
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     percent_coupon = CouponFactory(
         account=invoice.account, currency=invoice.currency, amount=None, percentage=Decimal("10")
     )
@@ -397,18 +398,19 @@ def test_apply_invoice_discounts_sequential_and_amount():
     d1 = InvoiceDiscountFactory(invoice=invoice, coupon=percent_coupon, amount=Decimal("0"))
     d2 = InvoiceDiscountFactory(invoice=invoice, coupon=amount_coupon, amount=Decimal("0"))
 
-    total, taxable = invoice.discounts.select_related("coupon").all().recalculate(Money(100, invoice.currency))
+    line.recalculate()
 
     d1.refresh_from_db()
     d2.refresh_from_db()
-    assert total == Money("25.00", invoice.currency)
-    assert taxable == Money("75.00", invoice.currency)
+    assert invoice.total_discount_amount == Money("25.00", invoice.currency)
+    assert invoice.total_amount_excluding_tax == Money("75.00", invoice.currency)
     assert d1.amount == Money("10.00", invoice.currency)
     assert d2.amount == Money("15.00", invoice.currency)
 
 
 def test_apply_invoice_discounts_exceeding_base():
     invoice = InvoiceFactory()
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     big_coupon = CouponFactory(
         account=invoice.account, currency=invoice.currency, amount=Money(80, invoice.currency), percentage=None
     )
@@ -418,12 +420,12 @@ def test_apply_invoice_discounts_exceeding_base():
     d1 = InvoiceDiscountFactory(invoice=invoice, coupon=big_coupon, amount=Decimal("0"))
     d2 = InvoiceDiscountFactory(invoice=invoice, coupon=extra_coupon, amount=Decimal("0"))
 
-    total, taxable = invoice.discounts.select_related("coupon").all().recalculate(Money(100, invoice.currency))
+    line.recalculate()
 
     d1.refresh_from_db()
     d2.refresh_from_db()
-    assert total == Money("100.00", invoice.currency)
-    assert taxable == Money("0.00", invoice.currency)
+    assert invoice.total_discount_amount == Money("100.00", invoice.currency)
+    assert invoice.total_amount_excluding_tax == Money("0.00", invoice.currency)
     assert d1.amount == Money("80.00", invoice.currency)
     assert d2.amount == Money("20.00", invoice.currency)
 

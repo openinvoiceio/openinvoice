@@ -269,29 +269,31 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         )
 
     def recalculate(self) -> None:
-        subtotal = zero(self.currency)
+        subtotal_amount = zero(self.currency)
         total_line_discount_amount = zero(self.currency)
         total_line_tax_amount = zero(self.currency)
         total_line_amount_excluding_tax = zero(self.currency)
         taxed_line_amount_excluding_tax = zero(self.currency)
 
         for line in self.lines.all():
-            subtotal += line.amount
+            subtotal_amount += line.amount
             total_line_discount_amount += line.total_discount_amount
             total_line_tax_amount += line.total_tax_amount
             total_line_amount_excluding_tax += line.total_amount_excluding_tax
             if line.taxes.all():
                 taxed_line_amount_excluding_tax += line.total_amount_excluding_tax
 
-        subtotal = clamp_money(subtotal)
-        total_line_discount_amount = clamp_money(total_line_discount_amount)
-        total_line_amount_excluding_tax = clamp_money(total_line_amount_excluding_tax)
-        taxed_line_amount_excluding_tax = clamp_money(taxed_line_amount_excluding_tax)
+        # Calculate discounts
 
-        invoice_discount_amount, total_amount_excluding_tax = self.discounts.for_invoice().recalculate(
-            total_line_amount_excluding_tax
-        )
-        total_amount_excluding_tax = clamp_money(total_amount_excluding_tax)
+        invoice_discount_amount = zero(self.currency)
+        total_amount_excluding_tax = total_line_amount_excluding_tax
+        discounts = self.discounts.select_related("coupon").for_invoice()
+        for discount in discounts:
+            discount.amount = discount.calculate_amount(total_amount_excluding_tax, discount.coupon)
+            invoice_discount_amount += discount.amount
+            total_amount_excluding_tax = max(total_amount_excluding_tax - discount.amount, zero(self.currency))
+
+        InvoiceDiscount.objects.bulk_update(discounts, ["amount"])
 
         taxed_line_amount_excluding_tax_after_discounts = self._distribute_discount_to_taxed_lines(
             total_line_amount_excluding_tax,
@@ -308,15 +310,15 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         invoice_tax_amount, _ = self.taxes.for_invoice().recalculate(invoice_taxable_amount)
 
-        total_discount_amount = clamp_money(total_line_discount_amount + invoice_discount_amount)
-        total_tax_amount = clamp_money(total_line_tax_amount + invoice_tax_amount)
-        total_amount = clamp_money(total_amount_excluding_tax + total_tax_amount)
+        total_discount_amount = total_line_discount_amount + invoice_discount_amount
+        total_tax_amount = total_line_tax_amount + invoice_tax_amount
+        total_amount = total_amount_excluding_tax + total_tax_amount
 
-        self.subtotal_amount = subtotal
-        self.total_discount_amount = total_discount_amount
-        self.total_amount_excluding_tax = total_amount_excluding_tax
-        self.total_tax_amount = total_tax_amount
-        self.total_amount = total_amount
+        self.subtotal_amount = clamp_money(subtotal_amount)
+        self.total_discount_amount = clamp_money(total_discount_amount)
+        self.total_amount_excluding_tax = clamp_money(total_amount_excluding_tax)
+        self.total_tax_amount = clamp_money(total_tax_amount)
+        self.total_amount = clamp_money(total_amount)
         self.outstanding_amount = self.calculate_outstanding_amount()
         self.save(
             update_fields=[
@@ -585,25 +587,38 @@ class InvoiceLine(models.Model):
         """Recalculate cached totals for the invoice line and its parent invoice."""
 
         if self.price:
-            amount = self.price.calculate_amount(self.quantity)
             self.unit_amount = self.price.calculate_unit_amount(self.quantity)
+            amount = self.price.calculate_amount(self.quantity)
         else:
-            amount = clamp_money(self.unit_amount * self.quantity)
+            amount = self.unit_amount * self.quantity
 
-        total_discount_amount, total_amount_excluding_tax = (
-            self.discounts.select_related("coupon").for_lines().recalculate(amount)
-        )
+        # Calculate discounts
+
+        total_discount_amount = zero(self.currency)
+        total_amount_excluding_tax = amount
+        discounts = self.discounts.select_related("coupon").for_lines()
+        for discount in discounts:
+            discount.amount = discount.calculate_amount(total_amount_excluding_tax, discount.coupon)
+            total_discount_amount += discount.amount
+            total_amount_excluding_tax = max(total_amount_excluding_tax - discount.amount, zero(self.currency))
+
+        InvoiceDiscount.objects.bulk_update(discounts, ["amount"])
 
         total_tax_amount, total_tax_rate = self.taxes.for_lines().recalculate(total_amount_excluding_tax)
 
-        self.amount = amount
+        # Final totals
+        total_amount = total_amount_excluding_tax + total_tax_amount
+        outstanding_amount = max(total_amount - self.total_credit_amount, zero(self.currency))
+        outstanding_quantity = max(self.quantity - self.credit_quantity, 0)
+
+        self.amount = clamp_money(amount)
         self.total_discount_amount = clamp_money(total_discount_amount)
         self.total_amount_excluding_tax = clamp_money(total_amount_excluding_tax)
         self.total_tax_amount = clamp_money(total_tax_amount)
         self.total_tax_rate = total_tax_rate
-        self.total_amount = clamp_money(total_amount_excluding_tax + total_tax_amount)
-        self.outstanding_amount = clamp_money(max(self.total_amount - self.total_credit_amount, zero(self.currency)))
-        self.outstanding_quantity = max(self.quantity - self.credit_quantity, 0)
+        self.total_amount = clamp_money(total_amount)
+        self.outstanding_amount = clamp_money(outstanding_amount)
+        self.outstanding_quantity = outstanding_quantity
         self.save(
             update_fields=[
                 "unit_amount",

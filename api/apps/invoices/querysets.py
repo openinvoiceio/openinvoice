@@ -72,23 +72,6 @@ class InvoiceDiscountQuerySet(models.QuerySet):
             .order_by("name", "currency", "coupon_id")
         )
 
-    def recalculate(self, base: Money):
-        taxable = base
-        currency = base.currency
-        total = zero(currency)
-        updated = []
-
-        for discount in self:
-            discount.amount = self.model.calculate_amount(taxable, discount.coupon)
-            updated.append(discount)
-            total += discount.amount
-            taxable = max(taxable - discount.amount, zero(currency))
-
-        if updated:
-            self.model.objects.bulk_update(updated, ["amount"])
-
-        return total, taxable
-
 
 class InvoiceTaxQuerySet(models.QuerySet):
     def for_invoice(self):
