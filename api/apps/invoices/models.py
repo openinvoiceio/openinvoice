@@ -247,21 +247,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         )
         return today + relativedelta(days=net_payment_term)
 
-    @staticmethod
-    def _distribute_discount_to_taxed_lines(
-        pre_discount_total: Money,
-        taxed_line_total: Money,
-        invoice_discount_amount: Money,
-    ) -> Money:
-        if pre_discount_total.amount <= 0 or taxed_line_total.amount <= 0 or invoice_discount_amount.amount <= 0:
-            return clamp_money(taxed_line_total)
-
-        ratio = taxed_line_total.amount / pre_discount_total.amount
-        shared_discount = clamp_money(invoice_discount_amount * ratio)
-        if shared_discount > taxed_line_total:
-            shared_discount = taxed_line_total
-        return clamp_money(max(taxed_line_total - shared_discount, zero(taxed_line_total.currency)))
-
     def calculate_outstanding_amount(self) -> Money:
         return max(
             self.total_amount - self.total_paid_amount - self.total_credit_amount,
@@ -295,18 +280,18 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         InvoiceDiscount.objects.bulk_update(discounts, ["amount"])
 
-        taxed_line_amount_excluding_tax_after_discounts = self._distribute_discount_to_taxed_lines(
-            lines_amount_excluding_tax,
-            taxed_lines_amount_excluding_tax,
-            invoice_discount_amount,
-        )
+        # Adjust taxed lines amount after distributing invoice-level discounts
+        invoice_taxable_amount = taxed_lines_amount_excluding_tax
+        if (
+            lines_amount_excluding_tax.amount > 0
+            and taxed_lines_amount_excluding_tax.amount > 0
+            and invoice_discount_amount.amount > 0
+        ):
+            ratio = taxed_lines_amount_excluding_tax.amount / lines_amount_excluding_tax.amount
+            shared_discount = min(invoice_discount_amount * ratio, taxed_lines_amount_excluding_tax)
+            invoice_taxable_amount = max(taxed_lines_amount_excluding_tax - shared_discount, zero(self.currency))
 
-        invoice_taxable_amount = clamp_money(
-            max(
-                total_amount_excluding_tax - taxed_line_amount_excluding_tax_after_discounts,
-                zero(self.currency),
-            )
-        )
+        invoice_taxable_amount = max(total_amount_excluding_tax - invoice_taxable_amount, zero(self.currency))
 
         # Calculate taxes
 
