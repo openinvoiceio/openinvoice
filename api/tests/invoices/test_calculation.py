@@ -95,14 +95,15 @@ def test_apply_line_discounts_sequential_percentages():
 
 
 def test_apply_line_taxes_zero_taxable():
-    line = InvoiceLineFactory()
+    line = InvoiceLineFactory(unit_amount=Decimal("0"), quantity=1, amount=Decimal("0"))
     tax_rate = TaxRateFactory(account=line.invoice.account, percentage=Decimal("20"))
     tax = InvoiceTaxFactory(invoice_line=line, tax_rate=tax_rate, rate=tax_rate.percentage, amount=Decimal("0"))
 
-    total, _ = line.taxes.all().recalculate(Money(0, line.currency))
+    line.recalculate()
 
     tax.refresh_from_db()
-    assert total == Money("0.00", line.currency)
+    assert line.total_tax_amount == Money("0.00", line.currency)
+    assert line.total_tax_rate == Decimal("20")
     assert tax.amount == Money("0.00", line.currency)
 
 
@@ -321,18 +322,18 @@ def test_apply_line_discounts_exceeding_base():
 
 
 def test_apply_line_taxes_multiple_rates():
-    line = InvoiceLineFactory()
+    line = InvoiceLineFactory(unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     tax_rate1 = TaxRateFactory(account=line.invoice.account, percentage=Decimal("10"))
     tax_rate2 = TaxRateFactory(account=line.invoice.account, percentage=Decimal("5"))
     tax1 = InvoiceTaxFactory(invoice_line=line, tax_rate=tax_rate1, rate=tax_rate1.percentage, amount=Decimal("0"))
     tax2 = InvoiceTaxFactory(invoice_line=line, tax_rate=tax_rate2, rate=tax_rate2.percentage, amount=Decimal("0"))
 
-    total, rate_total = line.taxes.all().recalculate(Money(100, line.currency))
+    line.recalculate()
 
     tax1.refresh_from_db()
     tax2.refresh_from_db()
-    assert total == Money("15.00", line.currency)
-    assert rate_total == Decimal("15")
+    assert line.total_tax_amount == Money("15.00", line.currency)
+    assert line.total_tax_rate == Decimal("15")
     assert tax1.amount == Money("10.00", line.currency)
     assert tax2.amount == Money("5.00", line.currency)
 
@@ -432,17 +433,17 @@ def test_apply_invoice_discounts_exceeding_base():
 
 def test_apply_invoice_taxes_multiple_rates():
     invoice = InvoiceFactory()
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     tax_rate1 = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
     tax_rate2 = TaxRateFactory(account=invoice.account, percentage=Decimal("5"))
     tax1 = InvoiceTaxFactory(invoice=invoice, tax_rate=tax_rate1, rate=tax_rate1.percentage, amount=Decimal("0"))
     tax2 = InvoiceTaxFactory(invoice=invoice, tax_rate=tax_rate2, rate=tax_rate2.percentage, amount=Decimal("0"))
 
-    total, rate_total = invoice.taxes.all().recalculate(Money(100, invoice.currency))
+    line.recalculate()
 
     tax1.refresh_from_db()
     tax2.refresh_from_db()
-    assert total == Money("15.00", invoice.currency)
-    assert rate_total == Decimal("15")
+    assert invoice.total_tax_amount == Money("15.00", invoice.currency)
     assert tax1.amount == Money("10.00", invoice.currency)
     assert tax2.amount == Money("5.00", invoice.currency)
 
@@ -452,10 +453,10 @@ def test_apply_invoice_taxes_zero_taxable():
     tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
     tax = InvoiceTaxFactory(invoice=invoice, tax_rate=tax_rate, rate=tax_rate.percentage, amount=Decimal("0"))
 
-    total, _ = invoice.taxes.all().recalculate(Money(0, invoice.currency))
+    invoice.recalculate()
 
     tax.refresh_from_db()
-    assert total == Money("0.00", invoice.currency)
+    assert invoice.total_tax_amount == Money("0.00", invoice.currency)
     assert tax.amount == Money("0.00", invoice.currency)
 
 

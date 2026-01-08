@@ -270,23 +270,23 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
     def recalculate(self) -> None:
         subtotal_amount = zero(self.currency)
-        total_line_discount_amount = zero(self.currency)
-        total_line_tax_amount = zero(self.currency)
-        total_line_amount_excluding_tax = zero(self.currency)
-        taxed_line_amount_excluding_tax = zero(self.currency)
+        lines_discount_amount = zero(self.currency)
+        lines_tax_amount = zero(self.currency)
+        lines_amount_excluding_tax = zero(self.currency)
+        taxed_lines_amount_excluding_tax = zero(self.currency)
 
         for line in self.lines.all():
             subtotal_amount += line.amount
-            total_line_discount_amount += line.total_discount_amount
-            total_line_tax_amount += line.total_tax_amount
-            total_line_amount_excluding_tax += line.total_amount_excluding_tax
+            lines_discount_amount += line.total_discount_amount
+            lines_tax_amount += line.total_tax_amount
+            lines_amount_excluding_tax += line.total_amount_excluding_tax
             if line.taxes.all():
-                taxed_line_amount_excluding_tax += line.total_amount_excluding_tax
+                taxed_lines_amount_excluding_tax += line.total_amount_excluding_tax
 
         # Calculate discounts
 
         invoice_discount_amount = zero(self.currency)
-        total_amount_excluding_tax = total_line_amount_excluding_tax
+        total_amount_excluding_tax = lines_amount_excluding_tax
         discounts = self.discounts.select_related("coupon").for_invoice()
         for discount in discounts:
             discount.amount = discount.calculate_amount(total_amount_excluding_tax, discount.coupon)
@@ -296,8 +296,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         InvoiceDiscount.objects.bulk_update(discounts, ["amount"])
 
         taxed_line_amount_excluding_tax_after_discounts = self._distribute_discount_to_taxed_lines(
-            total_line_amount_excluding_tax,
-            taxed_line_amount_excluding_tax,
+            lines_amount_excluding_tax,
+            taxed_lines_amount_excluding_tax,
             invoice_discount_amount,
         )
 
@@ -308,10 +308,20 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             )
         )
 
-        invoice_tax_amount, _ = self.taxes.for_invoice().recalculate(invoice_taxable_amount)
+        # Calculate taxes
 
-        total_discount_amount = total_line_discount_amount + invoice_discount_amount
-        total_tax_amount = total_line_tax_amount + invoice_tax_amount
+        invoice_tax_amount = zero(self.currency)
+        taxes = self.taxes.select_related("tax_rate").for_invoice()
+        for tax in taxes:
+            tax.amount = tax.calculate_amount(invoice_taxable_amount, tax.rate)
+            invoice_tax_amount += tax.amount
+
+        InvoiceTax.objects.bulk_update(taxes, ["amount"])
+
+        # Final totals
+
+        total_discount_amount = lines_discount_amount + invoice_discount_amount
+        total_tax_amount = lines_tax_amount + invoice_tax_amount
         total_amount = total_amount_excluding_tax + total_tax_amount
 
         self.subtotal_amount = clamp_money(subtotal_amount)
@@ -584,8 +594,6 @@ class InvoiceLine(models.Model):
         ordering = ["created_at"]
 
     def recalculate(self) -> None:
-        """Recalculate cached totals for the invoice line and its parent invoice."""
-
         if self.price:
             self.unit_amount = self.price.calculate_unit_amount(self.quantity)
             amount = self.price.calculate_amount(self.quantity)
@@ -604,9 +612,20 @@ class InvoiceLine(models.Model):
 
         InvoiceDiscount.objects.bulk_update(discounts, ["amount"])
 
-        total_tax_amount, total_tax_rate = self.taxes.for_lines().recalculate(total_amount_excluding_tax)
+        # Calculate taxes
+
+        total_tax_amount = zero(self.currency)
+        total_tax_rate = Decimal(0)
+        taxes = self.taxes.select_related("tax_rate").for_lines()
+        for tax in taxes:
+            tax.amount = tax.calculate_amount(total_amount_excluding_tax, tax.rate)
+            total_tax_amount += tax.amount
+            total_tax_rate += tax.rate
+
+        InvoiceTax.objects.bulk_update(taxes, ["amount"])
 
         # Final totals
+
         total_amount = total_amount_excluding_tax + total_tax_amount
         outstanding_amount = max(total_amount - self.total_credit_amount, zero(self.currency))
         outstanding_quantity = max(self.quantity - self.credit_quantity, 0)

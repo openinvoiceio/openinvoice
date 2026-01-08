@@ -1,12 +1,7 @@
 from __future__ import annotations
 
-from decimal import Decimal
-
 from django.db import models
 from django.db.models import Prefetch
-from djmoney.money import Money
-
-from common.calculations import zero
 
 
 class InvoiceQuerySet(models.QuerySet):
@@ -89,20 +84,3 @@ class InvoiceTaxQuerySet(models.QuerySet):
             .annotate(amount=models.Sum("amount"))
             .order_by("name", "currency", "rate")
         )
-
-    def recalculate(self, taxable: Money):
-        currency = taxable.currency
-        total = zero(currency)
-        rate_total = Decimal("0")
-        updated = []
-
-        for tax in self:
-            tax.amount = self.model.calculate_amount(taxable, tax.rate)
-            updated.append(tax)
-            total += tax.amount
-            rate_total += Decimal(tax.rate)
-
-        if updated:
-            self.model.objects.bulk_update(updated, ["amount"])
-
-        return total, rate_total
