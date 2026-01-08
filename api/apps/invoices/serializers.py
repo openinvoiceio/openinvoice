@@ -12,6 +12,7 @@ from apps.numbering_systems.enums import NumberingSystemAppliesTo
 from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.prices.fields import PriceRelatedField
 from apps.prices.validators import PriceIsActive, PriceProductIsActive
+from apps.shipping_rates.fields import ShippingRateRelatedField
 from apps.taxes.fields import TaxRateRelatedField
 from common.access import has_feature
 from common.enums import FeatureCode
@@ -88,6 +89,14 @@ class InvoiceTaxBreakdownItemSerializer(serializers.Serializer):
     amount = MoneyField(max_digits=19, decimal_places=2)
 
 
+class InvoiceShippingSerializer(serializers.Serializer):
+    amount = MoneyField(max_digits=19, decimal_places=2)
+    tax_amount = MoneyField(max_digits=19, decimal_places=2)
+    total_amount = MoneyField(max_digits=19, decimal_places=2)
+    shipping_rate_id = serializers.UUIDField(allow_null=True)
+    taxes = InvoiceTaxSerializer(many=True)
+
+
 class InvoiceLineSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     description = serializers.CharField()
@@ -132,6 +141,7 @@ class InvoiceSerializer(serializers.Serializer):
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2)
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2)
     total_amount_excluding_tax = MoneyField(max_digits=19, decimal_places=2)
+    shipping_amount = MoneyField(max_digits=19, decimal_places=2)
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2)
     total_amount = MoneyField(max_digits=19, decimal_places=2)
     total_credit_amount = MoneyField(max_digits=19, decimal_places=2)
@@ -150,6 +160,17 @@ class InvoiceSerializer(serializers.Serializer):
     taxes = InvoiceTaxSerializer(many=True, source="taxes.for_invoice", read_only=True)
     discount_breakdown = InvoiceDiscountBreakdownItemSerializer(many=True, source="discounts.breakdown", read_only=True)
     tax_breakdown = InvoiceTaxBreakdownItemSerializer(many=True, source="taxes.breakdown", read_only=True)
+    shipping = InvoiceShippingSerializer()
+
+
+class InvoiceShippingAddSerializer(serializers.Serializer):
+    shipping_rate_id = ShippingRateRelatedField(source="shipping_rate")
+    tax_rates = TaxRateRelatedField(many=True, required=False)
+
+    def validate_tax_rates(self, value):
+        if len(value) != len({obj.pk for obj in value}):
+            raise serializers.ValidationError("The same tax rate cannot be specified more than once.")
+        return value
 
 
 class InvoiceCreateSerializer(serializers.Serializer):
@@ -174,6 +195,7 @@ class InvoiceCreateSerializer(serializers.Serializer):
     )
     delivery_method = serializers.ChoiceField(choices=InvoiceDeliveryMethod.choices, required=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
+    shipping = InvoiceShippingAddSerializer(required=False, allow_null=True)
 
     class Meta:
         validators = [
@@ -225,6 +247,7 @@ class InvoiceUpdateSerializer(serializers.Serializer):
     )
     delivery_method = serializers.ChoiceField(choices=InvoiceDeliveryMethod.choices, required=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
+    shipping = InvoiceShippingAddSerializer(required=False, allow_null=True)
 
     class Meta:
         validators = [

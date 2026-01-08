@@ -28,6 +28,7 @@ from apps.integrations.enums import PaymentProvider
 from apps.numbering_systems.models import NumberingSystem
 from apps.payments.models import Payment
 from apps.prices.models import Price
+from apps.shipping_rates.models import ShippingRate
 from apps.taxes.models import TaxRate
 from common.calculations import clamp_money, zero
 from common.pdf import generate_pdf
@@ -127,6 +128,12 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     account = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="invoices")
     footer = models.CharField(max_length=500, null=True, blank=True)
     description = models.CharField(max_length=500, null=True, blank=True)
+    shipping = models.OneToOneField(
+        "InvoiceShipping",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="invoice",
+    )
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_amount_excluding_tax = MoneyField(
@@ -134,6 +141,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         decimal_places=2,
         currency_field_name="currency",
     )
+    shipping_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_credit_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
@@ -303,15 +311,27 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         InvoiceTax.objects.bulk_update(taxes, ["amount"])
 
+        ## Calculate shipping
+
+        shipping_amount = zero(self.currency)
+        shipping_tax_amount = zero(self.currency)
+
+        if self.shipping:
+            self.shipping.recalculate()
+            shipping_amount = self.shipping.amount
+            shipping_tax_amount = self.shipping.tax_amount
+
         # Final totals
 
         total_discount_amount = lines_discount_amount + invoice_discount_amount
-        total_tax_amount = lines_tax_amount + invoice_tax_amount
+        total_amount_excluding_tax = total_amount_excluding_tax + shipping_amount
+        total_tax_amount = lines_tax_amount + invoice_tax_amount + shipping_tax_amount
         total_amount = total_amount_excluding_tax + total_tax_amount
 
         self.subtotal_amount = clamp_money(subtotal_amount)
         self.total_discount_amount = clamp_money(total_discount_amount)
         self.total_amount_excluding_tax = clamp_money(total_amount_excluding_tax)
+        self.shipping_amount = clamp_money(shipping_amount)
         self.total_tax_amount = clamp_money(total_tax_amount)
         self.total_amount = clamp_money(total_amount)
         self.outstanding_amount = self.calculate_outstanding_amount()
@@ -320,6 +340,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
                 "subtotal_amount",
                 "total_discount_amount",
                 "total_amount_excluding_tax",
+                "shipping_amount",
                 "total_tax_amount",
                 "total_amount",
                 "outstanding_amount",
@@ -395,6 +416,26 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.recalculate()
         discount.refresh_from_db()
         return discount
+
+    def add_shipping(self, shipping_rate: ShippingRate, tax_rates: list[TaxRate]) -> InvoiceShipping:
+        InvoiceTax.objects.for_shipping().delete()
+
+        shipping = InvoiceShipping.objects.create(
+            currency=self.currency,
+            amount=shipping_rate.amount,
+            tax_amount=zero(self.currency),
+            total_amount=zero(self.currency),
+            shipping_rate=shipping_rate,
+        )
+        self.shipping = shipping
+        self.save(update_fields=["shipping_id"])
+
+        for tax_rate in tax_rates:
+            shipping.add_tax(tax_rate=tax_rate)
+
+        self.recalculate()
+        shipping.refresh_from_db()
+        return shipping
 
     def generate_pdf(self) -> File:
         invoice = Invoice.objects.for_pdf().get(id=self.id)
@@ -751,6 +792,12 @@ class InvoiceTax(models.Model):  # type: ignore[django-manager-missing]
         related_name="taxes",
         null=True,
     )
+    invoice_shipping = models.ForeignKey(
+        "InvoiceShipping",
+        on_delete=models.CASCADE,
+        related_name="taxes",
+        null=True,
+    )
     tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.SET_NULL, related_name="invoice_taxes", null=True)
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255, null=True)
@@ -781,3 +828,45 @@ class InvoiceTax(models.Model):  # type: ignore[django-manager-missing]
             return zero(self.currency)
 
         return base_amount * (self.rate / Decimal(100))
+
+
+class InvoiceShipping(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    currency = models.CharField(max_length=3)
+    amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    total_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    created_at = models.DateTimeField(auto_now_add=True)
+    shipping_rate = models.ForeignKey("shipping_rates.ShippingRate", on_delete=models.PROTECT)
+
+    def recalculate(self) -> None:
+        # Calculate taxes
+        tax_amount = zero(self.currency)
+        taxes = self.taxes.select_related("tax_rate").for_shipping()
+        for tax in taxes:
+            tax.amount = tax.calculate_amount(self.amount)
+            tax_amount += tax.amount
+
+        InvoiceTax.objects.bulk_update(taxes, ["amount"])
+
+        # Final totals
+
+        total_amount = self.amount + tax_amount
+
+        self.tax_amount = clamp_money(tax_amount)
+        self.total_amount = clamp_money(total_amount)
+        self.save(update_fields=["tax_amount", "total_amount"])
+
+    def add_tax(self, tax_rate: TaxRate) -> InvoiceTax:
+        tax = self.taxes.create(
+            name=tax_rate.name,
+            description=tax_rate.description,
+            rate=tax_rate.percentage,
+            currency=self.currency,
+            amount=zero(self.currency),
+            tax_rate=tax_rate,
+            invoice=self.invoice,
+        )
+        self.recalculate()
+        tax.refresh_from_db()
+        return tax

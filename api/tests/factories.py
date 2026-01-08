@@ -158,6 +158,18 @@ class PriceTierFactory(DjangoModelFactory):
     to_value = None
 
 
+class TaxRateFactory(DjangoModelFactory):
+    class Meta:
+        model = "taxes.TaxRate"
+
+    account = SubFactory(AccountFactory)
+    name = "VAT"
+    description = "Value added tax"
+    percentage = Decimal("10.00")
+    country = "PL"
+    is_active = True
+
+
 class ShippingRateFactory(DjangoModelFactory):
     class Meta:
         model = "shipping_rates.ShippingRate"
@@ -190,6 +202,7 @@ class InvoiceFactory(DjangoModelFactory):
     subtotal_amount = Decimal("0")
     total_discount_amount = Decimal("0")
     total_amount_excluding_tax = Decimal("0")
+    shipping_amount = Decimal("0")
     total_amount = Decimal("0")
     total_tax_amount = Decimal("0")
     total_credit_amount = Decimal("0")
@@ -200,6 +213,76 @@ class InvoiceFactory(DjangoModelFactory):
     paid_at = None
     delivery_method = InvoiceDeliveryMethod.MANUAL
     recipients = LazyFunction(list)
+
+
+class InvoiceLineFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceLine"
+
+    invoice = SubFactory(InvoiceFactory)
+    description = "Line"
+    quantity = 1
+    currency = SelfAttribute("invoice.currency")
+    unit_amount = Decimal("0")
+    amount = Decimal("0")
+    total_amount_excluding_tax = Decimal("0")
+    total_amount = Decimal("0")
+    total_discount_amount = Decimal("0")
+    total_tax_amount = Decimal("0")
+    total_tax_rate = Decimal("0")
+    total_credit_amount = Decimal("0")
+    credit_quantity = 0
+    outstanding_amount = SelfAttribute("total_amount")
+    outstanding_quantity = SelfAttribute("quantity")
+    price = None
+
+
+class InvoiceDiscountFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceDiscount"
+
+    invoice_line = None
+    invoice = Maybe(
+        "invoice_line",
+        yes_declaration=SelfAttribute("invoice_line.invoice"),
+        no_declaration=SubFactory(InvoiceFactory),
+    )
+    coupon = SubFactory(
+        CouponFactory,
+        account=SelfAttribute("..invoice.account"),
+        currency=SelfAttribute("..invoice.currency"),
+    )
+    currency = SelfAttribute("invoice.currency")
+    amount = Decimal("0")
+
+
+class InvoiceTaxFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceTax"
+
+    invoice_line = None
+    invoice = Maybe(
+        "invoice_line",
+        yes_declaration=SelfAttribute("invoice_line.invoice"),
+        no_declaration=SubFactory(InvoiceFactory),
+    )
+    tax_rate = SubFactory(TaxRateFactory, account=SelfAttribute("..invoice.account"))
+    currency = SelfAttribute("invoice.currency")
+    name = LazyAttribute(lambda o: o.tax_rate.name)
+    description = LazyAttribute(lambda o: o.tax_rate.description)
+    rate = LazyAttribute(lambda o: o.tax_rate.percentage)
+    amount = Decimal("0")
+
+
+class InvoiceShippingFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceShipping"
+
+    shipping_rate = SubFactory(ShippingRateFactory)
+    currency = LazyAttribute(lambda o: o.shipping_rate.currency)
+    amount = Decimal("0")
+    tax_amount = Decimal("0")
+    total_amount = Decimal("0")
 
 
 class QuoteCustomerFactory(DjangoModelFactory):
@@ -305,33 +388,6 @@ class QuoteLineFactory(DjangoModelFactory):
     price = None
 
 
-class PortalTokenFactory(DictFactory):
-    customer = SubFactory(CustomerFactory)
-    token = LazyAttribute(lambda o: generate_portal_token(o.customer))
-
-
-class InvoiceLineFactory(DjangoModelFactory):
-    class Meta:
-        model = "invoices.InvoiceLine"
-
-    invoice = SubFactory(InvoiceFactory)
-    description = "Line"
-    quantity = 1
-    currency = SelfAttribute("invoice.currency")
-    unit_amount = Decimal("0")
-    amount = Decimal("0")
-    total_amount_excluding_tax = Decimal("0")
-    total_amount = Decimal("0")
-    total_discount_amount = Decimal("0")
-    total_tax_amount = Decimal("0")
-    total_tax_rate = Decimal("0")
-    total_credit_amount = Decimal("0")
-    credit_quantity = 0
-    outstanding_amount = SelfAttribute("total_amount")
-    outstanding_quantity = SelfAttribute("quantity")
-    price = None
-
-
 class CreditNoteFactory(DjangoModelFactory):
     class Meta:
         model = "credit_notes.CreditNote"
@@ -365,16 +421,9 @@ class CreditNoteLineFactory(DjangoModelFactory):
     total_amount = Decimal("0")
 
 
-class TaxRateFactory(DjangoModelFactory):
-    class Meta:
-        model = "taxes.TaxRate"
-
-    account = SubFactory(AccountFactory)
-    name = "VAT"
-    description = "Value added tax"
-    percentage = Decimal("10.00")
-    country = "PL"
-    is_active = True
+class PortalTokenFactory(DictFactory):
+    customer = SubFactory(CustomerFactory)
+    token = LazyAttribute(lambda o: generate_portal_token(o.customer))
 
 
 class TaxIdFactory(DjangoModelFactory):
@@ -384,43 +433,6 @@ class TaxIdFactory(DjangoModelFactory):
     type = TaxIdType.US_EIN
     number = Sequence(lambda n: f"12345{n}")
     country = None
-
-
-class InvoiceDiscountFactory(DjangoModelFactory):
-    class Meta:
-        model = "invoices.InvoiceDiscount"
-
-    invoice_line = None
-    invoice = Maybe(
-        "invoice_line",
-        yes_declaration=SelfAttribute("invoice_line.invoice"),
-        no_declaration=SubFactory(InvoiceFactory),
-    )
-    coupon = SubFactory(
-        CouponFactory,
-        account=SelfAttribute("..invoice.account"),
-        currency=SelfAttribute("..invoice.currency"),
-    )
-    currency = SelfAttribute("invoice.currency")
-    amount = Decimal("0")
-
-
-class InvoiceTaxFactory(DjangoModelFactory):
-    class Meta:
-        model = "invoices.InvoiceTax"
-
-    invoice_line = None
-    invoice = Maybe(
-        "invoice_line",
-        yes_declaration=SelfAttribute("invoice_line.invoice"),
-        no_declaration=SubFactory(InvoiceFactory),
-    )
-    tax_rate = SubFactory(TaxRateFactory, account=SelfAttribute("..invoice.account"))
-    currency = SelfAttribute("invoice.currency")
-    name = LazyAttribute(lambda o: o.tax_rate.name)
-    description = LazyAttribute(lambda o: o.tax_rate.description)
-    rate = LazyAttribute(lambda o: o.tax_rate.percentage)
-    amount = Decimal("0")
 
 
 class NumberingSystemFactory(DjangoModelFactory):

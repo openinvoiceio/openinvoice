@@ -89,6 +89,7 @@ def test_retrieve_invoice(api_client, user, account):
         "subtotal_amount": "0.00",
         "total_discount_amount": "0.00",
         "total_amount_excluding_tax": "0.00",
+        "shipping_amount": "0.00",
         "total_tax_amount": "0.00",
         "total_amount": "0.00",
         "total_credit_amount": "0.00",
@@ -107,6 +108,7 @@ def test_retrieve_invoice(api_client, user, account):
         "discounts": [],
         "tax_breakdown": [],
         "discount_breakdown": [],
+        "shipping": None,
     }
 
 

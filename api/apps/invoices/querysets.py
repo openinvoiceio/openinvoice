@@ -70,10 +70,13 @@ class InvoiceDiscountQuerySet(models.QuerySet):
 
 class InvoiceTaxQuerySet(models.QuerySet):
     def for_invoice(self):
-        return self.filter(invoice_line__isnull=True)
+        return self.filter(invoice_line__isnull=True, invoice_shipping__isnull=True)
 
     def for_lines(self):
         return self.filter(invoice_line__isnull=False)
+
+    def for_shipping(self):
+        return self.filter(invoice_shipping__isnull=False)
 
     def has_lines(self):
         return self.for_lines().exists()

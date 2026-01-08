@@ -97,6 +97,7 @@ def test_finalize_invoice(api_client, user, account):
         "subtotal_amount": "10.00",
         "total_discount_amount": "0.00",
         "total_amount_excluding_tax": "10.00",
+        "shipping_amount": "0.00",
         "total_tax_amount": "0.00",
         "total_amount": "10.00",
         "total_credit_amount": "0.00",
@@ -136,6 +137,7 @@ def test_finalize_invoice(api_client, user, account):
         "taxes": [],
         "tax_breakdown": [],
         "discount_breakdown": [],
+        "shipping": None,
     }
     assert invoice.status == InvoiceStatus.OPEN
     assert invoice.opened_at is not None
@@ -214,6 +216,7 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
         "subtotal_amount": "0.00",
         "total_discount_amount": "0.00",
         "total_amount_excluding_tax": "0.00",
+        "shipping_amount": "0.00",
         "total_tax_amount": "0.00",
         "total_amount": "0.00",
         "total_credit_amount": "0.00",
@@ -232,6 +235,7 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
         "taxes": [],
         "tax_breakdown": [],
         "discount_breakdown": [],
+        "shipping": None,
     }
     assert invoice.status == InvoiceStatus.PAID
     assert invoice.paid_at is not None

@@ -127,6 +127,13 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
                 customer_id=invoice.customer_id,
             )
 
+        shipping = data.get("shipping")
+        if shipping:
+            invoice.add_shipping(
+                shipping_rate=shipping["shipping_rate"],
+                tax_rates=shipping.get("tax_rates", []),
+            )
+
         serializer = InvoiceSerializer(invoice)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -181,6 +188,20 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             delivery_method=data.get("delivery_method", invoice.delivery_method),
             recipients=data.get("recipients", invoice.recipients),
         )
+
+        if "shipping" in data:
+            shipping = data.get("shipping")
+
+            if invoice.shipping is not None:
+                invoice.shipping.delete()
+                invoice.refresh_from_db()
+                invoice.recalculate()
+
+            if shipping is not None:
+                invoice.add_shipping(
+                    shipping_rate=shipping["shipping_rate"],
+                    tax_rates=shipping.get("tax_rates", []),
+                )
 
         logger.info("Invoice updated", invoice_id=invoice.id, customer_id=invoice.customer_id)
         serializer = InvoiceSerializer(invoice)

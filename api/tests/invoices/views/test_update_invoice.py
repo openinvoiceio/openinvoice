@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 from unittest.mock import ANY
 
 import pytest
@@ -11,8 +12,12 @@ from common.enums import FeatureCode
 from tests.factories import (
     CustomerFactory,
     InvoiceFactory,
+    InvoiceShippingFactory,
+    InvoiceTaxFactory,
     NumberingSystemFactory,
+    ShippingRateFactory,
     StripeConnectionFactory,
+    TaxRateFactory,
 )
 
 pytestmark = pytest.mark.django_db
@@ -106,6 +111,7 @@ def test_update_invoice(api_client, user, account):
         "subtotal_amount": f"{invoice.subtotal_amount.amount:.2f}",
         "total_discount_amount": f"{invoice.total_discount_amount.amount:.2f}",
         "total_amount_excluding_tax": f"{invoice.total_amount_excluding_tax.amount:.2f}",
+        "shipping_amount": f"{invoice.shipping_amount.amount:.2f}",
         "total_tax_amount": f"{invoice.total_tax_amount.amount:.2f}",
         "total_amount": f"{invoice.total_amount.amount:.2f}",
         "total_credit_amount": f"{invoice.total_credit_amount.amount:.2f}",
@@ -124,6 +130,7 @@ def test_update_invoice(api_client, user, account):
         "discounts": [],
         "tax_breakdown": [],
         "discount_breakdown": [],
+        "shipping": None,
     }
 
 
@@ -155,6 +162,295 @@ def test_update_invoice_change_customer(api_client, user, account):
     invoice.refresh_from_db()
     assert invoice.customer_id == customer2.id
     assert response.data["customer"]["id"] == str(customer2.id)
+
+
+def test_update_invoice_add_shipping(api_client, user, account):
+    invoice = InvoiceFactory(account=account, currency="PLN")
+    shipping_rate = ShippingRateFactory(account=account, amount=Decimal(20))
+    tax_rate = TaxRateFactory(account=account, percentage=Decimal(10))
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {
+            "shipping": {
+                "shipping_rate_id": str(shipping_rate.id),
+                "tax_rates": [str(tax_rate.id)],
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.data["shipping"] == {
+        "amount": "20.00",
+        "tax_amount": "2.00",
+        "total_amount": "22.00",
+        "shipping_rate_id": str(shipping_rate.id),
+        "taxes": [
+            {
+                "id": ANY,
+                "tax_rate_id": str(tax_rate.id),
+                "name": tax_rate.name,
+                "description": tax_rate.description,
+                "rate": f"{tax_rate.percentage:.2f}",
+                "amount": "2.00",
+            }
+        ],
+    }
+    assert response.data["shipping_amount"] == "20.00"
+    assert response.data["total_tax_amount"] == "2.00"
+    assert response.data["total_amount"] == "22.00"
+
+
+def test_update_invoice_existing_shipping(api_client, user, account):
+    shipping_rate = ShippingRateFactory(account=account, amount=Decimal(20))
+    tax_rate = TaxRateFactory(account=account, percentage=Decimal(10))
+    invoice = InvoiceFactory(
+        account=account,
+        currency="PLN",
+        shipping_amount=Decimal(20),
+        total_tax_amount=Decimal(2),
+        total_amount=Decimal(22),
+    )
+    shipping = InvoiceShippingFactory(
+        amount=shipping_rate.amount, tax_amount=Decimal(2), total_amount=Decimal(22), shipping_rate=shipping_rate
+    )
+    InvoiceTaxFactory(tax_rate=tax_rate, invoice_shipping=shipping, invoice=invoice, amount=Decimal(2))
+    invoice.shipping = shipping
+    invoice.save()
+
+    new_shipping_rate = ShippingRateFactory(account=account, amount=Decimal(30))
+    new_tax_rate = TaxRateFactory(account=account, percentage=Decimal(15))
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {
+            "shipping": {
+                "shipping_rate_id": str(new_shipping_rate.id),
+                "tax_rates": [str(new_tax_rate.id)],
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.data["shipping"] == {
+        "amount": "30.00",
+        "tax_amount": "4.50",
+        "total_amount": "34.50",
+        "shipping_rate_id": str(new_shipping_rate.id),
+        "taxes": [
+            {
+                "id": ANY,
+                "tax_rate_id": str(new_tax_rate.id),
+                "name": new_tax_rate.name,
+                "description": new_tax_rate.description,
+                "rate": f"{new_tax_rate.percentage:.2f}",
+                "amount": "4.50",
+            }
+        ],
+    }
+    assert response.data["shipping_amount"] == "30.00"
+    assert response.data["total_tax_amount"] == "4.50"
+    assert response.data["total_amount"] == "34.50"
+
+
+def test_update_invoice_remove_shipping(api_client, user, account):
+    shipping_rate = ShippingRateFactory(account=account, amount=Decimal(20))
+    tax_rate = TaxRateFactory(account=account, percentage=Decimal(10))
+    invoice = InvoiceFactory(
+        account=account,
+        currency="PLN",
+        shipping_amount=Decimal(20),
+        total_tax_amount=Decimal(2),
+        total_amount=Decimal(22),
+    )
+    shipping = InvoiceShippingFactory(
+        amount=shipping_rate.amount, tax_amount=Decimal(2), total_amount=Decimal(22), shipping_rate=shipping_rate
+    )
+    InvoiceTaxFactory(tax_rate=tax_rate, invoice_shipping=shipping, invoice=invoice, amount=Decimal(2))
+    invoice.shipping = shipping
+    invoice.save()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"shipping": None},
+    )
+
+    assert response.status_code == 200
+    assert response.data["shipping"] is None
+    assert response.data["shipping_amount"] == "0.00"
+    assert response.data["total_tax_amount"] == "0.00"
+    assert response.data["total_amount"] == "0.00"
+
+
+def test_update_invoice_remove_shipping_without_existing_shipping(api_client, user, account):
+    invoice = InvoiceFactory(account=account, currency="PLN")
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"shipping": None},
+    )
+
+    assert response.status_code == 200
+    assert response.data["shipping"] is None
+    assert response.data["shipping_amount"] == "0.00"
+    assert response.data["total_tax_amount"] == "0.00"
+    assert response.data["total_amount"] == "0.00"
+
+
+def test_update_invoice_invalid_shipping_rate(api_client, user, account):
+    invoice = InvoiceFactory(account=account, currency="PLN")
+    shipping_rate_id = uuid.uuid4()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {
+            "shipping": {
+                "shipping_rate_id": str(shipping_rate_id),
+            },
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": "shipping.shipping_rate_id",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{shipping_rate_id}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_update_invoice_foreign_shipping_rate(api_client, user, account):
+    invoice = InvoiceFactory(account=account, currency="PLN")
+    shipping_rate = ShippingRateFactory()  # Different account
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {
+            "shipping": {
+                "shipping_rate_id": str(shipping_rate.id),
+            },
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": "shipping.shipping_rate_id",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{shipping_rate.id}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_update_invoice_shipping_invalid_tax_rate(api_client, user, account):
+    invoice = InvoiceFactory(account=account, currency="PLN")
+    shipping_rate = ShippingRateFactory(account=account)
+    tax_rate_id_1 = uuid.uuid4()
+    tax_rate_id_2 = uuid.uuid4()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {
+            "shipping": {
+                "shipping_rate_id": str(shipping_rate.id),
+                "tax_rates": [str(tax_rate_id_1), str(tax_rate_id_2)],
+            },
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": "shipping.tax_rates",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{tax_rate_id_1}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_update_invoice_shipping_foreign_tax_rate(api_client, user, account):
+    invoice = InvoiceFactory(account=account, currency="PLN")
+    shipping_rate = ShippingRateFactory(account=account)
+    tax_rate = TaxRateFactory(account=account)
+    foreign_tax_rate = TaxRateFactory()  # Different account
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {
+            "shipping": {
+                "shipping_rate_id": str(shipping_rate.id),
+                "tax_rates": [str(tax_rate.id), str(foreign_tax_rate.id)],
+            },
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": "shipping.tax_rates",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{foreign_tax_rate.id}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_update_invoice_shipping_duplicate_tax_rates(api_client, user, account):
+    invoice = InvoiceFactory(account=account, currency="PLN")
+    shipping_rate = ShippingRateFactory(account=account)
+    tax_rate = TaxRateFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {
+            "shipping": {
+                "shipping_rate_id": str(shipping_rate.id),
+                "tax_rates": [str(tax_rate.id), str(tax_rate.id)],
+            },
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": "shipping.tax_rates",
+                "code": "invalid",
+                "detail": "The same tax rate cannot be specified more than once.",
+            }
+        ],
+    }
 
 
 def test_update_invoice_payment_provider(api_client, user, account):

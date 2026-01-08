@@ -165,6 +165,7 @@ def test_search_all(api_client, user, account):
                 "subtotal_amount": f"{invoice_alpha.subtotal_amount.amount:.2f}",
                 "total_discount_amount": f"{invoice_alpha.total_discount_amount.amount:.2f}",
                 "total_amount_excluding_tax": f"{invoice_alpha.total_amount_excluding_tax.amount:.2f}",
+                "shipping_amount": f"{invoice_alpha.shipping_amount.amount:.2f}",
                 "total_tax_amount": f"{invoice_alpha.total_tax_amount.amount:.2f}",
                 "total_amount": f"{invoice_alpha.total_amount.amount:.2f}",
                 "total_credit_amount": f"{invoice_alpha.total_credit_amount.amount:.2f}",
@@ -183,6 +184,7 @@ def test_search_all(api_client, user, account):
                 "discounts": [],
                 "tax_breakdown": [],
                 "discount_breakdown": [],
+                "shipping": None,
             }
         ],
     }
