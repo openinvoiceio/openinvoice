@@ -298,7 +298,7 @@ def test_create_quote_line_without_price_or_unit_amount(api_client, user, accoun
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Price or unit amount is required",
+                "detail": "Exactly one of the fields unit_amount, price_id must be provided.",
             }
         ],
     }
@@ -329,7 +329,7 @@ def test_create_quote_line_with_price_and_unit_amount(api_client, user, account)
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Price and unit amount are mutually exclusive",
+                "detail": "Exactly one of the fields unit_amount, price_id must be provided.",
             }
         ],
     }

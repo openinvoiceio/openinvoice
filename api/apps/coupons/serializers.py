@@ -2,6 +2,7 @@ from djmoney.contrib.django_rest_framework import MoneyField
 from rest_framework import serializers
 
 from common.fields import CurrencyField
+from common.validators import ExactlyOneValidator
 
 
 class CouponSerializer(serializers.Serializer):
@@ -21,17 +22,10 @@ class CouponCreateSerializer(serializers.Serializer):
     amount = MoneyField(max_digits=19, decimal_places=2, allow_null=True, required=False)
     percentage = serializers.DecimalField(max_digits=5, decimal_places=2, allow_null=True, required=False)
 
-    def validate(self, data):
-        amount = data.get("amount")
-        percentage = data.get("percentage")
-
-        if amount is None and percentage is None:
-            raise serializers.ValidationError("Either amount or percentage must be provided.")
-
-        if amount is not None and percentage is not None:
-            raise serializers.ValidationError("Amount and percentage are mutually exclusive.")
-
-        return data
+    class Meta:
+        validators = [
+            ExactlyOneValidator("amount", "percentage"),
+        ]
 
 
 class CouponUpdateSerializer(serializers.Serializer):

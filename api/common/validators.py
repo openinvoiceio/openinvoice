@@ -1,4 +1,5 @@
 from django.core.validators import BaseValidator
+from rest_framework import serializers
 
 
 class MetadataLengthValidator(BaseValidator):
@@ -29,20 +30,41 @@ class MetadataValueValidator(BaseValidator):
         return any(not isinstance(value, str) or len(value) > b for value in a.values())
 
 
-class MutuallyExclusiveValidator:
-    def __init__(self, *fields: str):
+class AllOrNoneValidator:
+    message = "Fields {fields} must be provided together."
+    requires_context = True
+
+    def __init__(self, *fields) -> None:
         self.fields = fields
 
-    def __call__(self, data):
-        present_fields = [field for field in self.fields if field in data and data[field] is not None]
-        if len(present_fields) > 1:
-            raise ValueError(f"Fields {', '.join(present_fields)} are mutually exclusive.")
+    def __call__(self, attrs, serializer) -> None:
+        present = [s for s in self.fields if attrs.get(s) is not None]
+
+        if present and len(present) != len(self.fields):
+            field_names = []
+            for name, field in serializer.fields.items():
+                source = field.source or name
+                if source in self.fields:
+                    field_names.append(name)
+
+            raise serializers.ValidationError(self.message.format(fields=", ".join(field_names)))
 
 
-class AtLeastOneFieldValidator:
-    def __init__(self, *fields: str):
+class ExactlyOneValidator:
+    message = "Exactly one of the fields {fields} must be provided."
+    requires_context = True
+
+    def __init__(self, *fields: str) -> None:
         self.fields = fields
 
-    def __call__(self, data):
-        if not any(field in data and data[field] is not None for field in self.fields):
-            raise ValueError(f"At least one of the fields {', '.join(self.fields)} must be provided.")
+    def __call__(self, attrs, serializer) -> None:
+        present = [f for f in self.fields if attrs.get(f) is not None]
+
+        if len(present) != 1:
+            field_names = []
+            for name, field in serializer.fields.items():
+                source = field.source or name
+                if source in self.fields:
+                    field_names.append(name)
+
+            raise serializers.ValidationError(self.message.format(fields=", ".join(field_names)))

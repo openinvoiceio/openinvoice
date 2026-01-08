@@ -65,7 +65,7 @@ def test_create_coupon_both_amount_and_percentage(api_client, user, account):
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Amount and percentage are mutually exclusive.",
+                "detail": "Exactly one of the fields amount, percentage must be provided.",
             }
         ],
     }
@@ -83,7 +83,7 @@ def test_create_coupon_without_amount_or_percentage(api_client, user, account):
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Either amount or percentage must be provided.",
+                "detail": "Exactly one of the fields amount, percentage must be provided.",
             }
         ],
     }

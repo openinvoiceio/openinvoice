@@ -217,7 +217,7 @@ def test_update_invoice_payment_provider_without_connection(api_client, user, ac
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "payment_provider and payment_connection_id must be provided together",
+                "detail": "Fields payment_provider, payment_connection_id must be provided together.",
             }
         ],
     }

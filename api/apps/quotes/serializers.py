@@ -14,6 +14,7 @@ from apps.taxes.fields import TaxRateRelatedField
 from common.access import has_feature
 from common.enums import FeatureCode
 from common.fields import CurrencyField, MetadataField
+from common.validators import ExactlyOneValidator
 
 from .enums import QuoteDeliveryMethod, QuotePreviewFormat, QuoteStatus
 from .fields import QuoteRelatedField
@@ -177,6 +178,11 @@ class QuoteLineCreateSerializer(serializers.Serializer):
     unit_amount = MoneyField(max_digits=19, decimal_places=2, required=False)
     price_id = PriceRelatedField(source="price", required=False, validators=[PriceIsActive(), PriceProductIsActive()])
 
+    class Meta:
+        validators = [
+            ExactlyOneValidator("unit_amount", "price"),
+        ]
+
     def validate(self, data):
         quote = data["quote"]
         unit_amount = data.get("unit_amount")
@@ -187,12 +193,6 @@ class QuoteLineCreateSerializer(serializers.Serializer):
 
         if price and quote.currency != price.currency:
             raise serializers.ValidationError("Price currency does not match quote currency")
-
-        if unit_amount is None and price is None:
-            raise serializers.ValidationError("Price or unit amount is required")
-
-        if unit_amount is not None and price is not None:
-            raise serializers.ValidationError("Price and unit amount are mutually exclusive")
 
         if unit_amount is not None and not isinstance(unit_amount, Money):
             data["unit_amount"] = Money(unit_amount, quote.currency)
@@ -206,25 +206,21 @@ class QuoteLineUpdateSerializer(serializers.Serializer):
     unit_amount = MoneyField(max_digits=19, decimal_places=2, required=False)
     price_id = PriceRelatedField(source="price", required=False, validators=[PriceIsActive(), PriceProductIsActive()])
 
+    class Meta:
+        validators = [
+            ExactlyOneValidator("unit_amount", "price"),
+        ]
+
     def validate(self, data):
-        unit_amount = data.get("unit_amount")
         price = data.get("price")
 
         if price and self.instance.currency != price.currency:
             raise serializers.ValidationError("Price currency does not match quote currency")
 
-        # TODO: we probably will need to refine this behavior?
-        #  Should we allow for changing from price line to unit amount line and vice versa?
-        if unit_amount is None and price is None:
-            raise serializers.ValidationError("Price or unit amount is required")
-
-        if unit_amount is not None and price is not None:
-            raise serializers.ValidationError("Price and unit amount are mutually exclusive")
-
-        if unit_amount is not None and not isinstance(unit_amount, Money):
-            data["unit_amount"] = Money(unit_amount, self.instance.currency)
-
         return data
+
+    def validate_unit_amount(self, value):
+        return Money(value, self.instance.currency)
 
 
 class QuoteLineDiscountCreateSerializer(serializers.Serializer):

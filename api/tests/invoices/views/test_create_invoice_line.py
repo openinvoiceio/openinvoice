@@ -254,7 +254,7 @@ def test_create_invoice_line_price_or_unit_required(api_client, user, account):
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Price or unit amount is required",
+                "detail": "Exactly one of the fields unit_amount, price_id must be provided.",
             }
         ],
     }
@@ -284,7 +284,7 @@ def test_create_invoice_line_price_and_unit_mutually_exclusive(api_client, user,
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Price and unit amount are mutually exclusive",
+                "detail": "Exactly one of the fields unit_amount, price_id must be provided.",
             }
         ],
     }

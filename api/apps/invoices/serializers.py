@@ -16,6 +16,7 @@ from apps.taxes.fields import TaxRateRelatedField
 from common.access import has_feature
 from common.enums import FeatureCode
 from common.fields import CurrencyField, MetadataField
+from common.validators import AllOrNoneValidator, ExactlyOneValidator
 
 from .enums import InvoiceDeliveryMethod, InvoiceStatus
 from .fields import InvoiceRelatedField
@@ -174,22 +175,11 @@ class InvoiceCreateSerializer(serializers.Serializer):
     delivery_method = serializers.ChoiceField(choices=InvoiceDeliveryMethod.choices, required=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
 
-    def validate(self, data):
-        customer = data.get("customer")
-        previous_revision = data.get("previous_revision")
-        payment_provider = data.get("payment_provider")
-        payment_connection = data.get("payment_connection")
-
-        if customer is None and previous_revision is None:
-            raise serializers.ValidationError("customer_id or previous_revision_id is required")
-
-        if customer is not None and previous_revision is not None:
-            raise serializers.ValidationError("Provide either customer_id or previous_revision_id")
-
-        if (payment_provider is None) ^ (payment_connection is None):
-            raise serializers.ValidationError("payment_provider and payment_connection_id must be provided together")
-
-        return data
+    class Meta:
+        validators = [
+            ExactlyOneValidator("customer", "previous_revision"),
+            AllOrNoneValidator("payment_provider", "payment_connection"),
+        ]
 
     def validate_previous_revision_id(self, value):
         if value.status != InvoiceStatus.OPEN:
@@ -236,19 +226,10 @@ class InvoiceUpdateSerializer(serializers.Serializer):
     delivery_method = serializers.ChoiceField(choices=InvoiceDeliveryMethod.choices, required=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
 
-    def validate(self, data):
-        payment_provider = data.get("payment_provider", self.instance.payment_provider)
-        if "payment_connection" not in data:
-            payment_connection_id = self.instance.payment_connection_id
-        elif data["payment_connection"] is not None:
-            payment_connection_id = data["payment_connection"].id
-        else:
-            payment_connection_id = None
-
-        if (payment_provider is None) ^ (payment_connection_id is None):
-            raise serializers.ValidationError("payment_provider and payment_connection_id must be provided together")
-
-        return data
+    class Meta:
+        validators = [
+            AllOrNoneValidator("payment_provider", "payment_connection"),
+        ]
 
     def validate_customer_id(self, value):
         if self.instance.previous_revision and self.instance.customer_id != value.id:
@@ -274,6 +255,11 @@ class InvoiceLineCreateSerializer(serializers.Serializer):
     unit_amount = MoneyField(max_digits=19, decimal_places=2, required=False)
     price_id = PriceRelatedField(source="price", required=False, validators=[PriceIsActive(), PriceProductIsActive()])
 
+    class Meta:
+        validators = [
+            ExactlyOneValidator("unit_amount", "price"),
+        ]
+
     def validate(self, data):
         invoice = data["invoice"]
         unit_amount = data.get("unit_amount")
@@ -284,12 +270,6 @@ class InvoiceLineCreateSerializer(serializers.Serializer):
 
         if price and invoice.currency != price.currency:
             raise serializers.ValidationError("Price currency does not match invoice currency")
-
-        if unit_amount is None and price is None:
-            raise serializers.ValidationError("Price or unit amount is required")
-
-        if unit_amount is not None and price is not None:
-            raise serializers.ValidationError("Price and unit amount are mutually exclusive")
 
         if unit_amount:
             data["unit_amount"] = Money(unit_amount, invoice.currency)
@@ -303,17 +283,10 @@ class InvoiceLineUpdateSerializer(serializers.Serializer):
     unit_amount = MoneyField(max_digits=19, decimal_places=2, required=False)
     price_id = PriceRelatedField(source="price", required=False, validators=[PriceIsActive(), PriceProductIsActive()])
 
-    def validate(self, data):
-        unit_amount = data.get("unit_amount")
-        price = data.get("price")
-
-        if unit_amount is None and price is None:
-            raise serializers.ValidationError("Price or unit amount is required")
-
-        if unit_amount is not None and price is not None:
-            raise serializers.ValidationError("Price and unit amount are mutually exclusive")
-
-        return data
+    class Meta:
+        validators = [
+            ExactlyOneValidator("unit_amount", "price"),
+        ]
 
     def validate_price_id(self, value):
         if self.instance.currency != value.currency:

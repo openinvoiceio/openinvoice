@@ -363,7 +363,7 @@ def test_create_invoice_payment_provider_without_connection(api_client, user, ac
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "payment_provider and payment_connection_id must be provided together",
+                "detail": "Fields payment_provider, payment_connection_id must be provided together.",
             }
         ],
     }
@@ -670,7 +670,7 @@ def test_create_invoice_requires_customer_or_previous_revision(api_client, user,
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "customer_id or previous_revision_id is required",
+                "detail": "Exactly one of the fields customer_id, previous_revision_id must be provided.",
             }
         ],
     }
@@ -699,7 +699,7 @@ def test_create_invoice_rejects_customer_and_previous_revision(api_client, user,
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Provide either customer_id or previous_revision_id",
+                "detail": "Exactly one of the fields customer_id, previous_revision_id must be provided.",
             }
         ],
     }
