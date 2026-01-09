@@ -52,8 +52,6 @@ def test_update_invoice(api_client, user, account):
         "status": invoice.status,
         "number": invoice.effective_number,
         "numbering_system_id": None,
-        "previous_revision_id": None,
-        "latest_revision_id": invoice.latest_revision_id,
         "currency": invoice.currency,
         "issue_date": None,
         "sell_date": None,
@@ -519,9 +517,9 @@ def test_update_invoice_payment_provider_without_connection(api_client, user, ac
     }
 
 
-def test_update_revision_requires_same_customer(api_client, user, account):
-    original = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
-    revision = InvoiceFactory(account=account, customer=original.customer, previous_revision=original)
+def test_update_invoice_revision_requires_same_customer(api_client, user, account):
+    invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
+    revision = InvoiceFactory(head=invoice.head, account=account, customer=invoice.customer, previous_revision=invoice)
     other_customer = CustomerFactory(account=account)
 
     api_client.force_login(user)

@@ -123,8 +123,6 @@ class InvoiceSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=InvoiceStatus.choices)
     number = serializers.CharField(allow_null=True, source="effective_number", read_only=True)
     numbering_system_id = serializers.UUIDField(allow_null=True)
-    previous_revision_id = serializers.UUIDField(allow_null=True)
-    latest_revision_id = serializers.UUIDField(allow_null=True)
     currency = CurrencyField()
     issue_date = serializers.DateField(allow_null=True)
     sell_date = serializers.DateField(allow_null=True)
@@ -174,12 +172,11 @@ class InvoiceShippingAddSerializer(serializers.Serializer):
 
 
 class InvoiceCreateSerializer(serializers.Serializer):
-    customer_id = CustomerRelatedField(source="customer", required=False)
+    customer_id = CustomerRelatedField(source="customer")
     number = serializers.CharField(allow_null=True, required=False, max_length=255)
     numbering_system_id = NumberingSystemRelatedField(
         source="numbering_system", applies_to=NumberingSystemAppliesTo.INVOICE, allow_null=True, required=False
     )
-    previous_revision_id = InvoiceRelatedField(source="previous_revision", required=False)
     currency = CurrencyField(allow_null=True, required=False)
     issue_date = serializers.DateField(allow_null=True, required=False)
     sell_date = serializers.DateField(allow_null=True, required=False)
@@ -199,21 +196,46 @@ class InvoiceCreateSerializer(serializers.Serializer):
 
     class Meta:
         validators = [
-            ExactlyOneValidator("customer", "previous_revision"),
             AllOrNoneValidator("payment_provider", "payment_connection"),
         ]
 
-    def validate_previous_revision_id(self, value):
-        if value.status != InvoiceStatus.OPEN:
-            raise serializers.ValidationError("Only open invoices can be revised")
+    def validate_delivery_method(self, value):
+        account = self.context["request"].account
 
-        if value.revisions.exclude(status=InvoiceStatus.VOIDED).exists():
-            raise serializers.ValidationError("Invoice already has a subsequent revision")
-
-        if value.latest_revision_id != value.id:
-            raise serializers.ValidationError("Only the latest revision can be revised")
+        if value == InvoiceDeliveryMethod.AUTOMATIC and not has_feature(
+            account, FeatureCode.AUTOMATIC_INVOICE_DELIVERY
+        ):
+            raise serializers.ValidationError("Automatic delivery is forbidden for your account.")
 
         return value
+
+
+class InvoiceRevisionCreateSerializer(serializers.Serializer):
+    number = serializers.CharField(allow_null=True, required=False, max_length=255)
+    numbering_system_id = NumberingSystemRelatedField(
+        source="numbering_system", applies_to=NumberingSystemAppliesTo.INVOICE, allow_null=True, required=False
+    )
+    currency = CurrencyField(allow_null=True, required=False)
+    issue_date = serializers.DateField(allow_null=True, required=False)
+    sell_date = serializers.DateField(allow_null=True, required=False)
+    due_date = serializers.DateField(allow_null=True, required=False)
+    net_payment_term = serializers.IntegerField(allow_null=True, required=False)
+    metadata = MetadataField(allow_null=True, required=False)
+    custom_fields = MetadataField(allow_null=True, required=False)
+    footer = serializers.CharField(allow_null=True, required=False, max_length=600)
+    description = serializers.CharField(allow_null=True, required=False, max_length=600)
+    payment_provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True, required=False)
+    payment_connection_id = IntegrationConnectionField(
+        source="payment_connection", type_field="payment_provider", allow_null=True, required=False
+    )
+    delivery_method = serializers.ChoiceField(choices=InvoiceDeliveryMethod.choices, required=False)
+    recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
+    shipping = InvoiceShippingAddSerializer(required=False, allow_null=True)
+
+    class Meta:
+        validators = [
+            AllOrNoneValidator("payment_provider", "payment_connection"),
+        ]
 
     def validate_delivery_method(self, value):
         account = self.context["request"].account

@@ -4,7 +4,7 @@ import pytest
 from drf_standardized_errors.types import ErrorType
 
 from apps.invoices.enums import InvoiceStatus
-from apps.invoices.models import Invoice
+from apps.invoices.models import Invoice, InvoiceHead
 from tests.factories import (
     InvoiceFactory,
 )
@@ -14,6 +14,7 @@ pytestmark = pytest.mark.django_db
 
 def test_delete_invoice(api_client, user, account):
     invoice = InvoiceFactory(account=account)
+    assert invoice.head is not None
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -21,6 +22,22 @@ def test_delete_invoice(api_client, user, account):
 
     assert response.status_code == 204
     assert not Invoice.objects.filter(id=invoice.id).exists()
+    assert not InvoiceHead.objects.filter(id=invoice.head_id).exists()
+
+
+def test_delete_invoice_revision(api_client, user, account):
+    invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
+    invoice.head.current = invoice
+    invoice.head.save()
+    revision = InvoiceFactory(account=account, status=InvoiceStatus.DRAFT, previous_revision=invoice, head=invoice.head)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.delete(f"/api/v1/invoices/{revision.id}")
+
+    assert response.status_code == 204
+    assert not Invoice.objects.filter(id=revision.id).exists()
+    assert InvoiceHead.objects.filter(id=revision.head_id).exists()
 
 
 @pytest.mark.parametrize(

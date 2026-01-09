@@ -30,8 +30,6 @@ def test_retrieve_invoice(api_client, user, account):
         "status": invoice.status,
         "number": invoice.effective_number,
         "numbering_system_id": None,
-        "previous_revision_id": None,
-        "latest_revision_id": invoice.latest_revision_id,
         "currency": invoice.currency,
         "issue_date": None,
         "sell_date": None,

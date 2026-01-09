@@ -106,8 +106,6 @@ def test_search_all(api_client, user, account):
                 "status": invoice_alpha.status,
                 "number": invoice_alpha.number,
                 "numbering_system_id": None,
-                "previous_revision_id": None,
-                "latest_revision_id": None,
                 "currency": invoice_alpha.currency,
                 "issue_date": None,
                 "sell_date": None,

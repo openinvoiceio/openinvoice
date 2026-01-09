@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from django.db import models
-from django.db.models import Prefetch
+from django.db.models import F, IntegerField, Prefetch, Value
+from django_cte import CTE, with_cte
 
 
 class InvoiceQuerySet(models.QuerySet):
@@ -36,7 +39,6 @@ class InvoiceQuerySet(models.QuerySet):
             "customer__shipping_address",
             "customer__logo",
             "previous_revision",
-            "latest_revision",
         ).prefetch_related(
             Prefetch(
                 "lines",
@@ -46,6 +48,26 @@ class InvoiceQuerySet(models.QuerySet):
             "taxes",
             "account_on_invoice__tax_ids",
             "customer_on_invoice__tax_ids",
+        )
+
+    def revisions(self, head_id: UUID) -> InvoiceQuerySet:
+        def make_cte(cte):
+            anchor = (
+                self.filter(head_id=head_id, id=F("head__root_id"))
+                .annotate(depth=Value(0, output_field=IntegerField()))
+                .values("id", "depth")
+            )
+            recursive = (
+                cte.join(self, previous_revision_id=cte.col.id)
+                .annotate(depth=cte.col.depth + Value(1))
+                .values("id", "depth")
+            )
+            return anchor.union(recursive, all=True)
+
+        cte = CTE.recursive(make_cte)
+        return with_cte(
+            cte,
+            select=cte.join(self, id=cte.col.id).annotate(depth=cte.col.depth).order_by("-depth"),
         )
 
 

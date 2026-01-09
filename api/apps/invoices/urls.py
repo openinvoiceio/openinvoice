@@ -13,6 +13,7 @@ from .views import (
     InvoiceListCreateAPIView,
     InvoicePreviewAPIView,
     InvoiceRetrieveUpdateDestroyAPIView,
+    InvoiceRevisionsListCreateAPIView,
     InvoiceTaxCreateAPIView,
     InvoiceTaxDestroyAPIView,
     InvoiceVoidAPIView,
@@ -22,6 +23,7 @@ urlpatterns = [
     # Invoices
     path("invoices", InvoiceListCreateAPIView.as_view()),
     path("invoices/<uuid:pk>", InvoiceRetrieveUpdateDestroyAPIView.as_view()),
+    path("invoices/<uuid:pk>/revisions", InvoiceRevisionsListCreateAPIView.as_view()),
     path("invoices/<uuid:pk>/finalize", InvoiceFinalizeAPIView.as_view()),
     path("invoices/<uuid:pk>/void", InvoiceVoidAPIView.as_view()),
     path("invoices/<uuid:pk>/preview", InvoicePreviewAPIView.as_view()),

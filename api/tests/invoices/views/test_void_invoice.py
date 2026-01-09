@@ -2,7 +2,6 @@ import uuid
 from unittest.mock import ANY
 
 import pytest
-from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
 from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
@@ -12,7 +11,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_void_invoice(api_client, user, account):
-    invoice = InvoiceFactory(account=account)
+    invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -25,8 +24,6 @@ def test_void_invoice(api_client, user, account):
         "status": invoice.status,
         "number": invoice.effective_number,
         "numbering_system_id": None,
-        "previous_revision_id": None,
-        "latest_revision_id": str(invoice.latest_revision_id),
         "currency": invoice.currency,
         "issue_date": invoice.issue_date,
         "sell_date": invoice.sell_date,
@@ -107,30 +104,13 @@ def test_void_invoice(api_client, user, account):
     }
 
 
-def test_void_original_invoice_with_open_revision(api_client, user, account):
-    original = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
-    InvoiceFactory(
-        account=account,
-        customer=original.customer,
-        previous_revision=original,
-        status=InvoiceStatus.OPEN,
-    )
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.post(f"/api/v1/invoices/{original.id}/void")
-
-    assert response.status_code == 200
-    original.refresh_from_db()
-    assert original.status == InvoiceStatus.VOIDED
-
-
-def test_void_revision_preserves_original_status(api_client, user, account):
-    original = InvoiceFactory(account=account, status=InvoiceStatus.VOIDED, voided_at=timezone.now())
+def test_void_invoice_revision(api_client, user, account):
+    invoice = InvoiceFactory(account=account, status=InvoiceStatus.VOIDED)
     revision = InvoiceFactory(
+        head=invoice.head,
         account=account,
-        customer=original.customer,
-        previous_revision=original,
+        customer=invoice.customer,
+        previous_revision=invoice,
         status=InvoiceStatus.OPEN,
     )
 
@@ -139,35 +119,17 @@ def test_void_revision_preserves_original_status(api_client, user, account):
     response = api_client.post(f"/api/v1/invoices/{revision.id}/void")
 
     assert response.status_code == 200
+    invoice.refresh_from_db()
+    assert invoice.status == InvoiceStatus.VOIDED
+
     revision.refresh_from_db()
-    original.refresh_from_db()
     assert revision.status == InvoiceStatus.VOIDED
-    assert original.status == InvoiceStatus.VOIDED
-    assert original.voided_at is not None
+    assert revision.voided_at is not None
 
 
-def test_void_invoice_already_voided(api_client, user, account):
-    invoice = InvoiceFactory(account=account, status=InvoiceStatus.VOIDED)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.post(f"/api/v1/invoices/{invoice.id}/void")
-
-    assert response.status_code == 400
-    assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
-        "errors": [
-            {
-                "attr": None,
-                "code": "invalid",
-                "detail": "Invoice is already voided",
-            }
-        ],
-    }
-
-
-def test_void_invoice_paid(api_client, user, account):
-    invoice = InvoiceFactory(account=account, status=InvoiceStatus.PAID)
+@pytest.mark.parametrize("status", [InvoiceStatus.PAID, InvoiceStatus.VOIDED, InvoiceStatus.DRAFT])
+def test_void_non_open_invoice(api_client, user, account, status):
+    invoice = InvoiceFactory(account=account, status=status)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -175,12 +137,12 @@ def test_void_invoice_paid(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": None,
                 "code": "invalid",
-                "detail": "Paid invoices cannot be voided",
+                "detail": "Only open invoices can be voided",
             }
         ],
     }

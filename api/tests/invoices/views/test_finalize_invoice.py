@@ -38,8 +38,6 @@ def test_finalize_invoice(api_client, user, account):
         "status": invoice.status,
         "number": invoice.effective_number,
         "numbering_system_id": None,
-        "previous_revision_id": None,
-        "latest_revision_id": str(invoice.latest_revision_id),
         "currency": invoice.currency,
         "issue_date": invoice.issue_date.isoformat(),
         "sell_date": None,
@@ -157,8 +155,6 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
         "status": invoice.status,
         "number": invoice.effective_number,
         "numbering_system_id": None,
-        "previous_revision_id": None,
-        "latest_revision_id": str(invoice.latest_revision_id),
         "currency": invoice.currency,
         "issue_date": invoice.issue_date.isoformat(),
         "sell_date": None,
@@ -241,14 +237,14 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
     assert invoice.paid_at is not None
 
 
-def test_finalize_revision_voids_original(api_client, user, account):
+def test_finalize_invoice_revision_voids_original(api_client, user, account):
     original_issue_date = date(2023, 12, 1)
-    original = InvoiceFactory(
+    invoice = InvoiceFactory(
         account=account,
         status=InvoiceStatus.OPEN,
         issue_date=original_issue_date,
     )
-    revision = InvoiceFactory(account=account, customer=original.customer, previous_revision=original)
+    revision = InvoiceFactory(account=account, customer=invoice.customer, previous_revision=invoice, head=invoice.head)
     InvoiceLineFactory(
         invoice=revision,
         quantity=1,
@@ -266,12 +262,13 @@ def test_finalize_revision_voids_original(api_client, user, account):
     response = api_client.post(f"/api/v1/invoices/{revision.id}/finalize")
 
     assert response.status_code == 200
-    original.refresh_from_db()
+    invoice.refresh_from_db()
     revision.refresh_from_db()
-    assert original.status == InvoiceStatus.VOIDED
-    assert original.voided_at is not None
-    assert response.data["previous_revision_id"] == str(original.id)
-    assert original.latest_revision_id == revision.id
+    assert invoice.status == InvoiceStatus.VOIDED
+    assert invoice.voided_at is not None
+    assert invoice.previous_revision_id is None
+    assert invoice.head.root_id == invoice.id
+    assert invoice.head.current_id == revision.id
 
 
 def test_finalize_invoice_with_payment_provider(api_client, user, account, stripe_checkout_mock):

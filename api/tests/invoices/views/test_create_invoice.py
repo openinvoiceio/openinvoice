@@ -1,22 +1,16 @@
 import uuid
-from datetime import date
 from decimal import Decimal
 from unittest.mock import ANY
 
 import pytest
-from django.utils import timezone
-from djmoney.money import Money
 from drf_standardized_errors.types import ErrorType
 
 from apps.integrations.enums import PaymentProvider
 from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
-from apps.invoices.models import Invoice, InvoiceDiscount, InvoiceTax
+from apps.invoices.models import Invoice
 from common.enums import FeatureCode, LimitCode
 from tests.factories import (
-    CouponFactory,
     CustomerFactory,
-    InvoiceFactory,
-    InvoiceLineFactory,
     ShippingRateFactory,
     StripeConnectionFactory,
     TaxRateFactory,
@@ -41,8 +35,6 @@ def test_create_invoice(api_client, user, account):
         "status": InvoiceStatus.DRAFT,
         "number": None,
         "numbering_system_id": None,
-        "previous_revision_id": None,
-        "latest_revision_id": None,
         "currency": customer.currency,
         "issue_date": None,
         "sell_date": None,
@@ -124,7 +116,9 @@ def test_create_invoice(api_client, user, account):
 
     invoice = Invoice.objects.get(id=response.data["id"])
     assert invoice.customer_id == customer.id
-    assert invoice.latest_revision_id is None
+    assert invoice.head is not None
+    assert invoice.head.root_id == invoice.id
+    assert invoice.head.current_id is None
 
 
 def test_create_invoice_with_customer_tax_rates(api_client, user, account):
@@ -564,337 +558,20 @@ def test_create_invoice_payment_provider_without_connection(api_client, user, ac
     }
 
 
-def test_create_invoice_revision(api_client, user, account):
-    original_issue_date = date(2024, 1, 5)
-    original = InvoiceFactory(
-        account=account,
-        status=InvoiceStatus.OPEN,
-        issue_date=original_issue_date,
-    )
-    original.latest_revision = original
-    original.save(update_fields=["latest_revision"])
-
+def test_create_invoice_requires_customer(api_client, user, account):
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.post(
-        "/api/v1/invoices",
-        {
-            "previous_revision_id": str(original.id),
-        },
-    )
 
-    assert response.status_code == 201
-    assert response.data["previous_revision_id"] == str(original.id)
-    assert response.data["latest_revision_id"] is None
-    assert response.data["customer"]["id"] == str(original.customer.id)
-
-    revision = Invoice.objects.get(id=response.data["id"])
-    assert revision.previous_revision_id == original.id
-    assert revision.latest_revision_id is None
-    original.refresh_from_db()
-    assert original.latest_revision_id == original.id
-
-
-def test_create_invoice_revision_clones_previous_details(api_client, user, account):
-    original = InvoiceFactory(
-        account=account,
-        status=InvoiceStatus.OPEN,
-        subtotal_amount=Decimal("100"),
-        total_discount_amount=Decimal("15"),
-        total_amount_excluding_tax=Decimal("85"),
-        total_tax_amount=Decimal("9"),
-        total_amount=Decimal("94"),
-        metadata={"note": "keep"},
-        custom_fields={"po": "123"},
-        footer="Original footer",
-        description="Original description",
-    )
-    Invoice.objects.filter(id=original.id).update(latest_revision_id=original.id)
-
-    line = InvoiceLineFactory(
-        invoice=original,
-        description="Service fee",
-        quantity=1,
-        unit_amount=Decimal("100"),
-        amount=Decimal("100"),
-        total_amount_excluding_tax=Decimal("90"),
-        total_discount_amount=Decimal("10"),
-        total_tax_amount=Decimal("9"),
-        total_amount=Decimal("99"),
-        total_tax_rate=Decimal("10"),
-    )
-
-    line_coupon = CouponFactory(account=account, currency=original.currency, amount=Decimal("10"), percentage=None)
-    invoice_coupon = CouponFactory(account=account, currency=original.currency, amount=Decimal("5"), percentage=None)
-
-    line_discount = InvoiceDiscount.objects.create(
-        invoice=original,
-        invoice_line=line,
-        coupon=line_coupon,
-        currency=original.currency,
-        amount=Money(Decimal("10"), original.currency),
-    )
-    invoice_discount = InvoiceDiscount.objects.create(
-        invoice=original,
-        invoice_line=None,
-        coupon=invoice_coupon,
-        currency=original.currency,
-        amount=Money(Decimal("5"), original.currency),
-    )
-
-    line_tax_rate = TaxRateFactory(account=account, percentage=Decimal("10.00"))
-    invoice_tax_rate = TaxRateFactory(account=account, percentage=Decimal("5.00"))
-
-    line_tax = InvoiceTax.objects.create(
-        invoice=original,
-        invoice_line=line,
-        tax_rate=line_tax_rate,
-        name=line_tax_rate.name,
-        description=line_tax_rate.description,
-        rate=line_tax_rate.percentage,
-        currency=original.currency,
-        amount=Money(Decimal("10"), original.currency),
-    )
-    invoice_tax = InvoiceTax.objects.create(
-        invoice=original,
-        invoice_line=None,
-        tax_rate=invoice_tax_rate,
-        name=invoice_tax_rate.name,
-        description=invoice_tax_rate.description,
-        rate=invoice_tax_rate.percentage,
-        currency=original.currency,
-        amount=Money(Decimal("5"), original.currency),
-    )
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.post(
-        "/api/v1/invoices",
-        {"previous_revision_id": str(original.id)},
-    )
-
-    assert response.status_code == 201
-
-    revision = Invoice.objects.get(id=response.data["id"])
-    revision_line = revision.lines.get(description="Service fee")
-
-    assert revision.previous_revision_id == original.id
-    assert revision.metadata == {}
-    assert revision.custom_fields == original.custom_fields
-    assert revision.footer == original.footer
-    assert revision.description == original.description
-    assert revision.subtotal_amount == original.subtotal_amount
-    assert revision.total_discount_amount == original.total_discount_amount
-    assert revision.total_amount_excluding_tax == original.total_amount_excluding_tax
-    assert revision.total_tax_amount == original.total_tax_amount
-    assert revision.total_amount == original.total_amount
-
-    assert revision_line.quantity == line.quantity
-    assert revision_line.unit_amount == line.unit_amount
-    assert revision_line.total_amount == line.total_amount
-
-    assert revision_line.discounts.count() == 1
-    assert revision_line.discounts.first().coupon_id == line_discount.coupon_id
-
-    assert revision_line.taxes.count() == 1
-    assert revision_line.taxes.first().tax_rate_id == line_tax.tax_rate_id
-
-    assert revision.discounts.for_invoice().count() == 1
-    assert revision.discounts.for_invoice().first().coupon_id == invoice_discount.coupon_id
-
-    assert revision.taxes.for_invoice().count() == 1
-    assert revision.taxes.for_invoice().first().tax_rate_id == invoice_tax.tax_rate_id
-
-
-def test_create_invoice_revision_skips_archived_coupons(api_client, user, account):
-    original = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
-    Invoice.objects.filter(id=original.id).update(latest_revision_id=original.id)
-
-    line = InvoiceLineFactory(invoice=original)
-
-    archived_line_coupon = CouponFactory(account=account, currency=original.currency, is_active=False)
-    archived_invoice_coupon = CouponFactory(account=account, currency=original.currency, is_active=False)
-
-    InvoiceDiscount.objects.create(
-        invoice=original,
-        invoice_line=line,
-        coupon=archived_line_coupon,
-        currency=original.currency,
-        amount=Money(Decimal("5"), original.currency),
-    )
-    InvoiceDiscount.objects.create(
-        invoice=original,
-        invoice_line=None,
-        coupon=archived_invoice_coupon,
-        currency=original.currency,
-        amount=Money(Decimal("5"), original.currency),
-    )
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.post(
-        "/api/v1/invoices",
-        {"previous_revision_id": str(original.id)},
-    )
-
-    assert response.status_code == 201
-
-    revision = Invoice.objects.get(id=response.data["id"])
-    revision_line = revision.lines.get(description=line.description)
-
-    assert revision_line.discounts.count() == 0
-    assert revision.discounts.for_invoice().count() == 0
-
-
-@pytest.mark.parametrize("status", [InvoiceStatus.DRAFT, InvoiceStatus.PAID, InvoiceStatus.VOIDED])
-def test_create_invoice_revision_requires_open_status(api_client, user, account, status):
-    invoice = InvoiceFactory(account=account, status=status)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.post(
-        "/api/v1/invoices",
-        {
-            "previous_revision_id": str(invoice.id),
-        },
-    )
+    response = api_client.post("/api/v1/invoices")
 
     assert response.status_code == 400
     assert response.data == {
         "type": ErrorType.VALIDATION_ERROR,
         "errors": [
             {
-                "attr": "previous_revision_id",
-                "code": "invalid",
-                "detail": "Only open invoices can be revised",
-            }
-        ],
-    }
-
-
-def test_create_invoice_revision_rejects_existing_revision(api_client, user, account):
-    original = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
-    InvoiceFactory(account=account, customer=original.customer, previous_revision=original)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.post(
-        "/api/v1/invoices",
-        {
-            "previous_revision_id": str(original.id),
-        },
-    )
-
-    assert response.status_code == 400
-    assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
-        "errors": [
-            {
-                "attr": "previous_revision_id",
-                "code": "invalid",
-                "detail": "Invoice already has a subsequent revision",
-            }
-        ],
-    }
-
-
-def test_create_invoice_revision_requires_latest_revision(api_client, user, account):
-    original = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
-    newer = InvoiceFactory(account=account)
-    Invoice.objects.filter(id=original.id).update(latest_revision_id=newer.id)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.post(
-        "/api/v1/invoices",
-        {
-            "previous_revision_id": str(original.id),
-        },
-    )
-
-    assert response.status_code == 400
-    assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
-        "errors": [
-            {
-                "attr": "previous_revision_id",
-                "code": "invalid",
-                "detail": "Only the latest revision can be revised",
-            }
-        ],
-    }
-
-
-def test_create_invoice_revision_after_voided_revision(api_client, user, account):
-    original = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
-    Invoice.objects.filter(id=original.id).update(latest_revision_id=original.id)
-    InvoiceFactory(
-        account=account,
-        customer=original.customer,
-        previous_revision=original,
-        status=InvoiceStatus.VOIDED,
-        voided_at=timezone.now(),
-    )
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.post(
-        "/api/v1/invoices",
-        {
-            "previous_revision_id": str(original.id),
-        },
-    )
-
-    assert response.status_code == 201
-    assert response.data["previous_revision_id"] == str(original.id)
-
-
-def test_create_invoice_requires_customer_or_previous_revision(api_client, user, account):
-    api_client.force_login(user)
-    api_client.force_account(account)
-
-    response = api_client.post(
-        "/api/v1/invoices",
-        {},
-    )
-
-    assert response.status_code == 400
-    assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
-        "errors": [
-            {
-                "attr": "non_field_errors",
-                "code": "invalid",
-                "detail": "Exactly one of the fields customer_id, previous_revision_id must be provided.",
-            }
-        ],
-    }
-
-
-def test_create_invoice_rejects_customer_and_previous_revision(api_client, user, account):
-    original = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
-    original.latest_revision_id = original.id
-    original.save()
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-
-    response = api_client.post(
-        "/api/v1/invoices",
-        {
-            "customer_id": str(original.customer.id),
-            "previous_revision_id": str(original.id),
-        },
-    )
-
-    assert response.status_code == 400
-    assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
-        "errors": [
-            {
-                "attr": "non_field_errors",
-                "code": "invalid",
-                "detail": "Exactly one of the fields customer_id, previous_revision_id must be provided.",
+                "attr": "customer_id",
+                "code": "required",
+                "detail": "This field is required.",
             }
         ],
     }

@@ -100,6 +100,13 @@ class InvoiceAccount(models.Model):
     objects = InvoiceAccountManager()
 
 
+class InvoiceHead(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    root = models.OneToOneField("invoices.Invoice", on_delete=models.PROTECT, null=True, related_name="+")
+    current = models.OneToOneField("invoices.Invoice", on_delete=models.PROTECT, null=True, related_name="+")
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+
+
 class Invoice(models.Model):  # type: ignore[django-manager-missing]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     number = models.CharField(max_length=255, null=True)
@@ -128,12 +135,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     account = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="invoices")
     footer = models.CharField(max_length=500, null=True, blank=True)
     description = models.CharField(max_length=500, null=True, blank=True)
-    shipping = models.OneToOneField(
-        "InvoiceShipping",
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="invoice",
-    )
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_amount_excluding_tax = MoneyField(
@@ -167,16 +168,17 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         default=list,
         blank=True,
     )
+    shipping = models.OneToOneField(
+        "InvoiceShipping",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="invoice",
+    )
+    head = models.ForeignKey(InvoiceHead, on_delete=models.PROTECT, related_name="revisions")
     previous_revision = models.ForeignKey(
         "self",
         on_delete=models.PROTECT,
         related_name="revisions",
-        null=True,
-    )
-    latest_revision = models.ForeignKey(
-        "self",
-        on_delete=models.PROTECT,
-        related_name="latest_revision_sources",
         null=True,
     )
 
@@ -186,6 +188,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["account_id", "number"], name="account_id_number_idx"),
+            models.Index(fields=["head_id"]),
+            models.Index(fields=["previous_revision_id"]),
         ]
         constraints = [
             models.CheckConstraint(
@@ -195,6 +199,11 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             models.CheckConstraint(
                 name="invoice_cannot_reference_itself",
                 condition=Q(previous_revision__isnull=True) | ~Q(previous_revision=F("id")),
+            ),
+            models.UniqueConstraint(
+                name="uniq_single_next_revision",
+                fields=["previous_revision"],
+                condition=Q(previous_revision__isnull=False),
             ),
         ]
 
@@ -242,10 +251,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             return self.number
 
         return self.generate_number()
-
-    @property
-    def is_payable(self) -> bool:
-        return self.lines.exists() and self.total_amount.amount > 0
 
     @staticmethod
     def calculate_due_date(account: Account, customer: Customer) -> date:
@@ -468,29 +473,25 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
     def finalize(self) -> None:
         self.status = InvoiceStatus.OPEN
+        self.opened_at = timezone.now()
+        self.issue_date = self.issue_date or timezone.now().date()
+        self.due_date = self.due_date or timezone.now().date() + relativedelta(days=self.net_payment_term)
+        self.customer_on_invoice = InvoiceCustomer.objects.from_customer(self.customer)
+        self.account_on_invoice = InvoiceAccount.objects.from_account(self.account)
 
         if self.number is None and self.numbering_system is not None:
             self.number = self.generate_number()
 
-        self.customer_on_invoice = InvoiceCustomer.objects.from_customer(self.customer)
-        self.account_on_invoice = InvoiceAccount.objects.from_account(self.account)
-
-        if self.issue_date is None:
-            self.issue_date = timezone.now().date()
-        if self.due_date is None:
-            self.due_date = timezone.now().date() + relativedelta(days=self.net_payment_term)
-        self.save()
-
         if self.previous_revision and self.previous_revision.status == InvoiceStatus.OPEN:
             self.previous_revision.void()
 
-        Invoice.objects.sync_latest_revision(self)
+        self.head.current = self
+        self.head.save()
 
         self.generate_pdf()
-        self.opened_at = timezone.now()
-        self.save(update_fields=["opened_at"])
+        self.save()
 
-        if not self.is_payable:
+        if not (self.lines.exists() and self.total_amount.amount > 0):
             self.mark_as_paid()
         elif self.payment_provider and self.payment_connection_id:
             Payment.objects.checkout_invoice(invoice=self)
@@ -499,27 +500,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.status = InvoiceStatus.VOIDED
         self.voided_at = timezone.now()
         self.save()
-
-        updates: list[Invoice] = []
-        if self.latest_revision_id != self.id:
-            self.latest_revision = self
-            updates.append(self)
-
-        previous = self.previous_revision
-        if previous is not None:
-            if previous.latest_revision_id != previous.id:
-                previous.latest_revision = previous
-                updates.append(previous)
-
-            current = previous.previous_revision
-            while current is not None:
-                if current.latest_revision_id != previous.id:
-                    current.latest_revision = previous
-                    updates.append(current)
-                current = current.previous_revision
-
-        if updates:
-            Invoice.objects.bulk_update(updates, ["latest_revision"])
 
     def mark_paid(self, timestamp: datetime | None = None) -> None:
         self.status = InvoiceStatus.PAID

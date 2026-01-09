@@ -80,8 +80,8 @@ def test_preview_invoice_requires_authentication(api_client):
 
 
 def test_preview_revision_highlights_correction(api_client, user, account):
-    original = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
-    revision = InvoiceFactory(account=account, previous_revision=original)
+    invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
+    revision = InvoiceFactory(account=account, previous_revision=invoice, head=invoice.head)
 
     api_client.force_login(user)
     api_client.force_account(account)

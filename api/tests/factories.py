@@ -184,10 +184,20 @@ class ShippingRateFactory(DjangoModelFactory):
     metadata = {}
 
 
+class InvoiceHeadFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceHead"
+
+    root = None
+    current = None
+
+
 class InvoiceFactory(DjangoModelFactory):
     class Meta:
         model = "invoices.Invoice"
+        skip_postgeneration_save = True
 
+    head = SubFactory(InvoiceHeadFactory)
     account = SubFactory(AccountFactory)
     customer = SubFactory(CustomerFactory, account=SelfAttribute("..account"))
     number = Sequence(lambda n: f"INV-{n}")
@@ -213,6 +223,19 @@ class InvoiceFactory(DjangoModelFactory):
     paid_at = None
     delivery_method = InvoiceDeliveryMethod.MANUAL
     recipients = LazyFunction(list)
+
+    @post_generation
+    def init_head(self, create, _, **__):
+        if not create:
+            return
+
+        if self.previous_revision is None:
+            self.head.root = self
+            self.head.save()
+
+        if self.status != InvoiceStatus.DRAFT:
+            self.head.current = self
+            self.head.save()
 
 
 class InvoiceLineFactory(DjangoModelFactory):

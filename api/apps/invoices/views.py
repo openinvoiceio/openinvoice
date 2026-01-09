@@ -27,6 +27,7 @@ from .serializers import (
     InvoiceLineTaxCreateSerializer,
     InvoiceLineTaxSerializer,
     InvoiceLineUpdateSerializer,
+    InvoiceRevisionCreateSerializer,
     InvoiceSerializer,
     InvoiceTaxCreateSerializer,
     InvoiceTaxSerializer,
@@ -62,7 +63,7 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
                     queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
                 ),
             )
-            .select_related("previous_revision", "latest_revision")
+            .select_related("previous_revision")
         )
 
     @extend_schema(
@@ -75,57 +76,25 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        previous_revision = data.get("previous_revision")
-        if previous_revision is not None:
-            invoice = Invoice.objects.create_revision(
-                account=request.account,
-                previous_revision=previous_revision,
-                number=data.get("number"),
-                numbering_system=data.get("numbering_system"),
-                currency=data.get("currency"),
-                issue_date=data.get("issue_date"),
-                sell_date=data.get("sell_date"),
-                due_date=data.get("due_date"),
-                net_payment_term=data.get("net_payment_term"),
-                metadata=data.get("metadata"),
-                custom_fields=data.get("custom_fields"),
-                footer=data.get("footer"),
-                description=data.get("description"),
-                payment_provider=data.get("payment_provider"),
-                payment_connection_id=getattr(data.get("payment_connection"), "id", None),
-                delivery_method=data.get("delivery_method"),
-                recipients=data.get("recipients"),
-            )
-            logger.info(
-                "Invoice revision created",
-                invoice_id=invoice.id,
-                previous_revision_id=previous_revision.id,
-            )
-        else:
-            invoice = Invoice.objects.create_draft(
-                account=request.account,
-                customer=data.get("customer"),
-                number=data.get("number"),
-                numbering_system=data.get("numbering_system"),
-                currency=data.get("currency"),
-                issue_date=data.get("issue_date"),
-                sell_date=data.get("sell_date"),
-                due_date=data.get("due_date"),
-                net_payment_term=data.get("net_payment_term"),
-                metadata=data.get("metadata"),
-                custom_fields=data.get("custom_fields"),
-                footer=data.get("footer"),
-                description=data.get("description"),
-                payment_provider=data.get("payment_provider"),
-                payment_connection_id=getattr(data.get("payment_connection"), "id", None),
-                delivery_method=data.get("delivery_method"),
-                recipients=data.get("recipients"),
-            )
-            logger.info(
-                "Invoice created",
-                invoice_id=invoice.id,
-                customer_id=invoice.customer_id,
-            )
+        invoice = Invoice.objects.create_draft(
+            account=request.account,
+            customer=data["customer"],
+            number=data.get("number"),
+            numbering_system=data.get("numbering_system"),
+            currency=data.get("currency"),
+            issue_date=data.get("issue_date"),
+            sell_date=data.get("sell_date"),
+            due_date=data.get("due_date"),
+            net_payment_term=data.get("net_payment_term"),
+            metadata=data.get("metadata"),
+            custom_fields=data.get("custom_fields"),
+            footer=data.get("footer"),
+            description=data.get("description"),
+            payment_provider=data.get("payment_provider"),
+            payment_connection_id=getattr(data.get("payment_connection"), "id", None),
+            delivery_method=data.get("delivery_method"),
+            recipients=data.get("recipients"),
+        )
 
         shipping = data.get("shipping")
         if shipping:
@@ -133,6 +102,12 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
                 shipping_rate=shipping["shipping_rate"],
                 tax_rates=shipping.get("tax_rates", []),
             )
+
+        logger.info(
+            "Invoice created",
+            invoice_id=invoice.id,
+            customer_id=invoice.customer_id,
+        )
 
         serializer = InvoiceSerializer(invoice)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -153,7 +128,7 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
                     queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
                 ),
             )
-            .select_related("previous_revision", "latest_revision")
+            .select_related("previous_revision")
         )
 
     @extend_schema(
@@ -218,10 +193,103 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         if invoice.status != InvoiceStatus.DRAFT:
             raise ValidationError("Only draft invoices can be deleted")
 
+        head = invoice.head
+        is_root = head.root_id == invoice.id
+        is_current = head.current_id == invoice.id
+
+        if is_root:
+            head.root = None
+        if is_current:
+            head.current = None
+        if is_root or is_current:
+            head.save()
+
         invoice.delete()
+
+        if not head.revisions.exists():
+            head.delete()
 
         logger.info("Invoice deleted", invoice_id=invoice.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
+    queryset = Invoice.objects.none()
+    serializer_class = InvoiceSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember, MaxInvoicesLimit]
+
+    def get_queryset(self):
+        return (
+            Invoice.objects.filter(account_id=self.request.account.id)
+            .prefetch_related(
+                Prefetch(
+                    "lines",
+                    queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
+                )
+            )
+            .select_related("previous_revision")
+        )
+
+    @extend_schema(
+        operation_id="list_invoice_revisions",
+        responses={200: InvoiceSerializer(many=True)},
+    )
+    def get(self, _, **__):
+        invoice = self.get_object()
+        revisions = Invoice.objects.revisions(head_id=invoice.head_id)
+        serializer = InvoiceSerializer(revisions, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        operation_id="create_invoice_revision",
+        request=InvoiceRevisionCreateSerializer,
+        responses={201: InvoiceSerializer},
+    )
+    def post(self, request, **_):
+        prevision_revision = self.get_object()
+        serializer = InvoiceRevisionCreateSerializer(data=request.data, context=self.get_serializer_context())
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        if prevision_revision.status not in [InvoiceStatus.OPEN, InvoiceStatus.VOIDED]:
+            raise ValidationError("Only open and voided invoices can be revised")
+
+        if Invoice.objects.filter(previous_revision=prevision_revision).exists():
+            raise ValidationError("Invoice already has a subsequent revision")
+
+        if prevision_revision.head.revisions.count() > settings.MAX_REVISIONS_PER_INVOICE:
+            raise ValidationError("Maximum number of invoice revisions reached")
+
+        invoice = Invoice.objects.create_revision(
+            account=request.account,
+            previous_revision=prevision_revision,
+            number=data.get("number"),
+            numbering_system=data.get("numbering_system"),
+            currency=data.get("currency"),
+            issue_date=data.get("issue_date"),
+            sell_date=data.get("sell_date"),
+            due_date=data.get("due_date"),
+            net_payment_term=data.get("net_payment_term"),
+            metadata=data.get("metadata"),
+            custom_fields=data.get("custom_fields"),
+            footer=data.get("footer"),
+            description=data.get("description"),
+            payment_provider=data.get("payment_provider"),
+            payment_connection_id=getattr(data.get("payment_connection"), "id", None),
+            delivery_method=data.get("delivery_method"),
+            recipients=data.get("recipients"),
+        )
+
+        # TODO: add shipping
+
+        logger.info(
+            "Invoice revision created",
+            invoice_id=invoice.id,
+            previous_revision_id=invoice.previous_revision_id,
+        )
+
+        serializer = InvoiceSerializer(invoice)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class InvoiceVoidAPIView(generics.GenericAPIView):
@@ -238,7 +306,7 @@ class InvoiceVoidAPIView(generics.GenericAPIView):
                     queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
                 )
             )
-            .select_related("previous_revision", "latest_revision")
+            .select_related("previous_revision")
         )
 
     @extend_schema(
@@ -249,11 +317,8 @@ class InvoiceVoidAPIView(generics.GenericAPIView):
     def post(self, _, **__):
         invoice = self.get_object()
 
-        if invoice.status == InvoiceStatus.VOIDED:
-            raise ValidationError("Invoice is already voided")
-
-        if invoice.status == InvoiceStatus.PAID:
-            raise ValidationError("Paid invoices cannot be voided")
+        if invoice.status != InvoiceStatus.OPEN:
+            raise ValidationError("Only open invoices can be voided")
 
         invoice.void()
 
@@ -276,7 +341,7 @@ class InvoiceFinalizeAPIView(generics.GenericAPIView):
                     queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
                 )
             )
-            .select_related("previous_revision", "latest_revision")
+            .select_related("previous_revision")
         )
 
     @extend_schema(
@@ -323,7 +388,7 @@ class InvoicePreviewAPIView(generics.GenericAPIView):
                     queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
                 )
             )
-            .select_related("previous_revision", "latest_revision")
+            .select_related("previous_revision")
         )
 
     @extend_schema(

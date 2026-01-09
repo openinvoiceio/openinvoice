@@ -86,6 +86,8 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
         delivery_method: InvoiceDeliveryMethod | None = None,
         recipients: list[str] | None = None,
     ) -> Invoice:
+        InvoiceHead = apps.get_model("invoices", "InvoiceHead")
+
         currency = currency or customer.currency or account.default_currency
         resolved_numbering_system = None
         if number is None:
@@ -95,8 +97,10 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
 
         net_payment_term = net_payment_term or customer.net_payment_term or account.net_payment_term
         default_recipients = [customer.email] if customer.email else []
+        head = InvoiceHead.objects.create(root=None)
 
         invoice = self.create(
+            head=head,
             account=account,
             customer=customer,
             number=number,
@@ -125,6 +129,9 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
             delivery_method=delivery_method or InvoiceDeliveryMethod.MANUAL,
             recipients=recipients or default_recipients,
         )
+
+        head.root = invoice
+        head.save(update_fields=["root"])
 
         for tax_rate in customer.tax_rates.filter(is_active=True):
             invoice.add_tax(tax_rate)
@@ -194,6 +201,7 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
             outstanding_amount=zero(currency),
             delivery_method=delivery_method or previous_revision.delivery_method,
             recipients=recipients or previous_revision.recipients,
+            head=previous_revision.head,
         )
 
         for line in previous_revision.lines.filter(currency=currency):
@@ -265,25 +273,6 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
         invoice.recalculate()
 
         return invoice
-
-    def sync_latest_revision(self, latest: Invoice) -> None:
-        """Point all revisions in the chain at the provided latest revision."""
-
-        latest_id = latest.id
-        previous_latest_id = latest.previous_revision_id
-
-        if latest.latest_revision_id != latest_id:
-            self.filter(id=latest_id).update(latest_revision=latest)
-            latest.latest_revision = latest
-
-        if previous_latest_id is None:
-            return
-
-        updated = self.filter(latest_revision_id=previous_latest_id).update(latest_revision=latest)
-        if updated:
-            previous_revision = getattr(latest, "previous_revision", None)
-            if previous_revision is not None:
-                previous_revision.latest_revision = latest
 
 
 class InvoiceLineManager(models.Manager.from_queryset(InvoiceLineQuerySet)):
