@@ -14,13 +14,17 @@ from apps.prices.fields import PriceRelatedField
 from apps.prices.validators import PriceIsActive, PriceProductIsActive
 from apps.shipping_rates.fields import ShippingRateRelatedField
 from apps.taxes.fields import TaxRateRelatedField
-from common.access import has_feature
-from common.enums import FeatureCode
 from common.fields import CurrencyField, MetadataField
 from common.validators import AllOrNoneValidator, ExactlyOneValidator
 
 from .enums import InvoiceDeliveryMethod, InvoiceStatus
 from .fields import InvoiceRelatedField
+from .validators import (
+    AutomaticDeliveryMethodValidator,
+    MaxCouponsValidator,
+    MaxTaxRatesValidator,
+    validate_coupons_currency,
+)
 
 
 class InvoiceCustomerSerializer(serializers.Serializer):
@@ -163,7 +167,7 @@ class InvoiceSerializer(serializers.Serializer):
 
 class InvoiceShippingAddSerializer(serializers.Serializer):
     shipping_rate_id = ShippingRateRelatedField(source="shipping_rate")
-    tax_rates = TaxRateRelatedField(many=True, required=False)
+    tax_rates = TaxRateRelatedField(many=True, required=False, validators=[MaxTaxRatesValidator()])
 
 
 class InvoiceCreateSerializer(serializers.Serializer):
@@ -185,24 +189,31 @@ class InvoiceCreateSerializer(serializers.Serializer):
     payment_connection_id = IntegrationConnectionField(
         source="payment_connection", type_field="payment_provider", allow_null=True, required=False
     )
-    delivery_method = serializers.ChoiceField(choices=InvoiceDeliveryMethod.choices, required=False)
+    delivery_method = serializers.ChoiceField(
+        choices=InvoiceDeliveryMethod.choices,
+        required=False,
+        validators=[
+            AutomaticDeliveryMethodValidator(),
+        ],
+    )
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
+    tax_rates = TaxRateRelatedField(many=True, required=False, validators=[MaxTaxRatesValidator()])
+    coupons = CouponRelatedField(many=True, required=False, validators=[MaxCouponsValidator()])
     shipping = InvoiceShippingAddSerializer(required=False, allow_null=True)
+
+    def validate(self, data):
+        customer = data["customer"]
+        currency = data.get("currency") or customer.currency or customer.account.default_currency
+
+        if data.get("coupons"):
+            validate_coupons_currency(data["coupons"], currency)
+
+        return data
 
     class Meta:
         validators = [
             AllOrNoneValidator("payment_provider", "payment_connection"),
         ]
-
-    def validate_delivery_method(self, value):
-        account = self.context["request"].account
-
-        if value == InvoiceDeliveryMethod.AUTOMATIC and not has_feature(
-            account, FeatureCode.AUTOMATIC_INVOICE_DELIVERY
-        ):
-            raise serializers.ValidationError("Automatic delivery is forbidden for your account.")
-
-        return value
 
 
 class InvoiceRevisionCreateSerializer(serializers.Serializer):
@@ -223,8 +234,14 @@ class InvoiceRevisionCreateSerializer(serializers.Serializer):
     payment_connection_id = IntegrationConnectionField(
         source="payment_connection", type_field="payment_provider", allow_null=True, required=False
     )
-    delivery_method = serializers.ChoiceField(choices=InvoiceDeliveryMethod.choices, required=False)
+    delivery_method = serializers.ChoiceField(
+        choices=InvoiceDeliveryMethod.choices,
+        required=False,
+        validators=[AutomaticDeliveryMethodValidator()],
+    )
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
+    tax_rates = TaxRateRelatedField(many=True, required=False, validators=[MaxTaxRatesValidator()])
+    coupons = CouponRelatedField(many=True, required=False, validators=[MaxCouponsValidator()])
     shipping = InvoiceShippingAddSerializer(required=False, allow_null=True)
 
     class Meta:
@@ -232,15 +249,13 @@ class InvoiceRevisionCreateSerializer(serializers.Serializer):
             AllOrNoneValidator("payment_provider", "payment_connection"),
         ]
 
-    def validate_delivery_method(self, value):
-        account = self.context["request"].account
+    def validate(self, data):
+        currency = data.get("currency") or self.instance.currency
 
-        if value == InvoiceDeliveryMethod.AUTOMATIC and not has_feature(
-            account, FeatureCode.AUTOMATIC_INVOICE_DELIVERY
-        ):
-            raise serializers.ValidationError("Automatic delivery is forbidden for your account.")
+        if data.get("coupons"):
+            validate_coupons_currency(data["coupons"], currency)
 
-        return value
+        return data
 
 
 class InvoiceUpdateSerializer(serializers.Serializer):
@@ -262,8 +277,14 @@ class InvoiceUpdateSerializer(serializers.Serializer):
     payment_connection_id = IntegrationConnectionField(
         source="payment_connection", type_field="payment_provider", allow_null=True, required=False
     )
-    delivery_method = serializers.ChoiceField(choices=InvoiceDeliveryMethod.choices, required=False)
+    delivery_method = serializers.ChoiceField(
+        choices=InvoiceDeliveryMethod.choices,
+        required=False,
+        validators=[AutomaticDeliveryMethodValidator()],
+    )
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
+    tax_rates = TaxRateRelatedField(many=True, required=False, validators=[MaxTaxRatesValidator()])
+    coupons = CouponRelatedField(many=True, required=False, validators=[MaxCouponsValidator()])
     shipping = InvoiceShippingAddSerializer(required=False, allow_null=True)
 
     class Meta:
@@ -271,19 +292,17 @@ class InvoiceUpdateSerializer(serializers.Serializer):
             AllOrNoneValidator("payment_provider", "payment_connection"),
         ]
 
+    def validate(self, data):
+        currency = data.get("currency") or self.instance.currency
+
+        if data.get("coupons"):
+            validate_coupons_currency(data["coupons"], currency)
+
+        return data
+
     def validate_customer_id(self, value):
         if self.instance.previous_revision and self.instance.customer_id != value.id:
             raise serializers.ValidationError("Revision must use the same customer")
-
-        return value
-
-    def validate_delivery_method(self, value):
-        account = self.context["request"].account
-
-        if value == InvoiceDeliveryMethod.AUTOMATIC and not has_feature(
-            account, FeatureCode.AUTOMATIC_INVOICE_DELIVERY
-        ):
-            raise serializers.ValidationError("Automatic delivery is forbidden for your account.")
 
         return value
 
@@ -294,6 +313,8 @@ class InvoiceLineCreateSerializer(serializers.Serializer):
     quantity = serializers.IntegerField()
     unit_amount = MoneyField(max_digits=19, decimal_places=2, required=False)
     price_id = PriceRelatedField(source="price", required=False, validators=[PriceIsActive(), PriceProductIsActive()])
+    tax_rates = TaxRateRelatedField(many=True, required=False, validators=[MaxTaxRatesValidator()])
+    coupons = CouponRelatedField(many=True, required=False, validators=[MaxCouponsValidator()])
 
     class Meta:
         validators = [
@@ -311,6 +332,9 @@ class InvoiceLineCreateSerializer(serializers.Serializer):
         if price and invoice.currency != price.currency:
             raise serializers.ValidationError("Price currency does not match invoice currency")
 
+        if data.get("coupons"):
+            validate_coupons_currency(data["coupons"], invoice.currency)
+
         if unit_amount:
             data["unit_amount"] = Money(unit_amount, invoice.currency)
 
@@ -322,11 +346,18 @@ class InvoiceLineUpdateSerializer(serializers.Serializer):
     quantity = serializers.IntegerField()
     unit_amount = MoneyField(max_digits=19, decimal_places=2, required=False)
     price_id = PriceRelatedField(source="price", required=False, validators=[PriceIsActive(), PriceProductIsActive()])
+    tax_rates = TaxRateRelatedField(many=True, required=False, validators=[MaxTaxRatesValidator()])
+    coupons = CouponRelatedField(many=True, required=False, validators=[MaxCouponsValidator()])
 
     class Meta:
         validators = [
             ExactlyOneValidator("unit_amount", "price"),
         ]
+
+    def validate(self, data):
+        if data.get("coupons"):
+            validate_coupons_currency(data["coupons"], self.instance.currency)
+        return data
 
     def validate_price_id(self, value):
         if self.instance.currency != value.currency:

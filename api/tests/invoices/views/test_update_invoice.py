@@ -10,6 +10,7 @@ from apps.integrations.enums import PaymentProvider
 from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
 from common.enums import FeatureCode
 from tests.factories import (
+    CouponFactory,
     CustomerFactory,
     InvoiceFactory,
     InvoiceShippingFactory,
@@ -451,6 +452,38 @@ def test_update_invoice_shipping_duplicate_tax_rates(api_client, user, account):
     }
 
 
+def test_update_invoice_shipping_tax_rates_limit_exceeded(api_client, user, account, settings):
+    settings.MAX_INVOICE_TAX_RATES = 1
+    invoice = InvoiceFactory(account=account, currency="PLN")
+    shipping_rate = ShippingRateFactory(account=account, currency=invoice.currency)
+    tax_rate1 = TaxRateFactory(account=account)
+    tax_rate2 = TaxRateFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {
+            "shipping": {
+                "shipping_rate_id": str(shipping_rate.id),
+                "tax_rates": [str(tax_rate1.id), str(tax_rate2.id)],
+            }
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": "shipping.tax_rates",
+                "code": "invalid",
+                "detail": "Ensure this list contains at most 1 items.",
+            }
+        ],
+    }
+
+
 def test_update_invoice_payment_provider(api_client, user, account):
     invoice = InvoiceFactory(account=account, currency="PLN")
     connection = StripeConnectionFactory(account=account)
@@ -871,15 +904,6 @@ def test_update_invoice_requires_authentication(api_client, account):
         {
             "customer_id": str(invoice.customer_id),
             "number": invoice.effective_number,
-            "numbering_system_id": None,
-            "currency": invoice.currency,
-            "issue_date": None,
-            "sell_date": None,
-            "due_date": invoice.due_date.isoformat(),
-            "metadata": {},
-            "custom_fields": {},
-            "footer": None,
-            "description": None,
         },
     )
 
@@ -891,6 +915,222 @@ def test_update_invoice_requires_authentication(api_client, account):
                 "attr": None,
                 "code": "not_authenticated",
                 "detail": "Authentication credentials were not provided.",
+            }
+        ],
+    }
+
+
+def test_update_invoice_with_coupons(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    coupon1 = CouponFactory(account=account, currency=invoice.currency)
+    coupon2 = CouponFactory(account=account, currency=invoice.currency)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"coupons": [str(coupon1.id), str(coupon2.id)]},
+    )
+
+    assert response.status_code == 200
+    # TODO: add assert of created discounts when added
+
+
+def test_update_invoice_with_coupons_invalid_currency(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    coupon1 = CouponFactory(account=account, currency=invoice.currency)
+    coupon2 = CouponFactory(account=account, currency="EUR")
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"coupons": [str(coupon1.id), str(coupon2.id)]},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "coupons.1",
+                "code": "invalid",
+                "detail": "Invalid coupon currency for this invoice.",
+            }
+        ],
+    }
+
+
+def test_update_invoice_with_duplicate_coupons(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    coupon = CouponFactory(account=account, currency=invoice.currency)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"coupons": [str(coupon.id), str(coupon.id)]},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "coupons",
+                "code": "duplicate",
+                "detail": "Duplicate values are not allowed.",
+            }
+        ],
+    }
+
+
+def test_update_invoice_with_foreign_coupon(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    coupon1 = CouponFactory(account=account, currency=invoice.currency)
+    coupon2 = CouponFactory(currency=invoice.currency)  # Not linked to the account
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"coupons": [str(coupon1.id), str(coupon2.id)]},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "coupons",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{coupon2.id}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_update_invoice_coupons_limit_exceeded(api_client, user, account, settings):
+    settings.MAX_INVOICE_COUPONS = 1
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    coupon1 = CouponFactory(account=account, currency=invoice.currency)
+    coupon2 = CouponFactory(account=account, currency=invoice.currency)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"coupons": [str(coupon1.id), str(coupon2.id)]},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "coupons",
+                "code": "invalid",
+                "detail": "Ensure this list contains at most 1 items.",
+            }
+        ],
+    }
+
+
+def test_update_invoice_with_tax_rates(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    tax_rate1 = TaxRateFactory(account=account)
+    tax_rate2 = TaxRateFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"tax_rates": [str(tax_rate1.id), str(tax_rate2.id)]},
+    )
+
+    assert response.status_code == 200
+    # TODO: add assert of created taxes when added
+
+
+def test_update_invoice_with_duplicate_tax_rates(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    tax_rate = TaxRateFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"tax_rates": [str(tax_rate.id), str(tax_rate.id)]},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "tax_rates",
+                "code": "duplicate",
+                "detail": "Duplicate values are not allowed.",
+            }
+        ],
+    }
+
+
+def test_update_invoice_with_foreign_tax_rate(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    tax_rate1 = TaxRateFactory(account=account)
+    tax_rate2 = TaxRateFactory()  # Not linked to the account
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"tax_rates": [str(tax_rate1.id), str(tax_rate2.id)]},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "tax_rates",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{tax_rate2.id}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_update_invoice_tax_rates_limit_exceeded(api_client, user, account, settings):
+    settings.MAX_INVOICE_TAX_RATES = 1
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    tax_rate1 = TaxRateFactory(account=account)
+    tax_rate2 = TaxRateFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"tax_rates": [str(tax_rate1.id), str(tax_rate2.id)]},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "tax_rates",
+                "code": "invalid",
+                "detail": "Ensure this list contains at most 1 items.",
             }
         ],
     }

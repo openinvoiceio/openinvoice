@@ -247,7 +247,9 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
     )
     def post(self, request, **_):
         prevision_revision = self.get_object()
-        serializer = InvoiceRevisionCreateSerializer(data=request.data, context=self.get_serializer_context())
+        serializer = InvoiceRevisionCreateSerializer(
+            prevision_revision, data=request.data, context=self.get_serializer_context()
+        )
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
