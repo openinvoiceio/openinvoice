@@ -357,8 +357,8 @@ def test_create_invoice_with_duplicate_shipping_tax_rates(api_client, user, acco
         "errors": [
             {
                 "attr": "shipping.tax_rates",
-                "code": "invalid",
-                "detail": "The same tax rate cannot be specified more than once.",
+                "code": "duplicate",
+                "detail": "Duplicate values are not allowed.",
             }
         ],
     }

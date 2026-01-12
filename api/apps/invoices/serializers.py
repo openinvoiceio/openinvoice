@@ -165,11 +165,6 @@ class InvoiceShippingAddSerializer(serializers.Serializer):
     shipping_rate_id = ShippingRateRelatedField(source="shipping_rate")
     tax_rates = TaxRateRelatedField(many=True, required=False)
 
-    def validate_tax_rates(self, value):
-        if len(value) != len({obj.pk for obj in value}):
-            raise serializers.ValidationError("The same tax rate cannot be specified more than once.")
-        return value
-
 
 class InvoiceCreateSerializer(serializers.Serializer):
     customer_id = CustomerRelatedField(source="customer")

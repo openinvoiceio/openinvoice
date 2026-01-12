@@ -26,3 +26,22 @@ class CurrencyField(serializers.ChoiceField):
     def __init__(self, **kwargs):
         kwargs.setdefault("choices", djmoney_settings.CURRENCY_CHOICES)
         super().__init__(**kwargs)
+
+
+class UniqueManyRelatedField(serializers.ManyRelatedField):
+    default_error_messages = {
+        "duplicate": "Duplicate values are not allowed.",
+    }
+
+    def to_internal_value(self, data):
+        if not isinstance(data, list):
+            self.fail("not_a_list")
+
+        seen = set()
+        for item in data:
+            key = str(item)
+            if key in seen:
+                self.fail("duplicate")
+            seen.add(key)
+
+        return super().to_internal_value(data)

@@ -444,8 +444,8 @@ def test_update_invoice_shipping_duplicate_tax_rates(api_client, user, account):
         "errors": [
             {
                 "attr": "shipping.tax_rates",
-                "code": "invalid",
-                "detail": "The same tax rate cannot be specified more than once.",
+                "code": "duplicate",
+                "detail": "Duplicate values are not allowed.",
             }
         ],
     }
