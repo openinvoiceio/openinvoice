@@ -96,6 +96,12 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
             recipients=data.get("recipients"),
         )
 
+        if "coupons" in data:
+            invoice.set_coupons(data["coupons"])
+
+        if "tax_rates" in data:
+            invoice.set_tax_rates(data["tax_rates"])
+
         shipping = data.get("shipping")
         if shipping:
             invoice.add_shipping(
@@ -163,6 +169,12 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             delivery_method=data.get("delivery_method", invoice.delivery_method),
             recipients=data.get("recipients", invoice.recipients),
         )
+
+        if "coupons" in data:
+            invoice.set_coupons(data["coupons"])
+
+        if "tax_rates" in data:
+            invoice.set_tax_rates(data["tax_rates"])
 
         if "shipping" in data:
             shipping = data.get("shipping")
@@ -282,7 +294,23 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
             recipients=data.get("recipients"),
         )
 
-        # TODO: add shipping
+        if "coupons" in data:
+            invoice.set_coupons(data["coupons"])
+
+        if "tax_rates" in data:
+            invoice.set_tax_rates(data["tax_rates"])
+
+        shipping = data.get("shipping")
+        if shipping:
+            if invoice.shipping is not None:
+                invoice.shipping.delete()
+                invoice.refresh_from_db()
+                invoice.recalculate()
+
+            invoice.add_shipping(
+                shipping_rate=shipping["shipping_rate"],
+                tax_rates=shipping.get("tax_rates", []),
+            )
 
         logger.info(
             "Invoice revision created",
@@ -435,6 +463,12 @@ class InvoiceLineCreateAPIView(generics.GenericAPIView):
             price=data.get("price"),
         )
 
+        if "coupons" in data:
+            invoice_line.set_coupons(data["coupons"])
+
+        if "tax_rates" in data:
+            invoice_line.set_tax_rates(data["tax_rates"])
+
         logger.info(
             "Invoice line created",
             invoice_line_id=invoice_line.id,
@@ -472,6 +506,12 @@ class InvoiceLineUpdateDestroyAPIView(generics.GenericAPIView):
             unit_amount=data.get("unit_amount", invoice_line.unit_amount),
             price=data.get("price", invoice_line.price),
         )
+
+        if "coupons" in data:
+            invoice_line.set_coupons(data["coupons"])
+
+        if "tax_rates" in data:
+            invoice_line.set_tax_rates(data["tax_rates"])
 
         logger.info(
             "Invoice line updated",

@@ -1,5 +1,6 @@
 from djmoney.contrib.django_rest_framework import MoneyField
 from djmoney.money import Money
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from apps.addresses.serializers import AddressSerializer
@@ -99,6 +100,11 @@ class InvoiceShippingSerializer(serializers.Serializer):
     total_amount = MoneyField(max_digits=19, decimal_places=2)
     shipping_rate_id = serializers.UUIDField(allow_null=True)
     taxes = InvoiceTaxSerializer(many=True)
+    tax_rates = serializers.SerializerMethodField()
+
+    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
+    def get_tax_rates(self, obj):
+        return list(obj.invoice_shipping_tax_rates.order_by("position").values_list("tax_rate_id", flat=True))
 
 
 class InvoiceLineSerializer(serializers.Serializer):
@@ -120,6 +126,16 @@ class InvoiceLineSerializer(serializers.Serializer):
     outstanding_quantity = serializers.IntegerField(read_only=True)
     discounts = InvoiceLineDiscountSerializer(many=True)
     taxes = InvoiceLineTaxSerializer(many=True)
+    coupons = serializers.SerializerMethodField()
+    tax_rates = serializers.SerializerMethodField()
+
+    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
+    def get_coupons(self, obj):
+        return list(obj.invoice_line_coupons.order_by("position").values_list("coupon_id", flat=True))
+
+    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
+    def get_tax_rates(self, obj):
+        return list(obj.invoice_line_tax_rates.order_by("position").values_list("tax_rate_id", flat=True))
 
 
 class InvoiceSerializer(serializers.Serializer):
@@ -163,6 +179,16 @@ class InvoiceSerializer(serializers.Serializer):
     discount_breakdown = InvoiceDiscountBreakdownItemSerializer(many=True, source="discounts.breakdown", read_only=True)
     tax_breakdown = InvoiceTaxBreakdownItemSerializer(many=True, source="taxes.breakdown", read_only=True)
     shipping = InvoiceShippingSerializer()
+    coupons = serializers.SerializerMethodField()
+    tax_rates = serializers.SerializerMethodField()
+
+    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
+    def get_coupons(self, obj):
+        return list(obj.invoice_coupons.order_by("position").values_list("coupon_id", flat=True))
+
+    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
+    def get_tax_rates(self, obj):
+        return list(obj.invoice_tax_rates.order_by("position").values_list("tax_rate_id", flat=True))
 
 
 class InvoiceShippingAddSerializer(serializers.Serializer):

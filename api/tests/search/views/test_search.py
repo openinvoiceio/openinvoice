@@ -178,6 +178,8 @@ def test_search_all(api_client, user, account):
                 "voided_at": None,
                 "pdf_id": None,
                 "lines": [],
+                "coupons": [],
+                "tax_rates": [],
                 "taxes": [],
                 "discounts": [],
                 "tax_breakdown": [],

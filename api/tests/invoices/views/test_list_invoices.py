@@ -104,6 +104,8 @@ def test_list_invoices(api_client, user, account):
                 "voided_at": None,
                 "pdf_id": None,
                 "lines": [],
+                "coupons": [],
+                "tax_rates": [],
                 "taxes": [],
                 "discounts": [],
                 "tax_breakdown": [],
@@ -161,6 +163,8 @@ def test_list_invoices_with_line(api_client, user, account):
             "outstanding_quantity": 1,
             "discounts": [],
             "taxes": [],
+            "coupons": [],
+            "tax_rates": [],
         }
     ]
 

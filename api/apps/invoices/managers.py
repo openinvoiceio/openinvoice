@@ -248,6 +248,12 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
             )
             new_line.recalculate()
 
+        if previous_revision.shipping is not None:
+            invoice.add_shipping(
+                shipping_rate=previous_revision.shipping.shipping_rate,
+                tax_rates=previous_revision.shipping.tax_rates.all(),
+            )
+
         invoice.discounts.bulk_create(
             InvoiceDiscount(
                 invoice=invoice,

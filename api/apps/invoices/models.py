@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
@@ -168,6 +168,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         default=list,
         blank=True,
     )
+    coupons = models.ManyToManyField("coupons.Coupon", through="InvoiceCoupon", related_name="+")
+    tax_rates = models.ManyToManyField("taxes.TaxRate", through="InvoiceTaxRate", related_name="+")
     shipping = models.OneToOneField(
         "InvoiceShipping",
         on_delete=models.SET_NULL,
@@ -399,6 +401,18 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         if self.outstanding_amount.amount == 0:
             self.mark_as_paid()
 
+    def set_coupons(self, coupons: Iterable[Coupon]) -> None:
+        self.coupons.clear()
+        self.coupons.through.objects.bulk_create(
+            InvoiceCoupon(invoice=self, coupon=coupon, position=idx) for idx, coupon in enumerate(coupons)
+        )
+
+    def set_tax_rates(self, tax_rates: Iterable[TaxRate]) -> None:
+        self.tax_rates.clear()
+        self.tax_rates.through.objects.bulk_create(
+            InvoiceTaxRate(invoice=self, tax_rate=tax_rate, position=idx) for idx, tax_rate in enumerate(tax_rates)
+        )
+
     def add_tax(self, tax_rate: TaxRate) -> InvoiceTax:
         tax = self.taxes.create(
             tax_rate=tax_rate,
@@ -591,6 +605,8 @@ class InvoiceLine(models.Model):
     outstanding_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     outstanding_quantity = models.BigIntegerField(default=0)
     invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="lines")
+    coupons = models.ManyToManyField("coupons.Coupon", through="InvoiceLineCoupon", related_name="+")
+    tax_rates = models.ManyToManyField("taxes.TaxRate", through="InvoiceLineTaxRate", related_name="+")
     price = models.ForeignKey("prices.Price", on_delete=models.PROTECT, related_name="invoice_lines", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -660,6 +676,19 @@ class InvoiceLine(models.Model):
 
         self.invoice.recalculate()
 
+    def set_coupons(self, coupons: Iterable[Coupon]) -> None:
+        self.coupons.clear()
+        self.coupons.through.objects.bulk_create(
+            InvoiceLineCoupon(invoice_line=self, coupon=coupon, position=idx) for idx, coupon in enumerate(coupons)
+        )
+
+    def set_tax_rates(self, tax_rates: Iterable[TaxRate]) -> None:
+        self.tax_rates.clear()
+        self.tax_rates.through.objects.bulk_create(
+            InvoiceLineTaxRate(invoice_line=self, tax_rate=tax_rate, position=idx)
+            for idx, tax_rate in enumerate(tax_rates)
+        )
+
     def add_tax(self, tax_rate: TaxRate) -> InvoiceTax:
         tax = self.taxes.create(
             invoice=self.invoice,
@@ -715,6 +744,134 @@ class InvoiceLine(models.Model):
 
         if self.price:
             self.price.mark_as_used()
+
+
+class InvoiceShipping(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    currency = models.CharField(max_length=3)
+    amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    total_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    created_at = models.DateTimeField(auto_now_add=True)
+    shipping_rate = models.ForeignKey("shipping_rates.ShippingRate", on_delete=models.PROTECT)
+    tax_rates = models.ManyToManyField("taxes.TaxRate", through="InvoiceShippingTaxRate", related_name="+")
+
+    def recalculate(self) -> None:
+        # Calculate taxes
+        tax_amount = zero(self.currency)
+        taxes = self.taxes.select_related("tax_rate").for_shipping()
+        for tax in taxes:
+            tax.amount = tax.calculate_amount(self.amount)
+            tax_amount += tax.amount
+
+        InvoiceTax.objects.bulk_update(taxes, ["amount"])
+
+        # Final totals
+
+        total_amount = self.amount + tax_amount
+
+        self.tax_amount = clamp_money(tax_amount)
+        self.total_amount = clamp_money(total_amount)
+        self.save(update_fields=["tax_amount", "total_amount"])
+
+    def set_tax_rates(self, tax_rates: Iterable[TaxRate]) -> None:
+        self.tax_rates.clear()
+        self.tax_rates.through.objects.bulk_create(
+            InvoiceShippingTaxRate(invoice_shipping=self, tax_rate=tax_rate, position=idx)
+            for idx, tax_rate in enumerate(tax_rates)
+        )
+
+    def add_tax(self, tax_rate: TaxRate) -> InvoiceTax:
+        tax = self.taxes.create(
+            name=tax_rate.name,
+            description=tax_rate.description,
+            rate=tax_rate.percentage,
+            currency=self.currency,
+            amount=zero(self.currency),
+            tax_rate=tax_rate,
+            invoice=self.invoice,
+        )
+        self.recalculate()
+        tax.refresh_from_db()
+        return tax
+
+
+class InvoiceCoupon(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="invoice_coupons")
+    coupon = models.ForeignKey("coupons.Coupon", on_delete=models.PROTECT, related_name="+")
+    position = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["position"]
+        constraints = [
+            models.UniqueConstraint(fields=["invoice", "coupon"], name="unique_invoice_coupon_link"),
+            models.UniqueConstraint(fields=["invoice", "position"], name="unique_invoice_coupon_position"),
+        ]
+
+
+class InvoiceTaxRate(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="invoice_tax_rates")
+    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="+")
+    position = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["position"]
+        constraints = [
+            models.UniqueConstraint(fields=["invoice", "tax_rate"], name="unique_invoice_tax_rate_link"),
+            models.UniqueConstraint(fields=["invoice", "position"], name="unique_invoice_tax_rate_position"),
+        ]
+
+
+class InvoiceLineCoupon(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    invoice_line = models.ForeignKey("InvoiceLine", on_delete=models.CASCADE, related_name="invoice_line_coupons")
+    coupon = models.ForeignKey("coupons.Coupon", on_delete=models.PROTECT, related_name="+")
+    position = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["position"]
+        constraints = [
+            models.UniqueConstraint(fields=["invoice_line", "coupon"], name="unique_invoice_line_coupon_link"),
+            models.UniqueConstraint(fields=["invoice_line", "position"], name="unique_invoice_line_coupon_position"),
+        ]
+
+
+class InvoiceLineTaxRate(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    invoice_line = models.ForeignKey("InvoiceLine", on_delete=models.CASCADE, related_name="invoice_line_tax_rates")
+    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="+")
+    position = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["position"]
+        constraints = [
+            models.UniqueConstraint(fields=["invoice_line", "tax_rate"], name="unique_invoice_line_tax_rate_link"),
+            models.UniqueConstraint(fields=["invoice_line", "position"], name="unique_invoice_line_tax_rate_position"),
+        ]
+
+
+class InvoiceShippingTaxRate(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    invoice_shipping = models.ForeignKey(
+        "InvoiceShipping", on_delete=models.CASCADE, related_name="invoice_shipping_tax_rates"
+    )
+    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="+")
+    position = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["position"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["invoice_shipping", "tax_rate"],
+                name="unique_invoice_shipping_tax_rate_link",
+            ),
+            models.UniqueConstraint(
+                fields=["invoice_shipping", "position"],
+                name="unique_invoice_shipping_tax_rate_position",
+            ),
+        ]
 
 
 class InvoiceDiscount(models.Model):  # type: ignore[django-manager-missing]
@@ -808,45 +965,3 @@ class InvoiceTax(models.Model):  # type: ignore[django-manager-missing]
             return zero(self.currency)
 
         return base_amount * (self.rate / Decimal(100))
-
-
-class InvoiceShipping(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    currency = models.CharField(max_length=3)
-    amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
-    tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
-    total_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
-    created_at = models.DateTimeField(auto_now_add=True)
-    shipping_rate = models.ForeignKey("shipping_rates.ShippingRate", on_delete=models.PROTECT)
-
-    def recalculate(self) -> None:
-        # Calculate taxes
-        tax_amount = zero(self.currency)
-        taxes = self.taxes.select_related("tax_rate").for_shipping()
-        for tax in taxes:
-            tax.amount = tax.calculate_amount(self.amount)
-            tax_amount += tax.amount
-
-        InvoiceTax.objects.bulk_update(taxes, ["amount"])
-
-        # Final totals
-
-        total_amount = self.amount + tax_amount
-
-        self.tax_amount = clamp_money(tax_amount)
-        self.total_amount = clamp_money(total_amount)
-        self.save(update_fields=["tax_amount", "total_amount"])
-
-    def add_tax(self, tax_rate: TaxRate) -> InvoiceTax:
-        tax = self.taxes.create(
-            name=tax_rate.name,
-            description=tax_rate.description,
-            rate=tax_rate.percentage,
-            currency=self.currency,
-            amount=zero(self.currency),
-            tax_rate=tax_rate,
-            invoice=self.invoice,
-        )
-        self.recalculate()
-        tax.refresh_from_db()
-        return tax

@@ -47,6 +47,8 @@ def test_create_invoice_line_from_unit_amount(api_client, user, account):
         "outstanding_quantity": 1,
         "discounts": [],
         "taxes": [],
+        "coupons": [],
+        "tax_rates": [],
     }
     invoice.refresh_from_db()
     assert invoice.subtotal_amount.amount == Decimal("10.00")
@@ -91,6 +93,8 @@ def test_create_invoice_line_from_flat_price(api_client, user, account):
         "outstanding_quantity": 1,
         "discounts": [],
         "taxes": [],
+        "coupons": [],
+        "tax_rates": [],
     }
     invoice.refresh_from_db()
     assert invoice.subtotal_amount.amount == Decimal("10.00")
@@ -479,7 +483,7 @@ def test_create_invoice_line_with_coupons(api_client, user, account):
 
     # TODO: change it status to 201?
     assert response.status_code == 200
-    # TODO: add assert of created discounts when added
+    assert response.data["coupons"] == [coupon1.id, coupon2.id]
 
 
 def test_create_invoice_line_with_coupons_invalid_currency(api_client, user, account):
@@ -625,7 +629,7 @@ def test_create_invoice_line_with_tax_rates(api_client, user, account):
     )
 
     assert response.status_code == 200
-    # TODO: add assert of created taxes when added
+    assert response.data["tax_rates"] == [tax_rate1.id, tax_rate2.id]
 
 
 def test_create_invoice_line_with_duplicate_tax_rates(api_client, user, account):

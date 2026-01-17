@@ -260,6 +260,70 @@ class InvoiceLineFactory(DjangoModelFactory):
     price = None
 
 
+class InvoiceShippingFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceShipping"
+
+    shipping_rate = SubFactory(ShippingRateFactory)
+    currency = LazyAttribute(lambda o: o.shipping_rate.currency)
+    amount = Decimal("0")
+    tax_amount = Decimal("0")
+    total_amount = Decimal("0")
+
+
+class InvoiceCouponFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceCoupon"
+
+    invoice = SubFactory(InvoiceFactory)
+    coupon = SubFactory(
+        CouponFactory,
+        account=SelfAttribute("..invoice.account"),
+        currency=SelfAttribute("..invoice.currency"),
+    )
+    position = Sequence(lambda n: n)
+
+
+class InvoiceTaxRateFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceTaxRate"
+
+    invoice = SubFactory(InvoiceFactory)
+    tax_rate = SubFactory(TaxRateFactory, account=SelfAttribute("..invoice.account"))
+    position = Sequence(lambda n: n)
+
+
+class InvoiceLineCouponFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceLineCoupon"
+
+    invoice_line = SubFactory(InvoiceLineFactory)
+    coupon = SubFactory(
+        CouponFactory,
+        account=SelfAttribute("..invoice_line.invoice.account"),
+        currency=SelfAttribute("..invoice_line.invoice.currency"),
+    )
+    position = Sequence(lambda n: n)
+
+
+class InvoiceLineTaxRateFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceLineTaxRate"
+
+    invoice_line = SubFactory(InvoiceLineFactory)
+    tax_rate = SubFactory(TaxRateFactory, account=SelfAttribute("..invoice_line.invoice.account"))
+    position = Sequence(lambda n: n)
+
+
+class InvoiceShippingTaxRateFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceShippingTaxRate"
+
+    invoice_shipping = SubFactory(InvoiceShippingFactory)
+    tax_rate = SubFactory(TaxRateFactory, account=SelfAttribute("..invoice_shipping.shipping_rate.account"))
+    position = Sequence(lambda n: n)
+
+
 class InvoiceDiscountFactory(DjangoModelFactory):
     class Meta:
         model = "invoices.InvoiceDiscount"
@@ -295,17 +359,6 @@ class InvoiceTaxFactory(DjangoModelFactory):
     description = LazyAttribute(lambda o: o.tax_rate.description)
     rate = LazyAttribute(lambda o: o.tax_rate.percentage)
     amount = Decimal("0")
-
-
-class InvoiceShippingFactory(DjangoModelFactory):
-    class Meta:
-        model = "invoices.InvoiceShipping"
-
-    shipping_rate = SubFactory(ShippingRateFactory)
-    currency = LazyAttribute(lambda o: o.shipping_rate.currency)
-    amount = Decimal("0")
-    tax_amount = Decimal("0")
-    total_amount = Decimal("0")
 
 
 class QuoteCustomerFactory(DjangoModelFactory):

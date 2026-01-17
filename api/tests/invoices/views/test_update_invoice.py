@@ -8,13 +8,16 @@ from drf_standardized_errors.types import ErrorType
 
 from apps.integrations.enums import PaymentProvider
 from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
+from apps.invoices.models import InvoiceCoupon, InvoiceTaxRate
 from common.enums import FeatureCode
 from tests.factories import (
     CouponFactory,
     CustomerFactory,
+    InvoiceCouponFactory,
     InvoiceFactory,
     InvoiceShippingFactory,
     InvoiceTaxFactory,
+    InvoiceTaxRateFactory,
     NumberingSystemFactory,
     ShippingRateFactory,
     StripeConnectionFactory,
@@ -125,6 +128,8 @@ def test_update_invoice(api_client, user, account):
         "voided_at": None,
         "pdf_id": None,
         "lines": [],
+        "coupons": [],
+        "tax_rates": [],
         "taxes": [],
         "discounts": [],
         "tax_breakdown": [],
@@ -186,6 +191,7 @@ def test_update_invoice_add_shipping(api_client, user, account):
         "tax_amount": "2.00",
         "total_amount": "22.00",
         "shipping_rate_id": str(shipping_rate.id),
+        "tax_rates": [],
         "taxes": [
             {
                 "id": ANY,
@@ -240,6 +246,7 @@ def test_update_invoice_existing_shipping(api_client, user, account):
         "tax_amount": "4.50",
         "total_amount": "34.50",
         "shipping_rate_id": str(new_shipping_rate.id),
+        "tax_rates": [],
         "taxes": [
             {
                 "id": ANY,
@@ -934,7 +941,50 @@ def test_update_invoice_with_coupons(api_client, user, account):
     )
 
     assert response.status_code == 200
-    # TODO: add assert of created discounts when added
+    assert response.data["coupons"] == [coupon1.id, coupon2.id]
+
+
+def test_update_invoice_coupons_change_position(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    coupon1 = CouponFactory(account=account, currency=invoice.currency)
+    coupon2 = CouponFactory(account=account, currency=invoice.currency)
+    invoice_coupon1 = InvoiceCouponFactory(invoice=invoice, coupon=coupon1, position=1)
+    invoice_coupon2 = InvoiceCouponFactory(invoice=invoice, coupon=coupon2, position=2)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"coupons": [str(coupon2.id), str(coupon1.id)]},
+    )
+
+    assert response.status_code == 200
+    assert response.data["coupons"] == [coupon2.id, coupon1.id]
+    assert InvoiceCoupon.objects.filter(id__in=[invoice_coupon1.id, invoice_coupon2.id]).exists() is False
+    assert invoice.coupons.count() == 2
+    assert invoice.invoice_coupons.get(coupon_id=coupon1.id).position == 1
+    assert invoice.invoice_coupons.get(coupon_id=coupon2.id).position == 0
+
+
+def test_update_invoice_remove_coupons(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    coupon1 = CouponFactory(account=account, currency=invoice.currency)
+    coupon2 = CouponFactory(account=account, currency=invoice.currency)
+    InvoiceCouponFactory(invoice=invoice, coupon=coupon1, position=1)
+    InvoiceCouponFactory(invoice=invoice, coupon=coupon2, position=2)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"coupons": []},
+    )
+
+    assert response.status_code == 200
+    assert response.data["coupons"] == []
+    assert invoice.coupons.count() == 0
 
 
 def test_update_invoice_with_coupons_invalid_currency(api_client, user, account):
@@ -1055,7 +1105,50 @@ def test_update_invoice_with_tax_rates(api_client, user, account):
     )
 
     assert response.status_code == 200
-    # TODO: add assert of created taxes when added
+    assert response.data["tax_rates"] == [tax_rate1.id, tax_rate2.id]
+
+
+def test_update_invoice_tax_rates_change_position(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    tax_rate1 = TaxRateFactory(account=account)
+    tax_rate2 = TaxRateFactory(account=account)
+    invoice_tax_rate1 = InvoiceTaxRateFactory(invoice=invoice, tax_rate=tax_rate1, position=1)
+    invoice_tax_rate2 = InvoiceTaxRateFactory(invoice=invoice, tax_rate=tax_rate2, position=2)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"tax_rates": [str(tax_rate2.id), str(tax_rate1.id)]},
+    )
+
+    assert response.status_code == 200
+    assert response.data["tax_rates"] == [tax_rate2.id, tax_rate1.id]
+    assert InvoiceTaxRate.objects.filter(id__in=[invoice_tax_rate1.id, invoice_tax_rate2.id]).exists() is False
+    assert invoice.tax_rates.count() == 2
+    assert invoice.invoice_tax_rates.get(tax_rate_id=tax_rate1.id).position == 1
+    assert invoice.invoice_tax_rates.get(tax_rate_id=tax_rate2.id).position == 0
+
+
+def test_update_invoice_remove_tax_rates(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    invoice = InvoiceFactory(account=account, customer=customer)
+    tax_rate1 = TaxRateFactory(account=account)
+    tax_rate2 = TaxRateFactory(account=account)
+    InvoiceTaxRateFactory(invoice=invoice, tax_rate=tax_rate1, position=1)
+    InvoiceTaxRateFactory(invoice=invoice, tax_rate=tax_rate2, position=2)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {"tax_rates": []},
+    )
+
+    assert response.status_code == 200
+    assert response.data["tax_rates"] == []
+    assert invoice.tax_rates.count() == 0
 
 
 def test_update_invoice_with_duplicate_tax_rates(api_client, user, account):

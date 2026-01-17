@@ -102,6 +102,8 @@ def test_retrieve_invoice(api_client, user, account):
         "voided_at": None,
         "pdf_id": None,
         "lines": [],
+        "coupons": [],
+        "tax_rates": [],
         "taxes": [],
         "discounts": [],
         "tax_breakdown": [],
@@ -149,6 +151,8 @@ def test_retrieve_invoice_with_line(api_client, user, account):
             "outstanding_quantity": 1,
             "discounts": [],
             "taxes": [],
+            "coupons": [],
+            "tax_rates": [],
         }
     ]
 

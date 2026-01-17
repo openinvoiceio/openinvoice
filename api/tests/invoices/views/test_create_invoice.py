@@ -108,6 +108,8 @@ def test_create_invoice(api_client, user, account):
         "voided_at": None,
         "pdf_id": None,
         "lines": [],
+        "coupons": [],
+        "tax_rates": [],
         "taxes": [],
         "discounts": [],
         "tax_breakdown": [],
@@ -197,6 +199,7 @@ def test_create_invoice_with_shipping(api_client, user, account):
         "tax_amount": "1.00",
         "total_amount": "11.00",
         "shipping_rate_id": str(shipping_rate.id),
+        "tax_rates": [],
         "taxes": [
             {
                 "id": ANY,
@@ -638,10 +641,9 @@ def test_create_invoice_limit_exceeded(api_client, user, account, settings):
 
 
 def test_create_invoice_with_coupons(api_client, user, account):
-    currency = "USD"
-    coupon1 = CouponFactory(account=account, currency=currency)
-    coupon2 = CouponFactory(account=account, currency=currency)
-    customer = CustomerFactory(account=account, currency=currency)
+    customer = CustomerFactory(account=account)
+    coupon1 = CouponFactory(account=account, currency=customer.currency)
+    coupon2 = CouponFactory(account=account, currency=customer.currency)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -654,7 +656,7 @@ def test_create_invoice_with_coupons(api_client, user, account):
     )
 
     assert response.status_code == 201
-    # TODO: add assert of created discounts when added
+    assert response.data["coupons"] == [coupon1.id, coupon2.id]
 
 
 def test_create_invoice_with_coupons_invalid_currency(api_client, user, account):
@@ -787,7 +789,7 @@ def test_create_invoice_with_tax_rates(api_client, user, account):
     )
 
     assert response.status_code == 201
-    # TODO: add assert of created taxes when added
+    assert response.data["tax_rates"] == [tax_rate1.id, tax_rate2.id]
 
 
 def test_create_invoice_with_duplicate_tax_rates(api_client, user, account):
