@@ -279,8 +279,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         # Calculate base
 
         for line in lines:
-            line.unit_amount = line.calculate_unit_amount()
-            line.amount = line.calculate_amount()
+            line.unit_amount = clamp_money(line.calculate_unit_amount())
+            line.amount = clamp_money(line.calculate_amount())
             line.total_taxable_amount = line.amount
 
         # Calculate line discounts
@@ -888,6 +888,7 @@ class InvoiceTaxAllocation(models.Model):
     source = models.CharField(max_length=20, choices=InvoiceTaxSource.choices)
     currency = models.CharField(max_length=3)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    # TODO: also save taxable_amount
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = InvoiceTaxManager()

@@ -356,7 +356,7 @@ def test_recalculate_invoice_line_multiple_percentage_discounts():
 def test_recalculate_invoice_line_clamps_large_amount():
     invoice = InvoiceFactory()
     line = InvoiceLineFactory(
-        invoice=invoice, unit_amount=Decimal("1000000000000000000000000000"), quantity=1, amount=Decimal("0")
+        invoice=invoice, unit_amount=Decimal("10000000000000000"), quantity=1000000000000, amount=Decimal("0")
     )
 
     invoice.recalculate()
