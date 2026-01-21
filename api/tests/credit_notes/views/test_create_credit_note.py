@@ -20,7 +20,7 @@ from tests.factories import (
 pytestmark = pytest.mark.django_db
 
 
-def test_create_credit_note_from_invoice_with_lines(api_client, user, account):
+def test_create_credit_note(api_client, user, account):
     customer = CustomerFactory(account=account)
     invoice = InvoiceFactory(
         account=account,

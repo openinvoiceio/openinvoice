@@ -73,7 +73,7 @@ class CreditNoteManager(models.Manager.from_queryset(CreditNoteQuerySet)):
             recipients=recipients or default_recipients,
         )
 
-        invoice_lines = invoice.lines.order_by("created_at").prefetch_related("taxes__tax_rate")
+        invoice_lines = invoice.lines.order_by("created_at").prefetch_related("tax_rates")
         for invoice_line in invoice_lines:
             if invoice_line.outstanding_amount.amount <= 0:
                 continue
@@ -160,18 +160,19 @@ class CreditNoteLineManager(models.Manager["CreditNoteLine"]):
             total_amount=total_amount,
         )
 
-        for invoice_tax in invoice_line.taxes.all():
+        for tax_rate in invoice_line.tax_rates.all():
             credit_note_line.taxes.create(
                 credit_note=credit_note,
                 credit_note_line=credit_note_line,
-                tax_rate=invoice_tax.tax_rate,
-                name=invoice_tax.name,
-                description=invoice_tax.description,
-                rate=invoice_tax.rate,
+                tax_rate=tax_rate,
+                name=tax_rate.name,
+                description=tax_rate.description,
+                rate=tax_rate.percentage,
                 currency=credit_note.currency,
-                amount=clamp_money(invoice_tax.amount * ratio),
+                amount=Decimal("0"),
             )
 
+        credit_note_line.recalculate()
         credit_note.recalculate()
         credit_note_line.refresh_from_db()
         return credit_note_line

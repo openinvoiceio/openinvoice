@@ -196,36 +196,12 @@ class CreditNote(models.Model):
         self.save()
 
     def generate_pdf(self):
-        credit_note = (
-            CreditNote.objects.select_related(
-                "account__logo",
-                "account__address",
-                "customer__billing_address",
-                "customer__shipping_address",
-                "customer__logo",
-                "invoice__account_on_invoice__address",
-                "invoice__account_on_invoice__logo",
-                "invoice__customer_on_invoice__billing_address",
-                "invoice__customer_on_invoice__shipping_address",
-                "invoice__customer_on_invoice__logo",
-            )
-            .prefetch_related(
-                "lines__taxes",
-                "taxes",
-                "account__tax_ids",
-                "customer__tax_ids",
-                "invoice__account_on_invoice__tax_ids",
-                "invoice__customer_on_invoice__tax_ids",
-            )
-            .get(id=self.id)
-        )
-
-        filename = f"{credit_note.id}.pdf"
-        html = render_to_string("credit_notes/pdf/classic.html", {"credit_note": credit_note})
+        filename = f"{self.id}.pdf"
+        html = render_to_string("credit_notes/pdf/classic.html", {"credit_note": self})
         pdf_content = generate_pdf(html)
 
         return File.objects.upload_for_account(
-            account=credit_note.account,
+            account=self.account,
             purpose=FilePurpose.CREDIT_NOTE_PDF,
             filename=filename,
             data=SimpleUploadedFile(
@@ -318,7 +294,6 @@ class CreditNoteLine(models.Model):
         invoice_line: InvoiceLine | None = None
 
         if self.invoice_line_id:
-            invoice_line = InvoiceLine.objects.prefetch_related("taxes__tax_rate").get(id=self.invoice_line_id)
             if amounts is None:
                 (
                     amount_value,
@@ -327,14 +302,14 @@ class CreditNoteLine(models.Model):
                     total_amount,
                     ratio,
                 ) = calculate_credit_note_line_amounts(
-                    invoice_line,
+                    self.invoice_line,
                     quantity=quantity,
                     amount=amount,
                 )
             else:
                 amount_value, total_excluding_tax, total_tax_amount, total_amount, ratio = amounts
-            unit_amount_value = invoice_line.unit_amount
-            description_value = invoice_line.description
+            unit_amount_value = self.invoice_line.unit_amount
+            description_value = self.invoice_line.description
             if amount is not None:
                 quantity = None
         else:
@@ -343,7 +318,6 @@ class CreditNoteLine(models.Model):
             total_excluding_tax = amount_value
             total_tax_amount = zero(self.currency)
             total_amount = amount_value
-            ratio = Decimal(0)
             description_value = description or self.description
 
         self.description = description_value or ""
@@ -357,16 +331,16 @@ class CreditNoteLine(models.Model):
 
         if invoice_line:
             self.taxes.all().delete()
-            for invoice_tax in invoice_line.taxes.all():
+            for tax_rate in invoice_line.tax_rates.all():
                 CreditNoteTax.objects.create(
                     credit_note=self.credit_note,
                     credit_note_line=self,
-                    tax_rate=invoice_tax.tax_rate,
-                    name=invoice_tax.name,
-                    description=invoice_tax.description,
-                    rate=invoice_tax.rate,
+                    tax_rate=tax_rate,
+                    name=tax_rate.name,
+                    description=tax_rate.description,
+                    rate=tax_rate.percentage,
                     currency=self.currency,
-                    amount=clamp_money(invoice_tax.amount * ratio),
+                    amount=Decimal("0"),
                 )
         else:
             for tax in self.taxes.all():
@@ -374,8 +348,7 @@ class CreditNoteLine(models.Model):
                 tax.currency = self.currency
                 tax.save(update_fields=["amount", "currency"])
 
-            self.recalculate()
-
+        self.recalculate()
         self.credit_note.recalculate()
 
     def add_tax(self, tax_rate: TaxRate) -> CreditNoteTax:
