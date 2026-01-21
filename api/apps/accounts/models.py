@@ -12,7 +12,7 @@ from django_countries.fields import CountryField
 
 from apps.users.models import User
 
-from .enums import InvitationStatus, MemberRole
+from .choices import InvitationStatus, MemberRole
 from .managers import AccountManager, InvitationManager
 
 if TYPE_CHECKING:

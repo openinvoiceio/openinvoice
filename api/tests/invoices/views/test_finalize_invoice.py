@@ -7,9 +7,9 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
-from apps.integrations.enums import PaymentProvider
-from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
-from apps.payments.enums import PaymentStatus
+from apps.integrations.choices import PaymentProvider
+from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from apps.payments.choices import PaymentStatus
 from apps.payments.exceptions import PaymentCheckoutError
 from tests.factories import InvoiceFactory, InvoiceLineFactory, StripeConnectionFactory
 

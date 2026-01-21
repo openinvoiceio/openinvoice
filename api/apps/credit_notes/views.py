@@ -8,9 +8,9 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
-from apps.invoices.enums import InvoiceStatus
+from apps.invoices.choices import InvoiceStatus
 
-from .enums import CreditNoteDeliveryMethod, CreditNotePreviewFormat, CreditNoteStatus
+from .choices import CreditNoteDeliveryMethod, CreditNotePreviewFormat, CreditNoteStatus
 from .filters import CreditNoteFilter
 from .mail import send_credit_note
 from .models import CreditNote, CreditNoteLine, CreditNoteTax

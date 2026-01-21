@@ -12,7 +12,7 @@ from apps.accounts.permissions import IsAccountMember
 from apps.coupons.models import Coupon
 from apps.taxes.models import TaxRate
 
-from .enums import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
+from .choices import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
 from .filters import InvoiceFilter
 from .mail import send_invoice
 from .models import Invoice, InvoiceLine

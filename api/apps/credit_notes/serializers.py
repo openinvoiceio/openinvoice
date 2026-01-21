@@ -5,20 +5,20 @@ from djmoney.money import Money
 from rest_framework import serializers
 
 from apps.addresses.serializers import AddressSerializer
-from apps.integrations.enums import PaymentProvider
-from apps.invoices.enums import InvoiceStatus
+from apps.integrations.choices import PaymentProvider
+from apps.invoices.choices import InvoiceStatus
 from apps.invoices.fields import InvoiceLineRelatedField, InvoiceRelatedField
-from apps.numbering_systems.enums import NumberingSystemAppliesTo
+from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.taxes.fields import TaxRateRelatedField
 from apps.taxes.serializers import TaxIdSerializer
 from common.access import has_feature
 from common.calculations import clamp_money
-from common.enums import FeatureCode
+from common.choices import FeatureCode
 from common.fields import CurrencyField, MetadataField
 
 from .calculations import calculate_credit_note_line_amounts
-from .enums import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
+from .choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
 from .fields import CreditNoteRelatedField
 
 

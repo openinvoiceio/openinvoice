@@ -4,7 +4,7 @@ from rest_framework import serializers
 from apps.products.fields import ProductRelatedField
 from common.fields import CurrencyField, MetadataField
 
-from .enums import PriceModel
+from .choices import PriceModel
 from .validators import PriceTiersContinuousValidator
 
 

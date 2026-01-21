@@ -5,7 +5,7 @@ from djmoney.money import Money
 
 from apps.products.models import Product
 
-from .enums import PriceModel
+from .choices import PriceModel
 from .querysets import PriceQuerySet
 
 

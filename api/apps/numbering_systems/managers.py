@@ -6,7 +6,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 
-from .enums import NumberingSystemAppliesTo, NumberingSystemResetInterval
+from .choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
 from .querysets import NumberingSystemQuerySet
 
 if typing.TYPE_CHECKING:

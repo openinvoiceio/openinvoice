@@ -5,9 +5,9 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.credit_notes.enums import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
+from apps.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
 from apps.invoices.models import InvoiceAccount, InvoiceCustomer
-from common.enums import FeatureCode
+from common.choices import FeatureCode
 from tests.factories import (
     AddressFactory,
     CreditNoteFactory,

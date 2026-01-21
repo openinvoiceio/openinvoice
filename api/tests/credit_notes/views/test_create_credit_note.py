@@ -5,9 +5,9 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.invoices.enums import InvoiceStatus
-from apps.numbering_systems.enums import NumberingSystemAppliesTo
-from common.enums import FeatureCode, LimitCode
+from apps.invoices.choices import InvoiceStatus
+from apps.numbering_systems.choices import NumberingSystemAppliesTo
+from common.choices import FeatureCode, LimitCode
 from tests.factories import (
     AccountFactory,
     CreditNoteFactory,

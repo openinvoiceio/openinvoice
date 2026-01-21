@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
+from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from tests.factories import InvoiceFactory
 
 pytestmark = pytest.mark.django_db

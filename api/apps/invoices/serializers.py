@@ -6,9 +6,9 @@ from apps.addresses.serializers import AddressSerializer
 from apps.coupons.fields import CouponRelatedField
 from apps.coupons.serializers import CouponSerializer
 from apps.customers.fields import CustomerRelatedField
-from apps.integrations.enums import PaymentProvider
+from apps.integrations.choices import PaymentProvider
 from apps.integrations.fields import IntegrationConnectionField
-from apps.numbering_systems.enums import NumberingSystemAppliesTo
+from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.prices.fields import PriceRelatedField
 from apps.prices.validators import PriceIsActive, PriceProductIsActive
@@ -18,7 +18,7 @@ from apps.taxes.serializers import TaxRateSerializer
 from common.fields import CurrencyField, MetadataField
 from common.validators import AllOrNoneValidator, AtMostOneValidator
 
-from .enums import InvoiceDeliveryMethod, InvoiceDiscountSource, InvoiceStatus, InvoiceTaxSource
+from .choices import InvoiceDeliveryMethod, InvoiceDiscountSource, InvoiceStatus, InvoiceTaxSource
 from .fields import InvoiceRelatedField
 from .validators import (
     AutomaticDeliveryMethodValidator,

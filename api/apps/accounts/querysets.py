@@ -7,7 +7,7 @@ from apps.stripe.constants import STRIPE_ACTIVE_SUBSCRIPTION_STATUSES
 from apps.stripe.models import StripeSubscription
 from apps.users.models import User
 
-from .enums import InvitationStatus
+from .choices import InvitationStatus
 
 
 class AccountQuerySet(models.QuerySet):

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .enums import FeatureCode, LimitCode
+from .choices import FeatureCode, LimitCode
 
 
 class PlanFeatureSerializer(serializers.Serializer):

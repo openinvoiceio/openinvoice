@@ -8,7 +8,7 @@ from apps.numbering_systems.models import NumberingSystem
 from apps.users.models import User
 from common.utils import country_to_currency
 
-from .enums import MemberRole
+from .choices import MemberRole
 from .querysets import AccountQuerySet, InvitationQuerySet
 
 

@@ -12,15 +12,15 @@ from factory import (
 )
 from factory.django import DjangoModelFactory, FileField, Password
 
-from apps.accounts.enums import InvitationStatus, MemberRole
-from apps.credit_notes.enums import CreditNoteDeliveryMethod, CreditNoteStatus
-from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
-from apps.numbering_systems.enums import NumberingSystemAppliesTo, NumberingSystemResetInterval
+from apps.accounts.choices import InvitationStatus, MemberRole
+from apps.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteStatus
+from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from apps.numbering_systems.choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
 from apps.portal.crypto import generate_portal_token
-from apps.prices.enums import PriceModel
-from apps.quotes.enums import QuoteDeliveryMethod, QuoteStatus
-from apps.shipping_rates.enums import ShippingRateTaxPolicy
-from apps.taxes.enums import TaxIdType
+from apps.prices.choices import PriceModel
+from apps.quotes.choices import QuoteDeliveryMethod, QuoteStatus
+from apps.shipping_rates.choices import ShippingRateTaxPolicy
+from apps.taxes.choices import TaxIdType
 
 
 class UserFactory(DjangoModelFactory):

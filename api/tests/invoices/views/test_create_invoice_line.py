@@ -5,8 +5,8 @@ import pytest
 from djmoney.money import Money
 from drf_standardized_errors.types import ErrorType
 
-from apps.invoices.enums import InvoiceStatus
-from apps.prices.enums import PriceModel
+from apps.invoices.choices import InvoiceStatus
+from apps.prices.choices import PriceModel
 from tests.factories import CouponFactory, InvoiceFactory, PriceFactory, ProductFactory, TaxRateFactory
 
 pytestmark = pytest.mark.django_db

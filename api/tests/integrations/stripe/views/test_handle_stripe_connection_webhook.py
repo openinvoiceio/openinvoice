@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 import pytest
 
-from apps.integrations.enums import PaymentProvider
-from apps.invoices.enums import InvoiceStatus
-from apps.payments.enums import PaymentStatus
+from apps.integrations.choices import PaymentProvider
+from apps.invoices.choices import InvoiceStatus
+from apps.payments.choices import PaymentStatus
 from tests.factories import (
     InvoiceFactory,
     PaymentFactory,

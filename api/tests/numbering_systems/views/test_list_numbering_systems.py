@@ -3,7 +3,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.numbering_systems.enums import NumberingSystemAppliesTo
+from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from tests.factories import (
     NumberingSystemFactory,
 )

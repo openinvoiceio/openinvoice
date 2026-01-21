@@ -7,7 +7,7 @@ from django.core.files import File as DjangoFile
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
-from .enums import FilePurpose
+from .choices import FilePurpose
 from .querysets import FileQuerySet
 
 if TYPE_CHECKING:

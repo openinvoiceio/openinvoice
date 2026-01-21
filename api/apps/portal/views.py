@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
-from apps.invoices.enums import InvoiceStatus
+from apps.invoices.choices import InvoiceStatus
 from apps.invoices.models import Invoice
 
 from .authentication import PortalAuthentication

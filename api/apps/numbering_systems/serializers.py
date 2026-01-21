@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .enums import NumberingSystemAppliesTo, NumberingSystemResetInterval
+from .choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
 from .validators import numbering_system_template_validator
 
 

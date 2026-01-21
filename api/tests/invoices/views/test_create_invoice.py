@@ -5,10 +5,10 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.integrations.enums import PaymentProvider
-from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
+from apps.integrations.choices import PaymentProvider
+from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from apps.invoices.models import Invoice
-from common.enums import FeatureCode, LimitCode
+from common.choices import FeatureCode, LimitCode
 from tests.factories import (
     CouponFactory,
     CustomerFactory,

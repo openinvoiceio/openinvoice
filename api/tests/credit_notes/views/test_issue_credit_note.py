@@ -5,8 +5,8 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
-from apps.credit_notes.enums import CreditNoteDeliveryMethod, CreditNoteStatus
-from apps.invoices.enums import InvoiceStatus
+from apps.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteStatus
+from apps.invoices.choices import InvoiceStatus
 from tests.factories import (
     CreditNoteFactory,
     CreditNoteLineFactory,

@@ -5,7 +5,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.invoices.enums import InvoiceDeliveryMethod
+from apps.invoices.choices import InvoiceDeliveryMethod
 from tests.factories import (
     AccountFactory,
     CouponFactory,

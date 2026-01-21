@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from common.fields import CurrencyField, MetadataField
 
-from .enums import ShippingRateTaxPolicy
+from .choices import ShippingRateTaxPolicy
 
 
 class ShippingRateSerializer(serializers.Serializer):

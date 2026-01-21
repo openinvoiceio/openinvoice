@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
-from .enums import FilePurpose
+from .choices import FilePurpose
 from .models import File
 from .serializers import FileSerializer, FileUploadSerializer
 

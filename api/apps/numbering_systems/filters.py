@@ -1,6 +1,6 @@
 import django_filters
 
-from .enums import NumberingSystemAppliesTo
+from .choices import NumberingSystemAppliesTo
 from .models import NumberingSystem
 
 

@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from apps.quotes.enums import QuoteStatus
+from apps.quotes.choices import QuoteStatus
 from tests.factories import CustomerFactory, PriceFactory, QuoteFactory, QuoteLineFactory
 
 pytestmark = pytest.mark.django_db

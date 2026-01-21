@@ -1,4 +1,4 @@
-from .enums import FilePurpose
+from .choices import FilePurpose
 
 
 class FileValidator:

@@ -3,8 +3,8 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.numbering_systems.enums import NumberingSystemAppliesTo, NumberingSystemResetInterval
-from common.enums import FeatureCode
+from apps.numbering_systems.choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
+from common.choices import FeatureCode
 
 pytestmark = pytest.mark.django_db
 

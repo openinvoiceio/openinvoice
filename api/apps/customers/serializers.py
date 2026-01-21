@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.addresses.serializers import AddressSerializer
 from apps.files.fields import FileRelatedField
-from apps.numbering_systems.enums import NumberingSystemAppliesTo
+from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.taxes.fields import TaxRateRelatedField
 from apps.taxes.serializers import TaxIdSerializer, TaxRateSerializer

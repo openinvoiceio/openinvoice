@@ -6,10 +6,10 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
-from apps.integrations.enums import PaymentProvider
-from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
+from apps.integrations.choices import PaymentProvider
+from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from apps.invoices.models import InvoiceCoupon, InvoiceTaxRate
-from common.enums import FeatureCode
+from common.choices import FeatureCode
 from tests.factories import (
     CouponFactory,
     CustomerFactory,

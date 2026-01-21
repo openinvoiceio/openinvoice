@@ -3,7 +3,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.files.enums import FilePurpose
+from apps.files.choices import FilePurpose
 from tests.factories import FileFactory, UserFactory
 
 pytestmark = pytest.mark.django_db

@@ -6,7 +6,7 @@ from djmoney.money import Money
 
 from common.calculations import zero
 
-from .enums import TaxIdType
+from .choices import TaxIdType
 from .managers import TaxIdManager, TaxRateManager
 
 

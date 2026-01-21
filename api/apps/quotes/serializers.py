@@ -6,17 +6,17 @@ from apps.addresses.serializers import AddressSerializer
 from apps.coupons.fields import CouponRelatedField
 from apps.coupons.serializers import CouponSerializer
 from apps.customers.fields import CustomerRelatedField
-from apps.numbering_systems.enums import NumberingSystemAppliesTo
+from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.prices.fields import PriceRelatedField
 from apps.prices.validators import PriceIsActive, PriceProductIsActive
 from apps.taxes.fields import TaxRateRelatedField
 from common.access import has_feature
-from common.enums import FeatureCode
+from common.choices import FeatureCode
 from common.fields import CurrencyField, MetadataField
 from common.validators import ExactlyOneValidator
 
-from .enums import QuoteDeliveryMethod, QuotePreviewFormat, QuoteStatus
+from .choices import QuoteDeliveryMethod, QuotePreviewFormat, QuoteStatus
 from .fields import QuoteRelatedField
 
 

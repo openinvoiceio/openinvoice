@@ -4,7 +4,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.quotes.enums import QuoteStatus
+from apps.quotes.choices import QuoteStatus
 from tests.factories import QuoteFactory, TaxRateFactory
 
 pytestmark = pytest.mark.django_db

@@ -1,8 +1,8 @@
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.files.enums import FilePurpose
-from apps.invoices.enums import InvoiceStatus
+from apps.files.choices import FilePurpose
+from apps.invoices.choices import InvoiceStatus
 from tests.factories import (
     CustomerFactory,
     FileFactory,

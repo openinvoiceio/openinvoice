@@ -6,7 +6,7 @@ from datetime import datetime, time, timedelta
 from django.db import models
 from django.utils import timezone
 
-from .enums import NumberingSystemAppliesTo, NumberingSystemResetInterval
+from .choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
 from .formatting import render_template
 from .managers import NumberingSystemManager
 

@@ -13,7 +13,7 @@ from apps.numbering_systems.models import NumberingSystem
 from common.calculations import clamp_money, zero
 
 from .calculations import calculate_credit_note_line_amounts
-from .enums import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
+from .choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
 from .querysets import CreditNoteQuerySet
 
 if TYPE_CHECKING:

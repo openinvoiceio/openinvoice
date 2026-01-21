@@ -5,7 +5,7 @@ import pytest
 from drf_standardized_errors.types import ErrorType
 from freezegun import freeze_time
 
-from apps.invoices.enums import InvoiceStatus
+from apps.invoices.choices import InvoiceStatus
 from tests.factories import CustomerFactory, InvoiceFactory
 
 pytestmark = pytest.mark.django_db

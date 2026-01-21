@@ -4,7 +4,7 @@ import uuid
 
 from django.db import models
 
-from .enums import NumberingSystemAppliesTo
+from .choices import NumberingSystemAppliesTo
 
 
 class NumberingSystemQuerySet(models.QuerySet["NumberingSystem"]):

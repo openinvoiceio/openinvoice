@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.invoices.enums import InvoiceStatus
+from apps.invoices.choices import InvoiceStatus
 from apps.invoices.models import InvoiceLine
 from tests.factories import InvoiceFactory, InvoiceLineFactory
 

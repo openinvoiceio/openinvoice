@@ -3,7 +3,7 @@ import uuid
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.invoices.enums import InvoiceStatus
+from apps.invoices.choices import InvoiceStatus
 from tests.factories import InvoiceFactory
 
 pytestmark = pytest.mark.django_db

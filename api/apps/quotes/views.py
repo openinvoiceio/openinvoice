@@ -10,7 +10,7 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
-from .enums import QuoteDeliveryMethod, QuotePreviewFormat, QuoteStatus
+from .choices import QuoteDeliveryMethod, QuotePreviewFormat, QuoteStatus
 from .filters import QuoteFilter
 from .mail import send_quote
 from .models import Quote, QuoteDiscount, QuoteLine, QuoteTax

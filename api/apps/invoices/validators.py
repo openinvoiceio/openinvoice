@@ -2,9 +2,9 @@ from django.conf import settings
 from rest_framework import serializers
 
 from common.access import has_feature
-from common.enums import FeatureCode
+from common.choices import FeatureCode
 
-from .enums import InvoiceDeliveryMethod
+from .choices import InvoiceDeliveryMethod
 
 
 class AutomaticDeliveryMethodValidator:

@@ -4,7 +4,7 @@ import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from drf_standardized_errors.types import ErrorType
 
-from apps.files.enums import FilePurpose
+from apps.files.choices import FilePurpose
 
 pytestmark = pytest.mark.django_db
 

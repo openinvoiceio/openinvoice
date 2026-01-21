@@ -1,7 +1,7 @@
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.accounts.enums import MemberRole
+from apps.accounts.choices import MemberRole
 from apps.accounts.models import Member
 from tests.factories import AccountFactory, MemberFactory, UserFactory
 

@@ -14,7 +14,7 @@ from apps.prices.models import Price
 from apps.taxes.models import TaxId
 from common.calculations import zero
 
-from .enums import QuoteDeliveryMethod, QuoteStatus
+from .choices import QuoteDeliveryMethod, QuoteStatus
 from .querysets import QuoteDiscountQuerySet, QuoteLineQuerySet, QuoteQuerySet, QuoteTaxQuerySet
 
 

@@ -3,7 +3,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.accounts.enums import InvitationStatus, MemberRole
+from apps.accounts.choices import InvitationStatus, MemberRole
 from apps.accounts.models import Member
 from tests.factories import InvitationFactory, UserFactory
 

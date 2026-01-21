@@ -9,7 +9,7 @@ from djmoney.money import Money
 
 from apps.integrations.base import get_payment_integration
 
-from .enums import PaymentStatus
+from .choices import PaymentStatus
 from .exceptions import (
     InvoicePaymentAmountExceededError,
     PaymentCheckoutError,

@@ -6,10 +6,10 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
-from apps.credit_notes.enums import CreditNoteStatus
+from apps.credit_notes.choices import CreditNoteStatus
 from apps.credit_notes.models import CreditNote
 from apps.invoices.models import InvoiceAccount, InvoiceCustomer
-from apps.numbering_systems.enums import NumberingSystemAppliesTo
+from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from tests.factories import (
     AddressFactory,
     CreditNoteFactory,

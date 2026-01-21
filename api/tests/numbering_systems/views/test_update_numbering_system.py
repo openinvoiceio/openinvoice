@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.numbering_systems.enums import NumberingSystemResetInterval
+from apps.numbering_systems.choices import NumberingSystemResetInterval
 from tests.factories import (
     InvoiceFactory,
     NumberingSystemFactory,

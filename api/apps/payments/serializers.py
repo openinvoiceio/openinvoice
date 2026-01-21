@@ -3,12 +3,12 @@ from djmoney.money import Money
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from apps.integrations.enums import PaymentProvider
-from apps.invoices.enums import InvoiceStatus
+from apps.integrations.choices import PaymentProvider
+from apps.invoices.choices import InvoiceStatus
 from apps.invoices.fields import InvoiceRelatedField
 from common.fields import CurrencyField
 
-from .enums import PaymentStatus
+from .choices import PaymentStatus
 
 
 class PaymentSerializer(serializers.Serializer):

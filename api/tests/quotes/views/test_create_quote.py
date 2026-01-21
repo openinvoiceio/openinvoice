@@ -4,8 +4,8 @@ from unittest.mock import ANY
 import pytest
 from freezegun import freeze_time
 
-from apps.quotes.enums import QuoteDeliveryMethod
-from common.enums import FeatureCode, LimitCode
+from apps.quotes.choices import QuoteDeliveryMethod
+from common.choices import FeatureCode, LimitCode
 from tests.factories import CustomerFactory
 
 pytestmark = pytest.mark.django_db

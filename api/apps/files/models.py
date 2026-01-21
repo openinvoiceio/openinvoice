@@ -6,7 +6,7 @@ import uuid
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models
 
-from .enums import FilePurpose
+from .choices import FilePurpose
 from .managers import FileManager
 
 

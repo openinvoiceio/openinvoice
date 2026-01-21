@@ -1,7 +1,7 @@
 import pytest
 from factory.django import FileField
 
-from apps.files.enums import FilePurpose
+from apps.files.choices import FilePurpose
 from common.pdf import get_generator
 from tests.factories import (
     AccountFactory,

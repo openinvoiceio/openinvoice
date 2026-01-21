@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .enums import FilePurpose
+from .choices import FilePurpose
 from .validators import SUPPORTED_FILE_VALIDATORS
 
 

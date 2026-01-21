@@ -18,7 +18,7 @@ import structlog
 from corsheaders.defaults import default_headers
 from drf_standardized_errors.openapi_serializers import ClientErrorEnum, ServerErrorEnum, ValidationErrorEnum
 
-from common.enums import FeatureCode, LimitCode
+from common.choices import FeatureCode, LimitCode
 
 env = environ.Env()
 
@@ -316,20 +316,20 @@ SPECTACULAR_SETTINGS = {
     },
     "ENUM_ADD_EXPLICIT_BLANK_NULL_CHOICE": False,  # Do not add nullEnum schemas to openapi, without it orval fails
     "ENUM_NAME_OVERRIDES": {
-        "FilePurposeEnum": "apps.files.enums.FilePurpose.choices",
-        "MemberRoleEnum": "apps.accounts.enums.MemberRole.choices",
-        "InvoiceStatusEnum": "apps.invoices.enums.InvoiceStatus.choices",
-        "NumberingSystemResetIntervalEnum": "apps.numbering_systems.enums.NumberingSystemResetInterval.choices",
-        "TaxIdTypeEnum": "apps.taxes.enums.TaxIdType.choices",
+        "FilePurposeEnum": "apps.files.choices.FilePurpose.choices",
+        "MemberRoleEnum": "apps.accounts.choices.MemberRole.choices",
+        "InvoiceStatusEnum": "apps.invoices.choices.InvoiceStatus.choices",
+        "NumberingSystemResetIntervalEnum": "apps.numbering_systems.choices.NumberingSystemResetInterval.choices",
+        "TaxIdTypeEnum": "apps.taxes.choices.TaxIdType.choices",
         "CurrencyEnum": "djmoney.settings.CURRENCY_CHOICES",
-        "PaymentStatusEnum": "apps.payments.enums.PaymentStatus.choices",
-        "PaymentProviderEnum": "apps.integrations.enums.PaymentProvider.choices",
-        "PriceModelEnum": "apps.prices.enums.PriceModel.choices",
-        "CreditNoteStatusEnum": "apps.credit_notes.enums.CreditNoteStatus.choices",
-        "CreditNoteReasonEnum": "apps.credit_notes.enums.CreditNoteReason.choices",
-        "NumberingSystemAppliesToEnum": "apps.numbering_systems.enums.NumberingSystemAppliesTo.choices",
-        "QuoteStatusEnum": "apps.quotes.enums.QuoteStatus.choices",
-        "ShippingRateTaxPolicyEnum": "apps.shipping_rates.enums.ShippingRateTaxPolicy.choices",
+        "PaymentStatusEnum": "apps.payments.choices.PaymentStatus.choices",
+        "PaymentProviderEnum": "apps.integrations.choices.PaymentProvider.choices",
+        "PriceModelEnum": "apps.prices.choices.PriceModel.choices",
+        "CreditNoteStatusEnum": "apps.credit_notes.choices.CreditNoteStatus.choices",
+        "CreditNoteReasonEnum": "apps.credit_notes.choices.CreditNoteReason.choices",
+        "NumberingSystemAppliesToEnum": "apps.numbering_systems.choices.NumberingSystemAppliesTo.choices",
+        "QuoteStatusEnum": "apps.quotes.choices.QuoteStatus.choices",
+        "ShippingRateTaxPolicyEnum": "apps.shipping_rates.choices.ShippingRateTaxPolicy.choices",
     },
 }
 

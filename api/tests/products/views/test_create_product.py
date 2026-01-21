@@ -4,8 +4,8 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.prices.enums import PriceModel
-from common.enums import LimitCode
+from apps.prices.choices import PriceModel
+from common.choices import LimitCode
 
 pytestmark = pytest.mark.django_db
 

@@ -1,6 +1,6 @@
 from django.utils import timezone
 
-from common.enums import LimitCode
+from common.choices import LimitCode
 from common.permissions import WithinLimit
 
 from .models import Quote

@@ -1,7 +1,7 @@
 from django.apps import apps
 from rest_framework import serializers
 
-from .enums import IntegrationType
+from .choices import IntegrationType
 
 
 class IntegrationConnectionField(serializers.PrimaryKeyRelatedField):

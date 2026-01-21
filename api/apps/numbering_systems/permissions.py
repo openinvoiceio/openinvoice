@@ -1,4 +1,4 @@
-from common.enums import FeatureCode
+from common.choices import FeatureCode
 from common.permissions import HasFeature
 
 

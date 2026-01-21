@@ -5,9 +5,9 @@ from django.db import models
 from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
-from apps.integrations.enums import PaymentProvider
+from apps.integrations.choices import PaymentProvider
 
-from .enums import PaymentStatus
+from .choices import PaymentStatus
 from .managers import PaymentManager
 
 

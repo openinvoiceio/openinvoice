@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import F, IntegerField, Value
 from django_cte import CTE, with_cte
 
-from apps.invoices.enums import InvoiceDiscountSource, InvoiceTaxSource
+from apps.invoices.choices import InvoiceDiscountSource, InvoiceTaxSource
 
 
 class InvoiceQuerySet(models.QuerySet):

@@ -2,7 +2,7 @@ from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 
 from .access import has_feature, is_limit_exceeded
-from .enums import FeatureCode, LimitCode
+from .choices import FeatureCode, LimitCode
 
 
 class HasFeature(BasePermission):

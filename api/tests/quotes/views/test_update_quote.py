@@ -4,8 +4,8 @@ from datetime import date
 import pytest
 from freezegun import freeze_time
 
-from apps.quotes.enums import QuoteDeliveryMethod, QuoteStatus
-from common.enums import FeatureCode
+from apps.quotes.choices import QuoteDeliveryMethod, QuoteStatus
+from common.choices import FeatureCode
 from tests.factories import CustomerFactory, QuoteFactory
 
 pytestmark = pytest.mark.django_db

@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.credit_notes.enums import CreditNoteStatus
+from apps.credit_notes.choices import CreditNoteStatus
 from apps.credit_notes.models import CreditNoteTax
 from tests.factories import (
     CreditNoteFactory,

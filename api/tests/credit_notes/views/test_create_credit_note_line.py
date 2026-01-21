@@ -5,7 +5,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.credit_notes.enums import CreditNoteStatus
+from apps.credit_notes.choices import CreditNoteStatus
 from tests.factories import CreditNoteFactory, InvoiceFactory, InvoiceLineFactory
 
 pytestmark = pytest.mark.django_db

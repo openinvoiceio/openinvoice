@@ -5,7 +5,7 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
-from apps.prices.enums import PriceModel
+from apps.prices.choices import PriceModel
 from tests.factories import PriceFactory
 
 pytestmark = pytest.mark.django_db

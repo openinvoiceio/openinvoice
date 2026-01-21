@@ -15,10 +15,10 @@ from django.utils.functional import cached_property
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from apps.files.enums import FilePurpose
+from apps.files.choices import FilePurpose
 from apps.files.models import File
-from apps.integrations.enums import PaymentProvider
-from apps.invoices.enums import InvoiceStatus
+from apps.integrations.choices import PaymentProvider
+from apps.invoices.choices import InvoiceStatus
 from apps.invoices.models import InvoiceLine
 from apps.numbering_systems.models import NumberingSystem
 from apps.taxes.models import TaxRate
@@ -26,7 +26,7 @@ from common.calculations import clamp_money, zero
 from common.pdf import generate_pdf
 
 from .calculations import calculate_credit_note_line_amounts
-from .enums import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
+from .choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
 from .managers import CreditNoteLineManager, CreditNoteManager
 from .querysets import CreditNoteTaxQuerySet
 

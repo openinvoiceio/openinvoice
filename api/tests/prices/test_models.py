@@ -1,7 +1,7 @@
 import pytest
 from djmoney.money import Money
 
-from apps.prices.enums import PriceModel
+from apps.prices.choices import PriceModel
 from apps.prices.models import Price
 from tests.factories import ProductFactory
 

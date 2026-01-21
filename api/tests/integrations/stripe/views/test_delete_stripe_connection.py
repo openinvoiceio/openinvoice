@@ -4,7 +4,7 @@ import pytest
 from drf_standardized_errors.types import ErrorType
 
 from apps.integrations.stripe.models import StripeConnection
-from common.enums import FeatureCode
+from common.choices import FeatureCode
 from tests.factories import StripeConnectionFactory
 
 pytestmark = pytest.mark.django_db

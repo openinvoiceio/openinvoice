@@ -5,8 +5,8 @@ from uuid import uuid4
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.invoices.enums import InvoiceStatus
-from apps.payments.enums import PaymentStatus
+from apps.invoices.choices import InvoiceStatus
+from apps.payments.choices import PaymentStatus
 from apps.payments.models import Payment
 from tests.factories import InvoiceFactory
 

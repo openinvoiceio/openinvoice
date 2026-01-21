@@ -13,13 +13,13 @@ from djmoney.money import Money
 from apps.accounts.models import Account
 from apps.addresses.models import Address
 from apps.customers.models import Customer
-from apps.integrations.enums import PaymentProvider
+from apps.integrations.choices import PaymentProvider
 from apps.numbering_systems.models import NumberingSystem
 from apps.prices.models import Price
 from apps.taxes.models import TaxId
 from common.calculations import zero
 
-from .enums import InvoiceDeliveryMethod, InvoiceStatus
+from .choices import InvoiceDeliveryMethod, InvoiceStatus
 from .querysets import (
     InvoiceDiscountAllocationQuerySet,
     InvoiceLineQuerySet,

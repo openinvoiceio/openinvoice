@@ -6,7 +6,7 @@ from djmoney.money import Money
 
 from common.calculations import clamp_money
 
-from .enums import CreditNoteStatus
+from .choices import CreditNoteStatus
 
 
 class CreditNoteQuerySet(models.QuerySet):

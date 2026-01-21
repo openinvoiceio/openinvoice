@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from apps.quotes.enums import QuoteStatus
+from apps.quotes.choices import QuoteStatus
 from apps.quotes.models import Quote
 from tests.factories import QuoteFactory
 

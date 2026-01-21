@@ -1,7 +1,7 @@
 from django.conf import settings
 
 from apps.accounts.models import Account
-from common.enums import FeatureCode, LimitCode
+from common.choices import FeatureCode, LimitCode
 
 
 def resolve_plan(account: Account) -> str:

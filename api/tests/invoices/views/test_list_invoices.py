@@ -5,7 +5,7 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
-from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
+from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from apps.invoices.models import Invoice
 from tests.factories import CustomerFactory, InvoiceFactory, InvoiceLineFactory
 

@@ -4,9 +4,9 @@ import pytest
 from drf_standardized_errors.types import ErrorType
 
 from apps.accounts.session import ACTIVE_ACCOUNT_SESSION_KEY
-from apps.numbering_systems.enums import NumberingSystemAppliesTo, NumberingSystemResetInterval
+from apps.numbering_systems.choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
 from apps.numbering_systems.models import NumberingSystem
-from common.enums import LimitCode
+from common.choices import LimitCode
 
 pytestmark = pytest.mark.django_db
 

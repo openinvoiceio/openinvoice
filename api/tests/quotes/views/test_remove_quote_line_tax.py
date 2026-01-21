@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from apps.quotes.enums import QuoteStatus
+from apps.quotes.choices import QuoteStatus
 from apps.quotes.models import QuoteTax
 from tests.factories import (
     CustomerFactory,

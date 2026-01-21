@@ -20,11 +20,11 @@ from djmoney.money import Money
 
 from apps.accounts.models import Account
 from apps.coupons.models import Coupon
-from apps.credit_notes.enums import CreditNoteStatus
+from apps.credit_notes.choices import CreditNoteStatus
 from apps.customers.models import Customer
-from apps.files.enums import FilePurpose
+from apps.files.choices import FilePurpose
 from apps.files.models import File
-from apps.integrations.enums import PaymentProvider
+from apps.integrations.choices import PaymentProvider
 from apps.numbering_systems.models import NumberingSystem
 from apps.payments.models import Payment
 from apps.prices.models import Price
@@ -33,7 +33,7 @@ from apps.taxes.models import TaxRate
 from common.calculations import allocate_proportionally, clamp_money, zero
 from common.pdf import generate_pdf
 
-from .enums import InvoiceDeliveryMethod, InvoiceDiscountSource, InvoiceStatus, InvoiceTaxSource
+from .choices import InvoiceDeliveryMethod, InvoiceDiscountSource, InvoiceStatus, InvoiceTaxSource
 from .managers import (
     InvoiceAccountManager,
     InvoiceCustomerManager,

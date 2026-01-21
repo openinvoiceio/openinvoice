@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from common.enums import FeatureCode
+from common.choices import FeatureCode
 from tests.factories import (
     StripeConnectionFactory,
 )

@@ -2,7 +2,7 @@ from djmoney.contrib.django_rest_framework import MoneyField
 from rest_framework import serializers
 
 from apps.files.fields import FileRelatedField
-from apps.prices.enums import PriceModel
+from apps.prices.choices import PriceModel
 from apps.prices.fields import PriceRelatedField
 from apps.prices.serializers import PriceTierSerializer
 from common.fields import CurrencyField, MetadataField

@@ -3,8 +3,8 @@ from decimal import Decimal
 import pytest
 from djmoney.money import Money
 
-from apps.invoices.enums import InvoiceStatus
-from apps.prices.enums import PriceModel
+from apps.invoices.choices import InvoiceStatus
+from apps.prices.choices import PriceModel
 from apps.prices.models import Price
 from tests.factories import CreditNoteFactory, CreditNoteLineFactory, InvoiceFactory, InvoiceLineFactory, ProductFactory
 

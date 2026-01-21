@@ -16,7 +16,7 @@ from djmoney.money import Money
 
 from apps.coupons.models import Coupon
 from apps.customers.models import Customer
-from apps.files.enums import FilePurpose
+from apps.files.choices import FilePurpose
 from apps.files.models import File
 from apps.invoices.models import Invoice
 from apps.numbering_systems.models import NumberingSystem
@@ -25,7 +25,7 @@ from apps.taxes.models import TaxRate
 from common.calculations import calculate_percentage_amount, clamp_money, zero
 from common.pdf import generate_pdf
 
-from .enums import QuoteDeliveryMethod, QuoteStatus
+from .choices import QuoteDeliveryMethod, QuoteStatus
 from .managers import (
     QuoteAccountManager,
     QuoteCustomerManager,

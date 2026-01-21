@@ -5,7 +5,7 @@ from django.utils import timezone
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from .enums import ShippingRateTaxPolicy
+from .choices import ShippingRateTaxPolicy
 from .managers import ShippingRateManager
 
 

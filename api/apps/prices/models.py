@@ -9,7 +9,7 @@ from djmoney.money import Money
 
 from common.calculations import zero
 
-from .enums import PriceModel
+from .choices import PriceModel
 from .managers import PriceManager
 
 

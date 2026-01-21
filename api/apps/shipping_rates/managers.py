@@ -5,7 +5,7 @@ from djmoney.money import Money
 
 from apps.accounts.models import Account
 
-from .enums import ShippingRateTaxPolicy
+from .choices import ShippingRateTaxPolicy
 from .querysets import ShippingRateQuerySet
 
 

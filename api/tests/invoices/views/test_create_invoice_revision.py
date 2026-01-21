@@ -6,9 +6,9 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from apps.invoices.enums import InvoiceDeliveryMethod, InvoiceStatus
+from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from apps.invoices.models import Invoice
-from common.enums import LimitCode
+from common.choices import LimitCode
 from tests.factories import (
     CouponFactory,
     CustomerFactory,

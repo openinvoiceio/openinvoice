@@ -4,7 +4,7 @@ from django.db.models import DecimalField, Sum, Value
 from django.db.models.functions import Coalesce
 from djmoney.money import Money
 
-from apps.payments.enums import PaymentStatus
+from apps.payments.choices import PaymentStatus
 
 
 def initialize_paid_amounts(apps, _schema_editor):
