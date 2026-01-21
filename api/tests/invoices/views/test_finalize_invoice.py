@@ -25,7 +25,7 @@ def stripe_checkout_mock():
 def test_finalize_invoice(api_client, user, account):
     invoice = InvoiceFactory(account=account, total_amount=Decimal("10.00"))
     line = InvoiceLineFactory(invoice=invoice, description="Test line", quantity=1, unit_amount=Decimal("10.00"))
-    line.recalculate()
+    invoice.recalculate()
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -127,18 +127,17 @@ def test_finalize_invoice(api_client, user, account):
                 "outstanding_amount": "10.00",
                 "credit_quantity": 0,
                 "outstanding_quantity": 1,
-                "discounts": [],
-                "taxes": [],
                 "coupons": [],
+                "discount_allocations": [],
+                "discounts": [],
                 "tax_rates": [],
+                "tax_allocations": [],
             }
         ],
         "coupons": [],
-        "tax_rates": [],
         "discounts": [],
-        "taxes": [],
-        "tax_breakdown": [],
-        "discount_breakdown": [],
+        "tax_rates": [],
+        "total_taxes": [],
         "shipping": None,
     }
     assert invoice.status == InvoiceStatus.OPEN
@@ -232,11 +231,9 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
         "pdf_id": str(invoice.pdf_id),
         "lines": [],
         "coupons": [],
-        "tax_rates": [],
         "discounts": [],
-        "taxes": [],
-        "tax_breakdown": [],
-        "discount_breakdown": [],
+        "tax_rates": [],
+        "total_taxes": [],
         "shipping": None,
     }
     assert invoice.status == InvoiceStatus.PAID

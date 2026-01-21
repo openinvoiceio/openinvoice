@@ -1,6 +1,10 @@
 import uuid
+from decimal import Decimal
 
 from django.db import models
+from djmoney.money import Money
+
+from common.calculations import zero
 
 from .enums import TaxIdType
 from .managers import TaxIdManager, TaxRateManager
@@ -47,6 +51,12 @@ class TaxRate(models.Model):
 
         self.is_active = True
         self.save(update_fields=["is_active", "updated_at"])
+
+    def calculate_amount(self, base_amount: Money) -> Money:
+        if self.percentage <= 0:
+            return zero(base_amount.currency)
+
+        return base_amount * (self.percentage / Decimal(100))
 
 
 class TaxId(models.Model):

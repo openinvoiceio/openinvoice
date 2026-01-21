@@ -4,33 +4,26 @@ from django.db.models import Prefetch
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
-from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
+from apps.coupons.models import Coupon
+from apps.taxes.models import TaxRate
 
 from .enums import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
 from .filters import InvoiceFilter
 from .mail import send_invoice
-from .models import Invoice, InvoiceDiscount, InvoiceLine, InvoiceTax
+from .models import Invoice, InvoiceLine
 from .permissions import MaxInvoicesLimit
 from .serializers import (
     InvoiceCreateSerializer,
-    InvoiceDiscountCreateSerializer,
-    InvoiceDiscountSerializer,
     InvoiceLineCreateSerializer,
-    InvoiceLineDiscountCreateSerializer,
-    InvoiceLineDiscountSerializer,
     InvoiceLineSerializer,
-    InvoiceLineTaxCreateSerializer,
-    InvoiceLineTaxSerializer,
     InvoiceLineUpdateSerializer,
     InvoiceRevisionCreateSerializer,
     InvoiceSerializer,
-    InvoiceTaxCreateSerializer,
-    InvoiceTaxSerializer,
     InvoiceUpdateSerializer,
 )
 
@@ -57,13 +50,14 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
     def get_queryset(self):
         return (
             Invoice.objects.filter(account_id=self.request.account.id)
-            .prefetch_related(
-                Prefetch(
-                    "lines",
-                    queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
-                ),
-            )
             .select_related("previous_revision")
+            .prefetch_related(
+                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
+                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
+                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
+                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
+                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
+            )
         )
 
     @extend_schema(
@@ -109,12 +103,15 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
                 tax_rates=shipping.get("tax_rates", []),
             )
 
+        invoice.recalculate()
+
         logger.info(
             "Invoice created",
             invoice_id=invoice.id,
             customer_id=invoice.customer_id,
         )
 
+        invoice = self.get_queryset().get(id=invoice.id)
         serializer = InvoiceSerializer(invoice)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -128,13 +125,14 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     def get_queryset(self):
         return (
             Invoice.objects.filter(account_id=self.request.account.id)
-            .prefetch_related(
-                Prefetch(
-                    "lines",
-                    queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
-                ),
-            )
             .select_related("previous_revision")
+            .prefetch_related(
+                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
+                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
+                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
+                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
+                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
+            )
         )
 
     @extend_schema(
@@ -190,7 +188,11 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
                     tax_rates=shipping.get("tax_rates", []),
                 )
 
+        invoice.recalculate()
+
         logger.info("Invoice updated", invoice_id=invoice.id, customer_id=invoice.customer_id)
+
+        invoice = self.get_object()
         serializer = InvoiceSerializer(invoice)
         return Response(serializer.data)
 
@@ -233,13 +235,14 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
     def get_queryset(self):
         return (
             Invoice.objects.filter(account_id=self.request.account.id)
-            .prefetch_related(
-                Prefetch(
-                    "lines",
-                    queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
-                )
-            )
             .select_related("previous_revision")
+            .prefetch_related(
+                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
+                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
+                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
+                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
+                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
+            )
         )
 
     @extend_schema(
@@ -318,6 +321,7 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
             previous_revision_id=invoice.previous_revision_id,
         )
 
+        invoice = self.get_queryset().get(id=invoice.id)
         serializer = InvoiceSerializer(invoice)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -330,13 +334,14 @@ class InvoiceVoidAPIView(generics.GenericAPIView):
     def get_queryset(self):
         return (
             Invoice.objects.filter(account_id=self.request.account.id)
-            .prefetch_related(
-                Prefetch(
-                    "lines",
-                    queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
-                )
-            )
             .select_related("previous_revision")
+            .prefetch_related(
+                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
+                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
+                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
+                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
+                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
+            )
         )
 
     @extend_schema(
@@ -353,6 +358,8 @@ class InvoiceVoidAPIView(generics.GenericAPIView):
         invoice.void()
 
         logger.info("Invoice voided", invoice_id=invoice.id)
+
+        invoice = self.get_object()
         serializer = InvoiceSerializer(invoice)
         return Response(serializer.data)
 
@@ -365,13 +372,14 @@ class InvoiceFinalizeAPIView(generics.GenericAPIView):
     def get_queryset(self):
         return (
             Invoice.objects.filter(account_id=self.request.account.id)
-            .prefetch_related(
-                Prefetch(
-                    "lines",
-                    queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
-                )
-            )
             .select_related("previous_revision")
+            .prefetch_related(
+                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
+                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
+                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
+                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
+                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
+            )
         )
 
     @extend_schema(
@@ -399,6 +407,7 @@ class InvoiceFinalizeAPIView(generics.GenericAPIView):
             )
 
         logger.info("Invoice finalized", invoice_id=invoice.id, pdf_id=invoice.pdf_id)
+        invoice = self.get_object()
         serializer = InvoiceSerializer(invoice)
         return Response(serializer.data)
 
@@ -412,13 +421,14 @@ class InvoicePreviewAPIView(generics.GenericAPIView):
     def get_queryset(self):
         return (
             Invoice.objects.filter(account_id=self.request.account.id)
-            .prefetch_related(
-                Prefetch(
-                    "lines",
-                    queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
-                )
-            )
             .select_related("previous_revision")
+            .prefetch_related(
+                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
+                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
+                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
+                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
+                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
+            )
         )
 
     @extend_schema(
@@ -445,6 +455,16 @@ class InvoiceLineCreateAPIView(generics.GenericAPIView):
     serializer_class = InvoiceLineSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
 
+    def get_queryset(self):
+        return (
+            InvoiceLine.objects.filter(invoice__account_id=self.request.account.id)
+            .select_related("invoice")
+            .prefetch_related(
+                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
+                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
+            )
+        )
+
     @extend_schema(
         operation_id="create_invoice_line",
         request=InvoiceLineCreateSerializer,
@@ -469,11 +489,16 @@ class InvoiceLineCreateAPIView(generics.GenericAPIView):
         if "tax_rates" in data:
             invoice_line.set_tax_rates(data["tax_rates"])
 
+        invoice_line.invoice.recalculate()
+        invoice_line.refresh_from_db()
+
         logger.info(
             "Invoice line created",
             invoice_line_id=invoice_line.id,
             invoice_id=invoice_line.invoice_id,
         )
+
+        invoice_line = self.get_queryset().get(id=invoice_line.id)
         serializer = InvoiceLineSerializer(invoice_line)
         return Response(serializer.data)
 
@@ -484,7 +509,14 @@ class InvoiceLineUpdateDestroyAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return InvoiceLine.objects.filter(invoice__account_id=self.request.account.id)
+        return (
+            InvoiceLine.objects.filter(invoice__account_id=self.request.account.id)
+            .select_related("invoice")
+            .prefetch_related(
+                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
+                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
+            )
+        )
 
     @extend_schema(
         operation_id="update_invoice_line",
@@ -513,11 +545,14 @@ class InvoiceLineUpdateDestroyAPIView(generics.GenericAPIView):
         if "tax_rates" in data:
             invoice_line.set_tax_rates(data["tax_rates"])
 
+        invoice_line.invoice.recalculate()
+
         logger.info(
             "Invoice line updated",
             invoice_line_id=invoice_line.id,
             invoice_id=invoice_line.invoice_id,
         )
+        invoice_line = self.get_object()
         serializer = InvoiceLineSerializer(invoice_line)
         return Response(serializer.data)
 
@@ -537,258 +572,4 @@ class InvoiceLineUpdateDestroyAPIView(generics.GenericAPIView):
         invoice.recalculate()
 
         logger.info("Invoice line deleted", invoice_line_id=pk, invoice_id=invoice.id)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class InvoiceLineDiscountCreateAPIView(generics.GenericAPIView):
-    serializer_class = InvoiceLineDiscountSerializer
-    permission_classes = [IsAuthenticated, IsAccountMember]
-
-    @extend_schema(
-        operation_id="apply_invoice_line_discount",
-        request=InvoiceLineDiscountCreateSerializer,
-        responses={200: InvoiceLineDiscountSerializer},
-    )
-    def post(self, request, pk):
-        invoice_line = get_object_or_404(InvoiceLine, pk=pk, invoice__account_id=request.account.id)
-        context = {"invoice_line": invoice_line, **self.get_serializer_context()}
-        serializer = InvoiceLineDiscountCreateSerializer(data=request.data, context=context)
-        serializer.is_valid(raise_exception=True)
-
-        if invoice_line.invoice.status != InvoiceStatus.DRAFT:
-            raise ValidationError("Only draft invoices can be modified")
-
-        if invoice_line.discounts.count() >= settings.MAX_DISCOUNTS:
-            raise ValidationError("Maximum number of invoice line discounts reached")
-
-        discount = invoice_line.add_discount(coupon=serializer.validated_data["coupon"])
-
-        logger.info(
-            "Invoice line discount applied",
-            invoice_line_discount=discount.id,
-            invoice_line=invoice_line.id,
-        )
-        serializer = InvoiceLineDiscountSerializer(discount)
-        return Response(serializer.data)
-
-
-class InvoiceLineDiscountDestroyAPIView(generics.GenericAPIView):
-    serializer_class = InvoiceLineDiscountSerializer
-    permission_classes = [IsAuthenticated, IsAccountMember]
-
-    def get_queryset(self):
-        return InvoiceDiscount.objects.filter(
-            invoice_line__invoice__account_id=self.request.account.id,
-            invoice_line_id=self.kwargs["invoice_line_id"],
-        )
-
-    @extend_schema(
-        operation_id="delete_invoice_line_discount",
-        responses={204: None},
-    )
-    def delete(self, *_, pk, invoice_line_id, **__):
-        discount = self.get_object()
-        invoice_line = discount.invoice_line
-
-        if discount.invoice.status != InvoiceStatus.DRAFT:
-            raise ValidationError("Only draft invoices can be modified")
-
-        discount.delete()
-        invoice_line.recalculate()
-
-        logger.info(
-            "Invoice line discount deleted",
-            invoice_line_discount_id=pk,
-            invoice_line_id=invoice_line_id,
-        )
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class InvoiceDiscountCreateAPIView(generics.GenericAPIView):
-    serializer_class = InvoiceDiscountSerializer
-    permission_classes = [IsAuthenticated, IsAccountMember]
-
-    @extend_schema(
-        operation_id="apply_invoice_discount",
-        request=InvoiceDiscountCreateSerializer,
-        responses={200: InvoiceDiscountSerializer},
-    )
-    def post(self, request, pk):
-        invoice = get_object_or_404(Invoice, pk=pk, account_id=request.account.id)
-        context = {"invoice": invoice, **self.get_serializer_context()}
-        serializer = InvoiceDiscountCreateSerializer(data=request.data, context=context)
-        serializer.is_valid(raise_exception=True)
-
-        if invoice.status != InvoiceStatus.DRAFT:
-            raise ValidationError("Only draft invoices can be modified")
-
-        if invoice.discounts.count() >= settings.MAX_DISCOUNTS:
-            raise ValidationError("Maximum number of invoice discounts reached")
-
-        discount = invoice.add_discount(coupon=serializer.validated_data["coupon"])
-
-        logger.info(
-            "Invoice discount applied",
-            invoice_discount=discount.id,
-            invoice=invoice.id,
-        )
-        serializer = InvoiceDiscountSerializer(discount)
-        return Response(serializer.data)
-
-
-class InvoiceDiscountDestroyAPIView(generics.GenericAPIView):
-    serializer_class = InvoiceDiscountSerializer
-    permission_classes = [IsAuthenticated, IsAccountMember]
-
-    def get_queryset(self):
-        return InvoiceDiscount.objects.filter(
-            invoice__account_id=self.request.account.id, invoice_id=self.kwargs["invoice_id"]
-        )
-
-    @extend_schema(
-        operation_id="delete_invoice_discount",
-        responses={204: None},
-    )
-    def delete(self, *_, pk, invoice_id, **__):
-        discount = self.get_object()
-        invoice = discount.invoice
-
-        if invoice.status != InvoiceStatus.DRAFT:
-            raise ValidationError("Only draft invoices can be modified")
-
-        discount.delete()
-        invoice.recalculate()
-
-        logger.info(
-            "Invoice discount deleted",
-            invoice_discount=pk,
-            invoice=invoice_id,
-        )
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class InvoiceLineTaxCreateAPIView(generics.GenericAPIView):
-    serializer_class = InvoiceLineTaxSerializer
-    permission_classes = [IsAuthenticated, IsAccountMember]
-
-    @extend_schema(
-        operation_id="apply_invoice_line_tax",
-        request=InvoiceLineTaxCreateSerializer,
-        responses={200: InvoiceLineTaxSerializer},
-    )
-    def post(self, request, pk):
-        invoice_line = get_object_or_404(InvoiceLine, pk=pk, invoice__account_id=request.account.id)
-        context = {"invoice_line": invoice_line, **self.get_serializer_context()}
-        serializer = InvoiceLineTaxCreateSerializer(data=request.data, context=context)
-        serializer.is_valid(raise_exception=True)
-
-        if invoice_line.invoice.status != InvoiceStatus.DRAFT:
-            raise ValidationError("Only draft invoices can be modified")
-
-        if invoice_line.taxes.count() >= settings.MAX_TAXES:
-            raise ValidationError("Maximum number of invoice line taxes reached")
-
-        tax = invoice_line.add_tax(tax_rate=serializer.validated_data["tax_rate"])
-
-        logger.info(
-            "Invoice line tax applied",
-            invoice_line_tax_id=tax.id,
-            invoice_line_id=invoice_line.id,
-        )
-        serializer = InvoiceLineTaxSerializer(tax)
-        return Response(serializer.data)
-
-
-class InvoiceLineTaxDestroyAPIView(generics.GenericAPIView):
-    serializer_class = InvoiceLineTaxSerializer
-    permission_classes = [IsAuthenticated, IsAccountMember]
-
-    def get_queryset(self):
-        return InvoiceTax.objects.filter(
-            invoice_line__invoice__account_id=self.request.account.id,
-            invoice_line_id=self.kwargs["invoice_line_id"],
-        )
-
-    @extend_schema(
-        operation_id="delete_invoice_line_tax",
-        responses={204: None},
-    )
-    def delete(self, *_, invoice_line_id, **__):
-        tax = self.get_object()
-        invoice_line = tax.invoice_line
-
-        if tax.invoice.status != InvoiceStatus.DRAFT:
-            raise ValidationError("Only draft invoices can be modified")
-
-        tax.delete()
-        invoice_line.recalculate()
-
-        logger.info(
-            "Invoice line tax deleted",
-            invoice_line_tax=tax.id,
-            invoice_line=invoice_line_id,
-        )
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class InvoiceTaxCreateAPIView(generics.GenericAPIView):
-    serializer_class = InvoiceTaxSerializer
-    permission_classes = [IsAuthenticated, IsAccountMember]
-
-    @extend_schema(
-        operation_id="apply_invoice_tax",
-        request=InvoiceTaxCreateSerializer,
-        responses={200: InvoiceTaxSerializer},
-    )
-    def post(self, request, pk):
-        invoice = get_object_or_404(Invoice, pk=pk, account_id=request.account.id)
-        context = {"invoice": invoice, **self.get_serializer_context()}
-        serializer = InvoiceTaxCreateSerializer(data=request.data, context=context)
-        serializer.is_valid(raise_exception=True)
-
-        if invoice.status != InvoiceStatus.DRAFT:
-            raise ValidationError("Only draft invoices can be modified")
-
-        if invoice.taxes.count() >= settings.MAX_TAXES:
-            raise ValidationError("Maximum number of invoice taxes reached")
-
-        tax = invoice.add_tax(tax_rate=serializer.validated_data["tax_rate"])
-
-        logger.info(
-            "Invoice tax applied",
-            invoice_tax=tax.id,
-            invoice=invoice.id,
-        )
-        serializer = InvoiceTaxSerializer(tax)
-        return Response(serializer.data)
-
-
-class InvoiceTaxDestroyAPIView(generics.GenericAPIView):
-    serializer_class = InvoiceTaxSerializer
-    permission_classes = [IsAuthenticated, IsAccountMember]
-
-    def get_queryset(self):
-        return InvoiceTax.objects.filter(
-            invoice__account_id=self.request.account.id, invoice_id=self.kwargs["invoice_id"]
-        )
-
-    @extend_schema(
-        operation_id="delete_invoice_tax",
-        responses={204: None},
-    )
-    def delete(self, *_, invoice_id, **__):
-        tax = self.get_object()
-        invoice = tax.invoice
-
-        if invoice.status != InvoiceStatus.DRAFT:
-            raise ValidationError("Only draft invoices can be modified")
-
-        tax.delete()
-        invoice.recalculate()
-
-        logger.info(
-            "Invoice tax deleted",
-            invoice_tax=tax.id,
-            invoice=invoice_id,
-        )
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -5,10 +5,8 @@ from django.template.loader import render_to_string
 
 from tests.factories import (
     CouponFactory,
-    InvoiceDiscountFactory,
     InvoiceFactory,
     InvoiceLineFactory,
-    InvoiceTaxFactory,
     PaymentFactory,
     TaxRateFactory,
 )
@@ -57,8 +55,10 @@ def test_invoice_email_message_html_template_with_payment_url():
 
 def test_invoice_pdf_template():
     invoice = InvoiceFactory()
-    line = InvoiceLineFactory(invoice=invoice, description="Line item")
-    line.recalculate()
+    InvoiceLineFactory(invoice=invoice, description="Line item")
+
+    invoice.recalculate()
+
     body = render_to_string(
         "invoices/pdf/classic.html",
         {"invoice": invoice, "language": "en", "include_fonts": False},
@@ -88,12 +88,13 @@ def test_invoice_pdf_template_with_discounts_and_taxes():
         total_amount=Decimal("114"),
     )
     coupon = CouponFactory(account=invoice.account, currency=invoice.currency)
-    InvoiceDiscountFactory(invoice_line=line, coupon=coupon, amount=Decimal("5"))
     tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
-    InvoiceTaxFactory(invoice_line=line, tax_rate=tax_rate, rate=tax_rate.percentage, amount=Decimal("20"))
-    InvoiceDiscountFactory(invoice=invoice, coupon=coupon, amount=Decimal("10"))
-    InvoiceTaxFactory(invoice=invoice, tax_rate=tax_rate, rate=tax_rate.percentage, amount=Decimal("20"))
-    line.recalculate()
+
+    line.set_coupons([coupon])
+    line.set_tax_rates([tax_rate])
+    invoice.set_coupons([coupon])
+    invoice.set_tax_rates([tax_rate])
+    invoice.recalculate()
 
     body = render_to_string(
         "invoices/pdf/classic.html",
@@ -112,8 +113,10 @@ def test_invoice_pdf_template_with_discounts_and_taxes():
 
 def test_invoice_pdf_template_without_line_tax_column():
     invoice = InvoiceFactory()
-    line = InvoiceLineFactory(invoice=invoice, description="Line item")
-    line.recalculate()
+    InvoiceLineFactory(invoice=invoice, description="Line item")
+
+    invoice.recalculate()
+
     body = render_to_string(
         "invoices/pdf/classic.html",
         {"invoice": invoice, "language": "en", "include_fonts": False},

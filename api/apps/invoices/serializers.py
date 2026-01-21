@@ -1,6 +1,5 @@
 from djmoney.contrib.django_rest_framework import MoneyField
 from djmoney.money import Money
-from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from apps.addresses.serializers import AddressSerializer
@@ -15,10 +14,11 @@ from apps.prices.fields import PriceRelatedField
 from apps.prices.validators import PriceIsActive, PriceProductIsActive
 from apps.shipping_rates.fields import ShippingRateRelatedField
 from apps.taxes.fields import TaxRateRelatedField
+from apps.taxes.serializers import TaxRateSerializer
 from common.fields import CurrencyField, MetadataField
 from common.validators import AllOrNoneValidator, ExactlyOneValidator
 
-from .enums import InvoiceDeliveryMethod, InvoiceStatus
+from .enums import InvoiceDeliveryMethod, InvoiceDiscountSource, InvoiceStatus, InvoiceTaxSource
 from .fields import InvoiceRelatedField
 from .validators import (
     AutomaticDeliveryMethodValidator,
@@ -52,45 +52,25 @@ class InvoiceAccountSerializer(serializers.Serializer):
     logo_id = serializers.UUIDField(allow_null=True, source="effective_account.logo_id")
 
 
-class InvoiceLineDiscountSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
-    coupon = CouponSerializer(read_only=True)
+class InvoiceDiscountAllocationSerializer(serializers.Serializer):
+    coupon_id = serializers.UUIDField()
     amount = MoneyField(max_digits=19, decimal_places=2)
+    source = serializers.ChoiceField(choices=InvoiceDiscountSource.choices)
+
+
+class InvoiceTaxAllocationSerializer(serializers.Serializer):
+    tax_rate_id = serializers.UUIDField()
+    amount = MoneyField(max_digits=19, decimal_places=2)
+    source = serializers.ChoiceField(choices=InvoiceTaxSource.choices)
 
 
 class InvoiceDiscountSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
-    coupon = CouponSerializer(read_only=True)
-    amount = MoneyField(max_digits=19, decimal_places=2)
-
-
-class InvoiceDiscountBreakdownItemSerializer(serializers.Serializer):
-    name = serializers.CharField(allow_null=True)
-    amount = MoneyField(max_digits=19, decimal_places=2)
     coupon_id = serializers.UUIDField()
-
-
-class InvoiceLineTaxSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
-    tax_rate_id = serializers.UUIDField()
-    name = serializers.CharField()
-    description = serializers.CharField(allow_null=True)
-    rate = serializers.DecimalField(max_digits=5, decimal_places=2)
     amount = MoneyField(max_digits=19, decimal_places=2)
 
 
 class InvoiceTaxSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
     tax_rate_id = serializers.UUIDField()
-    name = serializers.CharField()
-    description = serializers.CharField(allow_null=True)
-    rate = serializers.DecimalField(max_digits=5, decimal_places=2)
-    amount = MoneyField(max_digits=19, decimal_places=2)
-
-
-class InvoiceTaxBreakdownItemSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    rate = serializers.DecimalField(max_digits=5, decimal_places=2)
     amount = MoneyField(max_digits=19, decimal_places=2)
 
 
@@ -99,12 +79,8 @@ class InvoiceShippingSerializer(serializers.Serializer):
     tax_amount = MoneyField(max_digits=19, decimal_places=2)
     total_amount = MoneyField(max_digits=19, decimal_places=2)
     shipping_rate_id = serializers.UUIDField(allow_null=True)
-    taxes = InvoiceTaxSerializer(many=True)
-    tax_rates = serializers.SerializerMethodField()
-
-    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
-    def get_tax_rates(self, obj):
-        return list(obj.invoice_shipping_tax_rates.order_by("position").values_list("tax_rate_id", flat=True))
+    tax_rates = TaxRateSerializer(many=True)
+    tax_allocations = InvoiceTaxAllocationSerializer(many=True)
 
 
 class InvoiceLineSerializer(serializers.Serializer):
@@ -124,18 +100,11 @@ class InvoiceLineSerializer(serializers.Serializer):
     credit_quantity = serializers.IntegerField(read_only=True)
     outstanding_amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)
     outstanding_quantity = serializers.IntegerField(read_only=True)
-    discounts = InvoiceLineDiscountSerializer(many=True)
-    taxes = InvoiceLineTaxSerializer(many=True)
-    coupons = serializers.SerializerMethodField()
-    tax_rates = serializers.SerializerMethodField()
-
-    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
-    def get_coupons(self, obj):
-        return list(obj.invoice_line_coupons.order_by("position").values_list("coupon_id", flat=True))
-
-    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
-    def get_tax_rates(self, obj):
-        return list(obj.invoice_line_tax_rates.order_by("position").values_list("tax_rate_id", flat=True))
+    coupons = CouponSerializer(many=True)
+    discount_allocations = InvoiceDiscountAllocationSerializer(many=True, read_only=True)
+    discounts = InvoiceDiscountSerializer(many=True, source="discount_allocations.line_discounts", read_only=True)
+    tax_rates = TaxRateSerializer(many=True)
+    tax_allocations = InvoiceTaxAllocationSerializer(many=True, read_only=True)
 
 
 class InvoiceSerializer(serializers.Serializer):
@@ -174,21 +143,11 @@ class InvoiceSerializer(serializers.Serializer):
     voided_at = serializers.DateTimeField(allow_null=True)
     pdf_id = serializers.UUIDField(allow_null=True)
     lines = InvoiceLineSerializer(many=True)
-    discounts = InvoiceDiscountSerializer(many=True, source="discounts.for_invoice", read_only=True)
-    taxes = InvoiceTaxSerializer(many=True, source="taxes.for_invoice", read_only=True)
-    discount_breakdown = InvoiceDiscountBreakdownItemSerializer(many=True, source="discounts.breakdown", read_only=True)
-    tax_breakdown = InvoiceTaxBreakdownItemSerializer(many=True, source="taxes.breakdown", read_only=True)
     shipping = InvoiceShippingSerializer()
-    coupons = serializers.SerializerMethodField()
-    tax_rates = serializers.SerializerMethodField()
-
-    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
-    def get_coupons(self, obj):
-        return list(obj.invoice_coupons.order_by("position").values_list("coupon_id", flat=True))
-
-    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
-    def get_tax_rates(self, obj):
-        return list(obj.invoice_tax_rates.order_by("position").values_list("tax_rate_id", flat=True))
+    coupons = CouponSerializer(many=True)
+    discounts = InvoiceDiscountSerializer(many=True, source="discount_allocations.invoice_discounts", read_only=True)
+    tax_rates = TaxRateSerializer(many=True)
+    total_taxes = InvoiceTaxSerializer(many=True, source="tax_allocations.total_taxes", read_only=True)
 
 
 class InvoiceShippingAddSerializer(serializers.Serializer):
@@ -393,57 +352,3 @@ class InvoiceLineUpdateSerializer(serializers.Serializer):
 
     def validate_unit_amount(self, value):
         return Money(value, self.instance.currency)
-
-
-class InvoiceLineDiscountCreateSerializer(serializers.Serializer):
-    coupon_id = CouponRelatedField(source="coupon")
-
-    def validate_coupon_id(self, value):
-        invoice_line = self.context["invoice_line"]
-
-        if invoice_line.currency != value.currency:
-            raise serializers.ValidationError("Coupon currency mismatch")
-
-        if invoice_line.discounts.filter(coupon_id=value.id).exists():
-            raise serializers.ValidationError("Given coupon is already applied to this invoice line")
-
-        return value
-
-
-class InvoiceDiscountCreateSerializer(serializers.Serializer):
-    coupon_id = CouponRelatedField(source="coupon")
-
-    def validate_coupon_id(self, value):
-        invoice = self.context["invoice"]
-
-        if invoice.currency != value.currency:
-            raise serializers.ValidationError("Coupon currency mismatch")
-
-        if invoice.discounts.filter(coupon_id=value.id).exists():
-            raise serializers.ValidationError("Given coupon is already applied to this invoice")
-
-        return value
-
-
-class InvoiceLineTaxCreateSerializer(serializers.Serializer):
-    tax_rate_id = TaxRateRelatedField(source="tax_rate")
-
-    def validate_tax_rate_id(self, value):
-        invoice_line = self.context["invoice_line"]
-
-        if invoice_line.taxes.filter(tax_rate_id=value.id).exists():
-            raise serializers.ValidationError("Given tax rate is already applied to this invoice line")
-
-        return value
-
-
-class InvoiceTaxCreateSerializer(serializers.Serializer):
-    tax_rate_id = TaxRateRelatedField(source="tax_rate")
-
-    def validate_tax_rate_id(self, value):
-        invoice = self.context["invoice"]
-
-        if invoice.taxes.filter(tax_rate_id=value.id).exists():
-            raise serializers.ValidationError("Given tax rate is already applied to this invoice")
-
-        return value

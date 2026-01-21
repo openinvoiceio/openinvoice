@@ -105,11 +105,9 @@ def test_list_invoices(api_client, user, account):
                 "pdf_id": None,
                 "lines": [],
                 "coupons": [],
-                "tax_rates": [],
-                "taxes": [],
                 "discounts": [],
-                "tax_breakdown": [],
-                "discount_breakdown": [],
+                "tax_rates": [],
+                "total_taxes": [],
                 "shipping": None,
             }
             for invoice in [second_invoice, first_invoice]
@@ -161,10 +159,11 @@ def test_list_invoices_with_line(api_client, user, account):
             "outstanding_amount": "0.00",
             "credit_quantity": 0,
             "outstanding_quantity": 1,
-            "discounts": [],
-            "taxes": [],
             "coupons": [],
+            "discount_allocations": [],
+            "discounts": [],
             "tax_rates": [],
+            "tax_allocations": [],
         }
     ]
 

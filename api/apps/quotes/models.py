@@ -18,7 +18,7 @@ from apps.coupons.models import Coupon
 from apps.customers.models import Customer
 from apps.files.enums import FilePurpose
 from apps.files.models import File
-from apps.invoices.models import Invoice, InvoiceDiscount, InvoiceTax
+from apps.invoices.models import Invoice
 from apps.numbering_systems.models import NumberingSystem
 from apps.prices.models import Price
 from apps.taxes.models import TaxRate

@@ -16,3 +16,14 @@ class InvoicePreviewFormat(models.TextChoices):
 class InvoiceDeliveryMethod(models.TextChoices):
     MANUAL = "manual", "Manual"
     AUTOMATIC = "automatic", "Automatic"
+
+
+class InvoiceDiscountSource(models.TextChoices):
+    INVOICE = "invoice", "Invoice"
+    LINE = "line", "Line"
+
+
+class InvoiceTaxSource(models.TextChoices):
+    INVOICE = "invoice", "Invoice"
+    LINE = "line", "Line"
+    SHIPPING = "shipping", "Shipping"

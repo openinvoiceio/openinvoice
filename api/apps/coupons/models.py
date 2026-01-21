@@ -1,7 +1,11 @@
 import uuid
+from decimal import Decimal
 
 from django.db import models
 from djmoney.models.fields import MoneyField
+from djmoney.money import Money
+
+from common.calculations import zero
 
 from .managers import CouponManager
 
@@ -39,3 +43,17 @@ class Coupon(models.Model):
 
         self.is_active = False
         self.save(update_fields=["is_active", "updated_at"])
+
+    def calculate_amount(self, base_amount: Money) -> Money:
+        if self.amount is not None:
+            if self.amount <= zero(self.currency):
+                return zero(self.currency)
+            return min(self.amount, base_amount)
+
+        if self.percentage is not None:
+            percentage_amount = base_amount * (self.percentage / Decimal(100))
+            if percentage_amount <= zero(self.currency):
+                return zero(self.currency)
+            return min(percentage_amount, base_amount)
+
+        return zero(self.currency)

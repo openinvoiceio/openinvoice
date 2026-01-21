@@ -21,10 +21,10 @@ from common.calculations import zero
 
 from .enums import InvoiceDeliveryMethod, InvoiceStatus
 from .querysets import (
-    InvoiceDiscountQuerySet,
+    InvoiceDiscountAllocationQuerySet,
     InvoiceLineQuerySet,
     InvoiceQuerySet,
-    InvoiceTaxQuerySet,
+    InvoiceTaxAllocationQuerySet,
 )
 
 if TYPE_CHECKING:
@@ -133,8 +133,7 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
         head.root = invoice
         head.save(update_fields=["root"])
 
-        for tax_rate in customer.tax_rates.filter(is_active=True):
-            invoice.add_tax(tax_rate)
+        invoice.set_tax_rates(customer.tax_rates.filter(is_active=True))
 
         return invoice
 
@@ -158,9 +157,6 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
         delivery_method: InvoiceDeliveryMethod | None = None,
         recipients: Iterable[str] | None = None,
     ) -> Invoice:
-        InvoiceDiscount = apps.get_model("invoices", "InvoiceDiscount")
-        InvoiceTax = apps.get_model("invoices", "InvoiceTax")
-
         currency = currency or previous_revision.currency
 
         resolved_numbering_system = None
@@ -215,6 +211,7 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
                 total_tax_rate=line.total_tax_rate,
                 amount=zero(line.currency),
                 total_discount_amount=zero(line.currency),
+                total_taxable_amount=zero(line.currency),
                 total_amount_excluding_tax=zero(line.currency),
                 total_tax_amount=zero(line.currency),
                 total_amount=zero(line.currency),
@@ -223,30 +220,8 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
                 outstanding_amount=zero(line.currency),
                 outstanding_quantity=line.quantity,
             )
-            new_line.discounts.bulk_create(
-                InvoiceDiscount(
-                    invoice=invoice,
-                    invoice_line=new_line,
-                    coupon=discount.coupon,
-                    currency=invoice.currency,
-                    amount=zero(invoice.currency),
-                )
-                for discount in line.discounts.filter(coupon__is_active=True)
-            )
-            new_line.taxes.bulk_create(
-                InvoiceTax(
-                    invoice=invoice,
-                    invoice_line=new_line,
-                    tax_rate=tax.tax_rate,
-                    name=tax.name,
-                    description=tax.description,
-                    rate=tax.rate,
-                    currency=invoice.currency,
-                    amount=zero(invoice.currency),
-                )
-                for tax in line.taxes.all()
-            )
-            new_line.recalculate()
+            new_line.set_coupons(line.coupons.filter(is_active=True))
+            new_line.set_tax_rates(line.tax_rates.all())
 
         if previous_revision.shipping is not None:
             invoice.add_shipping(
@@ -254,28 +229,8 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
                 tax_rates=previous_revision.shipping.tax_rates.all(),
             )
 
-        invoice.discounts.bulk_create(
-            InvoiceDiscount(
-                invoice=invoice,
-                coupon=discount.coupon,
-                currency=invoice.currency,
-                amount=zero(invoice.currency),
-            )
-            for discount in previous_revision.discounts.for_invoice().filter(coupon__is_active=True)
-        )
-        invoice.taxes.bulk_create(
-            InvoiceTax(
-                invoice=invoice,
-                tax_rate=tax.tax_rate,
-                name=tax.name,
-                description=tax.description,
-                rate=tax.rate,
-                currency=invoice.currency,
-                amount=zero(invoice.currency),
-            )
-            for tax in previous_revision.taxes.for_invoice()
-        )
-
+        invoice.set_coupons(previous_revision.coupons.filter(is_active=True))
+        invoice.set_tax_rates(previous_revision.tax_rates.all())
         invoice.recalculate()
 
         return invoice
@@ -300,11 +255,12 @@ class InvoiceLineManager(models.Manager.from_queryset(InvoiceLineQuerySet)):
             price=price,
             unit_amount=unit_amount,
             currency=currency,
-            total_tax_rate=Decimal(0),
             amount=zero(currency),
             total_discount_amount=zero(currency),
+            total_taxable_amount=zero(currency),
             total_amount_excluding_tax=zero(currency),
             total_tax_amount=zero(currency),
+            total_tax_rate=Decimal(0),
             total_amount=zero(currency),
             total_credit_amount=zero(currency),
             credit_quantity=0,
@@ -312,15 +268,15 @@ class InvoiceLineManager(models.Manager.from_queryset(InvoiceLineQuerySet)):
             outstanding_quantity=quantity,
         )
 
-        invoice_line.recalculate()
-
         if price:
             price.mark_as_used()
+
+        invoice.recalculate()
 
         return invoice_line
 
 
-class InvoiceDiscountManager(models.Manager.from_queryset(InvoiceDiscountQuerySet)): ...
+class InvoiceDiscountManager(models.Manager.from_queryset(InvoiceDiscountAllocationQuerySet)): ...
 
 
-class InvoiceTaxManager(models.Manager.from_queryset(InvoiceTaxQuerySet)): ...
+class InvoiceTaxManager(models.Manager.from_queryset(InvoiceTaxAllocationQuerySet)): ...

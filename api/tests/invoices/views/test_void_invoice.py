@@ -97,11 +97,9 @@ def test_void_invoice(api_client, user, account):
         "pdf_id": None,
         "lines": [],
         "coupons": [],
-        "tax_rates": [],
-        "taxes": [],
         "discounts": [],
-        "tax_breakdown": [],
-        "discount_breakdown": [],
+        "tax_rates": [],
+        "total_taxes": [],
         "shipping": None,
     }
 

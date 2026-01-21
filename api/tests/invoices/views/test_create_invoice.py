@@ -109,11 +109,9 @@ def test_create_invoice(api_client, user, account):
         "pdf_id": None,
         "lines": [],
         "coupons": [],
-        "tax_rates": [],
-        "taxes": [],
         "discounts": [],
-        "tax_breakdown": [],
-        "discount_breakdown": [],
+        "tax_rates": [],
+        "total_taxes": [],
         "shipping": None,
     }
 
@@ -137,16 +135,7 @@ def test_create_invoice_with_customer_tax_rates(api_client, user, account):
     )
 
     assert response.status_code == 201
-    assert response.data["taxes"] == [
-        {
-            "id": ANY,
-            "tax_rate_id": str(tax_rate.id),
-            "name": tax_rate.name,
-            "description": tax_rate.description,
-            "rate": f"{tax_rate.percentage:.2f}",
-            "amount": "0.00",
-        }
-    ]
+    assert [r["id"] for r in response.data["tax_rates"]] == [str(tax_rate.id)]
 
 
 def test_create_invoice_ignores_inactive_customer_tax_rates(api_client, user, account):
@@ -163,16 +152,7 @@ def test_create_invoice_ignores_inactive_customer_tax_rates(api_client, user, ac
     )
 
     assert response.status_code == 201
-    assert response.data["taxes"] == [
-        {
-            "id": ANY,
-            "tax_rate_id": str(active_rate.id),
-            "name": active_rate.name,
-            "description": active_rate.description,
-            "rate": f"{active_rate.percentage:.2f}",
-            "amount": "0.00",
-        }
-    ]
+    assert [r["id"] for r in response.data["tax_rates"]] == [str(active_rate.id)]
 
 
 def test_create_invoice_with_shipping(api_client, user, account):
@@ -199,15 +179,24 @@ def test_create_invoice_with_shipping(api_client, user, account):
         "tax_amount": "1.00",
         "total_amount": "11.00",
         "shipping_rate_id": str(shipping_rate.id),
-        "tax_rates": [],
-        "taxes": [
+        "tax_rates": [
             {
-                "id": ANY,
-                "tax_rate_id": str(tax_rate.id),
+                "id": str(tax_rate.id),
+                "account_id": str(account.id),
                 "name": tax_rate.name,
                 "description": tax_rate.description,
-                "rate": f"{tax_rate.percentage:.2f}",
+                "country": tax_rate.country,
+                "percentage": f"{tax_rate.percentage:.2f}",
+                "is_active": tax_rate.is_active,
+                "updated_at": ANY,
+                "created_at": ANY,
+            }
+        ],
+        "tax_allocations": [
+            {
+                "tax_rate_id": str(tax_rate.id),
                 "amount": "1.00",
+                "source": "shipping",
             }
         ],
     }
@@ -656,7 +645,7 @@ def test_create_invoice_with_coupons(api_client, user, account):
     )
 
     assert response.status_code == 201
-    assert response.data["coupons"] == [coupon1.id, coupon2.id]
+    assert [r["id"] for r in response.data["coupons"]] == [str(coupon1.id), str(coupon2.id)]
 
 
 def test_create_invoice_with_coupons_invalid_currency(api_client, user, account):
@@ -789,7 +778,7 @@ def test_create_invoice_with_tax_rates(api_client, user, account):
     )
 
     assert response.status_code == 201
-    assert response.data["tax_rates"] == [tax_rate1.id, tax_rate2.id]
+    assert [r["id"] for r in response.data["tax_rates"]] == [str(tax_rate1.id), str(tax_rate2.id)]
 
 
 def test_create_invoice_with_duplicate_tax_rates(api_client, user, account):

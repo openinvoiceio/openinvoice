@@ -16,7 +16,6 @@ from tests.factories import (
     InvoiceCouponFactory,
     InvoiceFactory,
     InvoiceShippingFactory,
-    InvoiceTaxFactory,
     InvoiceTaxRateFactory,
     NumberingSystemFactory,
     ShippingRateFactory,
@@ -129,11 +128,9 @@ def test_update_invoice(api_client, user, account):
         "pdf_id": None,
         "lines": [],
         "coupons": [],
-        "tax_rates": [],
-        "taxes": [],
         "discounts": [],
-        "tax_breakdown": [],
-        "discount_breakdown": [],
+        "tax_rates": [],
+        "total_taxes": [],
         "shipping": None,
     }
 
@@ -191,15 +188,24 @@ def test_update_invoice_add_shipping(api_client, user, account):
         "tax_amount": "2.00",
         "total_amount": "22.00",
         "shipping_rate_id": str(shipping_rate.id),
-        "tax_rates": [],
-        "taxes": [
+        "tax_rates": [
             {
-                "id": ANY,
-                "tax_rate_id": str(tax_rate.id),
+                "id": str(tax_rate.id),
+                "account_id": str(account.id),
                 "name": tax_rate.name,
                 "description": tax_rate.description,
-                "rate": f"{tax_rate.percentage:.2f}",
+                "country": tax_rate.country,
+                "percentage": f"{tax_rate.percentage:.2f}",
+                "is_active": tax_rate.is_active,
+                "updated_at": ANY,
+                "created_at": ANY,
+            }
+        ],
+        "tax_allocations": [
+            {
+                "tax_rate_id": str(tax_rate.id),
                 "amount": "2.00",
+                "source": "shipping",
             }
         ],
     }
@@ -221,7 +227,7 @@ def test_update_invoice_existing_shipping(api_client, user, account):
     shipping = InvoiceShippingFactory(
         amount=shipping_rate.amount, tax_amount=Decimal(2), total_amount=Decimal(22), shipping_rate=shipping_rate
     )
-    InvoiceTaxFactory(tax_rate=tax_rate, invoice_shipping=shipping, invoice=invoice, amount=Decimal(2))
+    shipping.set_tax_rates([tax_rate])
     invoice.shipping = shipping
     invoice.save()
 
@@ -246,15 +252,24 @@ def test_update_invoice_existing_shipping(api_client, user, account):
         "tax_amount": "4.50",
         "total_amount": "34.50",
         "shipping_rate_id": str(new_shipping_rate.id),
-        "tax_rates": [],
-        "taxes": [
+        "tax_rates": [
             {
-                "id": ANY,
-                "tax_rate_id": str(new_tax_rate.id),
+                "id": str(new_tax_rate.id),
+                "account_id": str(account.id),
                 "name": new_tax_rate.name,
                 "description": new_tax_rate.description,
-                "rate": f"{new_tax_rate.percentage:.2f}",
+                "country": new_tax_rate.country,
+                "percentage": f"{new_tax_rate.percentage:.2f}",
+                "is_active": new_tax_rate.is_active,
+                "updated_at": ANY,
+                "created_at": ANY,
+            }
+        ],
+        "tax_allocations": [
+            {
+                "tax_rate_id": str(new_tax_rate.id),
                 "amount": "4.50",
+                "source": "shipping",
             }
         ],
     }
@@ -276,7 +291,7 @@ def test_update_invoice_remove_shipping(api_client, user, account):
     shipping = InvoiceShippingFactory(
         amount=shipping_rate.amount, tax_amount=Decimal(2), total_amount=Decimal(22), shipping_rate=shipping_rate
     )
-    InvoiceTaxFactory(tax_rate=tax_rate, invoice_shipping=shipping, invoice=invoice, amount=Decimal(2))
+    shipping.set_tax_rates([tax_rate])
     invoice.shipping = shipping
     invoice.save()
 
@@ -941,7 +956,7 @@ def test_update_invoice_with_coupons(api_client, user, account):
     )
 
     assert response.status_code == 200
-    assert response.data["coupons"] == [coupon1.id, coupon2.id]
+    assert [r["id"] for r in response.data["coupons"]] == [str(coupon1.id), str(coupon2.id)]
 
 
 def test_update_invoice_coupons_change_position(api_client, user, account):
@@ -960,7 +975,7 @@ def test_update_invoice_coupons_change_position(api_client, user, account):
     )
 
     assert response.status_code == 200
-    assert response.data["coupons"] == [coupon2.id, coupon1.id]
+    assert [r["id"] for r in response.data["coupons"]] == [str(coupon2.id), str(coupon1.id)]
     assert InvoiceCoupon.objects.filter(id__in=[invoice_coupon1.id, invoice_coupon2.id]).exists() is False
     assert invoice.coupons.count() == 2
     assert invoice.invoice_coupons.get(coupon_id=coupon1.id).position == 1
@@ -1105,7 +1120,7 @@ def test_update_invoice_with_tax_rates(api_client, user, account):
     )
 
     assert response.status_code == 200
-    assert response.data["tax_rates"] == [tax_rate1.id, tax_rate2.id]
+    assert [r["id"] for r in response.data["tax_rates"]] == [str(tax_rate1.id), str(tax_rate2.id)]
 
 
 def test_update_invoice_tax_rates_change_position(api_client, user, account):
@@ -1124,7 +1139,7 @@ def test_update_invoice_tax_rates_change_position(api_client, user, account):
     )
 
     assert response.status_code == 200
-    assert response.data["tax_rates"] == [tax_rate2.id, tax_rate1.id]
+    assert [r["id"] for r in response.data["tax_rates"]] == [str(tax_rate2.id), str(tax_rate1.id)]
     assert InvoiceTaxRate.objects.filter(id__in=[invoice_tax_rate1.id, invoice_tax_rate2.id]).exists() is False
     assert invoice.tax_rates.count() == 2
     assert invoice.invoice_tax_rates.get(tax_rate_id=tax_rate1.id).position == 1

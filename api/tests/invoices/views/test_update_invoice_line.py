@@ -62,10 +62,11 @@ def test_update_invoice_line_from_unit_amount(api_client, user, account):
         "outstanding_amount": "10.00",
         "credit_quantity": 0,
         "outstanding_quantity": 2,
-        "discounts": [],
-        "taxes": [],
         "coupons": [],
+        "discount_allocations": [],
+        "discounts": [],
         "tax_rates": [],
+        "tax_allocations": [],
     }
     invoice.refresh_from_db()
     assert invoice.subtotal_amount.amount == Decimal("10.00")
@@ -122,10 +123,11 @@ def test_update_invoice_line_from_price(api_client, user, account):
         "outstanding_amount": "20.00",
         "credit_quantity": 0,
         "outstanding_quantity": 1,
-        "discounts": [],
-        "taxes": [],
         "coupons": [],
+        "discount_allocations": [],
+        "discounts": [],
         "tax_rates": [],
+        "tax_allocations": [],
     }
     invoice.refresh_from_db()
     assert invoice.subtotal_amount.amount == Decimal("20.00")
@@ -402,7 +404,7 @@ def test_update_invoice_line_with_coupons(api_client, user, account):
     )
 
     assert response.status_code == 200
-    assert response.data["coupons"] == [coupon1.id, coupon2.id]
+    assert [r["id"] for r in response.data["coupons"]] == [str(coupon1.id), str(coupon2.id)]
 
 
 def test_update_invoice_line_with_coupons_change_position(api_client, user, account):
@@ -421,7 +423,7 @@ def test_update_invoice_line_with_coupons_change_position(api_client, user, acco
     )
 
     assert response.status_code == 200
-    assert response.data["coupons"] == [coupon2.id, coupon1.id]
+    assert [r["id"] for r in response.data["coupons"]] == [str(coupon2.id), str(coupon1.id)]
     assert InvoiceLineCoupon.objects.filter(id__in=[line_coupon1.id, line_coupon2.id]).exists() is False
     assert line.coupons.count() == 2
     assert line.invoice_line_coupons.get(coupon_id=coupon1.id).position == 1
@@ -576,7 +578,7 @@ def test_update_invoice_line_with_tax_rates(api_client, user, account):
     )
 
     assert response.status_code == 200
-    assert response.data["tax_rates"] == [tax_rate1.id, tax_rate2.id]
+    assert [r["id"] for r in response.data["tax_rates"]] == [str(tax_rate1.id), str(tax_rate2.id)]
 
 
 def test_update_invoice_line_with_tax_rates_change_position(api_client, user, account):
@@ -600,7 +602,7 @@ def test_update_invoice_line_with_tax_rates_change_position(api_client, user, ac
     )
 
     assert response.status_code == 200
-    assert response.data["tax_rates"] == [tax_rate2.id, tax_rate1.id]
+    assert [r["id"] for r in response.data["tax_rates"]] == [str(tax_rate2.id), str(tax_rate1.id)]
     assert InvoiceLineTaxRate.objects.filter(id__in=[line_tax_rate1.id, line_tax_rate2.id]).exists() is False
     assert line.tax_rates.count() == 2
     assert line.invoice_line_tax_rates.get(tax_rate_id=tax_rate1.id).position == 1

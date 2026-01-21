@@ -8,10 +8,10 @@ from drf_standardized_errors.types import ErrorType
 from apps.invoices.enums import InvoiceDeliveryMethod
 from tests.factories import (
     AccountFactory,
-    InvoiceDiscountFactory,
+    CouponFactory,
     InvoiceFactory,
     InvoiceLineFactory,
-    InvoiceTaxFactory,
+    TaxRateFactory,
 )
 
 pytestmark = pytest.mark.django_db
@@ -103,11 +103,9 @@ def test_retrieve_invoice(api_client, user, account):
         "pdf_id": None,
         "lines": [],
         "coupons": [],
-        "tax_rates": [],
-        "taxes": [],
         "discounts": [],
-        "tax_breakdown": [],
-        "discount_breakdown": [],
+        "tax_rates": [],
+        "total_taxes": [],
         "shipping": None,
     }
 
@@ -149,10 +147,11 @@ def test_retrieve_invoice_with_line(api_client, user, account):
             "credit_quantity": 0,
             "outstanding_amount": "10.00",
             "outstanding_quantity": 1,
-            "discounts": [],
-            "taxes": [],
             "coupons": [],
+            "discount_allocations": [],
+            "discounts": [],
             "tax_rates": [],
+            "tax_allocations": [],
         }
     ]
 
@@ -170,7 +169,9 @@ def test_retrieve_invoice_excludes_line_discounts_from_invoice_level(api_client,
         total_tax_rate=Decimal("0"),
         total_amount=Decimal("8"),
     )
-    line_discount = InvoiceDiscountFactory(invoice_line=line, amount=Decimal("2"))
+    coupon = CouponFactory(account=account, currency=invoice.currency, amount=Decimal("2"), percentage=None)
+    line.set_coupons([coupon])
+    invoice.recalculate()
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -178,15 +179,20 @@ def test_retrieve_invoice_excludes_line_discounts_from_invoice_level(api_client,
 
     assert response.status_code == 200
     assert response.data["discounts"] == []
-    assert response.data["discount_breakdown"] == [
+    line_data = response.data["lines"][0]
+    assert line_data["discounts"] == [
         {
-            "name": line_discount.coupon.name,
+            "coupon_id": str(coupon.id),
             "amount": "2.00",
-            "coupon_id": str(line_discount.coupon_id),
         }
     ]
-    line_data = response.data["lines"][0]
-    assert [discount["id"] for discount in line_data["discounts"]] == [str(line_discount.id)]
+    assert line_data["discount_allocations"] == [
+        {
+            "coupon_id": str(coupon.id),
+            "amount": "2.00",
+            "source": "line",
+        }
+    ]
 
 
 def test_retrieve_invoice_excludes_line_taxes_from_invoice_level(api_client, user, account):
@@ -202,23 +208,29 @@ def test_retrieve_invoice_excludes_line_taxes_from_invoice_level(api_client, use
         total_tax_rate=Decimal("20"),
         total_amount=Decimal("12"),
     )
-    line_tax = InvoiceTaxFactory(invoice_line=line, amount=Decimal("2"))
+    tax_rate = TaxRateFactory(percentage=Decimal("20"))
+    line.set_tax_rates([tax_rate])
+    invoice.recalculate()
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.get(f"/api/v1/invoices/{invoice.id}")
 
     assert response.status_code == 200
-    assert response.data["taxes"] == []
-    assert response.data["tax_breakdown"] == [
+    assert response.data["total_taxes"] == [
         {
-            "name": line_tax.name,
-            "rate": str(line_tax.rate),
+            "tax_rate_id": str(tax_rate.id),
             "amount": "2.00",
         }
     ]
     line_data = response.data["lines"][0]
-    assert [tax["id"] for tax in line_data["taxes"]] == [str(line_tax.id)]
+    assert line_data["tax_allocations"] == [
+        {
+            "tax_rate_id": str(tax_rate.id),
+            "amount": "2.00",
+            "source": "line",
+        }
+    ]
 
 
 def test_retrieve_finalized_invoice_returns_snapshot(

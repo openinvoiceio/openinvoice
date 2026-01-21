@@ -3,53 +3,13 @@ from __future__ import annotations
 from uuid import UUID
 
 from django.db import models
-from django.db.models import F, IntegerField, Prefetch, Value
+from django.db.models import F, IntegerField, Value
 from django_cte import CTE, with_cte
+
+from apps.invoices.enums import InvoiceDiscountSource, InvoiceTaxSource
 
 
 class InvoiceQuerySet(models.QuerySet):
-    def for_recalculation(self) -> InvoiceQuerySet:
-        InvoiceLine = self.model._meta.get_field("lines").related_model  # noqa: SLF001, N806
-        InvoiceDiscount = self.model._meta.get_field("discounts").related_model  # noqa: SLF001, N806
-
-        return self.prefetch_related(
-            Prefetch(
-                "lines",
-                queryset=InvoiceLine.objects.order_by("created_at").prefetch_related(
-                    Prefetch("discounts", queryset=InvoiceDiscount.objects.select_related("coupon")),
-                    "taxes",
-                ),
-            ),
-            Prefetch("discounts", queryset=InvoiceDiscount.objects.select_related("coupon")),
-            "taxes",
-        )
-
-    def for_pdf(self) -> InvoiceQuerySet:
-        InvoiceLine = self.model._meta.get_field("lines").related_model  # noqa: SLF001, N806
-
-        return self.select_related(
-            "account_on_invoice__logo",
-            "account__logo",
-            "account_on_invoice__address",
-            "account__address",
-            "customer_on_invoice__billing_address",
-            "customer_on_invoice__shipping_address",
-            "customer_on_invoice__logo",
-            "customer__billing_address",
-            "customer__shipping_address",
-            "customer__logo",
-            "previous_revision",
-        ).prefetch_related(
-            Prefetch(
-                "lines",
-                queryset=InvoiceLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
-            ),
-            "discounts",
-            "taxes",
-            "account_on_invoice__tax_ids",
-            "customer_on_invoice__tax_ids",
-        )
-
     def revisions(self, head_id: UUID) -> InvoiceQuerySet:
         def make_cte(cte):
             anchor = (
@@ -75,37 +35,46 @@ class InvoiceLineQuerySet(models.QuerySet):
     """Custom queryset for invoice lines."""
 
 
-class InvoiceDiscountQuerySet(models.QuerySet):
-    def for_invoice(self):
-        return self.filter(invoice_line__isnull=True)
-
-    def for_lines(self):
-        return self.filter(invoice_line__isnull=False)
-
-    def breakdown(self):
+class InvoiceDiscountAllocationQuerySet(models.QuerySet):
+    def line_discounts(self):
         return (
-            self.values("coupon_id", "currency", name=models.F("coupon__name"))
+            self.values("currency", "coupon_id", "coupon__name")
+            .filter(source=InvoiceDiscountSource.LINE)
             .annotate(amount=models.Sum("amount"))
-            .order_by("name", "currency", "coupon_id")
+            .order_by("currency", "coupon_id")
         )
 
-
-class InvoiceTaxQuerySet(models.QuerySet):
-    def for_invoice(self):
-        return self.filter(invoice_line__isnull=True, invoice_shipping__isnull=True)
-
-    def for_lines(self):
-        return self.filter(invoice_line__isnull=False)
-
-    def for_shipping(self):
-        return self.filter(invoice_shipping__isnull=False)
-
-    def has_lines(self):
-        return self.for_lines().exists()
-
-    def breakdown(self):
+    def invoice_discounts(self):
         return (
-            self.values("name", "currency", "rate")
+            self.values("currency", "coupon_id", "coupon__name")
+            .filter(source=InvoiceDiscountSource.INVOICE)
             .annotate(amount=models.Sum("amount"))
-            .order_by("name", "currency", "rate")
+            .order_by("currency", "coupon_id")
+        )
+
+    # TODO: add total_discounts too
+
+
+class InvoiceTaxAllocationQuerySet(models.QuerySet):
+    def line_taxes(self):
+        return (
+            self.values("currency", "tax_rate_id", "tax_rate__name", "tax_rate__percentage")
+            .filter(source=InvoiceTaxSource.LINE)
+            .annotate(amount=models.Sum("amount"))
+            .order_by("currency", "tax_rate_id")
+        )
+
+    def invoice_taxes(self):
+        return (
+            self.values("currency", "tax_rate_id", "tax_rate__name", "tax_rate__percentage")
+            .filter(source=InvoiceTaxSource.INVOICE)
+            .annotate(amount=models.Sum("amount"))
+            .order_by("currency", "tax_rate_id")
+        )
+
+    def total_taxes(self):
+        return (
+            self.values("currency", "tax_rate_id", "tax_rate__name", "tax_rate__percentage")
+            .annotate(amount=models.Sum("amount"))
+            .order_by("currency", "tax_rate_id")
         )

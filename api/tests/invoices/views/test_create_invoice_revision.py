@@ -12,12 +12,9 @@ from common.enums import LimitCode
 from tests.factories import (
     CouponFactory,
     CustomerFactory,
-    InvoiceDiscountFactory,
     InvoiceFactory,
     InvoiceLineFactory,
     InvoiceShippingFactory,
-    InvoiceShippingTaxRateFactory,
-    InvoiceTaxFactory,
     ShippingRateFactory,
     TaxRateFactory,
 )
@@ -119,11 +116,9 @@ def test_create_invoice_revision(api_client, user, account):
         "pdf_id": None,
         "lines": [],
         "coupons": [],
-        "tax_rates": [],
-        "taxes": [],
         "discounts": [],
-        "tax_breakdown": [],
-        "discount_breakdown": [],
+        "tax_rates": [],
+        "total_taxes": [],
         "shipping": None,
     }
 
@@ -138,17 +133,17 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
     shipping_rate = ShippingRateFactory(account=account, amount=Decimal("10"))
     shipping = InvoiceShippingFactory(shipping_rate=shipping_rate, amount=Decimal("10"))
     shipping_tax_rate = TaxRateFactory(account=account, percentage=Decimal("10"))
-    InvoiceShippingTaxRateFactory(invoice_shipping=shipping, tax_rate=shipping_tax_rate, position=0)
+    shipping.set_tax_rates([shipping_tax_rate])
 
     invoice = InvoiceFactory(
         account=account,
         status=InvoiceStatus.OPEN,
-        subtotal_amount=Decimal("100"),
+        subtotal_amount=Decimal("90"),
+        total_discount_amount=Decimal("10"),
         shipping_amount=Decimal("10"),
-        total_discount_amount=Decimal("15"),
-        total_amount_excluding_tax=Decimal("95"),
+        total_amount_excluding_tax=Decimal("100"),
         total_tax_amount=Decimal("10"),
-        total_amount=Decimal("105"),
+        total_amount=Decimal("110"),
         metadata={"note": "keep"},
         custom_fields={"po": "123"},
         footer="Original footer",
@@ -171,13 +166,13 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
 
     line_coupon = CouponFactory(account=account, currency=invoice.currency, amount=Decimal("10"), percentage=None)
     invoice_coupon = CouponFactory(account=account, currency=invoice.currency, amount=Decimal("5"), percentage=None)
-    line_discount = InvoiceDiscountFactory(invoice_line=line, coupon=line_coupon, amount=Decimal("10"))
-    invoice_discount = InvoiceDiscountFactory(invoice=invoice, coupon=invoice_coupon, amount=Decimal("5"))
+    line.set_coupons([line_coupon])
+    invoice.set_coupons([invoice_coupon])
 
     line_tax_rate = TaxRateFactory(account=account, percentage=Decimal("10.00"))
     invoice_tax_rate = TaxRateFactory(account=account, percentage=Decimal("5.00"))
-    line_tax = InvoiceTaxFactory(invoice_line=line, tax_rate=line_tax_rate, amount=Decimal("10"))
-    invoice_tax = InvoiceTaxFactory(invoice=invoice, tax_rate=invoice_tax_rate, amount=Decimal("5"))
+    line.set_tax_rates([line_tax_rate])
+    invoice.set_tax_rates([invoice_tax_rate])
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -196,22 +191,19 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
     assert revision.total_amount_excluding_tax == invoice.total_amount_excluding_tax
     assert revision.total_tax_amount == invoice.total_tax_amount
     assert revision.total_amount == invoice.total_amount
-    assert revision.discounts.for_invoice().count() == 1
-    assert revision.discounts.for_invoice().first().coupon_id == invoice_discount.coupon_id
-    assert revision.taxes.for_invoice().count() == 1
-    assert revision.taxes.for_invoice().first().tax_rate_id == invoice_tax.tax_rate_id
+    assert revision.coupons.count() == 1
+    assert revision.tax_rates.count() == 1
     assert revision.shipping.shipping_rate_id == shipping_rate.id
-    # TODO: change it in future
-    assert revision.shipping.tax_rates.count() == 0
+    assert revision.shipping.tax_rates.count() == 1
 
     revision_line = revision.lines.get(description="Service fee")
     assert revision_line.quantity == line.quantity
     assert revision_line.unit_amount == line.unit_amount
     assert revision_line.total_amount == line.total_amount
-    assert revision_line.discounts.count() == 1
-    assert revision_line.discounts.first().coupon_id == line_discount.coupon_id
-    assert revision_line.taxes.count() == 1
-    assert revision_line.taxes.first().tax_rate_id == line_tax.tax_rate_id
+    assert revision_line.coupons.count() == 1
+    assert revision_line.tax_rates.count() == 1
+    assert revision_line.discount_allocations.count() == 1
+    assert revision_line.tax_allocations.count() == 1
 
 
 def test_create_invoice_revision_skips_archived_coupons(api_client, user, account):
@@ -220,8 +212,8 @@ def test_create_invoice_revision_skips_archived_coupons(api_client, user, accoun
     line = InvoiceLineFactory(invoice=invoice)
     archived_line_coupon = CouponFactory(account=account, currency=invoice.currency, is_active=False)
     archived_invoice_coupon = CouponFactory(account=account, currency=invoice.currency, is_active=False)
-    InvoiceDiscountFactory(invoice_line=line, coupon=archived_line_coupon, amount=Decimal("5"))
-    InvoiceDiscountFactory(invoice=invoice, coupon=archived_invoice_coupon, amount=Decimal("5"))
+    line.set_coupons([archived_line_coupon])
+    invoice.set_coupons([archived_invoice_coupon])
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -231,8 +223,8 @@ def test_create_invoice_revision_skips_archived_coupons(api_client, user, accoun
 
     revision = Invoice.objects.get(id=response.data["id"])
     revision_line = revision.lines.get(description=line.description)
-    assert revision_line.discounts.count() == 0
-    assert revision.discounts.for_invoice().count() == 0
+    assert revision_line.coupons.count() == 0
+    assert revision.coupons.count() == 0
 
 
 def test_create_invoice_revision_after_voided_revision(api_client, user, account):
@@ -507,7 +499,7 @@ def test_create_invoice_revision_with_coupons(api_client, user, account):
     )
 
     assert response.status_code == 201
-    assert response.data["coupons"] == [coupon1.id, coupon2.id]
+    assert [r["id"] for r in response.data["coupons"]] == [str(coupon1.id), str(coupon2.id)]
 
 
 def test_create_invoice_revision_with_coupons_invalid_currency(api_client, user, account):
@@ -630,7 +622,7 @@ def test_create_invoice_revision_with_tax_rates(api_client, user, account):
     )
 
     assert response.status_code == 201
-    assert response.data["tax_rates"] == [tax_rate1.id, tax_rate2.id]
+    assert [r["id"] for r in response.data["tax_rates"]] == [str(tax_rate1.id), str(tax_rate2.id)]
 
 
 def test_create_invoice_revision_with_duplicate_tax_rates(api_client, user, account):

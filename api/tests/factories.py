@@ -5,7 +5,6 @@ from factory import (
     DictFactory,
     LazyAttribute,
     LazyFunction,
-    Maybe,
     SelfAttribute,
     Sequence,
     SubFactory,
@@ -248,11 +247,12 @@ class InvoiceLineFactory(DjangoModelFactory):
     currency = SelfAttribute("invoice.currency")
     unit_amount = Decimal("0")
     amount = Decimal("0")
-    total_amount_excluding_tax = Decimal("0")
-    total_amount = Decimal("0")
     total_discount_amount = Decimal("0")
+    total_taxable_amount = Decimal("0")
+    total_amount_excluding_tax = Decimal("0")
     total_tax_amount = Decimal("0")
     total_tax_rate = Decimal("0")
+    total_amount = Decimal("0")
     total_credit_amount = Decimal("0")
     credit_quantity = 0
     outstanding_amount = SelfAttribute("total_amount")
@@ -322,43 +322,6 @@ class InvoiceShippingTaxRateFactory(DjangoModelFactory):
     invoice_shipping = SubFactory(InvoiceShippingFactory)
     tax_rate = SubFactory(TaxRateFactory, account=SelfAttribute("..invoice_shipping.shipping_rate.account"))
     position = Sequence(lambda n: n)
-
-
-class InvoiceDiscountFactory(DjangoModelFactory):
-    class Meta:
-        model = "invoices.InvoiceDiscount"
-
-    invoice_line = None
-    invoice = Maybe(
-        "invoice_line",
-        yes_declaration=SelfAttribute("invoice_line.invoice"),
-        no_declaration=SubFactory(InvoiceFactory),
-    )
-    coupon = SubFactory(
-        CouponFactory,
-        account=SelfAttribute("..invoice.account"),
-        currency=SelfAttribute("..invoice.currency"),
-    )
-    currency = SelfAttribute("invoice.currency")
-    amount = Decimal("0")
-
-
-class InvoiceTaxFactory(DjangoModelFactory):
-    class Meta:
-        model = "invoices.InvoiceTax"
-
-    invoice_line = None
-    invoice = Maybe(
-        "invoice_line",
-        yes_declaration=SelfAttribute("invoice_line.invoice"),
-        no_declaration=SubFactory(InvoiceFactory),
-    )
-    tax_rate = SubFactory(TaxRateFactory, account=SelfAttribute("..invoice.account"))
-    currency = SelfAttribute("invoice.currency")
-    name = LazyAttribute(lambda o: o.tax_rate.name)
-    description = LazyAttribute(lambda o: o.tax_rate.description)
-    rate = LazyAttribute(lambda o: o.tax_rate.percentage)
-    amount = Decimal("0")
 
 
 class QuoteCustomerFactory(DjangoModelFactory):

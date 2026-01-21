@@ -30,10 +30,10 @@ from apps.payments.models import Payment
 from apps.prices.models import Price
 from apps.shipping_rates.models import ShippingRate
 from apps.taxes.models import TaxRate
-from common.calculations import clamp_money, zero
+from common.calculations import allocate_proportionally, clamp_money, zero
 from common.pdf import generate_pdf
 
-from .enums import InvoiceDeliveryMethod, InvoiceStatus
+from .enums import InvoiceDeliveryMethod, InvoiceDiscountSource, InvoiceStatus, InvoiceTaxSource
 from .managers import (
     InvoiceAccountManager,
     InvoiceCustomerManager,
@@ -137,6 +137,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     description = models.CharField(max_length=500, null=True, blank=True)
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    # TODO: rename this field to total_excluding_tax_amount
     total_amount_excluding_tax = MoneyField(
         max_digits=19,
         decimal_places=2,
@@ -268,71 +269,156 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             zero(self.currency),
         )
 
-    def recalculate(self) -> None:
+    def recalculate(self) -> None:  # noqa: C901
+        # Cleanup existing calculations
+        self.discount_allocations.all().delete()
+        self.tax_allocations.all().delete()
+
+        lines = list(self.lines.select_related("price").all())
+
+        # Calculate base
+
+        for line in lines:
+            line.unit_amount = line.calculate_unit_amount()
+            line.amount = line.calculate_amount()
+            line.total_taxable_amount = line.amount
+
+        # Calculate line discounts
+
         subtotal_amount = zero(self.currency)
+        invoice_discountable_amount = zero(self.currency)
         lines_discount_amount = zero(self.currency)
-        lines_tax_amount = zero(self.currency)
-        lines_amount_excluding_tax = zero(self.currency)
-        taxed_lines_amount_excluding_tax = zero(self.currency)
+        discountable_lines = []
+        for line in lines:
+            coupons = list(line.coupons.order_by("invoice_line_coupons__position"))
 
-        for line in self.lines.all():
-            subtotal_amount += line.amount
-            lines_discount_amount += line.total_discount_amount
-            lines_tax_amount += line.total_tax_amount
-            lines_amount_excluding_tax += line.total_amount_excluding_tax
-            if line.taxes.all():
-                taxed_lines_amount_excluding_tax += line.total_amount_excluding_tax
+            if coupons:
+                # Calculate discounts for line-level coupons
+                for coupon in coupons:
+                    discount_amount = coupon.calculate_amount(line.total_taxable_amount)
+                    applicable_discount_amount = min(discount_amount, line.total_taxable_amount)
 
-        # Calculate discounts
+                    if applicable_discount_amount.amount <= 0:
+                        continue
+
+                    line.total_taxable_amount -= applicable_discount_amount
+                    line.total_discount_amount += applicable_discount_amount
+                    line.add_discount_allocation(discount_amount, coupon, InvoiceDiscountSource.LINE)
+                lines_discount_amount += line.total_discount_amount
+            else:
+                # Accumulate invoice-level discountable lines for later discount calculation
+                invoice_discountable_amount += line.total_taxable_amount
+                discountable_lines.append(line)
+
+            subtotal_amount += line.total_taxable_amount
+
+        # Calculate invoice discounts
 
         invoice_discount_amount = zero(self.currency)
-        total_amount_excluding_tax = lines_amount_excluding_tax
-        discounts = self.discounts.select_related("coupon").for_invoice()
-        for discount in discounts:
-            discount.amount = discount.calculate_amount(total_amount_excluding_tax)
-            invoice_discount_amount += discount.amount
-            total_amount_excluding_tax = max(total_amount_excluding_tax - discount.amount, zero(self.currency))
+        for coupon in list(self.coupons.order_by("invoice_coupons__position")):
+            if invoice_discountable_amount.amount <= 0:
+                break
 
-        InvoiceDiscount.objects.bulk_update(discounts, ["amount"])
+            discount_amount = coupon.calculate_amount(invoice_discountable_amount)
+            if discount_amount.amount <= 0:
+                continue
 
-        # Adjust taxed lines amount after distributing invoice-level discounts
-        invoice_taxable_amount = taxed_lines_amount_excluding_tax
-        if (
-            lines_amount_excluding_tax.amount > 0
-            and taxed_lines_amount_excluding_tax.amount > 0
-            and invoice_discount_amount.amount > 0
-        ):
-            ratio = taxed_lines_amount_excluding_tax.amount / lines_amount_excluding_tax.amount
-            shared_discount = min(invoice_discount_amount * ratio, taxed_lines_amount_excluding_tax)
-            invoice_taxable_amount = max(taxed_lines_amount_excluding_tax - shared_discount, zero(self.currency))
+            # Allocate discount amount proportionally across discountable lines
+            # This is required to make sure discounts fully consumed independent of lines amount
+            bases = [line.total_taxable_amount for line in discountable_lines]
+            discount_shares = allocate_proportionally(discount_amount, bases=bases)
 
-        invoice_taxable_amount = max(total_amount_excluding_tax - invoice_taxable_amount, zero(self.currency))
+            # For each share amount update remaining lines discountable amount and record line discount
+            for line, share_amount in zip(discountable_lines, discount_shares, strict=False):
+                share_amount = min(share_amount, line.total_taxable_amount)
+                # This insures we don't create zero-amount discounts
+                if share_amount.amount <= 0:
+                    continue
+                line.total_taxable_amount -= share_amount
+                line.total_discount_amount += share_amount
+                invoice_discount_amount += share_amount
+                line.add_discount_allocation(share_amount, coupon, InvoiceDiscountSource.INVOICE)
+
+            # Update remaining invoice base for next coupon
+            invoice_discountable_amount = sum(
+                (line.total_taxable_amount for line in discountable_lines),
+                start=zero(self.currency),
+            )
 
         # Calculate taxes
 
-        invoice_tax_amount = zero(self.currency)
-        taxes = self.taxes.select_related("tax_rate").for_invoice()
-        for tax in taxes:
-            tax.amount = tax.calculate_amount(invoice_taxable_amount)
-            invoice_tax_amount += tax.amount
+        lines_tax_amount = zero(self.currency)
+        lines_amount_excluding_tax = zero(self.currency)
+        invoice_tax_rates = self.tax_rates.order_by("invoice_tax_rates__position")
+        for line in lines:
+            line_tax_rates = list(line.tax_rates.order_by("invoice_line_tax_rates__position"))
+            tax_rates = line_tax_rates if line_tax_rates else invoice_tax_rates
 
-        InvoiceTax.objects.bulk_update(taxes, ["amount"])
+            for tax_rate in tax_rates:
+                line.total_tax_rate += tax_rate.percentage
 
-        ## Calculate shipping
+                tax_amount = tax_rate.calculate_amount(line.total_taxable_amount)
+                if tax_amount.amount <= 0:
+                    continue
+
+                line.total_tax_amount += tax_amount
+
+                if line_tax_rates:
+                    line.add_tax_allocations(tax_amount, tax_rate, InvoiceTaxSource.LINE)
+                else:
+                    line.add_tax_allocations(tax_amount, tax_rate, InvoiceTaxSource.INVOICE)
+
+            lines_tax_amount += line.total_tax_amount
+            lines_amount_excluding_tax += line.total_taxable_amount
+            line.total_amount_excluding_tax = line.total_taxable_amount
+            line.total_amount = line.total_amount_excluding_tax + line.total_tax_amount
+            line.outstanding_amount = line.total_amount
+            line.outstanding_quantity = line.quantity
+
+        # Persist line calculations
+
+        InvoiceLine.objects.bulk_update(
+            lines,
+            fields=[
+                "unit_amount",
+                "amount",
+                "total_discount_amount",
+                "total_taxable_amount",
+                "total_amount_excluding_tax",
+                "total_tax_amount",
+                "total_tax_rate",
+                "total_amount",
+                "outstanding_amount",
+                "outstanding_quantity",
+            ],
+        )
+
+        # Calculate shipping
 
         shipping_amount = zero(self.currency)
         shipping_tax_amount = zero(self.currency)
 
         if self.shipping:
-            self.shipping.recalculate()
             shipping_amount = self.shipping.amount
             shipping_tax_amount = self.shipping.tax_amount
 
-        # Final totals
+            tax_rates = list(self.shipping.tax_rates.order_by("invoice_shipping_tax_rates__position"))
+            for tax_rate in tax_rates:
+                tax_amount = tax_rate.calculate_amount(shipping_amount)
+                shipping_tax_amount += tax_amount
+                self.shipping.add_tax_allocation(tax_amount, tax_rate)
+
+            shipping_total_amount = shipping_amount + shipping_tax_amount
+
+            self.shipping.tax_amount = clamp_money(shipping_tax_amount)
+            self.shipping.total_amount = clamp_money(shipping_total_amount)
+            self.shipping.save(update_fields=["tax_amount", "total_amount"])
+
+        # Calculate total
 
         total_discount_amount = lines_discount_amount + invoice_discount_amount
-        total_amount_excluding_tax = total_amount_excluding_tax + shipping_amount
-        total_tax_amount = lines_tax_amount + invoice_tax_amount + shipping_tax_amount
+        total_amount_excluding_tax = lines_amount_excluding_tax + shipping_amount
+        total_tax_amount = lines_tax_amount + shipping_tax_amount
         total_amount = total_amount_excluding_tax + total_tax_amount
 
         self.subtotal_amount = clamp_money(subtotal_amount)
@@ -413,32 +499,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             InvoiceTaxRate(invoice=self, tax_rate=tax_rate, position=idx) for idx, tax_rate in enumerate(tax_rates)
         )
 
-    def add_tax(self, tax_rate: TaxRate) -> InvoiceTax:
-        tax = self.taxes.create(
-            tax_rate=tax_rate,
-            name=tax_rate.name,
-            description=tax_rate.description,
-            rate=tax_rate.percentage,
-            currency=self.currency,
-            amount=zero(self.currency),
-        )
-        self.recalculate()
-        tax.refresh_from_db()
-        return tax
-
-    def add_discount(self, coupon: Coupon) -> InvoiceDiscount:
-        discount = self.discounts.create(
-            coupon=coupon,
-            currency=self.currency,
-            amount=zero(self.currency),
-        )
-        self.recalculate()
-        discount.refresh_from_db()
-        return discount
-
     def add_shipping(self, shipping_rate: ShippingRate, tax_rates: list[TaxRate]) -> InvoiceShipping:
-        InvoiceTax.objects.for_shipping().delete()
-
         shipping = InvoiceShipping.objects.create(
             currency=self.currency,
             amount=shipping_rate.amount,
@@ -449,15 +510,12 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.shipping = shipping
         self.save(update_fields=["shipping_id"])
 
-        for tax_rate in tax_rates:
-            shipping.add_tax(tax_rate=tax_rate)
+        shipping.set_tax_rates(tax_rates)
 
-        self.recalculate()
-        shipping.refresh_from_db()
         return shipping
 
     def generate_pdf(self) -> File:
-        invoice = Invoice.objects.for_pdf().get(id=self.id)
+        invoice = Invoice.objects.get(id=self.id)
         filename = f"{invoice.id}.pdf"
         html = render_to_string("invoices/pdf/classic.html", {"invoice": invoice})
         pdf_content = generate_pdf(html)
@@ -567,7 +625,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         if currency != original_currency:
             self.lines.all().delete()
-            self.recalculate()
 
         self.save()
 
@@ -579,27 +636,14 @@ class InvoiceLine(models.Model):
     currency = models.CharField(max_length=3)
     unit_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
-    total_amount_excluding_tax = MoneyField(
-        max_digits=19,
-        decimal_places=2,
-        currency_field_name="currency",
-    )
-    total_amount = MoneyField(
-        max_digits=19,
-        decimal_places=2,
-        currency_field_name="currency",
-    )
-    total_discount_amount = MoneyField(
-        max_digits=19,
-        decimal_places=2,
-        currency_field_name="currency",
-    )
-    total_tax_amount = MoneyField(
-        max_digits=19,
-        decimal_places=2,
-        currency_field_name="currency",
-    )
+    # TODO: add subtotal_amount, which will have amount - line discounts
+    total_discount_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    total_taxable_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    # TODO: rename this field to total_excluding_tax_amount
+    total_amount_excluding_tax = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    total_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_tax_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    total_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_credit_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     credit_quantity = models.BigIntegerField(default=0)
     outstanding_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
@@ -615,66 +659,15 @@ class InvoiceLine(models.Model):
     class Meta:
         ordering = ["created_at"]
 
-    def recalculate(self) -> None:
+    def calculate_unit_amount(self) -> Money:
         if self.price:
-            self.unit_amount = self.price.calculate_unit_amount(self.quantity)
-            amount = self.price.calculate_amount(self.quantity)
-        else:
-            amount = self.unit_amount * self.quantity
+            return self.price.calculate_unit_amount(self.quantity)
+        return self.unit_amount
 
-        # Calculate discounts
-
-        total_discount_amount = zero(self.currency)
-        total_amount_excluding_tax = amount
-        discounts = self.discounts.select_related("coupon").for_lines()
-        for discount in discounts:
-            discount.amount = discount.calculate_amount(total_amount_excluding_tax)
-            total_discount_amount += discount.amount
-            total_amount_excluding_tax = max(total_amount_excluding_tax - discount.amount, zero(self.currency))
-
-        InvoiceDiscount.objects.bulk_update(discounts, ["amount"])
-
-        # Calculate taxes
-
-        total_tax_amount = zero(self.currency)
-        total_tax_rate = Decimal(0)
-        taxes = self.taxes.select_related("tax_rate").for_lines()
-        for tax in taxes:
-            tax.amount = tax.calculate_amount(total_amount_excluding_tax)
-            total_tax_amount += tax.amount
-            total_tax_rate += tax.rate
-
-        InvoiceTax.objects.bulk_update(taxes, ["amount"])
-
-        # Final totals
-
-        total_amount = total_amount_excluding_tax + total_tax_amount
-        outstanding_amount = max(total_amount - self.total_credit_amount, zero(self.currency))
-        outstanding_quantity = max(self.quantity - self.credit_quantity, 0)
-
-        self.amount = clamp_money(amount)
-        self.total_discount_amount = clamp_money(total_discount_amount)
-        self.total_amount_excluding_tax = clamp_money(total_amount_excluding_tax)
-        self.total_tax_amount = clamp_money(total_tax_amount)
-        self.total_tax_rate = total_tax_rate
-        self.total_amount = clamp_money(total_amount)
-        self.outstanding_amount = clamp_money(outstanding_amount)
-        self.outstanding_quantity = outstanding_quantity
-        self.save(
-            update_fields=[
-                "unit_amount",
-                "amount",
-                "total_discount_amount",
-                "total_amount_excluding_tax",
-                "total_tax_amount",
-                "total_tax_rate",
-                "total_amount",
-                "outstanding_amount",
-                "outstanding_quantity",
-            ]
-        )
-
-        self.invoice.recalculate()
+    def calculate_amount(self) -> Money:
+        if self.price:
+            return self.price.calculate_amount(self.quantity)
+        return self.unit_amount * self.quantity
 
     def set_coupons(self, coupons: Iterable[Coupon]) -> None:
         self.coupons.clear()
@@ -689,30 +682,27 @@ class InvoiceLine(models.Model):
             for idx, tax_rate in enumerate(tax_rates)
         )
 
-    def add_tax(self, tax_rate: TaxRate) -> InvoiceTax:
-        tax = self.taxes.create(
+    def add_discount_allocation(
+        self, amount: Money, coupon: Coupon, source: InvoiceDiscountSource
+    ) -> InvoiceDiscountAllocation:
+        return self.discount_allocations.create(
             invoice=self.invoice,
-            tax_rate=tax_rate,
-            name=tax_rate.name,
-            description=tax_rate.description,
-            rate=tax_rate.percentage,
-            currency=self.currency,
-            amount=zero(self.currency),
-        )
-        self.recalculate()
-        tax.refresh_from_db()
-        return tax
-
-    def add_discount(self, coupon: Coupon) -> InvoiceDiscount:
-        discount = self.discounts.create(
-            invoice=self.invoice,
+            invoice_line=self,
             coupon=coupon,
+            source=source,
             currency=self.currency,
-            amount=zero(self.currency),
+            amount=amount,
         )
-        self.recalculate()
-        discount.refresh_from_db()
-        return discount
+
+    def add_tax_allocations(self, amount: Money, tax_rate: TaxRate, source: InvoiceTaxSource) -> InvoiceTaxAllocation:
+        return self.tax_allocations.create(
+            invoice=self.invoice,
+            invoice_line=self,
+            tax_rate=tax_rate,
+            source=source,
+            currency=self.currency,
+            amount=amount,
+        )
 
     def apply_credit(self, amount: Money, quantity: int) -> None:
         self.total_credit_amount = clamp_money(amount)
@@ -740,7 +730,6 @@ class InvoiceLine(models.Model):
         self.unit_amount = price.calculate_unit_amount(quantity) if price else unit_amount
         self.price = price
         self.save()
-        self.recalculate()
 
         if self.price:
             self.price.mark_as_used()
@@ -756,24 +745,6 @@ class InvoiceShipping(models.Model):
     shipping_rate = models.ForeignKey("shipping_rates.ShippingRate", on_delete=models.PROTECT)
     tax_rates = models.ManyToManyField("taxes.TaxRate", through="InvoiceShippingTaxRate", related_name="+")
 
-    def recalculate(self) -> None:
-        # Calculate taxes
-        tax_amount = zero(self.currency)
-        taxes = self.taxes.select_related("tax_rate").for_shipping()
-        for tax in taxes:
-            tax.amount = tax.calculate_amount(self.amount)
-            tax_amount += tax.amount
-
-        InvoiceTax.objects.bulk_update(taxes, ["amount"])
-
-        # Final totals
-
-        total_amount = self.amount + tax_amount
-
-        self.tax_amount = clamp_money(tax_amount)
-        self.total_amount = clamp_money(total_amount)
-        self.save(update_fields=["tax_amount", "total_amount"])
-
     def set_tax_rates(self, tax_rates: Iterable[TaxRate]) -> None:
         self.tax_rates.clear()
         self.tax_rates.through.objects.bulk_create(
@@ -781,25 +752,21 @@ class InvoiceShipping(models.Model):
             for idx, tax_rate in enumerate(tax_rates)
         )
 
-    def add_tax(self, tax_rate: TaxRate) -> InvoiceTax:
-        tax = self.taxes.create(
-            name=tax_rate.name,
-            description=tax_rate.description,
-            rate=tax_rate.percentage,
-            currency=self.currency,
-            amount=zero(self.currency),
-            tax_rate=tax_rate,
+    def add_tax_allocation(self, amount: Money, tax_rate: TaxRate) -> InvoiceTaxAllocation:
+        return self.tax_allocations.create(
             invoice=self.invoice,
+            invoice_shipping=self,
+            tax_rate=tax_rate,
+            source=InvoiceTaxSource.SHIPPING,
+            currency=self.currency,
+            amount=amount,
         )
-        self.recalculate()
-        tax.refresh_from_db()
-        return tax
 
 
 class InvoiceCoupon(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="invoice_coupons")
-    coupon = models.ForeignKey("coupons.Coupon", on_delete=models.PROTECT, related_name="+")
+    coupon = models.ForeignKey("coupons.Coupon", on_delete=models.PROTECT, related_name="invoice_coupons")
     position = models.PositiveIntegerField()
 
     class Meta:
@@ -810,24 +777,10 @@ class InvoiceCoupon(models.Model):
         ]
 
 
-class InvoiceTaxRate(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="invoice_tax_rates")
-    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="+")
-    position = models.PositiveIntegerField()
-
-    class Meta:
-        ordering = ["position"]
-        constraints = [
-            models.UniqueConstraint(fields=["invoice", "tax_rate"], name="unique_invoice_tax_rate_link"),
-            models.UniqueConstraint(fields=["invoice", "position"], name="unique_invoice_tax_rate_position"),
-        ]
-
-
 class InvoiceLineCoupon(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     invoice_line = models.ForeignKey("InvoiceLine", on_delete=models.CASCADE, related_name="invoice_line_coupons")
-    coupon = models.ForeignKey("coupons.Coupon", on_delete=models.PROTECT, related_name="+")
+    coupon = models.ForeignKey("coupons.Coupon", on_delete=models.PROTECT, related_name="invoice_line_coupons")
     position = models.PositiveIntegerField()
 
     class Meta:
@@ -838,10 +791,24 @@ class InvoiceLineCoupon(models.Model):
         ]
 
 
+class InvoiceTaxRate(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="invoice_tax_rates")
+    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="invoice_tax_rates")
+    position = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["position"]
+        constraints = [
+            models.UniqueConstraint(fields=["invoice", "tax_rate"], name="unique_invoice_tax_rate_link"),
+            models.UniqueConstraint(fields=["invoice", "position"], name="unique_invoice_tax_rate_position"),
+        ]
+
+
 class InvoiceLineTaxRate(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     invoice_line = models.ForeignKey("InvoiceLine", on_delete=models.CASCADE, related_name="invoice_line_tax_rates")
-    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="+")
+    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="invoice_line_tax_rates")
     position = models.PositiveIntegerField()
 
     class Meta:
@@ -857,7 +824,7 @@ class InvoiceShippingTaxRate(models.Model):
     invoice_shipping = models.ForeignKey(
         "InvoiceShipping", on_delete=models.CASCADE, related_name="invoice_shipping_tax_rates"
     )
-    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="+")
+    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="invoice_shipping_tax_rates")
     position = models.PositiveIntegerField()
 
     class Meta:
@@ -874,16 +841,12 @@ class InvoiceShippingTaxRate(models.Model):
         ]
 
 
-class InvoiceDiscount(models.Model):  # type: ignore[django-manager-missing]
+class InvoiceDiscountAllocation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="discounts")
-    invoice_line = models.ForeignKey(
-        "InvoiceLine",
-        on_delete=models.CASCADE,
-        related_name="discounts",
-        null=True,
-    )
-    coupon = models.ForeignKey("coupons.Coupon", on_delete=models.PROTECT, related_name="invoice_discounts")
+    invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="discount_allocations")
+    invoice_line = models.ForeignKey("InvoiceLine", on_delete=models.CASCADE, related_name="discount_allocations")
+    coupon = models.ForeignKey("coupons.Coupon", on_delete=models.PROTECT, related_name="+")
+    source = models.CharField(max_length=20, choices=InvoiceDiscountSource.choices)
     currency = models.CharField(max_length=3)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -892,53 +855,37 @@ class InvoiceDiscount(models.Model):  # type: ignore[django-manager-missing]
 
     class Meta:
         ordering = ["created_at"]
+        indexes = [
+            models.Index(fields=["invoice_id", "source"]),
+            models.Index(fields=["invoice_line_id", "source"]),
+            models.Index(fields=["invoice_id", "coupon_id"]),
+            models.Index(fields=["invoice_line_id", "coupon_id"]),
+        ]
         constraints = [
-            models.UniqueConstraint(
-                fields=["invoice_line", "coupon"],
-                condition=models.Q(invoice_line__isnull=False),
-                name="unique_invoice_line_coupon",
-            ),
-            models.UniqueConstraint(
-                fields=["invoice", "coupon"],
-                condition=models.Q(invoice_line__isnull=True),
-                name="unique_invoice_coupon",
+            models.CheckConstraint(
+                name="discount_allocation_positive_amount",
+                condition=Q(amount__gt=0),
             ),
         ]
 
-    def calculate_amount(self, base_amount: Money) -> Money:
-        if self.coupon.amount is not None:
-            if self.coupon.amount <= zero(self.currency):
-                return zero(self.currency)
-            return min(self.coupon.amount, base_amount)
 
-        if self.coupon.percentage is not None:
-            percentage_amount = base_amount * (self.coupon.percentage / Decimal(100))
-            if percentage_amount <= zero(self.currency):
-                return zero(self.currency)
-            return min(percentage_amount, base_amount)
-
-        return zero(self.currency)
-
-
-class InvoiceTax(models.Model):  # type: ignore[django-manager-missing]
+class InvoiceTaxAllocation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="taxes")
+    invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="tax_allocations")
     invoice_line = models.ForeignKey(
         "InvoiceLine",
         on_delete=models.CASCADE,
-        related_name="taxes",
+        related_name="tax_allocations",
         null=True,
     )
     invoice_shipping = models.ForeignKey(
         "InvoiceShipping",
         on_delete=models.CASCADE,
-        related_name="taxes",
+        related_name="tax_allocations",
         null=True,
     )
-    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.SET_NULL, related_name="invoice_taxes", null=True)
-    name = models.CharField(max_length=255)
-    description = models.CharField(max_length=255, null=True)
-    rate = models.DecimalField(max_digits=5, decimal_places=2)
+    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="+")
+    source = models.CharField(max_length=20, choices=InvoiceTaxSource.choices)
     currency = models.CharField(max_length=3)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -947,21 +894,23 @@ class InvoiceTax(models.Model):  # type: ignore[django-manager-missing]
 
     class Meta:
         ordering = ["created_at"]
+        indexes = [
+            models.Index(fields=["invoice_id", "source"]),
+            models.Index(fields=["invoice_id", "tax_rate_id"]),
+            models.Index(fields=["invoice_line_id", "tax_rate_id"]),
+            models.Index(fields=["invoice_shipping_id", "tax_rate_id"]),
+        ]
         constraints = [
-            models.UniqueConstraint(
-                fields=["invoice_line", "tax_rate"],
-                condition=models.Q(invoice_line__isnull=False, tax_rate__isnull=False),
-                name="unique_invoice_line_tax_rate",
+            # exactly one target: line XOR shipping
+            models.CheckConstraint(
+                name="tax_allocation_exactly_one_target",
+                condition=(
+                    (Q(invoice_line__isnull=False) & Q(invoice_shipping__isnull=True))
+                    | (Q(invoice_line__isnull=True) & Q(invoice_shipping__isnull=False))
+                ),
             ),
-            models.UniqueConstraint(
-                fields=["invoice", "tax_rate"],
-                condition=models.Q(invoice_line__isnull=True, tax_rate__isnull=False),
-                name="unique_invoice_tax_rate",
+            models.CheckConstraint(
+                name="tax_allocation_positive_amount",
+                condition=Q(amount__gt=0),
             ),
         ]
-
-    def calculate_amount(self, base_amount: Money) -> Money:
-        if self.rate <= 0:
-            return zero(self.currency)
-
-        return base_amount * (self.rate / Decimal(100))
