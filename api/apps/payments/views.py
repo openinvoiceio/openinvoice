@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
-from .filters import PaymentFilter
+from .filtersets import PaymentFilterSet
 from .models import Payment
 from .serializers import PaymentRecordSerializer, PaymentSerializer
 
@@ -19,7 +19,7 @@ class PaymentListCreateAPIView(generics.ListAPIView):
     serializer_class = PaymentSerializer
     ordering_fields = ["created_at"]
     permission_classes = [IsAuthenticated, IsAccountMember]
-    filterset_class = PaymentFilter
+    filterset_class = PaymentFilterSet
 
     def get_queryset(self):
         return Payment.objects.filter(account_id=self.request.account.id)

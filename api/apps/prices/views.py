@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
-from .filters import PriceFilter
+from .filtersets import PriceFilterSet
 from .models import Price
 from .serializers import PriceCreateSerializer, PriceSerializer, PriceUpdateSerializer
 
@@ -15,7 +15,7 @@ from .serializers import PriceCreateSerializer, PriceSerializer, PriceUpdateSeri
 class PriceListCreateAPIView(generics.ListAPIView):
     queryset = Price.objects.none()
     serializer_class = PriceSerializer
-    filterset_class = PriceFilter
+    filterset_class = PriceFilterSet
     search_fields = ["product__name", "code"]
     ordering_fields = ["created_at", "product_id"]
     permission_classes = [IsAuthenticated, IsAccountMember]

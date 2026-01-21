@@ -5,7 +5,7 @@ from common.filters import CharInFilter
 from .models import Invoice
 
 
-class InvoiceFilter(django_filters.FilterSet):
+class InvoiceFilterSet(django_filters.FilterSet):
     status = CharInFilter(field_name="status")
     currency = CharInFilter(field_name="currency")
     customer_id = django_filters.UUIDFilter(field_name="customer_id", lookup_expr="exact")
@@ -30,4 +30,4 @@ class InvoiceFilter(django_filters.FilterSet):
 
     class Meta:
         model = Invoice
-        fields: list[str] = []
+        fields = []

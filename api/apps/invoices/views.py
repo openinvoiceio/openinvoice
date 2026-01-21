@@ -13,7 +13,7 @@ from apps.coupons.models import Coupon
 from apps.taxes.models import TaxRate
 
 from .choices import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
-from .filters import InvoiceFilter
+from .filtersets import InvoiceFilterSet
 from .mail import send_invoice
 from .models import Invoice, InvoiceLine
 from .permissions import MaxInvoicesLimit
@@ -34,7 +34,7 @@ logger = structlog.get_logger(__name__)
 class InvoiceListCreateAPIView(generics.ListAPIView):
     queryset = Invoice.objects.none()
     serializer_class = InvoiceSerializer
-    filterset_class = InvoiceFilter
+    filterset_class = InvoiceFilterSet
     search_fields = [
         "number",
         "customer__name",

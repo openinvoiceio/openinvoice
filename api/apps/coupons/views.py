@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
-from .filters import CouponFilter
+from .filtersets import CouponFilterSet
 from .models import Coupon
 from .permissions import MaxCouponsLimit
 from .serializers import CouponCreateSerializer, CouponSerializer, CouponUpdateSerializer
@@ -18,7 +18,7 @@ logger = structlog.get_logger(__name__)
 class CouponListCreateAPIView(generics.ListAPIView):
     queryset = Coupon.objects.none()
     serializer_class = CouponSerializer
-    filterset_class = CouponFilter
+    filterset_class = CouponFilterSet
     search_fields = ["name"]
     ordering_fields = ["created_at"]
     permission_classes = [IsAuthenticated, IsAccountMember, MaxCouponsLimit]

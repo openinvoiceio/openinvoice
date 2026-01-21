@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
-from .filters import TaxRateFilter
+from .filtersets import TaxRateFilterSet
 from .models import TaxRate
 from .permissions import MaxTaxRatesLimit
 from .serializers import TaxRateCreateSerializer, TaxRateSerializer, TaxRateUpdateSerializer
@@ -18,7 +18,7 @@ logger = structlog.get_logger(__name__)
 class TaxRateListCreateAPIView(generics.ListAPIView):
     queryset = TaxRate.objects.none()
     serializer_class = TaxRateSerializer
-    filterset_class = TaxRateFilter
+    filterset_class = TaxRateFilterSet
     search_fields = ["name", "description"]
     ordering_fields = ["created_at"]
     permission_classes = [IsAuthenticated, IsAccountMember, MaxTaxRatesLimit]

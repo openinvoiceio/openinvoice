@@ -100,26 +100,13 @@ def test_list_customers_requires_authentication(api_client, account):
 
 
 def test_list_customers_filter_by_currency(api_client, user, account):
-    CustomerFactory(account=account, currency="USD", name="USD")
-    CustomerFactory(account=account, currency="EUR", name="EUR")
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.get("/api/v1/customers", {"currency": "USD"})
-
-    assert response.status_code == 200
-    assert response.data["count"] == 1
-    assert response.data["results"][0]["currency"] == "USD"
-
-
-def test_list_customers_filter_by_currency_in(api_client, user, account):
     usd = CustomerFactory(account=account, currency="USD")
     CustomerFactory(account=account, currency="EUR")
     pln = CustomerFactory(account=account, currency="PLN")
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get("/api/v1/customers", {"currency_in": "USD,PLN"})
+    response = api_client.get("/api/v1/customers", {"currency": "USD,PLN"})
 
     assert response.status_code == 200
     assert [r["id"] for r in response.data["results"]] == [
@@ -128,22 +115,7 @@ def test_list_customers_filter_by_currency_in(api_client, user, account):
     ]
 
 
-def test_list_customers_filter_created_at_eq(api_client, user, account):
-    base = timezone.now()
-    older = CustomerFactory(account=account)
-    Customer.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
-    target = CustomerFactory(account=account)
-    Customer.objects.filter(id=target.id).update(created_at=base)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.get("/api/v1/customers", {"created_at_eq": base.isoformat()})
-
-    assert response.status_code == 200
-    assert [r["id"] for r in response.data["results"]] == [str(target.id)]
-
-
-def test_list_customers_filter_created_at_gt(api_client, user, account):
+def test_list_customers_filter_created_at_after(api_client, user, account):
     base = timezone.now()
     older = CustomerFactory(account=account)
     Customer.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
@@ -151,27 +123,13 @@ def test_list_customers_filter_created_at_gt(api_client, user, account):
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get("/api/v1/customers", {"created_at_gt": (base - timedelta(hours=12)).isoformat()})
+    response = api_client.get("/api/v1/customers", {"created_at_after": (base - timedelta(hours=12)).isoformat()})
 
     assert response.status_code == 200
     assert [r["id"] for r in response.data["results"]] == [str(newer.id)]
 
 
-def test_list_customers_filter_created_at_gte(api_client, user, account):
-    base = timezone.now()
-    older = CustomerFactory(account=account)
-    Customer.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
-    newer = CustomerFactory(account=account)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.get("/api/v1/customers", {"created_at_gte": base.isoformat()})
-
-    assert response.status_code == 200
-    assert [r["id"] for r in response.data["results"]] == [str(newer.id)]
-
-
-def test_list_customers_filter_created_at_lt(api_client, user, account):
+def test_list_customers_filter_created_at_before(api_client, user, account):
     base = timezone.now()
     older = CustomerFactory(account=account)
     Customer.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
@@ -179,21 +137,7 @@ def test_list_customers_filter_created_at_lt(api_client, user, account):
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get("/api/v1/customers", {"created_at_lt": base.isoformat()})
-
-    assert response.status_code == 200
-    assert [r["id"] for r in response.data["results"]] == [str(older.id)]
-
-
-def test_list_customers_filter_created_at_lte(api_client, user, account):
-    base = timezone.now()
-    older = CustomerFactory(account=account)
-    Customer.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
-    CustomerFactory(account=account, created_at=base)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.get("/api/v1/customers", {"created_at_lte": (base - timedelta(days=1)).isoformat()})
+    response = api_client.get("/api/v1/customers", {"created_at_before": base.isoformat()})
 
     assert response.status_code == 200
     assert [r["id"] for r in response.data["results"]] == [str(older.id)]

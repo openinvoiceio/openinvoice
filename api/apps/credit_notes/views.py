@@ -11,7 +11,7 @@ from apps.accounts.permissions import IsAccountMember
 from apps.invoices.choices import InvoiceStatus
 
 from .choices import CreditNoteDeliveryMethod, CreditNotePreviewFormat, CreditNoteStatus
-from .filters import CreditNoteFilter
+from .filtersets import CreditNoteFilterSet
 from .mail import send_credit_note
 from .models import CreditNote, CreditNoteLine, CreditNoteTax
 from .permissions import MaxCreditNotesLimit
@@ -32,7 +32,7 @@ from .serializers import (
 class CreditNoteListCreateAPIView(generics.ListAPIView):
     queryset = CreditNote.objects.none()
     serializer_class = CreditNoteSerializer
-    filterset_class = CreditNoteFilter
+    filterset_class = CreditNoteFilterSet
     permission_classes = [IsAuthenticated, IsAccountMember, MaxCreditNotesLimit]
     search_fields = [
         "number",

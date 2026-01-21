@@ -12,7 +12,7 @@ from apps.addresses.models import Address
 from apps.taxes.models import TaxId
 from apps.taxes.serializers import TaxIdCreateSerializer, TaxIdSerializer
 
-from .filters import CustomerFilter
+from .filtersets import CustomerFilterSet
 from .models import Customer
 from .permissions import MaxCustomersLimit
 from .serializers import (
@@ -29,7 +29,7 @@ logger = structlog.get_logger(__name__)
 class CustomerListCreateAPIView(generics.ListAPIView):
     queryset = Customer.objects.none()
     serializer_class = CustomerSerializer
-    filterset_class = CustomerFilter
+    filterset_class = CustomerFilterSet
     search_fields = ["name", "email", "phone", "description"]
     ordering_fields = ["created_at"]
     permission_classes = [IsAuthenticated, IsAccountMember, MaxCustomersLimit]

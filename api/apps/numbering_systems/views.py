@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
-from .filters import NumberingSystemFilter
+from .filtersets import NumberingSystemFilterSet
 from .models import NumberingSystem
 from .permissions import CustomNumberingSystemFeature
 from .serializers import NumberingSystemCreateSerializer, NumberingSystemSerializer, NumberingSystemUpdateSerializer
@@ -16,7 +16,7 @@ from .serializers import NumberingSystemCreateSerializer, NumberingSystemSeriali
 class NumberingSystemListCreateAPIView(generics.ListAPIView):
     queryset = NumberingSystem.objects.none()
     serializer_class = NumberingSystemSerializer
-    filterset_class = NumberingSystemFilter
+    filterset_class = NumberingSystemFilterSet
     search_fields = ["description"]
     ordering_fields = ["created_at"]
     permission_classes = [

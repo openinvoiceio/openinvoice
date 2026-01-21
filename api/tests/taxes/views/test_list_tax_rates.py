@@ -35,7 +35,7 @@ def test_list_tax_rates_filter_is_active(api_client, user, account):
     assert [r["id"] for r in response.data["results"]] == [str(inactive.id)]
 
 
-def test_list_tax_rates_filter_created_at_gt(api_client, user, account):
+def test_list_tax_rates_filter_created_at_after(api_client, user, account):
     base = timezone.now()
     older = TaxRateFactory(account=account)
     TaxRate.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
@@ -43,10 +43,24 @@ def test_list_tax_rates_filter_created_at_gt(api_client, user, account):
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get("/api/v1/tax-rates", {"created_at_gt": (base - timedelta(hours=12)).isoformat()})
+    response = api_client.get("/api/v1/tax-rates", {"created_at_after": (base - timedelta(hours=12)).isoformat()})
 
     assert response.status_code == 200
     assert [r["id"] for r in response.data["results"]] == [str(newer.id)]
+
+
+def test_list_tax_rates_filter_created_at_before(api_client, user, account):
+    base = timezone.now()
+    older = TaxRateFactory(account=account)
+    TaxRate.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
+    TaxRateFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/tax-rates", {"created_at_before": base.isoformat()})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(older.id)]
 
 
 def test_list_tax_rates_rejects_foreign_account(api_client, user, account):

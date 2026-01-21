@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from apps.accounts.permissions import IsAccountMember
 from apps.prices.models import Price
 
-from .filters import ProductFilter
+from .filtersets import ProductFilterSet
 from .models import Product
 from .permissions import MaxProductsLimit
 from .serializers import ProductCreateSerializer, ProductSerializer, ProductUpdateSerializer
@@ -17,7 +17,7 @@ from .serializers import ProductCreateSerializer, ProductSerializer, ProductUpda
 class ProductListCreateAPIView(generics.ListAPIView):
     queryset = Product.objects.none()
     serializer_class = ProductSerializer
-    filterset_class = ProductFilter
+    filterset_class = ProductFilterSet
     search_fields = ["name", "description"]
     ordering_fields = ["created_at"]
     permission_classes = [IsAuthenticated, IsAccountMember, MaxProductsLimit]

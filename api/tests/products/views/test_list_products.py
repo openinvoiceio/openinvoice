@@ -119,22 +119,7 @@ def test_list_products_filter_is_active(api_client, user, account):
     assert [r["id"] for r in response.data["results"]] == [str(inactive.id)]
 
 
-def test_list_products_filter_created_at_eq(api_client, user, account):
-    base = timezone.now()
-    older = ProductFactory(account=account)
-    Product.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
-    target = ProductFactory(account=account)
-    Product.objects.filter(id=target.id).update(created_at=base)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.get("/api/v1/products", {"created_at_eq": base.isoformat()})
-
-    assert response.status_code == 200
-    assert [r["id"] for r in response.data["results"]] == [str(target.id)]
-
-
-def test_list_products_filter_created_at_gt(api_client, user, account):
+def test_list_products_filter_created_at_after(api_client, user, account):
     base = timezone.now()
     older = ProductFactory(account=account)
     Product.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
@@ -142,13 +127,13 @@ def test_list_products_filter_created_at_gt(api_client, user, account):
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get("/api/v1/products", {"created_at_gt": (base - timedelta(hours=12)).isoformat()})
+    response = api_client.get("/api/v1/products", {"created_at_after": (base - timedelta(hours=12)).isoformat()})
 
     assert response.status_code == 200
     assert [r["id"] for r in response.data["results"]] == [str(newer.id)]
 
 
-def test_list_products_filter_created_at_lt(api_client, user, account):
+def test_list_products_filter_created_at_before(api_client, user, account):
     base = timezone.now()
     older = ProductFactory(account=account)
     Product.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
@@ -156,7 +141,7 @@ def test_list_products_filter_created_at_lt(api_client, user, account):
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get("/api/v1/products", {"created_at_lt": base.isoformat()})
+    response = api_client.get("/api/v1/products", {"created_at_before": base.isoformat()})
 
     assert response.status_code == 200
     assert [r["id"] for r in response.data["results"]] == [str(older.id)]

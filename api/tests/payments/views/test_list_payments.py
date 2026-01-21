@@ -73,6 +73,22 @@ def test_list_payments_filter_by_invoice(api_client, user, account):
     assert [res["id"] for res in response.data["results"]] == [str(payment1.id)]
 
 
+def test_list_payments_filter_by_invoice_id(api_client, user, account):
+    invoice1 = InvoiceFactory(account=account, status=InvoiceStatus.OPEN, total_amount=Decimal("5.00"))
+    invoice2 = InvoiceFactory(account=account, status=InvoiceStatus.OPEN, total_amount=Decimal("7.00"))
+    payment1 = PaymentFactory(account=account, currency=invoice1.currency, amount=Decimal("5.00"))
+    payment1.invoices.add(invoice1)
+    payment2 = PaymentFactory(account=account, currency=invoice2.currency, amount=Decimal("7.00"))
+    payment2.invoices.add(invoice2)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/payments", {"invoice_id": invoice1.id})
+
+    assert response.status_code == 200
+    assert [res["id"] for res in response.data["results"]] == [str(payment1.id)]
+
+
 def test_list_payments_requires_authentication(api_client):
     response = api_client.get("/api/v1/payments")
 

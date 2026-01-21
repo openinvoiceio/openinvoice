@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from apps.accounts.permissions import IsAccountMember
 
 from .choices import QuoteDeliveryMethod, QuotePreviewFormat, QuoteStatus
-from .filters import QuoteFilter
+from .filtersets import QuoteFilterSet
 from .mail import send_quote
 from .models import Quote, QuoteDiscount, QuoteLine, QuoteTax
 from .permissions import MaxQuotesLimit
@@ -40,7 +40,7 @@ logger = structlog.get_logger(__name__)
 class QuoteListCreateAPIView(generics.ListAPIView):
     queryset = Quote.objects.none()
     serializer_class = QuoteSerializer
-    filterset_class = QuoteFilter
+    filterset_class = QuoteFilterSet
     search_fields = [
         "number",
         "customer_on_quote__name",

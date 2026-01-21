@@ -1,11 +1,14 @@
-from datetime import date
+from datetime import date, timedelta
 from unittest.mock import ANY
 
 import pytest
+from django.utils import timezone
 from freezegun import freeze_time
 
+from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from apps.quotes.choices import QuoteStatus
-from tests.factories import CustomerFactory, QuoteFactory
+from apps.quotes.models import Quote
+from tests.factories import CustomerFactory, NumberingSystemFactory, PriceFactory, QuoteFactory, QuoteLineFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -115,7 +118,165 @@ def test_list_quotes(api_client, user, account):
     }
 
 
-# TODO: add filtering, ordering, search tests
+def test_list_quotes_filter_by_status(api_client, user, account):
+    QuoteFactory(account=account, status=QuoteStatus.OPEN, number="QT-0001")
+    matching = QuoteFactory(account=account, status=QuoteStatus.DRAFT)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/quotes", {"status": QuoteStatus.DRAFT})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(matching.id)]
+
+
+def test_list_quotes_filter_by_currency(api_client, user, account):
+    usd = QuoteFactory(account=account, currency="USD")
+    QuoteFactory(account=account, currency="EUR")
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/quotes", {"currency": "USD"})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(usd.id)]
+
+
+def test_list_quotes_filter_by_customer_id(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    matching = QuoteFactory(account=account, customer=customer)
+    QuoteFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/quotes", {"customer_id": str(customer.id)})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(matching.id)]
+
+
+def test_list_quotes_filter_by_created_at_after(api_client, user, account):
+    base = timezone.now()
+    older = QuoteFactory(account=account)
+    Quote.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
+    newer = QuoteFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/quotes", {"created_at_after": (base - timedelta(hours=12)).isoformat()})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(newer.id)]
+
+
+def test_list_quotes_filter_by_created_at_before(api_client, user, account):
+    base = timezone.now()
+    older = QuoteFactory(account=account)
+    Quote.objects.filter(id=older.id).update(created_at=base - timedelta(days=1))
+    QuoteFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/quotes", {"created_at_before": base.isoformat()})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(older.id)]
+
+
+def test_list_quotes_filter_by_issue_date_range(api_client, user, account):
+    QuoteFactory(account=account, issue_date=date(2025, 1, 1))
+    matching = QuoteFactory(account=account, issue_date=date(2025, 2, 1))
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get(
+        "/api/v1/quotes",
+        {
+            "issue_date_after": date(2025, 1, 15).isoformat(),
+            "issue_date_before": date(2025, 2, 15).isoformat(),
+        },
+    )
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(matching.id)]
+
+
+def test_list_quotes_filter_by_subtotal_amount_min(api_client, user, account):
+    QuoteFactory(account=account, subtotal_amount="10.00")
+    matching = QuoteFactory(account=account, subtotal_amount="50.00")
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/quotes", {"subtotal_amount_min": "20"})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(matching.id)]
+
+
+def test_list_quotes_filter_by_subtotal_amount_max(api_client, user, account):
+    matching = QuoteFactory(account=account, subtotal_amount="20.00")
+    QuoteFactory(account=account, subtotal_amount="70.00")
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/quotes", {"subtotal_amount_max": "40"})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(matching.id)]
+
+
+def test_list_quotes_filter_by_total_amount_min(api_client, user, account):
+    QuoteFactory(account=account, total_amount="10.00")
+    matching = QuoteFactory(account=account, total_amount="50.00")
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/quotes", {"total_amount_min": "20"})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(matching.id)]
+
+
+def test_list_quotes_filter_by_total_amount_max(api_client, user, account):
+    matching = QuoteFactory(account=account, total_amount="20.00")
+    QuoteFactory(account=account, total_amount="70.00")
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/quotes", {"total_amount_max": "40"})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(matching.id)]
+
+
+def test_list_quotes_filter_by_product_id(api_client, user, account):
+    quote = QuoteFactory(account=account)
+    price = PriceFactory(account=account)
+    matching_line = QuoteLineFactory(quote=quote, price=price)
+    QuoteFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get(
+        "/api/v1/quotes",
+        {"product_id": str(price.product_id)},
+    )
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(matching_line.quote_id)]
+
+
+def test_list_quotes_filter_by_numbering_system_id(api_client, user, account):
+    numbering_system = NumberingSystemFactory(account=account, applies_to=NumberingSystemAppliesTo.QUOTE)
+    matching = QuoteFactory(account=account, numbering_system=numbering_system)
+    QuoteFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get("/api/v1/quotes", {"numbering_system_id": str(numbering_system.id)})
+
+    assert response.status_code == 200
+    assert [r["id"] for r in response.data["results"]] == [str(matching.id)]
 
 
 def test_list_quotes_requires_authentication(api_client):
