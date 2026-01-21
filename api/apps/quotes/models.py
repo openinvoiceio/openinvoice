@@ -354,6 +354,7 @@ class Quote(models.Model):
                 total_tax_rate=line.total_tax_rate,
                 amount=zero(invoice.currency),
                 total_discount_amount=zero(invoice.currency),
+                total_taxable_amount=zero(invoice.currency),
                 total_amount_excluding_tax=zero(invoice.currency),
                 total_tax_amount=zero(invoice.currency),
                 total_amount=zero(invoice.currency),
@@ -362,50 +363,12 @@ class Quote(models.Model):
                 outstanding_amount=zero(invoice.currency),
                 outstanding_quantity=line.quantity,
             )
-            new_line.discounts.bulk_create(
-                InvoiceDiscount(
-                    invoice=invoice,
-                    coupon=discount.coupon,
-                    currency=invoice.currency,
-                    amount=zero(invoice.currency),
-                )
-                for discount in line.discounts.all()
-            )
-            new_line.taxes.bulk_create(
-                InvoiceTax(
-                    invoice=invoice,
-                    tax_rate=tax.tax_rate,
-                    name=tax.name,
-                    description=tax.description,
-                    rate=tax.rate,
-                    currency=invoice.currency,
-                    amount=zero(invoice.currency),
-                )
-                for tax in line.taxes.all()
-            )
-            new_line.recalculate()
+            # TODO: change it later
+            new_line.set_coupons([discount.coupon for discount in line.discounts.all()])
+            new_line.set_tax_rates([tax.tax_rate for tax in line.taxes.filter(tax_rate__isnull=False).all()])
 
-        invoice.discounts.bulk_create(
-            InvoiceDiscount(
-                invoice=invoice,
-                coupon=discount.coupon,
-                currency=invoice.currency,
-                amount=zero(invoice.currency),
-            )
-            for discount in self.discounts.for_quote()
-        )
-        invoice.taxes.bulk_create(
-            InvoiceTax(
-                invoice=invoice,
-                tax_rate=tax.tax_rate,
-                name=tax.name,
-                description=tax.description,
-                rate=tax.rate,
-                currency=invoice.currency,
-                amount=zero(invoice.currency),
-            )
-            for tax in self.taxes.for_quote()
-        )
+        invoice.set_coupons([discount.coupon for discount in self.discounts.for_quote()])
+        invoice.set_tax_rates([tax.tax_rate for tax in self.taxes.for_quote().filter(tax_rate__isnull=False).all()])
         invoice.recalculate()
 
         self.invoice = invoice
