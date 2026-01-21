@@ -68,3 +68,23 @@ class ExactlyOneValidator:
                     field_names.append(name)
 
             raise serializers.ValidationError(self.message.format(fields=", ".join(field_names)))
+
+
+class AtMostOneValidator:
+    message = "At most one of the fields {fields} may be provided."
+    requires_context = True
+
+    def __init__(self, *fields: str) -> None:
+        self.fields = fields
+
+    def __call__(self, attrs, serializer) -> None:
+        present = [f for f in self.fields if attrs.get(f) is not None]
+
+        if len(present) > 1:
+            field_names = []
+            for name, field in serializer.fields.items():
+                source = field.source or name
+                if source in self.fields:
+                    field_names.append(name)
+
+            raise serializers.ValidationError(self.message.format(fields=", ".join(field_names)))

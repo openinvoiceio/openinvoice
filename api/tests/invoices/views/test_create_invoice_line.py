@@ -22,12 +22,12 @@ def test_create_invoice_line_from_unit_amount(api_client, user, account):
         {
             "invoice_id": str(invoice.id),
             "description": "Item",
-            "quantity": 1,
             "unit_amount": "10.00",
+            "quantity": 1,
         },
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.data == {
         "id": response.data["id"],
         "description": "Item",
@@ -69,12 +69,12 @@ def test_create_invoice_line_from_flat_price(api_client, user, account):
         {
             "invoice_id": str(invoice.id),
             "description": "Item",
-            "quantity": 1,
             "price_id": str(price.id),
+            "quantity": 1,
         },
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.data == {
         "id": response.data["id"],
         "description": "Item",
@@ -124,13 +124,12 @@ def test_create_invoice_line_from_graduated_price(api_client, user, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
             "quantity": 15,
             "price_id": str(price.id),
         },
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.data["price_id"] == str(price.id)
     assert response.data["unit_amount"] == "9.47"
     assert response.data["amount"] == "142.00"
@@ -159,13 +158,12 @@ def test_create_invoice_line_from_volume_price(api_client, user, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
             "quantity": 15,
             "price_id": str(price.id),
         },
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.data["price_id"] == str(price.id)
     assert response.data["unit_amount"] == "8.00"
     assert response.data["amount"] == "120.00"
@@ -173,6 +171,49 @@ def test_create_invoice_line_from_volume_price(api_client, user, account):
     invoice.refresh_from_db()
     assert invoice.subtotal_amount.amount == Decimal("120.00")
     assert invoice.total_amount.amount == Decimal("120.00")
+
+
+def test_create_invoice_line_with_required_only_fields(api_client, user, account):
+    invoice = InvoiceFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.post(
+        "/api/v1/invoice-lines",
+        {
+            "invoice_id": str(invoice.id),
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.data == {
+        "id": response.data["id"],
+        "description": "",
+        "quantity": 1,
+        "unit_amount": "0.00",
+        "price_id": None,
+        "product_id": None,
+        "amount": "0.00",
+        "total_discount_amount": "0.00",
+        "total_amount_excluding_tax": "0.00",
+        "total_tax_amount": "0.00",
+        "total_tax_rate": "0.00",
+        "total_amount": "0.00",
+        "total_credit_amount": "0.00",
+        "outstanding_amount": "0.00",
+        "credit_quantity": 0,
+        "outstanding_quantity": 1,
+        "coupons": [],
+        "discount_allocations": [],
+        "discounts": [],
+        "tax_rates": [],
+        "tax_allocations": [],
+    }
+    invoice.refresh_from_db()
+    assert invoice.subtotal_amount.amount == Decimal("0.00")
+    assert invoice.total_tax_amount.amount == Decimal("0.00")
+    assert invoice.total_discount_amount.amount == Decimal("0.00")
+    assert invoice.total_amount.amount == Decimal("0.00")
 
 
 def test_create_invoice_line_invoice_not_found(api_client, user, account):
@@ -184,8 +225,6 @@ def test_create_invoice_line_invoice_not_found(api_client, user, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice_id),
-            "description": "Item",
-            "quantity": 1,
             "unit_amount": "10.00",
         },
     )
@@ -220,8 +259,6 @@ def test_create_invoice_line_non_draft_invoice(api_client, user, account, status
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
             "unit_amount": "10.00",
         },
     )
@@ -239,33 +276,6 @@ def test_create_invoice_line_non_draft_invoice(api_client, user, account, status
     }
 
 
-def test_create_invoice_line_price_or_unit_required(api_client, user, account):
-    invoice = InvoiceFactory(account=account)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.post(
-        "/api/v1/invoice-lines",
-        {
-            "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
-        },
-    )
-
-    assert response.status_code == 400
-    assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
-        "errors": [
-            {
-                "attr": "non_field_errors",
-                "code": "invalid",
-                "detail": "Exactly one of the fields unit_amount, price_id must be provided.",
-            }
-        ],
-    }
-
-
 def test_create_invoice_line_price_and_unit_mutually_exclusive(api_client, user, account):
     invoice = InvoiceFactory(account=account)
     price = PriceFactory(account=account, currency=invoice.currency)
@@ -276,8 +286,6 @@ def test_create_invoice_line_price_and_unit_mutually_exclusive(api_client, user,
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
             "unit_amount": "10.00",
             "price_id": str(price.id),
         },
@@ -290,7 +298,7 @@ def test_create_invoice_line_price_and_unit_mutually_exclusive(api_client, user,
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Exactly one of the fields unit_amount, price_id must be provided.",
+                "detail": "At most one of the fields unit_amount, price_id may be provided.",
             }
         ],
     }
@@ -302,9 +310,6 @@ def test_create_invoice_line_requires_account(api_client, user):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(uuid.uuid4()),
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
         },
     )
 
@@ -331,8 +336,6 @@ def test_create_invoice_line_price_not_found(api_client, user, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
             "price_id": str(price_id),
         },
     )
@@ -360,8 +363,6 @@ def test_create_invoice_line_currency_mismatch(api_client, user, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
             "price_id": str(price.id),
         },
     )
@@ -389,8 +390,6 @@ def test_create_invoice_line_price_archived(api_client, user, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
             "price_id": str(price.id),
         },
     )
@@ -419,8 +418,6 @@ def test_create_invoice_line_product_archived(api_client, user, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
             "price_id": str(price.id),
         },
     )
@@ -445,9 +442,6 @@ def test_create_invoice_line_requires_authentication(api_client, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
         },
     )
 
@@ -471,20 +465,15 @@ def test_create_invoice_line_with_coupons(api_client, user, account):
 
     api_client.force_login(user)
     api_client.force_account(account)
-    # TODO: make description, quantity and unit_amount optional?
     response = api_client.post(
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
             "coupons": [str(coupon1.id), str(coupon2.id)],
         },
     )
 
-    # TODO: change it status to 201?
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert [r["id"] for r in response.data["coupons"]] == [str(coupon1.id), str(coupon2.id)]
 
 
@@ -499,9 +488,6 @@ def test_create_invoice_line_with_coupons_invalid_currency(api_client, user, acc
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
             "coupons": [str(coupon1.id), str(coupon2.id)],
         },
     )
@@ -529,9 +515,6 @@ def test_create_invoice_line_with_duplicate_coupons(api_client, user, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
             "coupons": [str(coupon.id), str(coupon.id)],
         },
     )
@@ -560,9 +543,6 @@ def test_create_invoice_line_with_foreign_coupon(api_client, user, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
             "coupons": [str(coupon1.id), str(coupon2.id)],
         },
     )
@@ -592,9 +572,6 @@ def test_create_invoice_line_coupons_limit_exceeded(api_client, user, account, s
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
             "coupons": [str(coupon1.id), str(coupon2.id)],
         },
     )
@@ -623,14 +600,11 @@ def test_create_invoice_line_with_tax_rates(api_client, user, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
             "tax_rates": [str(tax_rate1.id), str(tax_rate2.id)],
         },
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert [r["id"] for r in response.data["tax_rates"]] == [str(tax_rate1.id), str(tax_rate2.id)]
 
 
@@ -644,9 +618,6 @@ def test_create_invoice_line_with_duplicate_tax_rates(api_client, user, account)
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
             "tax_rates": [str(tax_rate.id), str(tax_rate.id)],
         },
     )
@@ -675,9 +646,6 @@ def test_create_invoice_line_with_foreign_tax_rate(api_client, user, account):
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
             "tax_rates": [str(tax_rate1.id), str(tax_rate2.id)],
         },
     )
@@ -707,9 +675,6 @@ def test_create_invoice_line_tax_rates_limit_exceeded(api_client, user, account,
         "/api/v1/invoice-lines",
         {
             "invoice_id": str(invoice.id),
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
             "tax_rates": [str(tax_rate1.id), str(tax_rate2.id)],
         },
     )

@@ -468,7 +468,7 @@ class InvoiceLineCreateAPIView(generics.GenericAPIView):
     @extend_schema(
         operation_id="create_invoice_line",
         request=InvoiceLineCreateSerializer,
-        responses={200: InvoiceLineSerializer},
+        responses={201: InvoiceLineSerializer},
     )
     def post(self, request):
         serializer = InvoiceLineCreateSerializer(data=request.data, context=self.get_serializer_context())
@@ -500,7 +500,7 @@ class InvoiceLineCreateAPIView(generics.GenericAPIView):
 
         invoice_line = self.get_queryset().get(id=invoice_line.id)
         serializer = InvoiceLineSerializer(invoice_line)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class InvoiceLineUpdateDestroyAPIView(generics.GenericAPIView):

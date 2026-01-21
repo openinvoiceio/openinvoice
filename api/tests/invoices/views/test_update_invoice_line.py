@@ -38,8 +38,8 @@ def test_update_invoice_line_from_unit_amount(api_client, user, account):
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
         {
-            "description": "Updated",
-            "quantity": 2,
+            "description": "Updated Line",
+            "quantity": 3,
             "unit_amount": "5.00",
         },
     )
@@ -47,21 +47,21 @@ def test_update_invoice_line_from_unit_amount(api_client, user, account):
     assert response.status_code == 200
     assert response.data == {
         "id": str(line.id),
-        "description": "Updated",
-        "quantity": 2,
+        "description": "Updated Line",
+        "quantity": 3,
         "unit_amount": "5.00",
         "price_id": None,
         "product_id": None,
-        "amount": "10.00",
+        "amount": "15.00",
         "total_discount_amount": "0.00",
-        "total_amount_excluding_tax": "10.00",
+        "total_amount_excluding_tax": "15.00",
         "total_tax_amount": "0.00",
         "total_tax_rate": "0.00",
-        "total_amount": "10.00",
+        "total_amount": "15.00",
         "total_credit_amount": "0.00",
-        "outstanding_amount": "10.00",
+        "outstanding_amount": "15.00",
         "credit_quantity": 0,
-        "outstanding_quantity": 2,
+        "outstanding_quantity": 3,
         "coupons": [],
         "discount_allocations": [],
         "discounts": [],
@@ -69,9 +69,9 @@ def test_update_invoice_line_from_unit_amount(api_client, user, account):
         "tax_allocations": [],
     }
     invoice.refresh_from_db()
-    assert invoice.subtotal_amount.amount == Decimal("10.00")
+    assert invoice.subtotal_amount.amount == Decimal("15.00")
     assert invoice.total_tax_amount.amount == Decimal("0.00")
-    assert invoice.total_amount.amount == Decimal("10.00")
+    assert invoice.total_amount.amount == Decimal("15.00")
 
 
 def test_update_invoice_line_from_price(api_client, user, account):
@@ -99,30 +99,30 @@ def test_update_invoice_line_from_price(api_client, user, account):
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
         {
-            "description": "Updated",
-            "quantity": 1,
+            "description": "Updated Line",
             "price_id": str(price2.id),
+            "quantity": 2,
         },
     )
 
     assert response.status_code == 200
     assert response.data == {
         "id": str(line.id),
-        "description": "Updated",
-        "quantity": 1,
+        "description": "Updated Line",
+        "quantity": 2,
         "unit_amount": "20.00",
         "price_id": str(price2.id),
         "product_id": str(price2.product_id),
-        "amount": "20.00",
+        "amount": "40.00",
         "total_discount_amount": "0.00",
-        "total_amount_excluding_tax": "20.00",
+        "total_amount_excluding_tax": "40.00",
         "total_tax_amount": "0.00",
         "total_tax_rate": "0.00",
-        "total_amount": "20.00",
+        "total_amount": "40.00",
         "total_credit_amount": "0.00",
-        "outstanding_amount": "20.00",
+        "outstanding_amount": "40.00",
         "credit_quantity": 0,
-        "outstanding_quantity": 1,
+        "outstanding_quantity": 2,
         "coupons": [],
         "discount_allocations": [],
         "discounts": [],
@@ -130,9 +130,9 @@ def test_update_invoice_line_from_price(api_client, user, account):
         "tax_allocations": [],
     }
     invoice.refresh_from_db()
-    assert invoice.subtotal_amount.amount == Decimal("20.00")
+    assert invoice.subtotal_amount.amount == Decimal("40.00")
     assert invoice.total_tax_amount.amount == Decimal("0.00")
-    assert invoice.total_amount.amount == Decimal("20.00")
+    assert invoice.total_amount.amount == Decimal("40.00")
 
 
 def test_update_invoice_line_not_found(api_client, user, account):
@@ -141,9 +141,7 @@ def test_update_invoice_line_not_found(api_client, user, account):
     response = api_client.put(
         f"/api/v1/invoice-lines/{uuid.uuid4()}",
         {
-            "description": "Updated",
-            "quantity": 1,
-            "unit_amount": "5.00",
+            "description": "Updated Line",
         },
     )
 
@@ -169,9 +167,7 @@ def test_update_invoice_line_rejects_foreign_account(api_client, user, account):
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
         {
-            "description": "Updated",
-            "quantity": 1,
-            "unit_amount": "5.00",
+            "description": "Updated Line",
         },
     )
 
@@ -205,9 +201,7 @@ def test_update_invoice_line_non_draft_invoice(api_client, user, account, status
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
         {
-            "description": "Updated",
-            "quantity": 1,
-            "unit_amount": "5.00",
+            "description": "Updated Line",
         },
     )
 
@@ -231,9 +225,7 @@ def test_update_invoice_line_requires_authentication(api_client, account):
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
         {
-            "description": "Updated",
-            "quantity": 1,
-            "unit_amount": "5.00",
+            "description": "Updated Line",
         },
     )
 
@@ -250,9 +242,9 @@ def test_update_invoice_line_requires_authentication(api_client, account):
     }
 
 
-def test_update_invoice_line_price_or_unit_required(api_client, user, account):
+def test_update_invoice_line_description(api_client, user, account):
     invoice = InvoiceFactory(account=account)
-    line = InvoiceLineFactory(invoice=invoice)
+    line = InvoiceLineFactory(invoice=invoice, description="Original", quantity=2, unit_amount=Decimal("10"))
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -260,7 +252,45 @@ def test_update_invoice_line_price_or_unit_required(api_client, user, account):
         f"/api/v1/invoice-lines/{line.id}",
         {
             "description": "Updated",
-            "quantity": 1,
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.data["description"] == "Updated"
+    assert response.data["quantity"] == 2
+    assert response.data["unit_amount"] == "10.00"
+
+
+def test_update_invoice_line_unit_amount(api_client, user, account):
+    invoice = InvoiceFactory(account=account)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("10"))
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoice-lines/{line.id}",
+        {
+            "unit_amount": "5.00",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.data["description"] == line.description
+    assert response.data["unit_amount"] == "5.00"
+    assert response.data["quantity"] == line.quantity
+
+
+def test_update_invoice_line_unit_amount_with_price(api_client, user, account):
+    invoice = InvoiceFactory(account=account)
+    price = PriceFactory(account=account, currency=invoice.currency)
+    line = InvoiceLineFactory(invoice=invoice, price=price, unit_amount=price.amount)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoice-lines/{line.id}",
+        {
+            "unit_amount": "5.00",
         },
     )
 
@@ -271,15 +301,15 @@ def test_update_invoice_line_price_or_unit_required(api_client, user, account):
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Exactly one of the fields unit_amount, price_id must be provided.",
+                "detail": "Cannot change pricing method",
             }
         ],
     }
 
 
-def test_update_invoice_line_price_and_unit_mutually_exclusive(api_client, user, account):
+def test_update_invoice_line_price_with_unit_amount(api_client, user, account):
     invoice = InvoiceFactory(account=account)
-    line = InvoiceLineFactory(invoice=invoice)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("10"))
     price = PriceFactory(account=account, currency=invoice.currency)
 
     api_client.force_login(user)
@@ -287,9 +317,6 @@ def test_update_invoice_line_price_and_unit_mutually_exclusive(api_client, user,
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
         {
-            "description": "Updated",
-            "quantity": 1,
-            "unit_amount": "5.00",
             "price_id": str(price.id),
         },
     )
@@ -301,7 +328,7 @@ def test_update_invoice_line_price_and_unit_mutually_exclusive(api_client, user,
             {
                 "attr": "non_field_errors",
                 "code": "invalid",
-                "detail": "Exactly one of the fields unit_amount, price_id must be provided.",
+                "detail": "Cannot change pricing method",
             }
         ],
     }
@@ -317,8 +344,6 @@ def test_update_invoice_line_price_not_found(api_client, user, account):
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
         {
-            "description": "Updated",
-            "quantity": 1,
             "price_id": str(price_id),
         },
     )
@@ -341,9 +366,7 @@ def test_update_invoice_line_requires_account(api_client, user):
     response = api_client.put(
         f"/api/v1/invoice-lines/{uuid.uuid4()}",
         {
-            "description": "Updated",
-            "quantity": 1,
-            "unit_amount": "5.00",
+            "description": "Updated Line",
         },
     )
 
@@ -370,8 +393,6 @@ def test_update_invoice_line_currency_mismatch(api_client, user, account):
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
         {
-            "description": "Updated",
-            "quantity": 1,
             "price_id": str(price.id),
         },
     )
@@ -397,10 +418,9 @@ def test_update_invoice_line_with_coupons(api_client, user, account):
 
     api_client.force_login(user)
     api_client.force_account(account)
-    # TODO: make description, quantity and unit_amount optional?
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {"description": "Item", "quantity": 1, "unit_amount": "10.00", "coupons": [str(coupon1.id), str(coupon2.id)]},
+        {"coupons": [str(coupon1.id), str(coupon2.id)]},
     )
 
     assert response.status_code == 200
@@ -419,13 +439,13 @@ def test_update_invoice_line_with_coupons_change_position(api_client, user, acco
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {"description": "Item", "quantity": 1, "unit_amount": "10.00", "coupons": [str(coupon2.id), str(coupon1.id)]},
+        {"coupons": [str(coupon2.id), str(coupon1.id)]},
     )
 
     assert response.status_code == 200
     assert [r["id"] for r in response.data["coupons"]] == [str(coupon2.id), str(coupon1.id)]
     assert InvoiceLineCoupon.objects.filter(id__in=[line_coupon1.id, line_coupon2.id]).exists() is False
-    assert line.coupons.count() == 2
+    assert line.coupons.filter(id__in=[coupon1.id, coupon2.id]).exists() is True
     assert line.invoice_line_coupons.get(coupon_id=coupon1.id).position == 1
     assert line.invoice_line_coupons.get(coupon_id=coupon2.id).position == 0
 
@@ -442,7 +462,7 @@ def test_update_invoice_line_remove_coupons(api_client, user, account):
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {"description": "Item", "quantity": 1, "unit_amount": "10.00", "coupons": []},
+        {"coupons": []},
     )
 
     assert response.status_code == 200
@@ -460,12 +480,7 @@ def test_update_invoice_line_with_coupons_invalid_currency(api_client, user, acc
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
-            "coupons": [str(coupon1.id), str(coupon2.id)],
-        },
+        {"coupons": [str(coupon1.id), str(coupon2.id)]},
     )
 
     assert response.status_code == 400
@@ -490,10 +505,11 @@ def test_update_invoice_line_with_duplicate_coupons(api_client, user, account):
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {"description": "Item", "quantity": 1, "unit_amount": "10.00", "coupons": [str(coupon.id), str(coupon.id)]},
+        {"coupons": [str(coupon.id), str(coupon.id)]},
     )
 
     assert response.status_code == 400
+
     assert response.data == {
         "type": "validation_error",
         "errors": [
@@ -516,7 +532,7 @@ def test_update_invoice_line_with_foreign_coupon(api_client, user, account):
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {"description": "Item", "quantity": 1, "unit_amount": "10.00", "coupons": [str(coupon1.id), str(coupon2.id)]},
+        {"coupons": [str(coupon1.id), str(coupon2.id)]},
     )
 
     assert response.status_code == 400
@@ -543,7 +559,7 @@ def test_update_invoice_line_coupons_limit_exceeded(api_client, user, account, s
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {"description": "Item", "quantity": 1, "unit_amount": "10.00", "coupons": [str(coupon1.id), str(coupon2.id)]},
+        {"coupons": [str(coupon1.id), str(coupon2.id)]},
     )
 
     assert response.status_code == 400
@@ -569,12 +585,7 @@ def test_update_invoice_line_with_tax_rates(api_client, user, account):
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
-            "tax_rates": [str(tax_rate1.id), str(tax_rate2.id)],
-        },
+        {"tax_rates": [str(tax_rate1.id), str(tax_rate2.id)]},
     )
 
     assert response.status_code == 200
@@ -593,12 +604,7 @@ def test_update_invoice_line_with_tax_rates_change_position(api_client, user, ac
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
-            "tax_rates": [str(tax_rate2.id), str(tax_rate1.id)],
-        },
+        {"tax_rates": [str(tax_rate2.id), str(tax_rate1.id)]},
     )
 
     assert response.status_code == 200
@@ -607,31 +613,6 @@ def test_update_invoice_line_with_tax_rates_change_position(api_client, user, ac
     assert line.tax_rates.count() == 2
     assert line.invoice_line_tax_rates.get(tax_rate_id=tax_rate1.id).position == 1
     assert line.invoice_line_tax_rates.get(tax_rate_id=tax_rate2.id).position == 0
-
-
-def test_update_invoice_line_remove_tax_rates(api_client, user, account):
-    invoice = InvoiceFactory(account=account)
-    line = InvoiceLineFactory(invoice=invoice)
-    tax_rate1 = TaxRateFactory(account=account)
-    tax_rate2 = TaxRateFactory(account=account)
-    InvoiceLineTaxRateFactory(invoice_line=line, tax_rate=tax_rate1, position=0)
-    InvoiceLineTaxRateFactory(invoice_line=line, tax_rate=tax_rate2, position=1)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.put(
-        f"/api/v1/invoice-lines/{line.id}",
-        {
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
-            "tax_rates": [],
-        },
-    )
-
-    assert response.status_code == 200
-    assert response.data["tax_rates"] == []
-    assert line.tax_rates.count() == 0
 
 
 def test_update_invoice_line_with_duplicate_tax_rates(api_client, user, account):
@@ -643,12 +624,7 @@ def test_update_invoice_line_with_duplicate_tax_rates(api_client, user, account)
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
-            "tax_rates": [str(tax_rate.id), str(tax_rate.id)],
-        },
+        {"tax_rates": [str(tax_rate.id), str(tax_rate.id)]},
     )
 
     assert response.status_code == 400
@@ -674,12 +650,7 @@ def test_update_invoice_line_with_foreign_tax_rate(api_client, user, account):
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
-            "tax_rates": [str(tax_rate1.id), str(tax_rate2.id)],
-        },
+        {"tax_rates": [str(tax_rate1.id), str(tax_rate2.id)]},
     )
 
     assert response.status_code == 400
@@ -706,12 +677,7 @@ def test_update_invoice_line_tax_rates_limit_exceeded(api_client, user, account,
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoice-lines/{line.id}",
-        {
-            "description": "Item",
-            "quantity": 1,
-            "unit_amount": "10.00",
-            "tax_rates": [str(tax_rate1.id), str(tax_rate2.id)],
-        },
+        {"tax_rates": [str(tax_rate1.id), str(tax_rate2.id)]},
     )
 
     assert response.status_code == 400

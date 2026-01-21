@@ -16,7 +16,7 @@ from apps.shipping_rates.fields import ShippingRateRelatedField
 from apps.taxes.fields import TaxRateRelatedField
 from apps.taxes.serializers import TaxRateSerializer
 from common.fields import CurrencyField, MetadataField
-from common.validators import AllOrNoneValidator, ExactlyOneValidator
+from common.validators import AllOrNoneValidator, AtMostOneValidator
 
 from .enums import InvoiceDeliveryMethod, InvoiceDiscountSource, InvoiceStatus, InvoiceTaxSource
 from .fields import InvoiceRelatedField
@@ -294,8 +294,8 @@ class InvoiceUpdateSerializer(serializers.Serializer):
 
 class InvoiceLineCreateSerializer(serializers.Serializer):
     invoice_id = InvoiceRelatedField(source="invoice")
-    description = serializers.CharField(max_length=255, allow_blank=True)
-    quantity = serializers.IntegerField()
+    description = serializers.CharField(max_length=255, allow_blank=True, required=False, default="")
+    quantity = serializers.IntegerField(required=False, default=1)
     unit_amount = MoneyField(max_digits=19, decimal_places=2, required=False)
     price_id = PriceRelatedField(source="price", required=False, validators=[PriceIsActive(), PriceProductIsActive()])
     tax_rates = TaxRateRelatedField(many=True, required=False, validators=[MaxTaxRatesValidator()])
@@ -303,7 +303,7 @@ class InvoiceLineCreateSerializer(serializers.Serializer):
 
     class Meta:
         validators = [
-            ExactlyOneValidator("unit_amount", "price"),
+            AtMostOneValidator("unit_amount", "price"),
         ]
 
     def validate(self, data):
@@ -320,28 +320,32 @@ class InvoiceLineCreateSerializer(serializers.Serializer):
         if data.get("coupons"):
             validate_coupons_currency(data["coupons"], invoice.currency)
 
-        if unit_amount:
+        if price is None and unit_amount is None:
+            data["unit_amount"] = Money(0, invoice.currency)
+        elif unit_amount is not None:
             data["unit_amount"] = Money(unit_amount, invoice.currency)
 
         return data
 
 
 class InvoiceLineUpdateSerializer(serializers.Serializer):
-    description = serializers.CharField(max_length=255, allow_blank=True)
-    quantity = serializers.IntegerField()
+    description = serializers.CharField(max_length=255, allow_blank=True, required=False)
+    quantity = serializers.IntegerField(required=False)
     unit_amount = MoneyField(max_digits=19, decimal_places=2, required=False)
     price_id = PriceRelatedField(source="price", required=False, validators=[PriceIsActive(), PriceProductIsActive()])
     tax_rates = TaxRateRelatedField(many=True, required=False, validators=[MaxTaxRatesValidator()])
     coupons = CouponRelatedField(many=True, required=False, validators=[MaxCouponsValidator()])
 
-    class Meta:
-        validators = [
-            ExactlyOneValidator("unit_amount", "price"),
-        ]
-
     def validate(self, data):
         if data.get("coupons"):
             validate_coupons_currency(data["coupons"], self.instance.currency)
+
+        if "price" in data and self.instance.price is None:
+            raise serializers.ValidationError("Cannot change pricing method")
+
+        if "unit_amount" in data and self.instance.price is not None:
+            raise serializers.ValidationError("Cannot change pricing method")
+
         return data
 
     def validate_price_id(self, value):
