@@ -1,11 +1,13 @@
 import structlog
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
+from .choices import TaxRateStatus
 from .filtersets import TaxRateFilterSet
 from .models import TaxRate
 from .permissions import MaxTaxRatesLimit
@@ -65,6 +67,9 @@ class TaxRateRetrieveUpdateAPIView(generics.RetrieveAPIView):
         serializer = TaxRateUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+
+        if tax_rate.status == TaxRateStatus.ARCHIVED:
+            raise ValidationError("Cannot update once archived.")
 
         tax_rate.update(
             name=data.get("name", tax_rate.name),

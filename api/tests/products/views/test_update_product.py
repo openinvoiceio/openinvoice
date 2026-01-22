@@ -251,7 +251,7 @@ def test_update_product_archived(api_client, user, account):
             {
                 "attr": None,
                 "code": "invalid",
-                "detail": "Archived products cannot be updated",
+                "detail": "Cannot update once archived.",
             }
         ],
     }

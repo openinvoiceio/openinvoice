@@ -75,7 +75,7 @@ class PriceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         data = serializer.validated_data
 
         if price.status == PriceStatus.ARCHIVED:
-            raise ValidationError("Archived prices cannot be updated")
+            raise ValidationError("Cannot update once archived.")
 
         price.update(
             amount=data.get("amount", price.amount),

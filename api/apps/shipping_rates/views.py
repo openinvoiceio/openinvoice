@@ -72,7 +72,7 @@ class ShippingRateRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         data = serializer.validated_data
 
         if shipping_rate.status == ShippingRateStatus.ARCHIVED:
-            raise ValidationError("Archived shipping rate cannot be updated")
+            raise ValidationError("Cannot update once archived.")
 
         shipping_rate.update(
             name=data.get("name", shipping_rate.name),

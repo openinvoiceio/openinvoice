@@ -307,7 +307,7 @@ def test_update_price_archived(api_client, user, account):
             {
                 "attr": None,
                 "code": "invalid",
-                "detail": "Archived prices cannot be updated",
+                "detail": "Cannot update once archived.",
             }
         ],
     }

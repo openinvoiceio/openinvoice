@@ -89,7 +89,7 @@ def test_update_coupon_requires_account(api_client, user):
     }
 
 
-def test_update_archived_coupon_allowed(api_client, user, account):
+def test_update_coupon_archived(api_client, user, account):
     coupon = CouponFactory(account=account, status=CouponStatus.ARCHIVED)
 
     api_client.force_login(user)
@@ -99,8 +99,17 @@ def test_update_archived_coupon_allowed(api_client, user, account):
         data={"name": "New"},
     )
 
-    assert response.status_code == 200
-    assert response.data["name"] == "New"
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "invalid",
+                "detail": "Cannot update once archived.",
+            }
+        ],
+    }
 
 
 def test_update_coupon_requires_authentication(api_client, account):

@@ -68,7 +68,7 @@ def test_update_shipping_rate_archived(api_client, user, account):
             {
                 "attr": None,
                 "code": "invalid",
-                "detail": "Archived shipping rate cannot be updated",
+                "detail": "Cannot update once archived.",
             }
         ],
     }

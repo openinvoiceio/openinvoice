@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
+from .choices import NumberingSystemStatus
 from .filtersets import NumberingSystemFilterSet
 from .models import NumberingSystem
 from .permissions import CustomNumberingSystemFeature
@@ -73,6 +74,9 @@ class NumberingSystemRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         serializer = NumberingSystemUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+
+        if numbering_system.status == NumberingSystemStatus.ARCHIVED:
+            raise ValidationError("Cannot update once archived.")
 
         numbering_system.update(
             template=data["template"],

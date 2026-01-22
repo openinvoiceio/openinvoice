@@ -83,7 +83,7 @@ class ProductRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         data = serializer.validated_data
 
         if product.status == ProductStatus.ARCHIVED:
-            raise ValidationError("Archived products cannot be updated")
+            raise ValidationError("Cannot update once archived.")
 
         product.update(
             name=data.get("name", product.name),

@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.numbering_systems.choices import NumberingSystemResetInterval
+from apps.numbering_systems.choices import NumberingSystemResetInterval, NumberingSystemStatus
 from tests.factories import (
     InvoiceFactory,
     NumberingSystemFactory,
@@ -72,6 +72,36 @@ def test_update_numbering_system_with_invoices(api_client, user, subscribed_acco
         "created_at": ANY,
         "updated_at": ANY,
         "archived_at": numbering_system.archived_at,
+    }
+
+
+def test_update_numbering_system_archived(api_client, user, subscribed_account):
+    numbering_system = NumberingSystemFactory(
+        account=subscribed_account,
+        status=NumberingSystemStatus.ARCHIVED,
+    )
+
+    api_client.force_login(user)
+    api_client.force_account(subscribed_account)
+    response = api_client.put(
+        f"/api/v1/numbering-systems/{numbering_system.id}",
+        data={
+            "template": "NEW-{yyyy}-{n}",
+            "description": "Updated",
+            "reset_interval": NumberingSystemResetInterval.MONTHLY,
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "invalid",
+                "detail": "Cannot update once archived.",
+            }
+        ],
     }
 
 

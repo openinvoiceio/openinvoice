@@ -3,6 +3,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
+from apps.taxes.choices import TaxRateStatus
 from tests.factories import TaxRateFactory
 
 pytestmark = pytest.mark.django_db
@@ -30,6 +31,29 @@ def test_update_tax_rate(api_client, user, account):
         "created_at": ANY,
         "updated_at": ANY,
         "archived_at": None,
+    }
+
+
+def test_update_tax_rate_archived(api_client, user, account):
+    tax = TaxRateFactory(account=account, status=TaxRateStatus.ARCHIVED)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/tax-rates/{tax.id}",
+        {"name": "New", "description": None, "percentage": "15.00", "country": "DE"},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "invalid",
+                "detail": "Cannot update once archived.",
+            }
+        ],
     }
 
 

@@ -1,11 +1,13 @@
 import structlog
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
+from .choices import CouponStatus
 from .filtersets import CouponFilterSet
 from .models import Coupon
 from .permissions import MaxCouponsLimit
@@ -71,6 +73,9 @@ class CouponRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         coupon = self.get_object()
         serializer = CouponUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        if coupon.status == CouponStatus.ARCHIVED:
+            raise ValidationError("Cannot update once archived.")
 
         coupon.update(name=serializer.validated_data.get("name"))
         logger.info(
