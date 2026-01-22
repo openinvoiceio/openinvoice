@@ -15,18 +15,10 @@ def zero(currency: str | Currency) -> Money:
     return Money(0, currency)
 
 
-def round_money(amount: Money) -> Money:
-    """Round ``amount`` to two decimal places using :data:`ROUND_HALF_UP`."""
-
-    quantized = amount.amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    return Money(quantized, amount.currency)
-
-
 def clamp_money(amount: Money) -> Money:
     """Round ``amount`` and clamp it to the database limit."""
 
-    capped = min(amount, Money(MAX_AMOUNT, amount.currency))
-    return round_money(capped)
+    return min(amount, Money(MAX_AMOUNT, amount.currency))
 
 
 def calculate_percentage_amount(base: Money, percentage: Decimal) -> Money:

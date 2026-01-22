@@ -1,12 +1,4 @@
-from django_filters import BaseInFilter, CharFilter, ChoiceFilter
-from djmoney import settings
+from django_filters import BaseInFilter, CharFilter
 
 
-class CharInFilter(BaseInFilter, CharFilter):
-    pass
-
-
-class CurrencyFilter(ChoiceFilter):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("choices", settings.CURRENCY_CHOICES)
-        super().__init__(*args, **kwargs)
+class CharInFilter(BaseInFilter, CharFilter): ...
