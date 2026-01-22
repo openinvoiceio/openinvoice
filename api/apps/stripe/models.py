@@ -8,6 +8,7 @@ from django.db import models
 from django.utils import timezone
 
 from .managers import StripeCustomerManager, StripeSubscriptionManager
+from .querysets import StripeSubscriptionQuerySet
 
 
 class StripeCustomer(models.Model):
@@ -56,7 +57,9 @@ class StripeSubscription(models.Model):
     canceled_at = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=32, blank=True, null=True)
 
-    objects = StripeSubscriptionManager()
+    objects = StripeSubscriptionManager.from_queryset(StripeSubscriptionQuerySet)()
 
     class Meta:
-        indexes = [models.Index(fields=["stripe_customer", "status"])]
+        indexes = [
+            models.Index(fields=["stripe_customer", "status"]),
+        ]

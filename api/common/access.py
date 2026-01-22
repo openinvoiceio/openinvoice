@@ -1,6 +1,7 @@
 from django.conf import settings
 
 from apps.accounts.models import Account
+from apps.stripe.models import StripeSubscription
 from common.choices import FeatureCode, LimitCode
 
 
@@ -8,7 +9,7 @@ def resolve_plan(account: Account) -> str:
     if not hasattr(settings, "STRIPE_API_KEY"):
         return settings.DEFAULT_PLAN
 
-    subscription = account.active_subscription
+    subscription = StripeSubscription.objects.for_account(account).active().first()
     if subscription is None:
         return settings.DEFAULT_PLAN
 

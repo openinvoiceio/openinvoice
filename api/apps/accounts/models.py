@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import uuid
-from contextlib import suppress
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
@@ -22,7 +21,7 @@ if TYPE_CHECKING:
     from apps.numbering_systems.models import NumberingSystem
 
 
-class Account(models.Model):  # type: ignore[django-manager-missing]
+class Account(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     legal_name = models.CharField(max_length=255, null=True)
@@ -65,19 +64,6 @@ class Account(models.Model):  # type: ignore[django-manager-missing]
     class Meta:
         ordering = ["-created_at"]
 
-    @property
-    def active_subscriptions(self):
-        stripe_customer = getattr(self, "stripe_customer", None)
-        if stripe_customer:
-            return stripe_customer.active_subscriptions
-        return []
-
-    @property
-    def active_subscription(self):
-        with suppress(IndexError):
-            return self.active_subscriptions[0]
-        return None
-
     def update(
         self,
         name: str,
@@ -115,7 +101,7 @@ class Account(models.Model):  # type: ignore[django-manager-missing]
             return
 
         self.is_active = False
-        self.save(update_fields=["is_active", "updated_at"])
+        self.save()
 
     def invite_member(self, *, email: str, invited_by: User) -> Invitation:
         self.invitations.filter(email=email).delete()

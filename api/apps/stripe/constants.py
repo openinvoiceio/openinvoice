@@ -1,1 +1,0 @@
-STRIPE_ACTIVE_SUBSCRIPTION_STATUSES = ["active", "trialing"]

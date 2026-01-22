@@ -15,7 +15,7 @@ class AccountMiddleware(MiddlewareMixin):
         if not request.user.is_authenticated:
             return
 
-        request.accounts = Account.objects.all().active().for_user(request.user).with_subscriptions()
+        request.accounts = Account.objects.for_user(request.user).active()
         account_id = get_active_account_session(request)
 
         if account_id is None:

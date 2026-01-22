@@ -1,30 +1,18 @@
 from __future__ import annotations
 
 from django.db import models
-from django.db.models import Prefetch
 
-from apps.stripe.constants import STRIPE_ACTIVE_SUBSCRIPTION_STATUSES
-from apps.stripe.models import StripeSubscription
 from apps.users.models import User
 
 from .choices import InvitationStatus
 
 
 class AccountQuerySet(models.QuerySet):
-    def active(self):
-        return self.filter(is_active=True)
-
     def for_user(self, user: User):
         return self.filter(members=user)
 
-    def with_subscriptions(self):
-        return self.select_related("stripe_customer").prefetch_related(
-            Prefetch(
-                "stripe_customer__subscriptions",
-                queryset=StripeSubscription.objects.filter(status__in=STRIPE_ACTIVE_SUBSCRIPTION_STATUSES),
-                to_attr="active_subscriptions",
-            ),
-        )
+    def active(self):
+        return self.filter(is_active=True)
 
 
 class InvitationQuerySet(models.QuerySet):
