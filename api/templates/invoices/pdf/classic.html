@@ -1,7 +1,5 @@
 {% load djmoney %}
 {% load inline_css %}
-{% load invoice %}
-{% load tax_id %}
 
 <!DOCTYPE html>
 <html lang="{{ language }}">
@@ -29,9 +27,9 @@
         </h1>
         {% if invoice.effective_account.logo %}
             <img
-                    src="{% encode_logo_base64 invoice.effective_account.logo %}"
-                    alt="logo"
-                    style="max-height: 32px;"
+                src="data:{{ invoice.effective_account.logo.content_type }};base64,{{ invoice.effective_account.logo.base64 }}"
+                alt="logo"
+                style="max-height: 32px;"
             />
         {% else %}
             <div style="font-size:12px">{{ invoice.effective_account.name }}</div>
@@ -100,7 +98,7 @@
             </p>
             {% for tax_id in invoice.effective_account.tax_ids.all %}
                 <p class="party-detail">
-                    <span>{{ tax_id.type|format_tax_id_type }}: {{ tax_id.number }}</span>
+                    <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
                 </p>
             {% endfor %}
         </section>
@@ -125,7 +123,7 @@
             </p>
             {% for tax_id in invoice.effective_customer.tax_ids.all %}
                 <p class="party-detail">
-                    <span>{{ tax_id.type|format_tax_id_type }}: {{ tax_id.number }}</span>
+                    <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
                 </p>
             {% endfor %}
         </section>
@@ -136,11 +134,7 @@
             {% money_localize invoice.total_amount %}
         </p>
         <p class="total-due">
-            {% if invoice.due_date %}
-                Due {{ invoice.due_date|date:"j E, Y" }}
-            {% else %}
-                Due {{ invoice.net_payment_term|due_from_term|date:"j E, Y" }}
-            {% endif %}
+            Due {{ invoice.effective_due_date|date:"j E, Y" }}
         </p>
     </section>
 
@@ -150,11 +144,15 @@
             <tr>
                 <th style="width:40%; text-align: start">Description</th>
                 <th style="width:10%; text-align: end">Quantity</th>
-                <th style="width:{% if invoice.tax_allocations.from_line.exists %}20%{% else %}25%{% endif %};text-align: end">Price</th>
+                <th style="width:{% if invoice.tax_allocations.from_line.exists %}20%{% else %}25%{% endif %};text-align: end">
+                    Price
+                </th>
                 {% if invoice.tax_allocations.from_line.exists %}
                     <th style="width:15%; text-align: end">Tax</th>
                 {% endif %}
-                <th style="width:{% if invoice.tax_allocations.from_line.exists %}15%{% else %}25%{% endif %}; text-align: end;">Amount</th>
+                <th style="width:{% if invoice.tax_allocations.from_line.exists %}15%{% else %}25%{% endif %}; text-align: end;">
+                    Amount
+                </th>
             </tr>
             </thead>
             <tbody>

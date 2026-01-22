@@ -18,7 +18,6 @@ from django.utils.functional import cached_property
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from apps.accounts.models import Account
 from apps.coupons.models import Coupon
 from apps.credit_notes.choices import CreditNoteStatus
 from apps.customers.models import Customer
@@ -254,13 +253,12 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         return self.generate_number()
 
-    @staticmethod
-    def calculate_due_date(account: Account, customer: Customer) -> date:
-        today = timezone.now().date()
-        net_payment_term = (
-            customer.net_payment_term if customer.net_payment_term is not None else account.net_payment_term
-        )
-        return today + relativedelta(days=net_payment_term)
+    @property
+    def effective_due_date(self) -> date:
+        if self.due_date is not None:
+            return self.due_date
+
+        return timezone.now().date() + relativedelta(days=self.net_payment_term)
 
     def calculate_outstanding_amount(self) -> Money:
         return max(

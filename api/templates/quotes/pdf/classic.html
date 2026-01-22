@@ -1,7 +1,5 @@
 {% load djmoney %}
 {% load inline_css %}
-{% load invoice %}
-{% load tax_id %}
 
 {% with has_line_taxes=quote.taxes.has_lines %}
     <!DOCTYPE html>
@@ -24,9 +22,9 @@
             <h1 class="title">Quote</h1>
             {% if quote.effective_account.logo %}
                 <img
-                        src="{% encode_logo_base64 quote.effective_account.logo %}"
-                        alt="logo"
-                        style="max-height: 32px;"
+                    src="data:{{ quote.effective_account.logo.content_type }};base64,{{ quote.effective_account.logo.base64 }}"
+                    alt="logo"
+                    style="max-height: 32px;"
                 />
             {% else %}
                 <div style="font-size:12px">{{ quote.effective_account.name }}</div>
@@ -84,7 +82,7 @@
                 {% endif %}
                 {% for tax_id in quote.effective_account.tax_ids.all %}
                     <p class="party-detail">
-                        <span>{{ tax_id.type|format_tax_id_type }}: {{ tax_id.number }}</span>
+                        <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
                     </p>
                 {% endfor %}
             </section>
@@ -107,7 +105,7 @@
                 {% endif %}
                 {% for tax_id in quote.effective_customer.tax_ids.all %}
                     <p class="party-detail">
-                        <span>{{ tax_id.type|format_tax_id_type }}: {{ tax_id.number }}</span>
+                        <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
                     </p>
                 {% endfor %}
             </section>

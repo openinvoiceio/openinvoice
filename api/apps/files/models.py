@@ -26,8 +26,11 @@ class File(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
-    def base64(self):
-        return base64.b64encode(self.data.read()).decode("utf-8")
+    def base64(self) -> str:
+        try:
+            return base64.b64encode(self.data.read()).decode("utf-8")
+        except (FileNotFoundError, OSError, ValueError, AttributeError, TypeError):
+            return ""
 
     def clone(self) -> File:
         self.data.open("rb")

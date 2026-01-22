@@ -39,7 +39,7 @@ class TaxRate(models.Model):
         self.description = description
         self.country = country
 
-        self.save(update_fields=["name", "description", "country", "updated_at"])
+        self.save()
 
     def archive(self) -> None:
         if self.status == TaxRateStatus.ARCHIVED:
@@ -73,3 +73,7 @@ class TaxId(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = TaxIdManager()
+
+    @property
+    def display_name(self) -> str:
+        return self.type.replace("_", " ").upper()
