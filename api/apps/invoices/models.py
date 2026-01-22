@@ -481,10 +481,10 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         self.total_paid_amount = Money(total_paid_amount or 0, self.currency)
         self.outstanding_amount = self.calculate_outstanding_amount()
-        self.save(update_fields=["total_paid_amount", "outstanding_amount", "updated_at"])
+        self.save()
 
         if self.outstanding_amount.amount == 0:
-            self.mark_as_paid()
+            self.mark_paid()
 
     def set_coupons(self, coupons: Iterable[Coupon]) -> None:
         self.coupons.clear()
@@ -535,12 +535,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         return pdf_file
 
-    def mark_as_paid(self) -> None:
-        self.status = InvoiceStatus.PAID
-        self.paid_at = timezone.now()
-        self.outstanding_amount = zero(self.currency)
-        self.save(update_fields=["status", "paid_at", "outstanding_amount"])
-
     def finalize(self) -> None:
         self.status = InvoiceStatus.OPEN
         self.opened_at = timezone.now()
@@ -561,8 +555,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.generate_pdf()
         self.save()
 
-        if not (self.lines.exists() and self.total_amount.amount > 0):
-            self.mark_as_paid()
+        if not (self.lines.exists() and self.outstanding_amount.amount > 0):
+            self.mark_paid()
         elif self.payment_provider and self.payment_connection_id:
             Payment.objects.checkout_invoice(invoice=self)
 
@@ -574,7 +568,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     def mark_paid(self, timestamp: datetime | None = None) -> None:
         self.status = InvoiceStatus.PAID
         self.paid_at = timestamp or timezone.now()
-        self.save(update_fields=["status", "paid_at"])
+        self.outstanding_amount = zero(self.currency)
+        self.save()
 
     # TODO: fix typing
     def update(
