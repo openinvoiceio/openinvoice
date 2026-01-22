@@ -21,7 +21,7 @@ from apps.numbering_systems.choices import (
     NumberingSystemResetInterval,
     NumberingSystemStatus,
 )
-from apps.portal.crypto import generate_portal_token
+from apps.portal.crypto import sign_portal_token
 from apps.prices.choices import PriceModel, PriceStatus
 from apps.products.choices import ProductStatus
 from apps.quotes.choices import QuoteDeliveryMethod, QuoteStatus
@@ -469,7 +469,7 @@ class CreditNoteLineFactory(DjangoModelFactory):
 
 class PortalTokenFactory(DictFactory):
     customer = SubFactory(CustomerFactory)
-    token = LazyAttribute(lambda o: generate_portal_token(o.customer))
+    token = LazyAttribute(lambda o: sign_portal_token(o.customer))
 
 
 class TaxIdFactory(DjangoModelFactory):

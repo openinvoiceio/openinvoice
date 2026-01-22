@@ -5,7 +5,7 @@ from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 
 from apps.customers.models import Customer
 
-from .crypto import get_customer_id_from_token
+from .crypto import unsign_portal_token
 
 logger = structlog.get_logger(__name__)
 
@@ -28,8 +28,7 @@ class PortalAuthentication(BaseAuthentication):
         except UnicodeError as e:
             raise AuthenticationFailed("Invalid token header") from e
 
-        customer_id = get_customer_id_from_token(token)
-        logger.info("Token", customer_id=customer_id, token=token)
+        customer_id = unsign_portal_token(token)
         if not customer_id:
             raise AuthenticationFailed("Invalid token")
 

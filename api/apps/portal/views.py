@@ -10,7 +10,7 @@ from apps.invoices.choices import InvoiceStatus
 from apps.invoices.models import Invoice
 
 from .authentication import PortalAuthentication
-from .crypto import generate_portal_token
+from .crypto import sign_portal_token
 from .serializers import (
     PortalCustomerSerializer,
     PortalCustomerUpdateSerializer,
@@ -35,7 +35,7 @@ class PortalSessionCreateAPIView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        token = generate_portal_token(customer=serializer.validated_data["customer"])
+        token = sign_portal_token(customer=serializer.validated_data["customer"])
         portal_url = f"{settings.BASE_URL}/customer-portal/{token}"
 
         serializer = PortalSessionSerializer({"portal_url": portal_url})

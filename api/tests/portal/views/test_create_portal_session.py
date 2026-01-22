@@ -3,7 +3,7 @@ import uuid
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.portal.crypto import generate_portal_token
+from apps.portal.crypto import sign_portal_token
 from tests.factories import CustomerFactory
 
 pytestmark = pytest.mark.django_db
@@ -17,7 +17,7 @@ def test_create_portal_session(api_client, user, account, settings):
     response = api_client.post("/api/v1/portal/sessions", {"customer_id": str(customer.id)})
 
     assert response.status_code == 200
-    expected_token = generate_portal_token(customer)
+    expected_token = sign_portal_token(customer)
     assert response.data == {"portal_url": f"{settings.BASE_URL}/customer-portal/{expected_token}"}
 
 
