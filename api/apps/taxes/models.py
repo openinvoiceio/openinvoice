@@ -9,6 +9,7 @@ from common.calculations import zero
 
 from .choices import TaxIdType, TaxRateStatus
 from .managers import TaxIdManager, TaxRateManager
+from .querysets import TaxRateQuerySet
 
 
 class TaxRate(models.Model):
@@ -23,7 +24,7 @@ class TaxRate(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = TaxRateManager()
+    objects = TaxRateManager.from_queryset(TaxRateQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]

@@ -28,7 +28,7 @@ from common.pdf import generate_pdf
 from .calculations import calculate_credit_note_line_amounts
 from .choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
 from .managers import CreditNoteLineManager, CreditNoteManager
-from .querysets import CreditNoteTaxQuerySet
+from .querysets import CreditNoteQuerySet, CreditNoteTaxQuerySet
 
 
 class CreditNote(models.Model):
@@ -71,7 +71,7 @@ class CreditNote(models.Model):
     voided_at = models.DateTimeField(null=True)
     pdf = models.OneToOneField("files.File", on_delete=models.SET_NULL, null=True, related_name="credit_notes_pdf")
 
-    objects = CreditNoteManager()
+    objects = CreditNoteManager.from_queryset(CreditNoteQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]

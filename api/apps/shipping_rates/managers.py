@@ -1,15 +1,12 @@
-from __future__ import annotations
-
 from django.db import models
 from djmoney.money import Money
 
 from apps.accounts.models import Account
 
 from .choices import ShippingRateStatus, ShippingRateTaxPolicy
-from .querysets import ShippingRateQuerySet
 
 
-class ShippingRateManager(models.Manager.from_queryset(ShippingRateQuerySet)):  # type: ignore[misc]
+class ShippingRateManager(models.Manager):
     def create_shipping_rate(
         self,
         account: Account,

@@ -13,7 +13,8 @@ from django_countries.fields import CountryField
 from apps.users.models import User
 
 from .choices import InvitationStatus, MemberRole
-from .managers import AccountManager, InvitationManager
+from .managers import AccountManager
+from .querysets import AccountQuerySet, InvitationQuerySet
 
 if TYPE_CHECKING:
     from apps.files.models import File
@@ -58,7 +59,7 @@ class Account(models.Model):  # type: ignore[django-manager-missing]
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = AccountManager()
+    objects = AccountManager.from_queryset(AccountQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]
@@ -148,7 +149,7 @@ class Invitation(models.Model):
     accepted_at = models.DateTimeField(null=True)
     rejected_at = models.DateTimeField(null=True)
 
-    objects = InvitationManager()
+    objects = models.Manager.from_queryset(InvitationQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]

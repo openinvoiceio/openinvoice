@@ -5,13 +5,11 @@ from decimal import Decimal
 from django.db import models
 
 from .choices import CouponStatus
-from .querysets import CouponQuerySet
 
 
-class CouponManager(models.Manager.from_queryset(CouponQuerySet)):  # type: ignore[misc]
+class CouponManager(models.Manager):
     def create_coupon(
         self,
-        *,
         account,
         name: str,
         currency: str | None,

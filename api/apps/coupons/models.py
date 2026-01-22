@@ -10,6 +10,7 @@ from common.calculations import zero
 
 from .choices import CouponStatus
 from .managers import CouponManager
+from .querysets import CouponQuerySet
 
 
 class Coupon(models.Model):
@@ -24,7 +25,7 @@ class Coupon(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = CouponManager()
+    objects = CouponManager.from_queryset(CouponQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]

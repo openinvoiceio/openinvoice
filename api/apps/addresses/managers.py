@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from .models import Address
 
 
-class AddressManager(models.Manager["Address"]):
+class AddressManager(models.Manager):
     def create_address(
         self,
         line1: str | None = None,

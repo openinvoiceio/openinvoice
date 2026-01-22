@@ -26,10 +26,6 @@ class QuoteQuerySet(models.QuerySet):
         )
 
 
-class QuoteLineQuerySet(models.QuerySet):
-    pass
-
-
 class QuoteDiscountQuerySet(models.QuerySet):
     def for_quote(self):
         return self.filter(quote_line__isnull=True)

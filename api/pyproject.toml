@@ -105,7 +105,7 @@ packages = ["apps", "config", "common"]
 plugins = ["mypy_django_plugin.main"]
 
 [[tool.mypy.overrides]]
-module = ["anymail.*", "allauth.*", "django_filters.*", "environ.*", "weasyprint.*"]
+module = ["anymail.*", "allauth.*", "django_filters.*", "environ.*", "weasyprint.*", "encrypted_fields.*"]
 ignore_missing_imports = true
 
 [tool.django-stubs]

@@ -8,7 +8,6 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
 from .choices import FilePurpose
-from .querysets import FileQuerySet
 
 if TYPE_CHECKING:
     from apps.accounts.models import Account
@@ -17,7 +16,7 @@ if TYPE_CHECKING:
     from .models import File
 
 
-class FileManager(models.Manager.from_queryset(FileQuerySet)["File"]):
+class FileManager(models.Manager):
     def upload_for_account(
         self,
         account: Account,

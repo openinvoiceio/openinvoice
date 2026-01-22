@@ -15,10 +15,9 @@ from apps.taxes.models import TaxId
 from common.calculations import zero
 
 from .choices import QuoteDeliveryMethod, QuoteStatus
-from .querysets import QuoteDiscountQuerySet, QuoteLineQuerySet, QuoteQuerySet, QuoteTaxQuerySet
 
 
-class QuoteManager(models.Manager.from_queryset(QuoteQuerySet)):
+class QuoteManager(models.Manager):
     def create_draft(
         self,
         account: Account,
@@ -73,7 +72,7 @@ class QuoteManager(models.Manager.from_queryset(QuoteQuerySet)):
         return quote
 
 
-class QuoteLineManager(models.Manager.from_queryset(QuoteLineQuerySet)):
+class QuoteLineManager(models.Manager):
     def create_line(
         self,
         quote,
@@ -106,14 +105,6 @@ class QuoteLineManager(models.Manager.from_queryset(QuoteLineQuerySet)):
             price.mark_as_used()
 
         return quote_line
-
-
-class QuoteDiscountManager(models.Manager.from_queryset(QuoteDiscountQuerySet)):
-    pass
-
-
-class QuoteTaxManager(models.Manager.from_queryset(QuoteTaxQuerySet)):
-    pass
 
 
 class QuoteCustomerManager(models.Manager):

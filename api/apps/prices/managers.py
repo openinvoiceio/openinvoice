@@ -6,10 +6,9 @@ from djmoney.money import Money
 from apps.products.models import Product
 
 from .choices import PriceModel, PriceStatus
-from .querysets import PriceQuerySet
 
 
-class PriceManager(models.Manager.from_queryset(PriceQuerySet)):  # type: ignore[misc]
+class PriceManager(models.Manager):
     def create_price(
         self,
         amount: Money | None,

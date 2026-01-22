@@ -29,11 +29,10 @@ from .choices import QuoteDeliveryMethod, QuoteStatus
 from .managers import (
     QuoteAccountManager,
     QuoteCustomerManager,
-    QuoteDiscountManager,
     QuoteLineManager,
     QuoteManager,
-    QuoteTaxManager,
 )
+from .querysets import QuoteDiscountQuerySet, QuoteQuerySet, QuoteTaxQuerySet
 
 
 class QuoteCustomer(models.Model):
@@ -148,7 +147,7 @@ class Quote(models.Model):
         null=True,
     )
 
-    objects = QuoteManager()
+    objects = QuoteManager.from_queryset(QuoteQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]
@@ -568,7 +567,7 @@ class QuoteDiscount(models.Model):
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = QuoteDiscountManager()
+    objects = models.Manager.from_queryset(QuoteDiscountQuerySet)()
 
     class Meta:
         ordering = ["created_at"]
@@ -617,7 +616,7 @@ class QuoteTax(models.Model):
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = QuoteTaxManager()
+    objects = models.Manager.from_queryset(QuoteTaxQuerySet)()
 
     class Meta:
         ordering = ["created_at"]

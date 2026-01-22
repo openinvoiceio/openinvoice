@@ -9,6 +9,7 @@ from apps.integrations.choices import PaymentProvider
 
 from .choices import PaymentStatus
 from .managers import PaymentManager
+from .querysets import PaymentQuerySet
 
 
 class Payment(models.Model):
@@ -28,7 +29,7 @@ class Payment(models.Model):
     received_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = PaymentManager()
+    objects = PaymentManager.from_queryset(PaymentQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]

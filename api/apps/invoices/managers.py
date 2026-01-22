@@ -20,18 +20,12 @@ from apps.taxes.models import TaxId
 from common.calculations import zero
 
 from .choices import InvoiceDeliveryMethod, InvoiceStatus
-from .querysets import (
-    InvoiceDiscountAllocationQuerySet,
-    InvoiceLineQuerySet,
-    InvoiceQuerySet,
-    InvoiceTaxAllocationQuerySet,
-)
 
 if TYPE_CHECKING:
     from .models import Invoice, InvoiceAccount, InvoiceCustomer
 
 
-class InvoiceCustomerManager(models.Manager["InvoiceCustomer"]):
+class InvoiceCustomerManager(models.Manager):
     def from_customer(self, customer: Customer) -> InvoiceCustomer:
         invoice_customer = self.create(
             name=customer.name,
@@ -49,7 +43,7 @@ class InvoiceCustomerManager(models.Manager["InvoiceCustomer"]):
         return invoice_customer
 
 
-class InvoiceAccountManager(models.Manager["InvoiceAccount"]):
+class InvoiceAccountManager(models.Manager):
     def from_account(self, account: Account) -> InvoiceAccount:
         invoice_account = self.create(
             name=account.name,
@@ -65,7 +59,7 @@ class InvoiceAccountManager(models.Manager["InvoiceAccount"]):
         return invoice_account
 
 
-class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
+class InvoiceManager(models.Manager):
     def create_draft(
         self,
         account: Account,
@@ -236,7 +230,7 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
         return invoice
 
 
-class InvoiceLineManager(models.Manager.from_queryset(InvoiceLineQuerySet)):
+class InvoiceLineManager(models.Manager):
     def create_line(
         self,
         invoice,
@@ -274,9 +268,3 @@ class InvoiceLineManager(models.Manager.from_queryset(InvoiceLineQuerySet)):
         invoice.recalculate()
 
         return invoice_line
-
-
-class InvoiceDiscountManager(models.Manager.from_queryset(InvoiceDiscountAllocationQuerySet)): ...
-
-
-class InvoiceTaxManager(models.Manager.from_queryset(InvoiceTaxAllocationQuerySet)): ...

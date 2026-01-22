@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from .models import StripeConnection
 
 
-class StripeConnectionManager(models.Manager["StripeConnection"]):
+class StripeConnectionManager(models.Manager):
     def create_connection(
         self,
         account: Account,

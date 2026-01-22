@@ -9,14 +9,10 @@ from django.utils import timezone
 from .choices import NumberingSystemAppliesTo, NumberingSystemResetInterval, NumberingSystemStatus
 from .formatting import render_template
 from .managers import NumberingSystemManager
+from .querysets import NumberingSystemQuerySet
 
 # TODO: implement uniqueness maintenance
 # TODO: implement starting point of numbering system
-
-
-"""
-- how to handle draft invoices and active invoices sequence?
-"""
 
 
 class NumberingSystem(models.Model):
@@ -35,7 +31,7 @@ class NumberingSystem(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = NumberingSystemManager()
+    objects = NumberingSystemManager.from_queryset(NumberingSystemQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]
@@ -65,7 +61,7 @@ class NumberingSystem(models.Model):
 
         self.save()
 
-    def render_number(self, *, count: int, effective_at: datetime) -> str:
+    def render_number(self, count: int, effective_at: datetime) -> str:
         return render_template(template=self.template, count=count, effective_at=effective_at)
 
     def archive(self) -> None:

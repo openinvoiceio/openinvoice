@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from .models import StripeCustomer, StripeSubscription
 
 
-class StripeCustomerManager(models.Manager["StripeCustomer"]):
+class StripeCustomerManager(models.Manager):
     def ensure_for_account(self, account: Account) -> StripeCustomer:
         try:
             return self.get(account=account)
@@ -26,7 +26,7 @@ class StripeCustomerManager(models.Manager["StripeCustomer"]):
             return self.create(customer_id=stripe_customer.id, account=account)
 
 
-class StripeSubscriptionManager(models.Manager["StripeSubscription"]):
+class StripeSubscriptionManager(models.Manager):
     def record_created_event(self, event: stripe.Event) -> StripeSubscription:
         StripeCustomer = apps.get_model("stripe", "StripeCustomer")
         stripe_customer = StripeCustomer.objects.get(customer_id=event.data.object["customer"])

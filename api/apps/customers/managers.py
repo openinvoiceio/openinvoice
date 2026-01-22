@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from .models import Customer
 
 
-class CustomerManager(models.Manager["Customer"]):
+class CustomerManager(models.Manager):
     def create_customer(
         self,
         account: Account,

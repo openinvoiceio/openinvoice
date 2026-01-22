@@ -10,12 +10,12 @@ if TYPE_CHECKING:
     from apps.users.models import User
 
 
-class FileQuerySet(models.QuerySet["File"]):
-    def for_account(self, account: Account) -> FileQuerySet:
+class FileQuerySet(models.QuerySet):
+    def for_account(self, account: Account):
         return self.filter(account=account)
 
-    def for_user(self, user: User) -> FileQuerySet:
+    def for_user(self, user: User):
         return self.filter(uploader=user)
 
-    def visible_to(self, account: Account, user: User) -> FileQuerySet:
+    def visible_to(self, account: Account, user: User):
         return self.filter(Q(account=account) | Q(uploader=user))

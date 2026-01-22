@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -14,7 +12,6 @@ from .exceptions import (
     InvoicePaymentAmountExceededError,
     PaymentCheckoutError,
 )
-from .querysets import PaymentQuerySet
 
 if TYPE_CHECKING:
     from apps.invoices.models import Invoice
@@ -22,16 +19,16 @@ if TYPE_CHECKING:
     from .models import Payment
 
 
-class PaymentManager(models.Manager.from_queryset(PaymentQuerySet)):
+class PaymentManager(models.Manager):
     def record_payment(
         self,
-        invoice: Invoice,
+        invoice: "Invoice",
         amount: Money,
         currency: str,
         description: str | None = None,
         transaction_id: str | None = None,
         received_at: datetime | None = None,
-    ) -> Payment:
+    ):
         if amount > invoice.outstanding_amount:
             raise InvoicePaymentAmountExceededError
 
@@ -49,7 +46,7 @@ class PaymentManager(models.Manager.from_queryset(PaymentQuerySet)):
 
         return payment
 
-    def checkout_invoice(self, invoice: Invoice) -> Payment:
+    def checkout_invoice(self, invoice: "Invoice") -> "Payment":
         backend = get_payment_integration(slug=invoice.payment_provider)
         payment = self.create(
             account=invoice.account,

@@ -11,6 +11,7 @@ from common.calculations import zero
 
 from .choices import PriceModel, PriceStatus
 from .managers import PriceManager
+from .querysets import PriceQuerySet
 
 
 class Price(models.Model):
@@ -33,7 +34,7 @@ class Price(models.Model):
         related_name="prices",
     )
 
-    objects = PriceManager()
+    objects = PriceManager.from_queryset(PriceQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]

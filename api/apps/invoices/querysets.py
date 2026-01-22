@@ -10,7 +10,7 @@ from apps.invoices.choices import InvoiceDiscountSource, InvoiceTaxSource
 
 
 class InvoiceQuerySet(models.QuerySet):
-    def revisions(self, head_id: UUID) -> InvoiceQuerySet:
+    def revisions(self, head_id: UUID):
         def make_cte(cte):
             anchor = (
                 self.filter(head_id=head_id, id=F("head__root_id"))
@@ -29,10 +29,6 @@ class InvoiceQuerySet(models.QuerySet):
             cte,
             select=cte.join(self, id=cte.col.id).annotate(depth=cte.col.depth).order_by("-depth"),
         )
-
-
-class InvoiceLineQuerySet(models.QuerySet):
-    """Custom queryset for invoice lines."""
 
 
 class InvoiceDiscountAllocationQuerySet(models.QuerySet):

@@ -8,6 +8,7 @@ from apps.files.models import File
 
 from .choices import ProductStatus
 from .managers import ProductManager
+from .querysets import ProductQuerySet
 
 if TYPE_CHECKING:
     from apps.prices.models import Price
@@ -29,7 +30,7 @@ class Product(models.Model):
         "prices.Price", on_delete=models.SET_NULL, null=True, related_name="default_product"
     )
 
-    objects = ProductManager()
+    objects = ProductManager.from_queryset(ProductQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]

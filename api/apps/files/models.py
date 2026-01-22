@@ -8,6 +8,7 @@ from django.db import models
 
 from .choices import FilePurpose
 from .managers import FileManager
+from .querysets import FileQuerySet
 
 
 class File(models.Model):
@@ -20,7 +21,7 @@ class File(models.Model):
     data = models.FileField(upload_to="files/")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = FileManager()
+    objects = FileManager.from_queryset(FileQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]

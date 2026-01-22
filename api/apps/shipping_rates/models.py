@@ -7,6 +7,7 @@ from djmoney.money import Money
 
 from .choices import ShippingRateStatus, ShippingRateTaxPolicy
 from .managers import ShippingRateManager
+from .querysets import ShippingRateQuerySet
 
 
 class ShippingRate(models.Model):
@@ -27,7 +28,7 @@ class ShippingRate(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
     account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, related_name="shipping_rates")
 
-    objects = ShippingRateManager()
+    objects = ShippingRateManager.from_queryset(ShippingRateQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]

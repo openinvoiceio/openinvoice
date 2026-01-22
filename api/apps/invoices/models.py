@@ -37,11 +37,10 @@ from .choices import InvoiceDeliveryMethod, InvoiceDiscountSource, InvoiceStatus
 from .managers import (
     InvoiceAccountManager,
     InvoiceCustomerManager,
-    InvoiceDiscountManager,
     InvoiceLineManager,
     InvoiceManager,
-    InvoiceTaxManager,
 )
+from .querysets import InvoiceDiscountAllocationQuerySet, InvoiceQuerySet, InvoiceTaxAllocationQuerySet
 
 
 class InvoiceCustomer(models.Model):
@@ -185,7 +184,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         null=True,
     )
 
-    objects = InvoiceManager()
+    objects = InvoiceManager.from_queryset(InvoiceQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]
@@ -851,7 +850,7 @@ class InvoiceDiscountAllocation(models.Model):
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = InvoiceDiscountManager()
+    objects = InvoiceDiscountAllocationQuerySet.as_manager()
 
     class Meta:
         ordering = ["created_at"]
@@ -891,7 +890,7 @@ class InvoiceTaxAllocation(models.Model):
     # TODO: also save taxable_amount
     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = InvoiceTaxManager()
+    objects = InvoiceTaxAllocationQuerySet.as_manager()
 
     class Meta:
         ordering = ["created_at"]

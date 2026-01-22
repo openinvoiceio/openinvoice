@@ -9,10 +9,9 @@ from apps.users.models import User
 from common.utils import country_to_currency
 
 from .choices import MemberRole
-from .querysets import AccountQuerySet, InvitationQuerySet
 
 
-class AccountManager(models.Manager.from_queryset(AccountQuerySet)):  # type: ignore[misc]
+class AccountManager(models.Manager):
     def create_account(
         self,
         name: str,
@@ -52,7 +51,3 @@ class AccountManager(models.Manager.from_queryset(AccountQuerySet)):  # type: ig
         account.save(update_fields=["invoice_numbering_system", "credit_note_numbering_system", "updated_at"])
 
         return account
-
-
-class InvitationManager(models.Manager.from_queryset(InvitationQuerySet)):
-    pass

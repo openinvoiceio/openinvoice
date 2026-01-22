@@ -14,7 +14,6 @@ from common.calculations import clamp_money, zero
 
 from .calculations import calculate_credit_note_line_amounts
 from .choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
-from .querysets import CreditNoteQuerySet
 
 if TYPE_CHECKING:
     from apps.invoices.models import InvoiceLine
@@ -22,7 +21,7 @@ if TYPE_CHECKING:
     from .models import CreditNote, CreditNoteLine
 
 
-class CreditNoteManager(models.Manager.from_queryset(CreditNoteQuerySet)):
+class CreditNoteManager(models.Manager):
     def total_for_invoice(self, invoice: Invoice, *, exclude: CreditNote | None = None) -> Money:
         queryset = self.filter(invoice=invoice).issued()
         if exclude:
@@ -100,7 +99,7 @@ class CreditNoteManager(models.Manager.from_queryset(CreditNoteQuerySet)):
         return credit_note
 
 
-class CreditNoteLineManager(models.Manager["CreditNoteLine"]):
+class CreditNoteLineManager(models.Manager):
     def from_invoice_line(
         self,
         credit_note: CreditNote,

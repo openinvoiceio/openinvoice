@@ -5,10 +5,9 @@ from django.db import models
 from apps.files.models import File
 
 from .choices import ProductStatus
-from .querysets import ProductQuerySet
 
 
-class ProductManager(models.Manager.from_queryset(ProductQuerySet)):  # type: ignore[misc]
+class ProductManager(models.Manager):
     def create_product(
         self,
         account,
