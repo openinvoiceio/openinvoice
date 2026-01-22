@@ -8,9 +8,9 @@ from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
 from apps.integrations.choices import PaymentProvider
+from apps.integrations.exceptions import IntegrationError
 from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from apps.payments.choices import PaymentStatus
-from apps.payments.exceptions import PaymentCheckoutError
 from tests.factories import InvoiceFactory, InvoiceLineFactory, StripeConnectionFactory
 
 pytestmark = pytest.mark.django_db
@@ -316,7 +316,7 @@ def test_finalize_invoice_with_payment_provider_checkout_error(api_client, user,
         outstanding_amount=Decimal("10.00"),
     )
     InvoiceLineFactory(invoice=invoice, description="Test line", quantity=1, unit_amount=Decimal("10.00"))
-    stripe_checkout_mock.side_effect = PaymentCheckoutError("Checkout error")
+    stripe_checkout_mock.side_effect = IntegrationError("Checkout error")
 
     api_client.force_login(user)
     api_client.force_account(account)

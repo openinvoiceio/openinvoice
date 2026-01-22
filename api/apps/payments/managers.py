@@ -6,12 +6,9 @@ from django.utils import timezone
 from djmoney.money import Money
 
 from apps.integrations.base import get_payment_integration
+from apps.integrations.exceptions import IntegrationError
 
 from .choices import PaymentStatus
-from .exceptions import (
-    InvoicePaymentAmountExceededError,
-    PaymentCheckoutError,
-)
 
 if TYPE_CHECKING:
     from apps.invoices.models import Invoice
@@ -29,9 +26,6 @@ class PaymentManager(models.Manager):
         transaction_id: str | None = None,
         received_at: datetime | None = None,
     ):
-        if amount > invoice.outstanding_amount:
-            raise InvoicePaymentAmountExceededError
-
         payment = self.create(
             account=invoice.account,
             status=PaymentStatus.SUCCEEDED,
@@ -60,7 +54,7 @@ class PaymentManager(models.Manager):
 
         try:
             transaction_id, checkout_url = backend.checkout(invoice=invoice, payment_id=payment.id)
-        except PaymentCheckoutError as e:
+        except IntegrationError as e:
             payment.fail(message=str(e), extra_data={}, received_at=timezone.now())
             payment.invoices.add(invoice)
             # TODO: refine this behavior, do we actually want to silently fail?
