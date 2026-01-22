@@ -77,7 +77,7 @@ class CouponRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         if coupon.status == CouponStatus.ARCHIVED:
             raise ValidationError("Cannot update once archived.")
 
-        coupon.update(name=serializer.validated_data.get("name"))
+        coupon.update(name=serializer.validated_data.get("name", coupon.name))
         logger.info(
             "Coupon updated",
             account_id=request.account.id,

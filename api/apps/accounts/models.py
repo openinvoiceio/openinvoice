@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from contextlib import suppress
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -156,7 +157,7 @@ class Invitation(models.Model):
 
     @property
     def is_expired(self) -> bool:
-        expiration_date = self.created_at + timezone.timedelta(days=settings.INVITATION_EXPIRATION_DAYS)
+        expiration_date = self.created_at + timedelta(days=settings.INVITATION_EXPIRATION_DAYS)
         return timezone.now() > expiration_date
 
     def accept(self, user: User) -> Member:

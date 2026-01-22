@@ -59,7 +59,7 @@ class StripeIntegration(PaymentProviderIntegration):
 
         client = stripe.StripeClient(api_key=connection.api_key)
         try:
-            session = client.checkout.Session.create(
+            session = client.checkout.sessions.create(
                 mode="payment",
                 customer_email=invoice.customer.email,
                 client_reference_id=str(payment_id),

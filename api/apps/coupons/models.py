@@ -37,9 +37,9 @@ class Coupon(models.Model):
             )
         ]
 
-    def update(self, name: str | None = None) -> None:
+    def update(self, name: str) -> None:
         self.name = name
-        self.save(update_fields=["name", "updated_at"])
+        self.save()
 
     def archive(self) -> None:
         if self.status == CouponStatus.ARCHIVED:

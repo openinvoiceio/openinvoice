@@ -546,7 +546,7 @@ INVITATION_EXPIRATION_DAYS = env("DJANGO_INVITATION_EXPIRATION_DAYS", default=7)
 # Plans
 
 DEFAULT_PLAN = "default"
-PLANS = {
+PLANS: dict = {
     DEFAULT_PLAN: {
         "name": "",
         "features": {

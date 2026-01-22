@@ -1,4 +1,5 @@
 import uuid
+from typing import TypeAlias
 
 from django.db import models
 from django.utils.functional import empty
@@ -6,7 +7,7 @@ from django_countries.fields import CountryField
 
 from .managers import AddressManager
 
-UnsetType = type(empty)
+UnsetType: TypeAlias = type(empty)  # noqa: UP040
 
 
 class Address(models.Model):

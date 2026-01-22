@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from django.db import models
 from django.utils import timezone
@@ -47,7 +47,7 @@ class PaymentManager(models.Manager):
         return payment
 
     def checkout_invoice(self, invoice: "Invoice") -> "Payment":
-        backend = get_payment_integration(slug=invoice.payment_provider)
+        backend = get_payment_integration(cast(str, invoice.payment_provider))
         payment = self.create(
             account=invoice.account,
             status=PaymentStatus.PENDING,
@@ -59,7 +59,7 @@ class PaymentManager(models.Manager):
         )
 
         try:
-            transaction_id, checkout_url = backend.checkout(invoice=invoice, payment=payment)
+            transaction_id, checkout_url = backend.checkout(invoice=invoice, payment_id=payment.id)
         except PaymentCheckoutError as e:
             payment.fail(message=str(e), extra_data={}, received_at=timezone.now())
             payment.invoices.add(invoice)

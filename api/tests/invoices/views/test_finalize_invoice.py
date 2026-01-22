@@ -298,7 +298,7 @@ def test_finalize_invoice_with_payment_provider(api_client, user, account, strip
     assert payment.status == PaymentStatus.PENDING
     assert payment.provider == PaymentProvider.STRIPE
     assert payment.connection_id == connection.id
-    stripe_checkout_mock.assert_called_once_with(invoice=invoice, payment=payment)
+    stripe_checkout_mock.assert_called_once_with(invoice=invoice, payment_id=payment.id)
 
 
 def test_finalize_invoice_with_payment_provider_checkout_error(api_client, user, account, stripe_checkout_mock):
@@ -327,7 +327,7 @@ def test_finalize_invoice_with_payment_provider_checkout_error(api_client, user,
     assert payment.message == "Checkout error"
     assert payment.extra_data == {}
     assert payment.received_at is not None
-    stripe_checkout_mock.assert_called_once_with(invoice=invoice, payment=payment)
+    stripe_checkout_mock.assert_called_once_with(invoice=invoice, payment_id=payment.id)
 
 
 def test_finalize_invoice_without_due_date(api_client, user, account):

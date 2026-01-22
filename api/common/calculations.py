@@ -3,12 +3,13 @@ from __future__ import annotations
 from decimal import ROUND_HALF_UP, Decimal
 
 from djmoney.money import Money
+from moneyed import Currency
 
 MAX_AMOUNT = Decimal("999999999.99")
 CENT = Decimal("0.01")
 
 
-def zero(currency: str) -> Money:
+def zero(currency: str | Currency) -> Money:
     """Return a zero-valued :class:`Money` in ``currency``."""
 
     return Money(0, currency)
