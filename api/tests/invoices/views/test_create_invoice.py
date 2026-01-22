@@ -111,7 +111,9 @@ def test_create_invoice(api_client, user, account):
         "lines": [],
         "coupons": [],
         "discounts": [],
+        "total_discounts": [],
         "tax_rates": [],
+        "taxes": [],
         "total_taxes": [],
         "shipping": None,
     }
@@ -194,11 +196,10 @@ def test_create_invoice_with_shipping(api_client, user, account):
                 "created_at": ANY,
             }
         ],
-        "tax_allocations": [
+        "total_taxes": [
             {
                 "tax_rate_id": str(tax_rate.id),
                 "amount": "1.00",
-                "source": "shipping",
             }
         ],
     }

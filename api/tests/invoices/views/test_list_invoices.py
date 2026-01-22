@@ -106,7 +106,9 @@ def test_list_invoices(api_client, user, account):
                 "lines": [],
                 "coupons": [],
                 "discounts": [],
+                "total_discounts": [],
                 "tax_rates": [],
+                "taxes": [],
                 "total_taxes": [],
                 "shipping": None,
             }
@@ -160,10 +162,11 @@ def test_list_invoices_with_line(api_client, user, account):
             "credit_quantity": 0,
             "outstanding_quantity": 1,
             "coupons": [],
-            "discount_allocations": [],
             "discounts": [],
+            "total_discounts": [],
             "tax_rates": [],
-            "tax_allocations": [],
+            "taxes": [],
+            "total_taxes": [],
         }
     ]
 

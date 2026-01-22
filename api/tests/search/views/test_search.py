@@ -181,7 +181,9 @@ def test_search_all(api_client, user, account):
                 "lines": [],
                 "coupons": [],
                 "discounts": [],
+                "total_discounts": [],
                 "tax_rates": [],
+                "taxes": [],
                 "total_taxes": [],
                 "shipping": None,
             }

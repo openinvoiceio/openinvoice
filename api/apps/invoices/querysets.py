@@ -32,45 +32,28 @@ class InvoiceQuerySet(models.QuerySet):
 
 
 class InvoiceDiscountAllocationQuerySet(models.QuerySet):
-    def line_discounts(self):
-        return (
-            self.values("currency", "coupon_id", "coupon__name")
-            .filter(source=InvoiceDiscountSource.LINE)
-            .annotate(amount=models.Sum("amount"))
-            .order_by("currency", "coupon_id")
-        )
+    def from_invoice(self):
+        return self.filter(source=InvoiceDiscountSource.INVOICE)
 
-    def invoice_discounts(self):
-        return (
-            self.values("currency", "coupon_id", "coupon__name")
-            .filter(source=InvoiceDiscountSource.INVOICE)
-            .annotate(amount=models.Sum("amount"))
-            .order_by("currency", "coupon_id")
-        )
+    def from_line(self):
+        return self.filter(source=InvoiceDiscountSource.LINE)
 
-    # TODO: add total_discounts too
+    def aggregate_coupon(self):
+        return (
+            self.values("coupon_id", name=F("coupon__name")).annotate(amount=models.Sum("amount")).order_by("coupon_id")
+        )
 
 
 class InvoiceTaxAllocationQuerySet(models.QuerySet):
-    def line_taxes(self):
-        return (
-            self.values("currency", "tax_rate_id", "tax_rate__name", "tax_rate__percentage")
-            .filter(source=InvoiceTaxSource.LINE)
-            .annotate(amount=models.Sum("amount"))
-            .order_by("currency", "tax_rate_id")
-        )
+    def from_invoice(self):
+        return self.filter(source=InvoiceTaxSource.INVOICE)
 
-    def invoice_taxes(self):
-        return (
-            self.values("currency", "tax_rate_id", "tax_rate__name", "tax_rate__percentage")
-            .filter(source=InvoiceTaxSource.INVOICE)
-            .annotate(amount=models.Sum("amount"))
-            .order_by("currency", "tax_rate_id")
-        )
+    def from_line(self):
+        return self.filter(source=InvoiceTaxSource.LINE)
 
-    def total_taxes(self):
+    def aggregate_tax_rate(self):
         return (
-            self.values("currency", "tax_rate_id", "tax_rate__name", "tax_rate__percentage")
+            self.values("tax_rate_id", name=F("tax_rate__name"), percentage=F("tax_rate__percentage"))
             .annotate(amount=models.Sum("amount"))
-            .order_by("currency", "tax_rate_id")
+            .order_by("tax_rate_id")
         )

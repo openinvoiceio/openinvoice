@@ -129,7 +129,9 @@ def test_update_invoice(api_client, user, account):
         "lines": [],
         "coupons": [],
         "discounts": [],
+        "total_discounts": [],
         "tax_rates": [],
+        "taxes": [],
         "total_taxes": [],
         "shipping": None,
     }
@@ -202,11 +204,10 @@ def test_update_invoice_add_shipping(api_client, user, account):
                 "archived_at": tax_rate.archived_at,
             }
         ],
-        "tax_allocations": [
+        "total_taxes": [
             {
                 "tax_rate_id": str(tax_rate.id),
                 "amount": "2.00",
-                "source": "shipping",
             }
         ],
     }
@@ -267,11 +268,10 @@ def test_update_invoice_existing_shipping(api_client, user, account):
                 "archived_at": new_tax_rate.archived_at,
             }
         ],
-        "tax_allocations": [
+        "total_taxes": [
             {
                 "tax_rate_id": str(new_tax_rate.id),
                 "amount": "4.50",
-                "source": "shipping",
             }
         ],
     }

@@ -47,10 +47,11 @@ def test_create_invoice_line_from_unit_amount(api_client, user, account):
         "credit_quantity": 0,
         "outstanding_quantity": 1,
         "coupons": [],
-        "discount_allocations": [],
         "discounts": [],
+        "total_discounts": [],
         "tax_rates": [],
-        "tax_allocations": [],
+        "taxes": [],
+        "total_taxes": [],
     }
     invoice.refresh_from_db()
     assert invoice.subtotal_amount.amount == Decimal("10.00")
@@ -94,10 +95,11 @@ def test_create_invoice_line_from_flat_price(api_client, user, account):
         "credit_quantity": 0,
         "outstanding_quantity": 1,
         "coupons": [],
-        "discount_allocations": [],
         "discounts": [],
+        "total_discounts": [],
         "tax_rates": [],
-        "tax_allocations": [],
+        "taxes": [],
+        "total_taxes": [],
     }
     invoice.refresh_from_db()
     assert invoice.subtotal_amount.amount == Decimal("10.00")
@@ -205,10 +207,11 @@ def test_create_invoice_line_with_required_only_fields(api_client, user, account
         "credit_quantity": 0,
         "outstanding_quantity": 1,
         "coupons": [],
-        "discount_allocations": [],
         "discounts": [],
+        "total_discounts": [],
         "tax_rates": [],
-        "tax_allocations": [],
+        "taxes": [],
+        "total_taxes": [],
     }
     invoice.refresh_from_db()
     assert invoice.subtotal_amount.amount == Decimal("0.00")

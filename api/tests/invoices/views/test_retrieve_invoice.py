@@ -104,7 +104,9 @@ def test_retrieve_invoice(api_client, user, account):
         "lines": [],
         "coupons": [],
         "discounts": [],
+        "total_discounts": [],
         "tax_rates": [],
+        "taxes": [],
         "total_taxes": [],
         "shipping": None,
     }
@@ -148,10 +150,11 @@ def test_retrieve_invoice_with_line(api_client, user, account):
             "outstanding_amount": "10.00",
             "outstanding_quantity": 1,
             "coupons": [],
-            "discount_allocations": [],
             "discounts": [],
+            "total_discounts": [],
             "tax_rates": [],
-            "tax_allocations": [],
+            "taxes": [],
+            "total_taxes": [],
         }
     ]
 
@@ -179,6 +182,12 @@ def test_retrieve_invoice_excludes_line_discounts_from_invoice_level(api_client,
 
     assert response.status_code == 200
     assert response.data["discounts"] == []
+    assert response.data["total_discounts"] == [
+        {
+            "coupon_id": str(coupon.id),
+            "amount": "2.00",
+        }
+    ]
     line_data = response.data["lines"][0]
     assert line_data["discounts"] == [
         {
@@ -186,11 +195,10 @@ def test_retrieve_invoice_excludes_line_discounts_from_invoice_level(api_client,
             "amount": "2.00",
         }
     ]
-    assert line_data["discount_allocations"] == [
+    assert line_data["total_discounts"] == [
         {
             "coupon_id": str(coupon.id),
             "amount": "2.00",
-            "source": "line",
         }
     ]
 
@@ -217,6 +225,7 @@ def test_retrieve_invoice_excludes_line_taxes_from_invoice_level(api_client, use
     response = api_client.get(f"/api/v1/invoices/{invoice.id}")
 
     assert response.status_code == 200
+    assert response.data["taxes"] == []
     assert response.data["total_taxes"] == [
         {
             "tax_rate_id": str(tax_rate.id),
@@ -224,11 +233,16 @@ def test_retrieve_invoice_excludes_line_taxes_from_invoice_level(api_client, use
         }
     ]
     line_data = response.data["lines"][0]
-    assert line_data["tax_allocations"] == [
+    assert line_data["taxes"] == [
         {
             "tax_rate_id": str(tax_rate.id),
             "amount": "2.00",
-            "source": "line",
+        }
+    ]
+    assert line_data["total_taxes"] == [
+        {
+            "tax_rate_id": str(tax_rate.id),
+            "amount": "2.00",
         }
     ]
 

@@ -514,13 +514,12 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         return shipping
 
     def generate_pdf(self) -> File:
-        invoice = Invoice.objects.get(id=self.id)
-        filename = f"{invoice.id}.pdf"
-        html = render_to_string("invoices/pdf/classic.html", {"invoice": invoice})
+        filename = f"{self.id}.pdf"
+        html = render_to_string("invoices/pdf/classic.html", {"invoice": self})
         pdf_content = generate_pdf(html)
 
         pdf_file = File.objects.upload_for_account(
-            account=invoice.account,
+            account=self.account,
             purpose=FilePurpose.INVOICE_PDF,
             filename=filename,
             data=SimpleUploadedFile(
