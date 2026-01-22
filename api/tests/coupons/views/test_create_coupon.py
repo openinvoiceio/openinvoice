@@ -24,8 +24,10 @@ def test_create_coupon_with_amount(api_client, user, account):
         "currency": account.default_currency,
         "amount": "10.00",
         "percentage": None,
+        "status": "active",
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": None,
     }
 
 
@@ -45,8 +47,10 @@ def test_create_coupon_with_percentage(api_client, user, account):
         "currency": account.default_currency,
         "amount": None,
         "percentage": "5.00",
+        "status": "active",
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": None,
     }
 
 

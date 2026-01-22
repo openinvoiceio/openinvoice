@@ -1,6 +1,11 @@
 from django.db import models
 
 
+class TaxRateStatus(models.TextChoices):
+    ACTIVE = "active", "Active"
+    ARCHIVED = "archived", "Archived"
+
+
 class TaxIdType(models.TextChoices):
     UNKNOWN = "unknown", "unknown"
     AD_NRT = "ad_nrt", "ad_nrt"

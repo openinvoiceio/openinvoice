@@ -4,6 +4,7 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
+from apps.taxes.choices import TaxRateStatus
 from apps.taxes.models import TaxRate
 from tests.factories import TaxRateFactory
 
@@ -23,16 +24,16 @@ def test_list_tax_rates(api_client, user, account):
     assert [r["id"] for r in response.data["results"]] == [str(second.id), str(first.id)]
 
 
-def test_list_tax_rates_filter_is_active(api_client, user, account):
-    TaxRateFactory(account=account, is_active=True)
-    inactive = TaxRateFactory(account=account, is_active=False)
+def test_list_tax_rates_filter_by_status(api_client, user, account):
+    TaxRateFactory(account=account, status=TaxRateStatus.ACTIVE)
+    archived = TaxRateFactory(account=account, status=TaxRateStatus.ARCHIVED)
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get("/api/v1/tax-rates", {"is_active": "false"})
+    response = api_client.get("/api/v1/tax-rates", {"status": "archived"})
 
     assert response.status_code == 200
-    assert [r["id"] for r in response.data["results"]] == [str(inactive.id)]
+    assert [r["id"] for r in response.data["results"]] == [str(archived.id)]
 
 
 def test_list_tax_rates_filter_created_at_after(api_client, user, account):

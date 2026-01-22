@@ -14,7 +14,8 @@ def test_archive_tax_rate(api_client, user, account):
     response = api_client.post(f"/api/v1/tax-rates/{tax.id}/archive")
 
     assert response.status_code == 200
-    assert response.data["is_active"] is False
+    assert response.data["status"] == "archived"
+    assert response.data["archived_at"] is not None
 
 
 def test_archive_tax_rate_requires_account(api_client, user):

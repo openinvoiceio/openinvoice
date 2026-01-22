@@ -5,7 +5,7 @@ from djmoney.money import Money
 
 from apps.products.models import Product
 
-from .choices import PriceModel
+from .choices import PriceModel, PriceStatus
 from .querysets import PriceQuerySet
 
 
@@ -25,7 +25,7 @@ class PriceManager(models.Manager.from_queryset(PriceQuerySet)):  # type: ignore
             currency=currency,
             amount=amount or Money(0, currency),
             model=model or PriceModel.FLAT,
-            is_active=True,
+            status=PriceStatus.ACTIVE,
             metadata=metadata or {},
             code=code,
         )

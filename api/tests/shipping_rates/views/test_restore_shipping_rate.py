@@ -3,17 +3,22 @@ import uuid
 import pytest
 from django.utils import timezone
 
+from apps.shipping_rates.choices import ShippingRateStatus
 from tests.factories import ShippingRateFactory
 
 pytestmark = pytest.mark.django_db
 
 
-def test_unarchive_shipping_rate(api_client, user, account):
-    shipping_rate = ShippingRateFactory(account=account, is_active=False, archived_at=timezone.now())
+def test_restore_shipping_rate(api_client, user, account):
+    shipping_rate = ShippingRateFactory(
+        account=account,
+        status=ShippingRateStatus.ARCHIVED,
+        archived_at=timezone.now(),
+    )
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.post(f"/api/v1/shipping-rates/{shipping_rate.id}/unarchive")
+    response = api_client.post(f"/api/v1/shipping-rates/{shipping_rate.id}/restore")
 
     assert response.status_code == 200
     assert response.data == {
@@ -24,32 +29,32 @@ def test_unarchive_shipping_rate(api_client, user, account):
         "currency": shipping_rate.currency,
         "amount": str(shipping_rate.amount.amount),
         "tax_policy": shipping_rate.tax_policy,
-        "is_active": True,
+        "status": "active",
         "metadata": shipping_rate.metadata,
-        "archived_at": None,
         "created_at": response.data["created_at"],
         "updated_at": response.data["updated_at"],
+        "archived_at": None,
     }
 
 
-def test_unarchive_shipping_rate_not_archived(api_client, user, account):
-    shipping_rate = ShippingRateFactory(account=account, is_active=True)
+def test_restore_shipping_rate_not_archived(api_client, user, account):
+    shipping_rate = ShippingRateFactory(account=account, status=ShippingRateStatus.ACTIVE)
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.post(f"/api/v1/shipping-rates/{shipping_rate.id}/unarchive")
+    response = api_client.post(f"/api/v1/shipping-rates/{shipping_rate.id}/restore")
 
     assert response.status_code == 200
-    assert response.data["is_active"] is True
+    assert response.data["status"] == "active"
     assert response.data["archived_at"] is None
 
 
-def test_unarchive_shipping_rate_not_found(api_client, user, account):
+def test_restore_shipping_rate_not_found(api_client, user, account):
     shipping_rate_id = uuid.uuid4()
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.post(f"/api/v1/shipping-rates/{shipping_rate_id}/unarchive")
+    response = api_client.post(f"/api/v1/shipping-rates/{shipping_rate_id}/restore")
 
     assert response.status_code == 404
     assert response.data == {
@@ -64,12 +69,12 @@ def test_unarchive_shipping_rate_not_found(api_client, user, account):
     }
 
 
-def test_unarchive_shipping_rate_rejects_foreign_account(api_client, user, account):
+def test_restore_shipping_rate_rejects_foreign_account(api_client, user, account):
     other_shipping_rate = ShippingRateFactory()
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.post(f"/api/v1/shipping-rates/{other_shipping_rate.id}/unarchive")
+    response = api_client.post(f"/api/v1/shipping-rates/{other_shipping_rate.id}/restore")
 
     assert response.status_code == 404
     assert response.data == {
@@ -84,10 +89,10 @@ def test_unarchive_shipping_rate_rejects_foreign_account(api_client, user, accou
     }
 
 
-def test_unarchive_shipping_rate_requires_authentication(api_client):
+def test_restore_shipping_rate_requires_authentication(api_client):
     shipping_rate_id = uuid.uuid4()
 
-    response = api_client.post(f"/api/v1/shipping-rates/{shipping_rate_id}/unarchive")
+    response = api_client.post(f"/api/v1/shipping-rates/{shipping_rate_id}/restore")
 
     assert response.status_code == 403
     assert response.data == {
@@ -102,11 +107,11 @@ def test_unarchive_shipping_rate_requires_authentication(api_client):
     }
 
 
-def test_unarchive_shipping_rate_requires_account(api_client, user):
+def test_restore_shipping_rate_requires_account(api_client, user):
     shipping_rate_id = uuid.uuid4()
 
     api_client.force_login(user)
-    response = api_client.post(f"/api/v1/shipping-rates/{shipping_rate_id}/unarchive")
+    response = api_client.post(f"/api/v1/shipping-rates/{shipping_rate_id}/restore")
 
     assert response.status_code == 403
     assert response.data == {

@@ -5,7 +5,7 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
-from apps.prices.choices import PriceModel
+from apps.prices.choices import PriceModel, PriceStatus
 from tests.factories import PriceFactory
 
 pytestmark = pytest.mark.django_db
@@ -26,16 +26,17 @@ def test_archive_price(api_client, user, account):
             "id": str(price.product.id),
             "name": price.product.name,
             "description": "Test product",
-            "is_active": True,
+            "status": "active",
             "default_price_id": None,
             "metadata": {},
             "created_at": ANY,
             "updated_at": ANY,
+            "archived_at": ANY,
         },
         "currency": "PLN",
         "amount": "10.00",
         "model": PriceModel.FLAT,
-        "is_active": False,
+        "status": "archived",
         "metadata": {},
         "is_used": False,
         "code": None,
@@ -47,14 +48,14 @@ def test_archive_price(api_client, user, account):
 
 
 def test_archive_price_already_archived(api_client, user, account):
-    price = PriceFactory(account=account, is_active=False, archived_at=timezone.now())
+    price = PriceFactory(account=account, status=PriceStatus.ARCHIVED, archived_at=timezone.now())
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.post(f"/api/v1/prices/{price.id}/archive")
 
     assert response.status_code == 200
-    assert response.data["is_active"] is False
+    assert response.data["status"] == "archived"
 
 
 def test_archive_price_rejects_foreign_account(api_client, user, account):

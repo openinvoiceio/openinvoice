@@ -26,9 +26,10 @@ def test_update_tax_rate(api_client, user, account):
         "description": None,
         "percentage": "10.00",  # percentage is immutable
         "country": "DE",
-        "is_active": True,
+        "status": "active",
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": None,
     }
 
 

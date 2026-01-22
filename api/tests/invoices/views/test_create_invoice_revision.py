@@ -6,8 +6,10 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
+from apps.coupons.choices import CouponStatus
 from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from apps.invoices.models import Invoice
+from apps.taxes.choices import TaxRateStatus
 from common.choices import LimitCode
 from tests.factories import (
     CouponFactory,
@@ -210,8 +212,8 @@ def test_create_invoice_revision_skips_archived_coupons(api_client, user, accoun
     invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
 
     line = InvoiceLineFactory(invoice=invoice)
-    archived_line_coupon = CouponFactory(account=account, currency=invoice.currency, is_active=False)
-    archived_invoice_coupon = CouponFactory(account=account, currency=invoice.currency, is_active=False)
+    archived_line_coupon = CouponFactory(account=account, currency=invoice.currency, status=CouponStatus.ARCHIVED)
+    archived_invoice_coupon = CouponFactory(account=account, currency=invoice.currency, status=CouponStatus.ARCHIVED)
     line.set_coupons([archived_line_coupon])
     invoice.set_coupons([archived_invoice_coupon])
 
@@ -225,6 +227,29 @@ def test_create_invoice_revision_skips_archived_coupons(api_client, user, accoun
     revision_line = revision.lines.get(description=line.description)
     assert revision_line.coupons.count() == 0
     assert revision.coupons.count() == 0
+
+
+def test_create_invoice_revision_skips_archived_tax_rates(api_client, user, account):
+    invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
+
+    line = InvoiceLineFactory(invoice=invoice)
+    archived_line_tax_rate = TaxRateFactory(account=account, percentage=Decimal("10.00"), status=TaxRateStatus.ARCHIVED)
+    archived_invoice_tax_rate = TaxRateFactory(
+        account=account, percentage=Decimal("5.00"), status=TaxRateStatus.ARCHIVED
+    )
+    line.set_tax_rates([archived_line_tax_rate])
+    invoice.set_tax_rates([archived_invoice_tax_rate])
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.post(f"/api/v1/invoices/{invoice.id}/revisions")
+
+    assert response.status_code == 201
+
+    revision = Invoice.objects.get(id=response.data["id"])
+    revision_line = revision.lines.get(description=line.description)
+    assert revision_line.tax_rates.count() == 0
+    assert revision.tax_rates.count() == 0
 
 
 def test_create_invoice_revision_after_voided_revision(api_client, user, account):

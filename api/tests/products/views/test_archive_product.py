@@ -5,6 +5,7 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
+from apps.products.choices import ProductStatus
 from tests.factories import ProductFactory
 
 pytestmark = pytest.mark.django_db
@@ -23,7 +24,7 @@ def test_archive_product(api_client, user, account):
         "account_id": str(account.id),
         "name": "Test Product",
         "description": "Test product",
-        "is_active": False,
+        "status": "archived",
         "url": None,
         "image_url": None,
         "image_id": None,
@@ -32,18 +33,19 @@ def test_archive_product(api_client, user, account):
         "metadata": {},
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": ANY,
     }
 
 
 def test_archive_product_already_archived(api_client, user, account):
-    product = ProductFactory(account=account, is_active=False, archived_at=timezone.now())
+    product = ProductFactory(account=account, status=ProductStatus.ARCHIVED, archived_at=timezone.now())
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.post(f"/api/v1/products/{product.id}/archive")
 
     assert response.status_code == 200
-    assert response.data["is_active"] is False
+    assert response.data["status"] == "archived"
 
 
 def test_archive_product_rejects_foreign_account(api_client, user, account):

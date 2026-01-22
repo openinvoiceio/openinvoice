@@ -3,6 +3,7 @@ import uuid
 import pytest
 from drf_standardized_errors.types import ErrorType
 
+from apps.coupons.choices import CouponStatus
 from tests.factories import CouponFactory
 
 pytestmark = pytest.mark.django_db
@@ -88,8 +89,8 @@ def test_update_coupon_requires_account(api_client, user):
     }
 
 
-def test_update_inactive_coupon_not_found(api_client, user, account):
-    coupon = CouponFactory(account=account, is_active=False)
+def test_update_archived_coupon_allowed(api_client, user, account):
+    coupon = CouponFactory(account=account, status=CouponStatus.ARCHIVED)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -98,11 +99,8 @@ def test_update_inactive_coupon_not_found(api_client, user, account):
         data={"name": "New"},
     )
 
-    assert response.status_code == 404
-    assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
-        "errors": [{"attr": None, "code": "not_found", "detail": "Not found."}],
-    }
+    assert response.status_code == 200
+    assert response.data["name"] == "New"
 
 
 def test_update_coupon_requires_authentication(api_client, account):

@@ -9,7 +9,7 @@ from djmoney.money import Money
 
 from common.calculations import zero
 
-from .choices import PriceModel
+from .choices import PriceModel, PriceStatus
 from .managers import PriceManager
 
 
@@ -19,7 +19,7 @@ class Price(models.Model):
     currency = models.CharField(max_length=3)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     model = models.CharField(max_length=16, choices=PriceModel.choices, default=PriceModel.FLAT)
-    is_active = models.BooleanField()
+    status = models.CharField(max_length=20, choices=PriceStatus.choices, default=PriceStatus.ACTIVE)
     is_used = models.BooleanField(default=False)
     metadata = models.JSONField(default=dict)
     archived_at = models.DateTimeField(null=True)
@@ -52,20 +52,20 @@ class Price(models.Model):
         self.save(update_fields=["amount", "currency", "code", "updated_at"])
 
     def archive(self) -> None:
-        if not self.is_active:
+        if self.status == PriceStatus.ARCHIVED:
             return
 
-        self.is_active = False
+        self.status = PriceStatus.ARCHIVED
         self.archived_at = timezone.now()
-        self.save(update_fields=["is_active", "archived_at", "updated_at"])
+        self.save()
 
-    def unarchive(self) -> None:
-        if self.is_active:
+    def restore(self) -> None:
+        if self.status == PriceStatus.ACTIVE:
             return
 
-        self.is_active = True
+        self.status = PriceStatus.ACTIVE
         self.archived_at = None
-        self.save(update_fields=["is_active", "archived_at", "updated_at"])
+        self.save()
 
     def mark_as_used(self) -> None:
         if self.is_used:

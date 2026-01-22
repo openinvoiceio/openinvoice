@@ -22,7 +22,7 @@ def test_retrieve_product(api_client, user, account):
         "account_id": str(account.id),
         "name": "Test Product",
         "description": "Test product",
-        "is_active": True,
+        "status": "active",
         "url": None,
         "image_url": None,
         "image_id": None,
@@ -31,6 +31,7 @@ def test_retrieve_product(api_client, user, account):
         "metadata": {},
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": None,
     }
 
 

@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from django.db import models
 
+from .choices import CouponStatus
 from .querysets import CouponQuerySet
 
 
@@ -23,4 +24,5 @@ class CouponManager(models.Manager.from_queryset(CouponQuerySet)):  # type: igno
             currency=currency or account.default_currency,
             amount=amount,
             percentage=percentage,
+            status=CouponStatus.ACTIVE,
         )

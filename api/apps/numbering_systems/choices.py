@@ -13,3 +13,8 @@ class NumberingSystemResetInterval(models.TextChoices):
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
     YEARLY = "yearly"
+
+
+class NumberingSystemStatus(models.TextChoices):
+    ACTIVE = "active", "Active"
+    ARCHIVED = "archived", "Archived"

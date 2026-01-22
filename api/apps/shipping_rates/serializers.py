@@ -1,9 +1,9 @@
-from djmoney.contrib.django_rest_framework import MoneyField
+from djmoney.contrib.django_rest_framework.fields import MoneyField
 from rest_framework import serializers
 
 from common.fields import CurrencyField, MetadataField
 
-from .choices import ShippingRateTaxPolicy
+from .choices import ShippingRateStatus, ShippingRateTaxPolicy
 
 
 class ShippingRateSerializer(serializers.Serializer):
@@ -14,7 +14,7 @@ class ShippingRateSerializer(serializers.Serializer):
     currency = CurrencyField()
     amount = MoneyField(max_digits=19, decimal_places=2)
     tax_policy = serializers.ChoiceField(choices=ShippingRateTaxPolicy.choices)
-    is_active = serializers.BooleanField()
+    status = serializers.ChoiceField(choices=ShippingRateStatus.choices)
     metadata = MetadataField()
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)

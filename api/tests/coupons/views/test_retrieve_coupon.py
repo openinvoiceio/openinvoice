@@ -4,6 +4,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
+from apps.coupons.choices import CouponStatus
 from tests.factories import CouponFactory
 
 pytestmark = pytest.mark.django_db
@@ -24,8 +25,10 @@ def test_retrieve_coupon(api_client, user, account):
         "currency": coupon.currency,
         "amount": f"{coupon.amount.amount:.2f}" if coupon.amount else None,
         "percentage": str(coupon.percentage) if coupon.percentage is not None else None,
+        "status": "active",
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": None,
     }
 
 
@@ -61,18 +64,15 @@ def test_retrieve_coupon_requires_account(api_client, user):
     }
 
 
-def test_retrieve_inactive_coupon_not_visible(api_client, user, account):
-    coupon = CouponFactory(account=account, is_active=False)
+def test_retrieve_archived_coupon_visible(api_client, user, account):
+    coupon = CouponFactory(account=account, status=CouponStatus.ARCHIVED)
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.get(f"/api/v1/coupons/{coupon.id}")
 
-    assert response.status_code == 404
-    assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
-        "errors": [{"attr": None, "code": "not_found", "detail": "Not found."}],
-    }
+    assert response.status_code == 200
+    assert response.data["status"] == "archived"
 
 
 def test_retrieve_coupon_requires_authentication(api_client, account):

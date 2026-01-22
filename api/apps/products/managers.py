@@ -4,6 +4,7 @@ from django.db import models
 
 from apps.files.models import File
 
+from .choices import ProductStatus
 from .querysets import ProductQuerySet
 
 
@@ -21,7 +22,7 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):  # type: ig
             account=account,
             name=name,
             description=description,
-            is_active=True,
+            status=ProductStatus.ACTIVE,
             metadata=metadata or {},
             url=url,
             image=image,

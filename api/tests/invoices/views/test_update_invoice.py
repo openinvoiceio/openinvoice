@@ -196,9 +196,10 @@ def test_update_invoice_add_shipping(api_client, user, account):
                 "description": tax_rate.description,
                 "country": tax_rate.country,
                 "percentage": f"{tax_rate.percentage:.2f}",
-                "is_active": tax_rate.is_active,
+                "status": tax_rate.status,
                 "updated_at": ANY,
                 "created_at": ANY,
+                "archived_at": tax_rate.archived_at,
             }
         ],
         "tax_allocations": [
@@ -260,9 +261,10 @@ def test_update_invoice_existing_shipping(api_client, user, account):
                 "description": new_tax_rate.description,
                 "country": new_tax_rate.country,
                 "percentage": f"{new_tax_rate.percentage:.2f}",
-                "is_active": new_tax_rate.is_active,
+                "status": new_tax_rate.status,
                 "updated_at": ANY,
                 "created_at": ANY,
+                "archived_at": new_tax_rate.archived_at,
             }
         ],
         "tax_allocations": [

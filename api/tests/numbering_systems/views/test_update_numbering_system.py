@@ -34,8 +34,10 @@ def test_update_numbering_system(api_client, user, subscribed_account):
         "description": "Updated",
         "applies_to": numbering_system.applies_to,
         "reset_interval": NumberingSystemResetInterval.MONTHLY,
+        "status": numbering_system.status,
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": numbering_system.archived_at,
     }
 
 
@@ -66,8 +68,10 @@ def test_update_numbering_system_with_invoices(api_client, user, subscribed_acco
         "description": "New",
         "applies_to": numbering_system.applies_to,
         "reset_interval": NumberingSystemResetInterval.NEVER,
+        "status": numbering_system.status,
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": numbering_system.archived_at,
     }
 
 

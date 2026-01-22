@@ -6,7 +6,7 @@ from django.utils import timezone
 from djmoney.money import Money
 from drf_standardized_errors.types import ErrorType
 
-from apps.prices.choices import PriceModel
+from apps.prices.choices import PriceModel, PriceStatus
 from tests.factories import PriceFactory, ProductFactory
 
 pytestmark = pytest.mark.django_db
@@ -35,16 +35,17 @@ def test_update_flat_price(api_client, user, account):
             "id": str(price.product.id),
             "name": price.product.name,
             "description": "Test product",
-            "is_active": True,
+            "status": "active",
             "default_price_id": None,
             "metadata": {},
             "created_at": ANY,
             "updated_at": ANY,
+            "archived_at": None,
         },
         "currency": "USD",
         "amount": "20.00",
         "model": PriceModel.FLAT,
-        "is_active": True,
+        "status": "active",
         "metadata": {},
         "is_used": False,
         "code": None,
@@ -83,16 +84,17 @@ def test_update_volume_price(api_client, user, account):
             "id": str(price.product.id),
             "name": product.name,
             "description": "Test product",
-            "is_active": True,
+            "status": "active",
             "default_price_id": None,
             "metadata": {},
             "created_at": ANY,
             "updated_at": ANY,
+            "archived_at": None,
         },
         "currency": currency,
         "amount": "0.00",
         "model": PriceModel.VOLUME,
-        "is_active": True,
+        "status": "active",
         "metadata": {},
         "is_used": False,
         "code": None,
@@ -134,16 +136,17 @@ def test_update_graduated_price(api_client, user, account):
             "id": str(price.product.id),
             "name": product.name,
             "description": "Test product",
-            "is_active": True,
+            "status": "active",
             "default_price_id": None,
             "metadata": {},
             "created_at": ANY,
             "updated_at": ANY,
+            "archived_at": None,
         },
         "currency": currency,
         "amount": "0.00",
         "model": PriceModel.GRADUATED,
-        "is_active": True,
+        "status": "active",
         "metadata": {},
         "is_used": False,
         "code": None,
@@ -288,7 +291,7 @@ def test_update_price_requires_account(api_client, user):
 
 
 def test_update_price_archived(api_client, user, account):
-    price = PriceFactory(account=account, is_active=False, archived_at=timezone.now())
+    price = PriceFactory(account=account, status=PriceStatus.ARCHIVED, archived_at=timezone.now())
 
     api_client.force_login(user)
     api_client.force_account(account)

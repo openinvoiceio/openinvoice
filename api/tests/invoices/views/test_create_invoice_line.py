@@ -6,7 +6,8 @@ from djmoney.money import Money
 from drf_standardized_errors.types import ErrorType
 
 from apps.invoices.choices import InvoiceStatus
-from apps.prices.choices import PriceModel
+from apps.prices.choices import PriceModel, PriceStatus
+from apps.products.choices import ProductStatus
 from tests.factories import CouponFactory, InvoiceFactory, PriceFactory, ProductFactory, TaxRateFactory
 
 pytestmark = pytest.mark.django_db
@@ -382,7 +383,7 @@ def test_create_invoice_line_currency_mismatch(api_client, user, account):
 
 def test_create_invoice_line_price_archived(api_client, user, account):
     invoice = InvoiceFactory(account=account)
-    price = PriceFactory(account=account, is_active=False, currency=invoice.currency)
+    price = PriceFactory(account=account, status=PriceStatus.ARCHIVED, currency=invoice.currency)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -409,7 +410,7 @@ def test_create_invoice_line_price_archived(api_client, user, account):
 
 def test_create_invoice_line_product_archived(api_client, user, account):
     invoice = InvoiceFactory(account=account)
-    product = ProductFactory(account=account, is_active=False)
+    product = ProductFactory(account=account, status=ProductStatus.ARCHIVED)
     price = PriceFactory(account=account, product=product, currency=invoice.currency)
 
     api_client.force_login(user)

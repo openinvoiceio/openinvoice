@@ -38,8 +38,10 @@ def test_add_quote_discount(api_client, user, account):
             "currency": "USD",
             "amount": "15.00",
             "percentage": None,
+            "status": "active",
             "created_at": "2024-03-01T09:00:00Z",
             "updated_at": "2024-03-01T09:00:00Z",
+            "archived_at": None,
         },
         "amount": "0.00",
     }

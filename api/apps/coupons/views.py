@@ -24,7 +24,7 @@ class CouponListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember, MaxCouponsLimit]
 
     def get_queryset(self):
-        return Coupon.objects.for_account(self.request.account.id).active().order_by("-created_at")
+        return Coupon.objects.for_account(self.request.account.id).order_by("-created_at")
 
     @extend_schema(
         operation_id="create_coupon",
@@ -60,7 +60,7 @@ class CouponRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Coupon.objects.for_account(self.request.account.id).active()
+        return Coupon.objects.for_account(self.request.account.id)
 
     @extend_schema(
         operation_id="update_coupon",
@@ -90,9 +90,55 @@ class CouponRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     def delete(self, request, **__):
         coupon = self.get_object()
 
-        coupon.deactivate()
+        coupon.archive()
         logger.info(
-            "Coupon deactivated",
+            "Coupon archived",
+            account_id=request.account.id,
+            coupon_id=coupon.id,
+        )
+
+        serializer = CouponSerializer(coupon)
+        return Response(serializer.data)
+
+
+class CouponArchiveAPIView(generics.GenericAPIView):
+    queryset = Coupon.objects.none()
+    serializer_class = CouponSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        return Coupon.objects.for_account(self.request.account.id)
+
+    @extend_schema(operation_id="archive_coupon", request=None, responses={200: CouponSerializer})
+    def post(self, request, **__):
+        coupon = self.get_object()
+
+        coupon.archive()
+        logger.info(
+            "Coupon archived",
+            account_id=request.account.id,
+            coupon_id=coupon.id,
+        )
+
+        serializer = CouponSerializer(coupon)
+        return Response(serializer.data)
+
+
+class CouponRestoreAPIView(generics.GenericAPIView):
+    queryset = Coupon.objects.none()
+    serializer_class = CouponSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        return Coupon.objects.for_account(self.request.account.id)
+
+    @extend_schema(operation_id="restore_coupon", request=None, responses={200: CouponSerializer})
+    def post(self, request, **__):
+        coupon = self.get_object()
+
+        coupon.restore()
+        logger.info(
+            "Coupon restored",
             account_id=request.account.id,
             coupon_id=coupon.id,
         )

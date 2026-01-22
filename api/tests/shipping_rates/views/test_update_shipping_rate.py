@@ -3,6 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
+from apps.shipping_rates.choices import ShippingRateStatus
 from tests.factories import ShippingRateFactory
 
 pytestmark = pytest.mark.django_db
@@ -42,16 +43,16 @@ def test_update_shipping_rate(api_client, user, account):
         "currency": "USD",
         "amount": "15.00",
         "tax_policy": "exempt",
-        "is_active": True,
+        "status": "active",
         "metadata": {"updated_key": "updated_value"},
-        "archived_at": None,
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": None,
     }
 
 
 def test_update_shipping_rate_archived(api_client, user, account):
-    shipping_rate = ShippingRateFactory(account=account, is_active=False)
+    shipping_rate = ShippingRateFactory(account=account, status=ShippingRateStatus.ARCHIVED)
 
     api_client.force_login(user)
     api_client.force_account(account)

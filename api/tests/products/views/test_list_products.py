@@ -5,6 +5,8 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
+from apps.prices.choices import PriceStatus
+from apps.products.choices import ProductStatus
 from apps.products.models import Product
 from tests.factories import PriceFactory, ProductFactory
 
@@ -31,7 +33,7 @@ def test_list_products(api_client, user, account):
                 "account_id": str(account.id),
                 "name": product.name,
                 "description": "Test product",
-                "is_active": True,
+                "status": "active",
                 "url": None,
                 "image_url": None,
                 "image_id": None,
@@ -40,6 +42,7 @@ def test_list_products(api_client, user, account):
                 "metadata": {},
                 "created_at": ANY,
                 "updated_at": ANY,
+                "archived_at": None,
             }
             for product in [second_product, first_product]
         ],
@@ -95,9 +98,9 @@ def test_list_products_filter_by_price_currency(api_client, user, account):
 
 def test_list_products_filter_has_active_prices(api_client, user, account):
     active_product = ProductFactory(account=account, name="Active")
-    PriceFactory(account=account, product=active_product, is_active=True)
+    PriceFactory(account=account, product=active_product, status=PriceStatus.ACTIVE)
     inactive_product = ProductFactory(account=account, name="Inactive")
-    PriceFactory(account=account, product=inactive_product, is_active=False)
+    PriceFactory(account=account, product=inactive_product, status=PriceStatus.ARCHIVED)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -107,16 +110,16 @@ def test_list_products_filter_has_active_prices(api_client, user, account):
     assert [r["id"] for r in response.data["results"]] == [str(active_product.id)]
 
 
-def test_list_products_filter_is_active(api_client, user, account):
-    ProductFactory(account=account, is_active=True)
-    inactive = ProductFactory(account=account, is_active=False, archived_at=timezone.now())
+def test_list_products_filter_status(api_client, user, account):
+    ProductFactory(account=account, status=ProductStatus.ACTIVE)
+    archived = ProductFactory(account=account, status=ProductStatus.ARCHIVED, archived_at=timezone.now())
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get("/api/v1/products", {"is_active": "false"})
+    response = api_client.get("/api/v1/products", {"status": "archived"})
 
     assert response.status_code == 200
-    assert [r["id"] for r in response.data["results"]] == [str(inactive.id)]
+    assert [r["id"] for r in response.data["results"]] == [str(archived.id)]
 
 
 def test_list_products_filter_created_at_after(api_client, user, account):

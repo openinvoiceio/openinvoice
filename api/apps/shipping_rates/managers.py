@@ -5,7 +5,7 @@ from djmoney.money import Money
 
 from apps.accounts.models import Account
 
-from .choices import ShippingRateTaxPolicy
+from .choices import ShippingRateStatus, ShippingRateTaxPolicy
 from .querysets import ShippingRateQuerySet
 
 
@@ -28,6 +28,6 @@ class ShippingRateManager(models.Manager.from_queryset(ShippingRateQuerySet)):  
             currency=currency,
             amount=amount or Money(0, currency),
             tax_policy=tax_policy or ShippingRateTaxPolicy.MATCH_GOODS,
-            is_active=True,
+            status=ShippingRateStatus.ACTIVE,
             metadata=metadata or {},
         )

@@ -2,12 +2,16 @@ from itertools import pairwise
 
 from rest_framework import serializers
 
+from apps.products.choices import ProductStatus
+
+from .choices import PriceStatus
+
 
 class PriceIsActive:
     message = "Given price is archived"
 
     def __call__(self, value):
-        if not value.is_active:
+        if value.status == PriceStatus.ARCHIVED:
             raise serializers.ValidationError(self.message)
 
         return value
@@ -17,7 +21,7 @@ class PriceProductIsActive:
     message = "Given price product is archived"
 
     def __call__(self, value):
-        if not value.product.is_active:
+        if value.product.status == ProductStatus.ARCHIVED:
             raise serializers.ValidationError(self.message)
 
         return value

@@ -5,7 +5,7 @@ from django.utils import timezone
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from .choices import ShippingRateTaxPolicy
+from .choices import ShippingRateStatus, ShippingRateTaxPolicy
 from .managers import ShippingRateManager
 
 
@@ -16,7 +16,11 @@ class ShippingRate(models.Model):
     currency = models.CharField(max_length=3)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     tax_policy = models.CharField(max_length=16, choices=ShippingRateTaxPolicy.choices)
-    is_active = models.BooleanField()
+    status = models.CharField(
+        max_length=20,
+        choices=ShippingRateStatus.choices,
+        default=ShippingRateStatus.ACTIVE,
+    )
     metadata = models.JSONField(default=dict)
     archived_at = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -46,17 +50,17 @@ class ShippingRate(models.Model):
         self.save()
 
     def archive(self) -> None:
-        if not self.is_active:
+        if self.status == ShippingRateStatus.ARCHIVED:
             return
 
-        self.is_active = False
+        self.status = ShippingRateStatus.ARCHIVED
         self.archived_at = timezone.now()
-        self.save(update_fields=["is_active", "archived_at", "updated_at"])
+        self.save()
 
-    def unarchive(self) -> None:
-        if self.is_active:
+    def restore(self) -> None:
+        if self.status == ShippingRateStatus.ACTIVE:
             return
 
-        self.is_active = True
+        self.status = ShippingRateStatus.ACTIVE
         self.archived_at = None
-        self.save(update_fields=["is_active", "archived_at", "updated_at"])
+        self.save()

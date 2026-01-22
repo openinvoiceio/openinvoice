@@ -30,7 +30,7 @@ def test_create_product(api_client, user, account):
         "account_id": str(account.id),
         "name": "Product 1",
         "description": None,
-        "is_active": True,
+        "status": "active",
         "url": None,
         "image_url": None,
         "image_id": None,
@@ -39,6 +39,7 @@ def test_create_product(api_client, user, account):
         "metadata": {},
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": ANY,
     }
 
 
@@ -68,7 +69,7 @@ def test_create_product_with_default_price(api_client, user, account):
         "account_id": str(account.id),
         "name": "Product 1",
         "description": None,
-        "is_active": True,
+        "status": "active",
         "url": None,
         "image_url": None,
         "image_id": None,
@@ -85,6 +86,7 @@ def test_create_product_with_default_price(api_client, user, account):
         "metadata": {},
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": ANY,
     }
 
 

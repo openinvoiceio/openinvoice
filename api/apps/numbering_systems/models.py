@@ -6,7 +6,7 @@ from datetime import datetime, time, timedelta
 from django.db import models
 from django.utils import timezone
 
-from .choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
+from .choices import NumberingSystemAppliesTo, NumberingSystemResetInterval, NumberingSystemStatus
 from .formatting import render_template
 from .managers import NumberingSystemManager
 
@@ -25,6 +25,12 @@ class NumberingSystem(models.Model):
     description = models.CharField(max_length=255, null=True)
     applies_to = models.CharField(max_length=50, choices=NumberingSystemAppliesTo.choices)
     reset_interval = models.CharField(max_length=50, choices=NumberingSystemResetInterval.choices)
+    status = models.CharField(
+        max_length=20,
+        choices=NumberingSystemStatus.choices,
+        default=NumberingSystemStatus.ACTIVE,
+    )
+    archived_at = models.DateTimeField(null=True)
     account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, related_name="numbering_systems")
     updated_at = models.DateTimeField(auto_now=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -61,6 +67,22 @@ class NumberingSystem(models.Model):
 
     def render_number(self, *, count: int, effective_at: datetime) -> str:
         return render_template(template=self.template, count=count, effective_at=effective_at)
+
+    def archive(self) -> None:
+        if self.status == NumberingSystemStatus.ARCHIVED:
+            return
+
+        self.status = NumberingSystemStatus.ARCHIVED
+        self.archived_at = timezone.now()
+        self.save()
+
+    def restore(self) -> None:
+        if self.status == NumberingSystemStatus.ACTIVE:
+            return
+
+        self.status = NumberingSystemStatus.ACTIVE
+        self.archived_at = None
+        self.save()
 
     def calculate_bounds(self, effective_at: datetime) -> tuple[datetime | None, datetime | None]:
         now = timezone.localtime(effective_at)

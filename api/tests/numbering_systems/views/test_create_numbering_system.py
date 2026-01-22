@@ -3,7 +3,11 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.numbering_systems.choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
+from apps.numbering_systems.choices import (
+    NumberingSystemAppliesTo,
+    NumberingSystemResetInterval,
+    NumberingSystemStatus,
+)
 from common.choices import FeatureCode
 
 pytestmark = pytest.mark.django_db
@@ -29,6 +33,8 @@ def test_create_numbering_system(api_client, user, subscribed_account):
         "description": "Main",
         "applies_to": NumberingSystemAppliesTo.INVOICE,
         "reset_interval": NumberingSystemResetInterval.MONTHLY,
+        "status": NumberingSystemStatus.ACTIVE,
+        "archived_at": None,
         "created_at": ANY,
         "updated_at": ANY,
     }

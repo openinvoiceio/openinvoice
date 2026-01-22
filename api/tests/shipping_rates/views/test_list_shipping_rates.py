@@ -30,11 +30,11 @@ def test_list_shipping_rates(api_client, user, account):
                 "currency": rate.currency,
                 "amount": str(rate.amount.amount),
                 "tax_policy": rate.tax_policy,
-                "is_active": rate.is_active,
+                "status": rate.status,
                 "metadata": rate.metadata,
-                "archived_at": None,
                 "created_at": ANY,
                 "updated_at": ANY,
+                "archived_at": None,
             }
             for rate in [second_rate, first_rate]
         ],

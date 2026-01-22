@@ -2,11 +2,13 @@ import uuid
 from decimal import Decimal
 
 from django.db import models
+from django.utils import timezone
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
 from common.calculations import zero
 
+from .choices import CouponStatus
 from .managers import CouponManager
 
 
@@ -17,7 +19,8 @@ class Coupon(models.Model):
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency", null=True)
     percentage = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, related_name="coupons")
-    is_active = models.BooleanField(default=True)
+    status = models.CharField(max_length=20, choices=CouponStatus.choices, default=CouponStatus.ACTIVE)
+    archived_at = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -37,12 +40,21 @@ class Coupon(models.Model):
         self.name = name
         self.save(update_fields=["name", "updated_at"])
 
-    def deactivate(self) -> None:
-        if not self.is_active:
+    def archive(self) -> None:
+        if self.status == CouponStatus.ARCHIVED:
             return
 
-        self.is_active = False
-        self.save(update_fields=["is_active", "updated_at"])
+        self.status = CouponStatus.ARCHIVED
+        self.archived_at = timezone.now()
+        self.save()
+
+    def restore(self) -> None:
+        if self.status == CouponStatus.ACTIVE:
+            return
+
+        self.status = CouponStatus.ACTIVE
+        self.archived_at = None
+        self.save()
 
     def calculate_amount(self, base_amount: Money) -> Money:
         if self.amount is not None:

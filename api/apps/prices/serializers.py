@@ -1,10 +1,11 @@
-from djmoney.contrib.django_rest_framework import MoneyField
+from djmoney.contrib.django_rest_framework.fields import MoneyField
 from rest_framework import serializers
 
+from apps.products.choices import ProductStatus
 from apps.products.fields import ProductRelatedField
 from common.fields import CurrencyField, MetadataField
 
-from .choices import PriceModel
+from .choices import PriceModel, PriceStatus
 from .validators import PriceTiersContinuousValidator
 
 
@@ -19,22 +20,23 @@ class PriceTierInputSerializer(serializers.Serializer):
     from_value = serializers.IntegerField(min_value=0)
     to_value = serializers.IntegerField(min_value=1, allow_null=True)
 
-    def validate(self, data):
-        to_value = data["to_value"]
-        if to_value is not None and to_value < data["from_value"]:
+    def validate(self, attrs):
+        to_value = attrs["to_value"]
+        if to_value is not None and to_value < attrs["from_value"]:
             raise serializers.ValidationError({"to_value": "Upper bound must be greater than or equal to lower bound."})
-        return data
+        return attrs
 
 
 class PriceProductSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     name = serializers.CharField(max_length=255)
     description = serializers.CharField(allow_blank=True, max_length=1000)
-    is_active = serializers.BooleanField()
+    status = serializers.ChoiceField(choices=ProductStatus.choices)
     default_price_id = serializers.UUIDField(allow_null=True)
     metadata = MetadataField(allow_null=True)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
+    archived_at = serializers.DateTimeField(allow_null=True)
 
 
 class PriceSerializer(serializers.Serializer):
@@ -44,7 +46,7 @@ class PriceSerializer(serializers.Serializer):
     currency = CurrencyField()
     amount = MoneyField(max_digits=19, decimal_places=2, required=False)
     model = serializers.ChoiceField(choices=PriceModel.choices)
-    is_active = serializers.BooleanField()
+    status = serializers.ChoiceField(choices=PriceStatus.choices)
     metadata = MetadataField()
     is_used = serializers.BooleanField()
     code = serializers.CharField(allow_null=True, max_length=255)
@@ -63,12 +65,12 @@ class PriceCreateSerializer(serializers.Serializer):
     model = serializers.ChoiceField(choices=PriceModel.choices, default=PriceModel.FLAT)
     tiers = PriceTierInputSerializer(many=True, required=False)
 
-    def validate(self, data):
-        model = data["model"]
+    def validate(self, attrs):
+        model = attrs["model"]
         if model == PriceModel.FLAT:
-            data["tiers"] = []
+            attrs["tiers"] = []
 
-        return data
+        return attrs
 
     def validate_tiers(self, value):
         PriceTiersContinuousValidator()(value)
@@ -82,11 +84,11 @@ class PriceUpdateSerializer(serializers.Serializer):
     code = serializers.CharField(allow_null=True, max_length=255, required=False)
     tiers = PriceTierInputSerializer(many=True, required=False)
 
-    def validate(self, data):
-        if self.instance.model == PriceModel.FLAT:
-            data["tiers"] = []
+    def validate(self, attrs):
+        if self.instance and self.instance.model == PriceModel.FLAT:
+            attrs["tiers"] = []
 
-        return data
+        return attrs
 
     def validate_tiers(self, value):
         PriceTiersContinuousValidator()(value)

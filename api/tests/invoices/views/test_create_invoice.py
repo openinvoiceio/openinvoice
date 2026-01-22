@@ -8,6 +8,7 @@ from drf_standardized_errors.types import ErrorType
 from apps.integrations.choices import PaymentProvider
 from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from apps.invoices.models import Invoice
+from apps.taxes.choices import TaxRateStatus
 from common.choices import FeatureCode, LimitCode
 from tests.factories import (
     CouponFactory,
@@ -138,11 +139,11 @@ def test_create_invoice_with_customer_tax_rates(api_client, user, account):
     assert [r["id"] for r in response.data["tax_rates"]] == [str(tax_rate.id)]
 
 
-def test_create_invoice_ignores_inactive_customer_tax_rates(api_client, user, account):
-    active_rate = TaxRateFactory(account=account, is_active=True)
-    inactive_rate = TaxRateFactory(account=account, is_active=False)
+def test_create_invoice_ignores_archived_customer_tax_rates(api_client, user, account):
+    active_rate = TaxRateFactory(account=account, status=TaxRateStatus.ACTIVE)
+    archived_rate = TaxRateFactory(account=account, status=TaxRateStatus.ARCHIVED)
     customer = CustomerFactory(account=account)
-    customer.tax_rates.add(active_rate, inactive_rate)
+    customer.tax_rates.add(active_rate, archived_rate)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -187,7 +188,8 @@ def test_create_invoice_with_shipping(api_client, user, account):
                 "description": tax_rate.description,
                 "country": tax_rate.country,
                 "percentage": f"{tax_rate.percentage:.2f}",
-                "is_active": tax_rate.is_active,
+                "status": tax_rate.status,
+                "archived_at": tax_rate.archived_at,
                 "updated_at": ANY,
                 "created_at": ANY,
             }

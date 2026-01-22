@@ -97,3 +97,47 @@ class NumberingSystemRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         numbering_system.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class NumberingSystemArchiveAPIView(generics.GenericAPIView):
+    queryset = NumberingSystem.objects.none()
+    serializer_class = NumberingSystemSerializer
+    permission_classes = [
+        IsAuthenticated,
+        IsAccountMember,
+        CustomNumberingSystemFeature,
+    ]
+
+    def get_queryset(self):
+        return NumberingSystem.objects.for_account(self.request.account.id)
+
+    @extend_schema(operation_id="archive_numbering_system", request=None, responses={200: NumberingSystemSerializer})
+    def post(self, _, **__):
+        numbering_system = self.get_object()
+
+        numbering_system.archive()
+
+        serializer = NumberingSystemSerializer(numbering_system)
+        return Response(serializer.data)
+
+
+class NumberingSystemRestoreAPIView(generics.GenericAPIView):
+    queryset = NumberingSystem.objects.none()
+    serializer_class = NumberingSystemSerializer
+    permission_classes = [
+        IsAuthenticated,
+        IsAccountMember,
+        CustomNumberingSystemFeature,
+    ]
+
+    def get_queryset(self):
+        return NumberingSystem.objects.for_account(self.request.account.id)
+
+    @extend_schema(operation_id="restore_numbering_system", request=None, responses={200: NumberingSystemSerializer})
+    def post(self, _, **__):
+        numbering_system = self.get_object()
+
+        numbering_system.restore()
+
+        serializer = NumberingSystemSerializer(numbering_system)
+        return Response(serializer.data)

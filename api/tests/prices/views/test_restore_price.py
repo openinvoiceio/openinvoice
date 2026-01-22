@@ -5,18 +5,18 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
-from apps.prices.choices import PriceModel
+from apps.prices.choices import PriceModel, PriceStatus
 from tests.factories import PriceFactory
 
 pytestmark = pytest.mark.django_db
 
 
-def test_unarchive_price(api_client, user, account):
-    price = PriceFactory(account=account, is_active=False, archived_at=timezone.now())
+def test_restore_price(api_client, user, account):
+    price = PriceFactory(account=account, status=PriceStatus.ARCHIVED, archived_at=timezone.now())
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.post(f"/api/v1/prices/{price.id}/unarchive")
+    response = api_client.post(f"/api/v1/prices/{price.id}/restore")
 
     assert response.status_code == 200
     assert response.data == {
@@ -26,16 +26,17 @@ def test_unarchive_price(api_client, user, account):
             "id": str(price.product.id),
             "name": price.product.name,
             "description": "Test product",
-            "is_active": True,
+            "status": "active",
             "default_price_id": None,
             "metadata": {},
             "created_at": ANY,
             "updated_at": ANY,
+            "archived_at": None,
         },
         "currency": "PLN",
         "amount": "10.00",
         "model": PriceModel.FLAT,
-        "is_active": True,
+        "status": "active",
         "metadata": {},
         "is_used": False,
         "code": None,
@@ -46,23 +47,23 @@ def test_unarchive_price(api_client, user, account):
     }
 
 
-def test_unarchive_price_already_active(api_client, user, account):
-    price = PriceFactory(account=account)
+def test_restore_price_already_active(api_client, user, account):
+    price = PriceFactory(account=account, status=PriceStatus.ACTIVE)
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.post(f"/api/v1/prices/{price.id}/unarchive")
+    response = api_client.post(f"/api/v1/prices/{price.id}/restore")
 
     assert response.status_code == 200
-    assert response.data["is_active"] is True
+    assert response.data["status"] == "active"
 
 
-def test_unarchive_price_rejects_foreign_account(api_client, user, account):
-    other_price = PriceFactory(is_active=False, archived_at=timezone.now())
+def test_restore_price_rejects_foreign_account(api_client, user, account):
+    other_price = PriceFactory(status=PriceStatus.ARCHIVED, archived_at=timezone.now())
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.post(f"/api/v1/prices/{other_price.id}/unarchive")
+    response = api_client.post(f"/api/v1/prices/{other_price.id}/restore")
 
     assert response.status_code == 404
     assert response.data == {
@@ -77,9 +78,9 @@ def test_unarchive_price_rejects_foreign_account(api_client, user, account):
     }
 
 
-def test_unarchive_price_requires_account(api_client, user):
+def test_restore_price_requires_account(api_client, user):
     api_client.force_login(user)
-    response = api_client.post(f"/api/v1/prices/{uuid.uuid4()}/unarchive")
+    response = api_client.post(f"/api/v1/prices/{uuid.uuid4()}/restore")
 
     assert response.status_code == 403
     assert response.data == {
@@ -94,10 +95,10 @@ def test_unarchive_price_requires_account(api_client, user):
     }
 
 
-def test_unarchive_price_requires_authentication(api_client, account):
-    price = PriceFactory(account=account, is_active=False, archived_at=timezone.now())
+def test_restore_price_requires_authentication(api_client, account):
+    price = PriceFactory(account=account, status=PriceStatus.ARCHIVED, archived_at=timezone.now())
 
-    response = api_client.post(f"/api/v1/prices/{price.id}/unarchive")
+    response = api_client.post(f"/api/v1/prices/{price.id}/restore")
 
     assert response.status_code == 403
     assert response.data == {

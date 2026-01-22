@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
+from .choices import NumberingSystemAppliesTo, NumberingSystemResetInterval, NumberingSystemStatus
 from .validators import numbering_system_template_validator
 
 
@@ -10,8 +10,10 @@ class NumberingSystemSerializer(serializers.Serializer):
     description = serializers.CharField(allow_null=True)
     applies_to = serializers.ChoiceField(choices=NumberingSystemAppliesTo.choices)
     reset_interval = serializers.ChoiceField(choices=NumberingSystemResetInterval.choices)
+    status = serializers.ChoiceField(choices=NumberingSystemStatus.choices)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
+    archived_at = serializers.DateTimeField(allow_null=True)
 
 
 class NumberingSystemCreateSerializer(serializers.Serializer):

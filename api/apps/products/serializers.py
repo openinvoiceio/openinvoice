@@ -1,10 +1,11 @@
-from djmoney.contrib.django_rest_framework import MoneyField
+from djmoney.contrib.django_rest_framework.fields import MoneyField
 from rest_framework import serializers
 
 from apps.files.fields import FileRelatedField
 from apps.prices.choices import PriceModel
 from apps.prices.fields import PriceRelatedField
 from apps.prices.serializers import PriceTierSerializer
+from apps.products.choices import ProductStatus
 from common.fields import CurrencyField, MetadataField
 
 
@@ -23,7 +24,7 @@ class ProductSerializer(serializers.Serializer):
     account_id = serializers.UUIDField()
     name = serializers.CharField(max_length=255)
     description = serializers.CharField(allow_null=True, max_length=600)
-    is_active = serializers.BooleanField()
+    status = serializers.ChoiceField(choices=ProductStatus.choices)
     url = serializers.URLField(allow_null=True)
     image_url = serializers.FileField(use_url=True, source="image.data", allow_null=True)
     image_id = serializers.UUIDField(allow_null=True)
@@ -32,6 +33,7 @@ class ProductSerializer(serializers.Serializer):
     metadata = MetadataField()
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
+    archived_at = serializers.DateTimeField(allow_null=True)
 
 
 class DefaultPriceCreateSerializer(serializers.Serializer):
@@ -68,7 +70,7 @@ class ProductUpdateSerializer(serializers.Serializer):
         if value is None:
             return value
 
-        if value.product_id != self.instance.id:
+        if self.instance is None or value.product_id != self.instance.id:
             raise serializers.ValidationError("Default price not found")
 
         return value

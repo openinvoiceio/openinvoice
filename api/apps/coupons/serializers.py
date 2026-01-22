@@ -1,8 +1,10 @@
-from djmoney.contrib.django_rest_framework import MoneyField
+from djmoney.contrib.django_rest_framework.fields import MoneyField
 from rest_framework import serializers
 
 from common.fields import CurrencyField
 from common.validators import ExactlyOneValidator
+
+from .choices import CouponStatus
 
 
 class CouponSerializer(serializers.Serializer):
@@ -12,8 +14,10 @@ class CouponSerializer(serializers.Serializer):
     currency = CurrencyField()
     amount = MoneyField(max_digits=19, decimal_places=2, allow_null=True)
     percentage = serializers.DecimalField(max_digits=5, decimal_places=2, allow_null=True)
+    status = serializers.ChoiceField(choices=CouponStatus.choices)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
+    archived_at = serializers.DateTimeField(allow_null=True)
 
 
 class CouponCreateSerializer(serializers.Serializer):

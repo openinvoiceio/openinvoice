@@ -3,6 +3,7 @@ from unittest.mock import ANY
 import pytest
 from drf_standardized_errors.types import ErrorType
 
+from apps.coupons.choices import CouponStatus
 from tests.factories import CouponFactory
 
 pytestmark = pytest.mark.django_db
@@ -27,8 +28,10 @@ def test_list_coupons(api_client, user, account):
             "currency": c.currency,
             "amount": f"{c.amount.amount:.2f}" if c.amount else None,
             "percentage": str(c.percentage) if c.percentage is not None else None,
+            "status": c.status,
             "created_at": ANY,
             "updated_at": ANY,
+            "archived_at": c.archived_at,
         }
         for c in [coupon_2, coupon_1]
     ]
@@ -96,17 +99,17 @@ def test_list_coupons_order_by_created_at_desc(api_client, user, account):
     ]
 
 
-def test_list_coupons_excludes_inactive(api_client, user, account):
-    active = CouponFactory(account=account, name="Active")
-    CouponFactory(account=account, is_active=False, name="Inactive")
+def test_list_coupons_filter_by_status(api_client, user, account):
+    CouponFactory(account=account, name="Active")
+    archived = CouponFactory(account=account, status=CouponStatus.ARCHIVED, name="Inactive")
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get("/api/v1/coupons")
+    response = api_client.get("/api/v1/coupons", {"status": "archived"})
 
     assert response.status_code == 200
     assert response.data["count"] == 1
-    assert [r["id"] for r in response.data["results"]] == [str(active.id)]
+    assert [r["id"] for r in response.data["results"]] == [str(archived.id)]
 
 
 def test_list_coupons_requires_account(api_client, user):

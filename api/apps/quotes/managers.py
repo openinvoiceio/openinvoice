@@ -67,7 +67,7 @@ class QuoteManager(models.Manager.from_queryset(QuoteQuerySet)):
             recipients=recipients or default_recipients,
         )
 
-        for tax_rate in customer.tax_rates.filter(is_active=True):
+        for tax_rate in customer.tax_rates.active():
             quote.add_tax(tax_rate)
 
         return quote

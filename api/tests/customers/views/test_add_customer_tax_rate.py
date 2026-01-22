@@ -62,7 +62,8 @@ def test_assign_customer_tax_rate(api_client, user, account):
                 "description": tax_rate.description,
                 "percentage": str(tax_rate.percentage),
                 "country": tax_rate.country,
-                "is_active": tax_rate.is_active,
+                "status": tax_rate.status,
+                "archived_at": tax_rate.archived_at,
                 "created_at": ANY,
                 "updated_at": ANY,
             }

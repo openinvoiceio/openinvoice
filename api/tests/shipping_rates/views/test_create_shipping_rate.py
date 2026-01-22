@@ -32,11 +32,11 @@ def test_create_shipping_rate(api_client, user, account):
         "currency": "USD",
         "amount": "5.00",
         "tax_policy": "match_goods",
-        "is_active": True,
+        "status": "active",
         "metadata": {"key": "value"},
-        "archived_at": None,
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": None,
     }
 
 

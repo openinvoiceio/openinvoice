@@ -6,6 +6,8 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
+from .choices import ShippingRateStatus
+from .filtersets import ShippingRateFilterSet
 from .models import ShippingRate
 from .permissions import MaxShippingRatesLimit
 from .serializers import ShippingRateCreateSerializer, ShippingRateSerializer, ShippingRateUpdateSerializer
@@ -15,6 +17,7 @@ from .serializers import ShippingRateCreateSerializer, ShippingRateSerializer, S
 class ShippingRateListCreateAPIView(generics.ListAPIView):
     queryset = ShippingRate.objects.none()
     serializer_class = ShippingRateSerializer
+    filterset_class = ShippingRateFilterSet
     search_fields = ["name", "code"]
     ordering_fields = ["created_at"]
     permission_classes = [IsAuthenticated, IsAccountMember, MaxShippingRatesLimit]
@@ -68,7 +71,7 @@ class ShippingRateRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        if not shipping_rate.is_active:
+        if shipping_rate.status == ShippingRateStatus.ARCHIVED:
             raise ValidationError("Archived shipping rate cannot be updated")
 
         shipping_rate.update(
@@ -118,7 +121,7 @@ class ShippingRateArchiveAPIView(generics.GenericAPIView):
         return Response(serializer.data)
 
 
-class ShippingRateUnarchiveAPIView(generics.GenericAPIView):
+class ShippingRateRestoreAPIView(generics.GenericAPIView):
     queryset = ShippingRate.objects.none()
     serializer_class = ShippingRateSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
@@ -127,14 +130,14 @@ class ShippingRateUnarchiveAPIView(generics.GenericAPIView):
         return ShippingRate.objects.for_account(self.request.account.id)
 
     @extend_schema(
-        operation_id="unarchive_shipping_rate",
+        operation_id="restore_shipping_rate",
         request=None,
         responses={200: ShippingRateSerializer},
     )
     def post(self, _, **__):
         shipping_rate = self.get_object()
 
-        shipping_rate.unarchive()
+        shipping_rate.restore()
 
         serializer = ShippingRateSerializer(shipping_rate)
         return Response(serializer.data)

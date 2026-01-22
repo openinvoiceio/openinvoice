@@ -29,9 +29,10 @@ def test_create_tax_rate(api_client, user, account):
         "description": None,
         "percentage": "10.00",
         "country": "PL",
-        "is_active": True,
+        "status": "active",
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": None,
     }
 
 

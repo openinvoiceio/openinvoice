@@ -5,7 +5,7 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
-from apps.prices.choices import PriceModel
+from apps.prices.choices import PriceModel, PriceStatus
 from apps.prices.models import Price
 from tests.factories import PriceFactory
 
@@ -34,16 +34,17 @@ def test_list_prices(api_client, user, account):
                     "id": str(price.product.id),
                     "name": price.product.name,
                     "description": "Test product",
-                    "is_active": True,
+                    "status": "active",
                     "default_price_id": None,
                     "metadata": {},
                     "created_at": ANY,
                     "updated_at": ANY,
+                    "archived_at": None,
                 },
                 "currency": "PLN",
                 "amount": "10.00",
                 "model": PriceModel.FLAT,
-                "is_active": True,
+                "status": "active",
                 "metadata": {},
                 "is_used": False,
                 "code": None,
@@ -97,16 +98,16 @@ def test_list_prices_filter_by_currency(api_client, user, account):
     assert [r["id"] for r in response.data["results"]] == [str(usd.id)]
 
 
-def test_list_prices_filter_is_active(api_client, user, account):
-    PriceFactory(account=account, is_active=True)
-    inactive = PriceFactory(account=account, is_active=False)
+def test_list_prices_filter_status(api_client, user, account):
+    PriceFactory(account=account, status=PriceStatus.ACTIVE)
+    archived = PriceFactory(account=account, status=PriceStatus.ARCHIVED)
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get("/api/v1/prices", {"is_active": "false"})
+    response = api_client.get("/api/v1/prices", {"status": "archived"})
 
     assert response.status_code == 200
-    assert [r["id"] for r in response.data["results"]] == [str(inactive.id)]
+    assert [r["id"] for r in response.data["results"]] == [str(archived.id)]
 
 
 def test_list_prices_filter_by_product_id(api_client, user, account):

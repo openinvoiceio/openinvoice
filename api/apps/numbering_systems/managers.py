@@ -6,7 +6,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 
-from .choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
+from .choices import NumberingSystemAppliesTo, NumberingSystemResetInterval, NumberingSystemStatus
 from .querysets import NumberingSystemQuerySet
 
 if typing.TYPE_CHECKING:
@@ -29,6 +29,7 @@ class NumberingSystemManager(models.Manager.from_queryset(NumberingSystemQuerySe
             description=description,
             applies_to=applies_to,
             reset_interval=reset_interval or NumberingSystemResetInterval.NEVER,
+            status=NumberingSystemStatus.ACTIVE,
         )
 
     def create_default_invoice_numbering_system(self, *, account_id: uuid.UUID) -> NumberingSystem:

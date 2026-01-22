@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from apps.files.models import File
 
+from .choices import ProductStatus
 from .managers import ProductManager
 
 if TYPE_CHECKING:
@@ -17,7 +18,7 @@ class Product(models.Model):
     name = models.CharField(max_length=500)
     description = models.TextField(null=True, blank=True)
     url = models.URLField(null=True)
-    is_active = models.BooleanField()
+    status = models.CharField(max_length=20, choices=ProductStatus.choices, default=ProductStatus.ACTIVE)
     metadata = models.JSONField(default=dict)
     archived_at = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -52,17 +53,17 @@ class Product(models.Model):
         self.save()
 
     def archive(self) -> None:
-        if not self.is_active:
+        if self.status == ProductStatus.ARCHIVED:
             return
 
-        self.is_active = False
+        self.status = ProductStatus.ARCHIVED
         self.archived_at = timezone.now()
-        self.save(update_fields=["is_active", "archived_at", "updated_at"])
+        self.save()
 
-    def unarchive(self) -> None:
-        if self.is_active:
+    def restore(self) -> None:
+        if self.status == ProductStatus.ACTIVE:
             return
 
-        self.is_active = True
+        self.status = ProductStatus.ACTIVE
         self.archived_at = None
-        self.save(update_fields=["is_active", "archived_at", "updated_at"])
+        self.save()

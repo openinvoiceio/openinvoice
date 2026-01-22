@@ -29,8 +29,10 @@ def test_list_numbering_systems(api_client, user, subscribed_account):
             "description": numbering_system.description,
             "applies_to": numbering_system.applies_to,
             "reset_interval": numbering_system.reset_interval,
+            "status": numbering_system.status,
             "created_at": ANY,
             "updated_at": ANY,
+            "archived_at": numbering_system.archived_at,
         }
         for numbering_system in [numbering_system_two, numbering_system_one]
     ]

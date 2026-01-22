@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from apps.accounts.permissions import IsAccountMember
 from apps.prices.models import Price
 
+from .choices import ProductStatus
 from .filtersets import ProductFilterSet
 from .models import Product
 from .permissions import MaxProductsLimit
@@ -81,7 +82,7 @@ class ProductRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        if not product.is_active:
+        if product.status == ProductStatus.ARCHIVED:
             raise ValidationError("Archived products cannot be updated")
 
         product.update(
@@ -134,7 +135,7 @@ class ProductArchiveAPIView(generics.GenericAPIView):
         return Response(serializer.data)
 
 
-class ProductUnarchiveAPIView(generics.GenericAPIView):
+class ProductRestoreAPIView(generics.GenericAPIView):
     queryset = Product.objects.none()
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
@@ -143,14 +144,14 @@ class ProductUnarchiveAPIView(generics.GenericAPIView):
         return Product.objects.for_account(self.request.account.id).with_prices()
 
     @extend_schema(
-        operation_id="unarchive_product",
+        operation_id="restore_product",
         request=None,
         responses={200: ProductSerializer},
     )
     def post(self, _, **__):
         product = self.get_object()
 
-        product.unarchive()
+        product.restore()
 
         serializer = ProductSerializer(product)
         return Response(serializer.data)

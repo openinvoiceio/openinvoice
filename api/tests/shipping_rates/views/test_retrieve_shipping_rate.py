@@ -24,11 +24,11 @@ def test_retrieve_shipping_rate(api_client, user, account):
         "currency": shipping_rate.currency,
         "amount": str(shipping_rate.amount.amount),
         "tax_policy": shipping_rate.tax_policy,
-        "is_active": shipping_rate.is_active,
+        "status": shipping_rate.status,
         "metadata": shipping_rate.metadata,
-        "archived_at": None,
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": None,
     }
 
 

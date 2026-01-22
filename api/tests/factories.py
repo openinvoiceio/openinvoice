@@ -13,14 +13,20 @@ from factory import (
 from factory.django import DjangoModelFactory, FileField, Password
 
 from apps.accounts.choices import InvitationStatus, MemberRole
+from apps.coupons.choices import CouponStatus
 from apps.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteStatus
 from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
-from apps.numbering_systems.choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
+from apps.numbering_systems.choices import (
+    NumberingSystemAppliesTo,
+    NumberingSystemResetInterval,
+    NumberingSystemStatus,
+)
 from apps.portal.crypto import generate_portal_token
-from apps.prices.choices import PriceModel
+from apps.prices.choices import PriceModel, PriceStatus
+from apps.products.choices import ProductStatus
 from apps.quotes.choices import QuoteDeliveryMethod, QuoteStatus
-from apps.shipping_rates.choices import ShippingRateTaxPolicy
-from apps.taxes.choices import TaxIdType
+from apps.shipping_rates.choices import ShippingRateStatus, ShippingRateTaxPolicy
+from apps.taxes.choices import TaxIdType, TaxRateStatus
 
 
 class UserFactory(DjangoModelFactory):
@@ -120,6 +126,7 @@ class CouponFactory(DjangoModelFactory):
     amount = None
     percentage = Decimal("10.00")
     account = SubFactory(AccountFactory)
+    status = CouponStatus.ACTIVE
 
 
 class ProductFactory(DjangoModelFactory):
@@ -129,7 +136,7 @@ class ProductFactory(DjangoModelFactory):
     account = SubFactory(AccountFactory)
     name = "Test Product"
     description = "Test product"
-    is_active = True
+    status = ProductStatus.ACTIVE
     metadata = {}
 
 
@@ -142,7 +149,7 @@ class PriceFactory(DjangoModelFactory):
     amount = Decimal("10")
     currency = "PLN"
     model = PriceModel.FLAT
-    is_active = True
+    status = PriceStatus.ACTIVE
     metadata = {}
 
 
@@ -166,7 +173,7 @@ class TaxRateFactory(DjangoModelFactory):
     description = "Value added tax"
     percentage = Decimal("10.00")
     country = "PL"
-    is_active = True
+    status = TaxRateStatus.ACTIVE
 
 
 class ShippingRateFactory(DjangoModelFactory):
@@ -179,7 +186,7 @@ class ShippingRateFactory(DjangoModelFactory):
     currency = "PLN"
     amount = Decimal("20.00")
     tax_policy = ShippingRateTaxPolicy.MATCH_GOODS
-    is_active = True
+    status = ShippingRateStatus.ACTIVE
     metadata = {}
 
 
@@ -482,6 +489,7 @@ class NumberingSystemFactory(DjangoModelFactory):
     template = "INV-{n}"
     applies_to = NumberingSystemAppliesTo.INVOICE
     reset_interval = NumberingSystemResetInterval.NEVER
+    status = NumberingSystemStatus.ACTIVE
 
 
 class StripeCustomerFactory(DjangoModelFactory):

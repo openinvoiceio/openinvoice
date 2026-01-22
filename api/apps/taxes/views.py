@@ -106,7 +106,7 @@ class TaxRateArchiveAPIView(generics.GenericAPIView):
         return Response(serializer.data)
 
 
-class TaxRateUnarchiveAPIView(generics.GenericAPIView):
+class TaxRateRestoreAPIView(generics.GenericAPIView):
     queryset = TaxRate.objects.none()
     serializer_class = TaxRateSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
@@ -114,14 +114,14 @@ class TaxRateUnarchiveAPIView(generics.GenericAPIView):
     def get_queryset(self):
         return TaxRate.objects.for_account(self.request.account.id)
 
-    @extend_schema(operation_id="unarchive_tax_rate", request=None, responses={200: TaxRateSerializer})
+    @extend_schema(operation_id="restore_tax_rate", request=None, responses={200: TaxRateSerializer})
     def post(self, request, *_, **__):
         tax_rate = self.get_object()
 
-        tax_rate.unarchive()
+        tax_rate.restore()
 
         logger.info(
-            "Tax rate unarchived",
+            "Tax rate restored",
             account_id=request.account.id,
             tax_rate_id=tax_rate.id,
         )

@@ -5,6 +5,7 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
+from apps.products.choices import ProductStatus
 from tests.factories import PriceFactory, ProductFactory
 
 pytestmark = pytest.mark.django_db
@@ -33,7 +34,7 @@ def test_update_product(api_client, user, account):
         "account_id": str(account.id),
         "name": "New",
         "description": None,
-        "is_active": True,
+        "status": "active",
         "url": None,
         "image_url": None,
         "image_id": None,
@@ -42,6 +43,7 @@ def test_update_product(api_client, user, account):
         "metadata": {},
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": None,
     }
 
 
@@ -96,7 +98,7 @@ def test_update_product_default_price(api_client, user, account):
         "account_id": str(account.id),
         "name": product.name,
         "description": product.description,
-        "is_active": True,
+        "status": "active",
         "url": None,
         "image_url": None,
         "image_id": None,
@@ -113,6 +115,7 @@ def test_update_product_default_price(api_client, user, account):
         "metadata": {},
         "created_at": ANY,
         "updated_at": ANY,
+        "archived_at": None,
     }
 
 
@@ -232,7 +235,7 @@ def test_update_product_requires_authentication(api_client, account):
 
 
 def test_update_product_archived(api_client, user, account):
-    product = ProductFactory(account=account, is_active=False, archived_at=timezone.now())
+    product = ProductFactory(account=account, status=ProductStatus.ARCHIVED, archived_at=timezone.now())
 
     api_client.force_login(user)
     api_client.force_account(account)

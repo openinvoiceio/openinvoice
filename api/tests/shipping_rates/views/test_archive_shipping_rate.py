@@ -3,13 +3,14 @@ import uuid
 import pytest
 from django.utils import timezone
 
+from apps.shipping_rates.choices import ShippingRateStatus
 from tests.factories import ShippingRateFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def test_archive_shipping_rate(api_client, user, account):
-    shipping_rate = ShippingRateFactory(account=account, is_active=True)
+    shipping_rate = ShippingRateFactory(account=account, status=ShippingRateStatus.ACTIVE)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -24,7 +25,7 @@ def test_archive_shipping_rate(api_client, user, account):
         "currency": shipping_rate.currency,
         "amount": str(shipping_rate.amount.amount),
         "tax_policy": shipping_rate.tax_policy,
-        "is_active": False,
+        "status": "archived",
         "metadata": shipping_rate.metadata,
         "archived_at": response.data["archived_at"],
         "created_at": response.data["created_at"],
@@ -33,14 +34,18 @@ def test_archive_shipping_rate(api_client, user, account):
 
 
 def test_archive_shipping_rate_already_archived(api_client, user, account):
-    shipping_rate = ShippingRateFactory(account=account, is_active=False, archived_at=timezone.now())
+    shipping_rate = ShippingRateFactory(
+        account=account,
+        status=ShippingRateStatus.ARCHIVED,
+        archived_at=timezone.now(),
+    )
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.post(f"/api/v1/shipping-rates/{shipping_rate.id}/archive")
 
     assert response.status_code == 200
-    assert response.data["is_active"] is False
+    assert response.data["status"] == "archived"
 
 
 def test_archive_shipping_rate_not_found(api_client, user, account):

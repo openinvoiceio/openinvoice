@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
+from .choices import PriceStatus
 from .filtersets import PriceFilterSet
 from .models import Price
 from .serializers import PriceCreateSerializer, PriceSerializer, PriceUpdateSerializer
@@ -73,7 +74,7 @@ class PriceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        if not price.is_active:
+        if price.status == PriceStatus.ARCHIVED:
             raise ValidationError("Archived prices cannot be updated")
 
         price.update(
@@ -130,7 +131,7 @@ class PriceArchiveAPIView(generics.GenericAPIView):
         return Response(serializer.data)
 
 
-class PriceUnarchiveAPIView(generics.GenericAPIView):
+class PriceRestoreAPIView(generics.GenericAPIView):
     queryset = Price.objects.none()
     serializer_class = PriceSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
@@ -138,11 +139,11 @@ class PriceUnarchiveAPIView(generics.GenericAPIView):
     def get_queryset(self):
         return Price.objects.for_account(self.request.account.id)
 
-    @extend_schema(operation_id="unarchive_price", request=None, responses={200: PriceSerializer})
+    @extend_schema(operation_id="restore_price", request=None, responses={200: PriceSerializer})
     def post(self, _, **__):
         price = self.get_object()
 
-        price.unarchive()
+        price.restore()
 
         serializer = PriceSerializer(price)
         return Response(serializer.data)

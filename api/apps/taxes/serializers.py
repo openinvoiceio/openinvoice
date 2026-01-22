@@ -1,7 +1,7 @@
 from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
 
-from .choices import TaxIdType
+from .choices import TaxIdType, TaxRateStatus
 from .models import TaxId, TaxRate
 
 
@@ -12,9 +12,10 @@ class TaxRateSerializer(serializers.Serializer):
     description = serializers.CharField(allow_null=True)
     percentage = serializers.DecimalField(max_digits=5, decimal_places=2)
     country = CountryField(allow_null=True)
-    is_active = serializers.BooleanField()
+    status = serializers.ChoiceField(choices=TaxRateStatus.choices)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField()
+    archived_at = serializers.DateTimeField(allow_null=True)
 
     def to_representation(self, instance: TaxRate) -> dict:
         representation = super().to_representation(instance)

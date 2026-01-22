@@ -133,7 +133,7 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
         head.root = invoice
         head.save(update_fields=["root"])
 
-        invoice.set_tax_rates(customer.tax_rates.filter(is_active=True))
+        invoice.set_tax_rates(customer.tax_rates.active())
 
         return invoice
 
@@ -220,8 +220,8 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
                 outstanding_amount=zero(line.currency),
                 outstanding_quantity=line.quantity,
             )
-            new_line.set_coupons(line.coupons.filter(is_active=True))
-            new_line.set_tax_rates(line.tax_rates.all())
+            new_line.set_coupons(line.coupons.active())
+            new_line.set_tax_rates(line.tax_rates.active())
 
         if previous_revision.shipping is not None:
             invoice.add_shipping(
@@ -229,8 +229,8 @@ class InvoiceManager(models.Manager.from_queryset(InvoiceQuerySet)):
                 tax_rates=previous_revision.shipping.tax_rates.all(),
             )
 
-        invoice.set_coupons(previous_revision.coupons.filter(is_active=True))
-        invoice.set_tax_rates(previous_revision.tax_rates.all())
+        invoice.set_coupons(previous_revision.coupons.active())
+        invoice.set_tax_rates(previous_revision.tax_rates.active())
         invoice.recalculate()
 
         return invoice

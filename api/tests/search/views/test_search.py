@@ -51,7 +51,7 @@ def test_search_all(api_client, user, account):
                 "account_id": str(product_alpha.account_id),
                 "name": product_alpha.name,
                 "description": product_alpha.description,
-                "is_active": product_alpha.is_active,
+                "status": product_alpha.status,
                 "url": product_alpha.url,
                 "image_url": None,
                 "image_id": None,
@@ -59,6 +59,7 @@ def test_search_all(api_client, user, account):
                 "metadata": product_alpha.metadata,
                 "created_at": ANY,
                 "updated_at": ANY,
+                "archived_at": None,
             }
         ],
         "customers": [

@@ -2,11 +2,12 @@ import uuid
 from decimal import Decimal
 
 from django.db import models
+from django.utils import timezone
 from djmoney.money import Money
 
 from common.calculations import zero
 
-from .choices import TaxIdType
+from .choices import TaxIdType, TaxRateStatus
 from .managers import TaxIdManager, TaxRateManager
 
 
@@ -16,7 +17,8 @@ class TaxRate(models.Model):
     description = models.TextField(null=True, blank=True)
     percentage = models.DecimalField(max_digits=5, decimal_places=2)
     country = models.CharField(max_length=2, null=True)
-    is_active = models.BooleanField(default=True)
+    status = models.CharField(max_length=20, choices=TaxRateStatus.choices, default=TaxRateStatus.ACTIVE)
+    archived_at = models.DateTimeField(null=True)
     account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, related_name="tax_rates")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -39,18 +41,20 @@ class TaxRate(models.Model):
         self.save(update_fields=["name", "description", "country", "updated_at"])
 
     def archive(self) -> None:
-        if not self.is_active:
+        if self.status == TaxRateStatus.ARCHIVED:
             return
 
-        self.is_active = False
-        self.save(update_fields=["is_active", "updated_at"])
+        self.status = TaxRateStatus.ARCHIVED
+        self.archived_at = timezone.now()
+        self.save()
 
-    def unarchive(self) -> None:
-        if self.is_active:
+    def restore(self) -> None:
+        if self.status == TaxRateStatus.ACTIVE:
             return
 
-        self.is_active = True
-        self.save(update_fields=["is_active", "updated_at"])
+        self.status = TaxRateStatus.ACTIVE
+        self.archived_at = None
+        self.save()
 
     def calculate_amount(self, base_amount: Money) -> Money:
         if self.percentage <= 0:
