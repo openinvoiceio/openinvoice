@@ -3,12 +3,13 @@ from decimal import Decimal
 import pytest
 from djmoney.money import Money
 
-from apps.invoices.choices import InvoiceTaxBehavior
+from apps.invoices.choices import InvoiceTaxBehavior, InvoiceTaxSource
 from common.calculations import MAX_AMOUNT
 from tests.factories import (
     CouponFactory,
     InvoiceFactory,
     InvoiceLineFactory,
+    ShippingRateFactory,
     TaxRateFactory,
 )
 
@@ -943,3 +944,178 @@ def test_recalculate_invoice_mixed_line_and_invoice_adjustments():
     assert invoice.total_amount_excluding_tax == Money("180.00", invoice.currency)
     assert invoice.total_tax_amount == Money("13.50", invoice.currency)
     assert invoice.total_amount == Money("193.50", invoice.currency)
+
+
+def test_recalculate_invoice_automatic_invoice_taxes_exclusive():
+    invoice = InvoiceFactory(currency="USD", tax_behavior=InvoiceTaxBehavior.AUTOMATIC)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
+
+    invoice.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
+    assert line.total_tax_amount == Money("10.00", line.currency)
+    assert line.total_amount == Money("110.00", line.currency)
+    assert line.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.INVOICE
+
+    invoice.refresh_from_db()
+    assert invoice.total_amount_excluding_tax == Money("100.00", invoice.currency)
+    assert invoice.total_tax_amount == Money("10.00", invoice.currency)
+    assert invoice.total_amount == Money("110.00", invoice.currency)
+
+
+def test_recalculate_invoice_automatic_invoice_taxes_inclusive():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.AUTOMATIC)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("120"), quantity=1, amount=Decimal("0"))
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
+
+    invoice.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
+    assert line.total_taxable_amount == Money("100.00", line.currency)
+    assert line.total_tax_amount == Money("20.00", line.currency)
+    assert line.total_amount == Money("120.00", line.currency)
+    assert line.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.INVOICE
+
+    invoice.refresh_from_db()
+    assert invoice.total_amount_excluding_tax == Money("100.00", invoice.currency)
+    assert invoice.total_tax_amount == Money("20.00", invoice.currency)
+    assert invoice.total_amount == Money("120.00", invoice.currency)
+
+
+def test_recalculate_invoice_inclusive_invoice_taxes():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("115"), quantity=1, amount=Decimal("0"))
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("15"))
+
+    invoice.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
+    assert line.total_tax_amount == Money("15.00", line.currency)
+    assert line.total_amount == Money("115.00", line.currency)
+    assert line.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.INVOICE
+
+    invoice.refresh_from_db()
+    assert invoice.total_amount_excluding_tax == Money("100.00", invoice.currency)
+    assert invoice.total_tax_amount == Money("15.00", invoice.currency)
+    assert invoice.total_amount == Money("115.00", invoice.currency)
+
+
+def test_recalculate_invoice_inclusive_mixed_tax_sources():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line_with_tax = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("110"), quantity=1, amount=Decimal("0"))
+    line_with_invoice_tax = InvoiceLineFactory(
+        invoice=invoice, unit_amount=Decimal("105"), quantity=1, amount=Decimal("0")
+    )
+    line_tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
+    invoice_tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("5"))
+
+    line_with_tax.set_tax_rates([line_tax_rate])
+    invoice.set_tax_rates([invoice_tax_rate])
+    invoice.recalculate()
+
+    line_with_tax.refresh_from_db()
+    assert line_with_tax.unit_excluding_tax_amount == Money("100.00", line_with_tax.currency)
+    assert line_with_tax.total_tax_amount == Money("10.00", line_with_tax.currency)
+    assert line_with_tax.total_amount == Money("110.00", line_with_tax.currency)
+    assert line_with_tax.tax_allocations.get(tax_rate=line_tax_rate).source == InvoiceTaxSource.LINE
+
+    line_with_invoice_tax.refresh_from_db()
+    assert line_with_invoice_tax.unit_excluding_tax_amount == Money("100.00", line_with_invoice_tax.currency)
+    assert line_with_invoice_tax.total_tax_amount == Money("5.00", line_with_invoice_tax.currency)
+    assert line_with_invoice_tax.total_amount == Money("105.00", line_with_invoice_tax.currency)
+    assert line_with_invoice_tax.tax_allocations.get(tax_rate=invoice_tax_rate).source == InvoiceTaxSource.INVOICE
+
+    invoice.refresh_from_db()
+    assert invoice.total_amount_excluding_tax == Money("200.00", invoice.currency)
+    assert invoice.total_tax_amount == Money("15.00", invoice.currency)
+    assert invoice.total_amount == Money("215.00", invoice.currency)
+
+
+def test_recalculate_invoice_inclusive_discount_zero_tax_rate():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
+    coupon = CouponFactory(account=invoice.account, currency=invoice.currency, percentage=Decimal("10"), amount=None)
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("0"))
+
+    line.set_coupons([coupon])
+    line.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.total_discount_amount == Money("10.00", line.currency)
+    assert line.total_taxable_amount == Money("90.00", line.currency)
+    assert line.total_tax_amount == Money("0.00", line.currency)
+    assert line.total_amount == Money("90.00", line.currency)
+
+    invoice.refresh_from_db()
+    assert invoice.total_discount_amount == Money("10.00", invoice.currency)
+    assert invoice.total_amount_excluding_tax == Money("90.00", invoice.currency)
+    assert invoice.total_tax_amount == Money("0.00", invoice.currency)
+    assert invoice.total_amount == Money("90.00", invoice.currency)
+
+
+def test_recalculate_invoice_with_shipping_taxes():
+    invoice = InvoiceFactory(currency="USD", tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
+    shipping_rate = ShippingRateFactory(account=invoice.account, currency=invoice.currency, amount=Decimal("20"))
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
+
+    shipping = invoice.add_shipping(shipping_rate, tax_rates=[tax_rate])
+    shipping.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    shipping.refresh_from_db()
+    assert shipping.tax_amount == Money("2.00", shipping.currency)
+    assert shipping.total_amount == Money("22.00", shipping.currency)
+    assert shipping.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.SHIPPING
+
+    line.refresh_from_db()
+    assert line.total_amount == Money("100.00", line.currency)
+
+    invoice.refresh_from_db()
+    assert invoice.subtotal_amount == Money("100.00", invoice.currency)
+    assert invoice.shipping_amount == Money("20.00", invoice.currency)
+    assert invoice.total_amount_excluding_tax == Money("120.00", invoice.currency)
+    assert invoice.total_tax_amount == Money("2.00", invoice.currency)
+    assert invoice.total_amount == Money("122.00", invoice.currency)
+
+
+def test_recalculate_invoice_with_no_lines():
+    invoice = InvoiceFactory(currency="USD", tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
+
+    invoice.recalculate()
+
+    invoice.refresh_from_db()
+    assert invoice.subtotal_amount == Money("0.00", invoice.currency)
+    assert invoice.total_discount_amount == Money("0.00", invoice.currency)
+    assert invoice.total_amount_excluding_tax == Money("0.00", invoice.currency)
+    assert invoice.total_tax_amount == Money("0.00", invoice.currency)
+    assert invoice.total_amount == Money("0.00", invoice.currency)
+    assert invoice.outstanding_amount == Money("0.00", invoice.currency)
+
+
+def test_recalculate_invoice_clamps_total_amount_with_tax():
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
+    line = InvoiceLineFactory(
+        invoice=invoice, unit_amount=Decimal("10000000000000000"), quantity=1000000000000, amount=Decimal("0")
+    )
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("100"))
+
+    invoice.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.amount == Money(MAX_AMOUNT, line.currency)
+    assert line.total_tax_amount == Money(MAX_AMOUNT, line.currency)
+
+    invoice.refresh_from_db()
+    assert invoice.total_amount_excluding_tax == Money(MAX_AMOUNT, invoice.currency)
+    assert invoice.total_tax_amount == Money(MAX_AMOUNT, invoice.currency)
+    assert invoice.total_amount == Money(MAX_AMOUNT, invoice.currency)
