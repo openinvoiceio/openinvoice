@@ -123,7 +123,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     issue_date = models.DateField(null=True)
     sell_date = models.DateField(null=True)
     due_date = models.DateField(null=True)
-    net_payment_term = models.IntegerField(default=7)
+    net_payment_term = models.PositiveIntegerField(default=7)
     customer_on_invoice = models.OneToOneField(
         "InvoiceCustomer",
         on_delete=models.PROTECT,

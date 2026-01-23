@@ -19,7 +19,7 @@ class CustomerSerializer(serializers.Serializer):
     email = serializers.EmailField(allow_null=True)
     phone = serializers.CharField(allow_null=True)
     currency = CurrencyField(allow_null=True)
-    net_payment_term = serializers.IntegerField(allow_null=True)
+    net_payment_term = serializers.IntegerField(allow_null=True, min_value=0)
     invoice_numbering_system_id = serializers.UUIDField(allow_null=True)
     credit_note_numbering_system_id = serializers.UUIDField(allow_null=True)
     description = serializers.CharField(allow_null=True)
@@ -42,7 +42,7 @@ class CustomerCreateSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=255, allow_null=True, required=False)
     description = serializers.CharField(max_length=600, allow_null=True, required=False)
     currency = CurrencyField(allow_null=True, required=False)
-    net_payment_term = serializers.IntegerField(allow_null=True, required=False)
+    net_payment_term = serializers.IntegerField(allow_null=True, min_value=0, required=False)
     invoice_numbering_system_id = NumberingSystemRelatedField(
         source="invoice_numbering_system",
         applies_to=NumberingSystemAppliesTo.INVOICE,
@@ -69,7 +69,7 @@ class CustomerUpdateSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=255, allow_null=True, required=False)
     description = serializers.CharField(max_length=600, allow_null=True, required=False)
     currency = CurrencyField(allow_null=True, required=False)
-    net_payment_term = serializers.IntegerField(allow_null=True, required=False)
+    net_payment_term = serializers.IntegerField(allow_null=True, min_value=0, required=False)
     invoice_numbering_system_id = NumberingSystemRelatedField(
         source="invoice_numbering_system",
         applies_to=NumberingSystemAppliesTo.INVOICE,

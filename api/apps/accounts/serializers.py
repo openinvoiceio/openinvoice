@@ -27,7 +27,7 @@ class AccountSerializer(serializers.Serializer):
     invoice_footer = serializers.CharField(allow_null=True)
     invoice_numbering_system_id = serializers.UUIDField(allow_null=True)
     credit_note_numbering_system_id = serializers.UUIDField(allow_null=True)
-    net_payment_term = serializers.IntegerField()
+    net_payment_term = serializers.IntegerField(min_value=0)
     metadata = MetadataField()
     subscription = StripeSubscriptionSerializer(allow_null=True, source="active_subscription")
     logo_id = serializers.UUIDField(allow_null=True)
@@ -64,7 +64,7 @@ class AccountUpdateSerializer(serializers.Serializer):
         allow_null=True,
         required=False,
     )
-    net_payment_term = serializers.IntegerField(required=False)
+    net_payment_term = serializers.IntegerField(min_value=0, required=False)
     metadata = MetadataField(required=False)
     logo_id = FileRelatedField(source="logo", allow_null=True, required=False)
 

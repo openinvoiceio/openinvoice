@@ -53,7 +53,7 @@ class Account(models.Model):
         related_name="credit_note_numbering_account",
         null=True,
     )
-    net_payment_term = models.IntegerField()
+    net_payment_term = models.PositiveIntegerField()
     logo = models.OneToOneField("files.File", on_delete=models.SET_NULL, null=True, related_name="account_logo")
     tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="accounts")
     metadata = models.JSONField(default=dict)
