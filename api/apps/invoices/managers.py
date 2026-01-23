@@ -19,7 +19,7 @@ from apps.prices.models import Price
 from apps.taxes.models import TaxId
 from common.calculations import zero
 
-from .choices import InvoiceDeliveryMethod, InvoiceStatus
+from .choices import InvoiceDeliveryMethod, InvoiceStatus, InvoiceTaxBehavior
 
 if TYPE_CHECKING:
     from .models import Invoice, InvoiceAccount, InvoiceCustomer
@@ -79,6 +79,7 @@ class InvoiceManager(models.Manager):
         payment_connection_id: UUID | None = None,
         delivery_method: InvoiceDeliveryMethod | None = None,
         recipients: list[str] | None = None,
+        tax_behavior: InvoiceTaxBehavior | None = None,
     ) -> Invoice:
         InvoiceHead = apps.get_model("invoices", "InvoiceHead")
 
@@ -122,6 +123,7 @@ class InvoiceManager(models.Manager):
             outstanding_amount=zero(currency),
             delivery_method=delivery_method or InvoiceDeliveryMethod.MANUAL,
             recipients=recipients or default_recipients,
+            tax_behavior=tax_behavior or InvoiceTaxBehavior.AUTOMATIC,
         )
 
         head.root = invoice
@@ -150,6 +152,7 @@ class InvoiceManager(models.Manager):
         payment_connection_id: UUID | None = None,
         delivery_method: InvoiceDeliveryMethod | None = None,
         recipients: Iterable[str] | None = None,
+        tax_behavior: InvoiceTaxBehavior | None = None,
     ) -> Invoice:
         currency = currency or previous_revision.currency
 
@@ -192,6 +195,7 @@ class InvoiceManager(models.Manager):
             delivery_method=delivery_method or previous_revision.delivery_method,
             recipients=recipients or previous_revision.recipients,
             head=previous_revision.head,
+            tax_behavior=tax_behavior or previous_revision.tax_behavior,
         )
 
         for line in previous_revision.lines.filter(currency=currency):
@@ -201,6 +205,7 @@ class InvoiceManager(models.Manager):
                 quantity=line.quantity,
                 currency=currency,
                 unit_amount=line.unit_amount,
+                unit_excluding_tax_amount=line.unit_excluding_tax_amount,
                 price=line.price,
                 total_tax_rate=line.total_tax_rate,
                 amount=zero(line.currency),
@@ -248,6 +253,7 @@ class InvoiceLineManager(models.Manager):
             quantity=quantity,
             price=price,
             unit_amount=unit_amount,
+            unit_excluding_tax_amount=unit_amount,
             currency=currency,
             amount=zero(currency),
             total_discount_amount=zero(currency),

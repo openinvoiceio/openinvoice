@@ -31,6 +31,7 @@ def test_retrieve_invoice(api_client, user, account):
         "number": invoice.effective_number,
         "numbering_system_id": None,
         "currency": invoice.currency,
+        "tax_behavior": invoice.tax_behavior,
         "issue_date": None,
         "sell_date": None,
         "due_date": invoice.due_date.isoformat(),
@@ -204,7 +205,7 @@ def test_retrieve_invoice_excludes_line_discounts_from_invoice_level(api_client,
 
 
 def test_retrieve_invoice_excludes_line_taxes_from_invoice_level(api_client, user, account):
-    invoice = InvoiceFactory(account=account)
+    invoice = InvoiceFactory(account=account, currency="USD")
     line = InvoiceLineFactory(
         invoice=invoice,
         quantity=1,

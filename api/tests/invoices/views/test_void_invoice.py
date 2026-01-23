@@ -25,6 +25,7 @@ def test_void_invoice(api_client, user, account):
         "number": invoice.effective_number,
         "numbering_system_id": None,
         "currency": invoice.currency,
+        "tax_behavior": invoice.tax_behavior,
         "issue_date": invoice.issue_date,
         "sell_date": invoice.sell_date,
         "due_date": invoice.due_date.isoformat(),

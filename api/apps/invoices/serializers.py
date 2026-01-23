@@ -19,7 +19,7 @@ from apps.taxes.serializers import TaxRateSerializer
 from common.fields import CurrencyField, MetadataField
 from common.validators import AllOrNoneValidator, AtMostOneValidator
 
-from .choices import InvoiceDeliveryMethod, InvoiceStatus
+from .choices import InvoiceDeliveryMethod, InvoiceStatus, InvoiceTaxBehavior
 from .fields import InvoiceRelatedField
 from .validators import (
     AutomaticDeliveryMethodValidator,
@@ -123,6 +123,7 @@ class InvoiceSerializer(serializers.Serializer):
     number = serializers.CharField(allow_null=True, source="effective_number", read_only=True)
     numbering_system_id = serializers.UUIDField(allow_null=True)
     currency = CurrencyField()
+    tax_behavior = serializers.ChoiceField(choices=InvoiceTaxBehavior.choices)
     issue_date = serializers.DateField(allow_null=True)
     sell_date = serializers.DateField(allow_null=True)
     due_date = serializers.DateField(allow_null=True)
@@ -190,6 +191,7 @@ class InvoiceCreateSerializer(serializers.Serializer):
         source="numbering_system", applies_to=NumberingSystemAppliesTo.INVOICE, allow_null=True, required=False
     )
     currency = CurrencyField(allow_null=True, required=False)
+    tax_behavior = serializers.ChoiceField(choices=InvoiceTaxBehavior.choices, required=False)
     issue_date = serializers.DateField(allow_null=True, required=False)
     sell_date = serializers.DateField(allow_null=True, required=False)
     due_date = serializers.DateField(allow_null=True, required=False)
@@ -235,6 +237,7 @@ class InvoiceRevisionCreateSerializer(serializers.Serializer):
         source="numbering_system", applies_to=NumberingSystemAppliesTo.INVOICE, allow_null=True, required=False
     )
     currency = CurrencyField(allow_null=True, required=False)
+    tax_behavior = serializers.ChoiceField(choices=InvoiceTaxBehavior.choices, required=False)
     issue_date = serializers.DateField(allow_null=True, required=False)
     sell_date = serializers.DateField(allow_null=True, required=False)
     due_date = serializers.DateField(allow_null=True, required=False)
@@ -278,6 +281,7 @@ class InvoiceUpdateSerializer(serializers.Serializer):
         source="numbering_system", applies_to=NumberingSystemAppliesTo.INVOICE, allow_null=True, required=False
     )
     currency = CurrencyField(required=False)
+    tax_behavior = serializers.ChoiceField(choices=InvoiceTaxBehavior.choices, required=False)
     issue_date = serializers.DateField(allow_null=True, required=False)
     sell_date = serializers.DateField(allow_null=True, required=False)
     due_date = serializers.DateField(allow_null=True, required=False)

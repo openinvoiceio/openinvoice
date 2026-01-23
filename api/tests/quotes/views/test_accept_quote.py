@@ -19,7 +19,7 @@ pytestmark = pytest.mark.django_db
 
 @freeze_time("2024-07-10T12:34:56Z")
 def test_accept_quote(api_client, user, account):
-    customer = CustomerFactory(account=account, name="Acme Corp")
+    customer = CustomerFactory(account=account, name="Acme Corp", currency="USD")
     price = PriceFactory(account=account, amount=Decimal("120.00"), currency="USD")
 
     quote = QuoteFactory(

@@ -88,6 +88,7 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
             payment_connection_id=getattr(data.get("payment_connection"), "id", None),
             delivery_method=data.get("delivery_method"),
             recipients=data.get("recipients"),
+            tax_behavior=data.get("tax_behavior"),
         )
 
         if "coupons" in data:
@@ -166,6 +167,7 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             payment_connection_id=getattr(data.get("payment_connection"), "id", invoice.payment_connection_id),
             delivery_method=data.get("delivery_method", invoice.delivery_method),
             recipients=data.get("recipients", invoice.recipients),
+            tax_behavior=data.get("tax_behavior", invoice.tax_behavior),
         )
 
         if "coupons" in data:
@@ -295,6 +297,7 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
             payment_connection_id=getattr(data.get("payment_connection"), "id", None),
             delivery_method=data.get("delivery_method"),
             recipients=data.get("recipients"),
+            tax_behavior=data.get("tax_behavior"),
         )
 
         if "coupons" in data:

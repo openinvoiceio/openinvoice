@@ -15,7 +15,7 @@ from factory.django import DjangoModelFactory, FileField, Password
 from apps.accounts.choices import InvitationStatus, MemberRole
 from apps.coupons.choices import CouponStatus
 from apps.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteStatus
-from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus, InvoiceTaxBehavior
 from apps.numbering_systems.choices import (
     NumberingSystemAppliesTo,
     NumberingSystemResetInterval,
@@ -108,7 +108,7 @@ class CustomerFactory(DjangoModelFactory):
     email = "customer@example.com"
     phone = "123456789"
     description = "Test customer"
-    currency = "PLN"
+    currency = "USD"
     net_payment_term = 0
     metadata = {}
     account = SubFactory(AccountFactory)
@@ -208,7 +208,7 @@ class InvoiceFactory(DjangoModelFactory):
     customer = SubFactory(CustomerFactory, account=SelfAttribute("..account"))
     number = Sequence(lambda n: f"INV-{n}")
     numbering_system = None
-    currency = "PLN"
+    currency = LazyAttribute(lambda obj: obj.customer.currency or obj.account.default_currency)
     status = InvoiceStatus.DRAFT
     issue_date = None
     sell_date = None
@@ -228,6 +228,7 @@ class InvoiceFactory(DjangoModelFactory):
     custom_fields = {}
     paid_at = None
     delivery_method = InvoiceDeliveryMethod.MANUAL
+    tax_behavior = InvoiceTaxBehavior.AUTOMATIC
     recipients = LazyFunction(list)
 
     @post_generation
@@ -253,6 +254,7 @@ class InvoiceLineFactory(DjangoModelFactory):
     quantity = 1
     currency = SelfAttribute("invoice.currency")
     unit_amount = Decimal("0")
+    unit_excluding_tax_amount = SelfAttribute("unit_amount")
     amount = Decimal("0")
     total_discount_amount = Decimal("0")
     total_taxable_amount = Decimal("0")

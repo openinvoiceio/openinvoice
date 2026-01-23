@@ -27,3 +27,9 @@ class InvoiceTaxSource(models.TextChoices):
     INVOICE = "invoice", "Invoice"
     LINE = "line", "Line"
     SHIPPING = "shipping", "Shipping"
+
+
+class InvoiceTaxBehavior(models.TextChoices):
+    INCLUSIVE = "inclusive", "Inclusive"
+    EXCLUSIVE = "exclusive", "Exclusive"
+    AUTOMATIC = "automatic", "Automatic"

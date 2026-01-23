@@ -32,7 +32,13 @@ from apps.taxes.models import TaxRate
 from common.calculations import allocate_proportionally, clamp_money, zero
 from common.pdf import generate_pdf
 
-from .choices import InvoiceDeliveryMethod, InvoiceDiscountSource, InvoiceStatus, InvoiceTaxSource
+from .choices import (
+    InvoiceDeliveryMethod,
+    InvoiceDiscountSource,
+    InvoiceStatus,
+    InvoiceTaxBehavior,
+    InvoiceTaxSource,
+)
 from .managers import (
     InvoiceAccountManager,
     InvoiceCustomerManager,
@@ -162,6 +168,11 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         choices=InvoiceDeliveryMethod.choices,
         default=InvoiceDeliveryMethod.MANUAL,
     )
+    tax_behavior = models.CharField(
+        max_length=20,
+        choices=InvoiceTaxBehavior.choices,
+        default=InvoiceTaxBehavior.AUTOMATIC,
+    )
     recipients = ArrayField(
         base_field=models.EmailField(max_length=254),
         default=list,
@@ -215,6 +226,15 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     @property
     def effective_account(self):
         return self.account_on_invoice or self.account
+
+    @property
+    def effective_tax_behavior(self) -> InvoiceTaxBehavior:
+        if self.tax_behavior != InvoiceTaxBehavior.AUTOMATIC:
+            return InvoiceTaxBehavior(self.tax_behavior)
+
+        if self.currency.upper() in {"USD", "CAD"}:
+            return InvoiceTaxBehavior.EXCLUSIVE
+        return InvoiceTaxBehavior.INCLUSIVE
 
     def generate_number(self) -> str | None:
         # TODO: add much more tests for this method
@@ -272,13 +292,27 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.tax_allocations.all().delete()
 
         lines = list(self.lines.select_related("price").all())
+        invoice_tax_rates = list(self.tax_rates.order_by("invoice_tax_rates__position"))
 
         # Calculate base
 
         for line in lines:
             line.unit_amount = clamp_money(line.calculate_unit_amount())
-            line.amount = clamp_money(line.calculate_amount())
-            line.total_taxable_amount = line.amount
+            line.amount = clamp_money(line.unit_amount * line.quantity)
+            line.total_discount_amount = zero(self.currency)
+            line.total_tax_amount = zero(self.currency)
+
+            line_tax_rates = list(line.tax_rates.order_by("invoice_line_tax_rates__position"))
+            tax_rates = line_tax_rates if line_tax_rates else invoice_tax_rates
+            line.total_tax_rate = sum((tax_rate.percentage for tax_rate in tax_rates), Decimal(0))
+
+            if self.effective_tax_behavior == InvoiceTaxBehavior.INCLUSIVE and line.total_tax_rate > 0:
+                divisor = Decimal(1) + (line.total_tax_rate / Decimal(100))
+                line.unit_excluding_tax_amount = clamp_money(line.unit_amount / divisor)
+            else:
+                line.unit_excluding_tax_amount = line.unit_amount
+
+            line.total_taxable_amount = clamp_money(line.unit_excluding_tax_amount * line.quantity)
 
         # Calculate line discounts
 
@@ -346,14 +380,11 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         lines_tax_amount = zero(self.currency)
         lines_amount_excluding_tax = zero(self.currency)
-        invoice_tax_rates = self.tax_rates.order_by("invoice_tax_rates__position")
         for line in lines:
             line_tax_rates = list(line.tax_rates.order_by("invoice_line_tax_rates__position"))
             tax_rates = line_tax_rates if line_tax_rates else invoice_tax_rates
 
             for tax_rate in tax_rates:
-                line.total_tax_rate += tax_rate.percentage
-
                 tax_amount = tax_rate.calculate_amount(line.total_taxable_amount)
                 if tax_amount.amount <= 0:
                     continue
@@ -378,6 +409,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             lines,
             fields=[
                 "unit_amount",
+                "unit_excluding_tax_amount",
                 "amount",
                 "total_discount_amount",
                 "total_taxable_amount",
@@ -588,6 +620,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         payment_connection_id: uuid.UUID | None = None,
         delivery_method: InvoiceDeliveryMethod | None = None,
         recipients: list[str] | None = None,
+        tax_behavior: InvoiceTaxBehavior | None = None,
     ) -> None:
         original_currency = self.currency
         currency = currency or customer.currency or self.account.default_currency
@@ -613,6 +646,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.customer = customer
         self.delivery_method = delivery_method
         self.recipients = recipients
+        self.tax_behavior = tax_behavior or self.tax_behavior
 
         if currency != original_currency:
             self.lines.all().delete()
@@ -626,6 +660,7 @@ class InvoiceLine(models.Model):
     quantity = models.BigIntegerField()
     currency = models.CharField(max_length=3)
     unit_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    unit_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     # TODO: add subtotal_amount, which will have amount - line discounts
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")

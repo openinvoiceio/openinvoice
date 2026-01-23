@@ -26,7 +26,7 @@ pytestmark = pytest.mark.django_db
 
 def test_create_invoice_revision(api_client, user, account):
     original_issue_date = date(2024, 1, 5)
-    customer = CustomerFactory(account=account)
+    customer = CustomerFactory(account=account, currency="USD")
     invoice = InvoiceFactory(
         account=account,
         customer=customer,
@@ -46,6 +46,7 @@ def test_create_invoice_revision(api_client, user, account):
         "number": None,
         "numbering_system_id": None,
         "currency": customer.currency,
+        "tax_behavior": "automatic",
         "issue_date": None,
         "sell_date": None,
         "due_date": None,

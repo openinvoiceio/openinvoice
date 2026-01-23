@@ -349,6 +349,7 @@ class Quote(models.Model):
                 quantity=line.quantity,
                 currency=invoice.currency,
                 unit_amount=line.unit_amount,
+                unit_excluding_tax_amount=zero(self.currency),
                 price=line.price,
                 total_tax_rate=line.total_tax_rate,
                 amount=zero(invoice.currency),

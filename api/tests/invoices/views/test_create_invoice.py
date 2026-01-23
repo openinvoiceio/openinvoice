@@ -38,6 +38,7 @@ def test_create_invoice(api_client, user, account):
         "number": None,
         "numbering_system_id": None,
         "currency": customer.currency,
+        "tax_behavior": "automatic",
         "issue_date": None,
         "sell_date": None,
         "due_date": None,

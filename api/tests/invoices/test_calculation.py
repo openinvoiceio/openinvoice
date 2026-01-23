@@ -3,6 +3,7 @@ from decimal import Decimal
 import pytest
 from djmoney.money import Money
 
+from apps.invoices.choices import InvoiceTaxBehavior
 from common.calculations import MAX_AMOUNT
 from tests.factories import (
     CouponFactory,
@@ -58,8 +59,144 @@ def test_calculate_tax_rate_amount_negative_rate():
     assert tax_rate.calculate_amount(base_amount) == Money("0", base_amount.currency)
 
 
+def test_recalculate_invoice_line_with_inclusive_tax_behavior():
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("120"), quantity=1, amount=Decimal("0"))
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
+
+    line.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.amount == Money("120.00", line.currency)
+    assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
+    assert line.total_taxable_amount == Money("100.00", line.currency)
+    assert line.total_tax_amount == Money("20.00", line.currency)
+    assert line.total_amount == Money("120.00", line.currency)
+
+    invoice.refresh_from_db()
+    assert invoice.total_amount_excluding_tax == Money("100.00", line.currency)
+    assert invoice.total_tax_amount == Money("20.00", line.currency)
+    assert invoice.total_amount == Money("120.00", line.currency)
+
+
+def test_recalculate_invoice_line_with_automatic_tax_behavior_exclusive():
+    invoice = InvoiceFactory(currency="USD", tax_behavior=InvoiceTaxBehavior.AUTOMATIC)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
+
+    line.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.amount == Money("100.00", line.currency)
+    assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
+    assert line.total_tax_amount == Money("10.00", line.currency)
+    assert line.total_amount == Money("110.00", line.currency)
+
+
+def test_recalculate_invoice_line_with_automatic_tax_behavior_inclusive():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.AUTOMATIC)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("120"), quantity=2, amount=Decimal("0"))
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
+
+    line.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.amount == Money("240.00", line.currency)
+    assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
+    assert line.total_taxable_amount == Money("200.00", line.currency)
+    assert line.total_tax_amount == Money("40.00", line.currency)
+    assert line.total_amount == Money("240.00", line.currency)
+
+
+def test_recalculate_invoice_inclusive_with_discount_and_taxes():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("120"), quantity=1, amount=Decimal("0"))
+    coupon = CouponFactory(account=invoice.account, currency=line.currency, percentage=Decimal("10"), amount=None)
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
+
+    line.set_coupons([coupon])
+    line.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.amount == Money("120.00", line.currency)
+    assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
+    assert line.total_discount_amount == Money("10.00", line.currency)
+    assert line.total_taxable_amount == Money("90.00", line.currency)
+    assert line.total_tax_amount == Money("18.00", line.currency)
+    assert line.total_amount == Money("108.00", line.currency)
+
+    invoice.refresh_from_db()
+    assert invoice.subtotal_amount == Money("90.00", line.currency)
+    assert invoice.total_amount_excluding_tax == Money("90.00", line.currency)
+    assert invoice.total_tax_amount == Money("18.00", line.currency)
+    assert invoice.total_amount == Money("108.00", line.currency)
+
+
+def test_recalculate_invoice_inclusive_with_multiple_tax_rates():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("115"), quantity=1, amount=Decimal("0"))
+    tax_rate1 = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
+    tax_rate2 = TaxRateFactory(account=invoice.account, percentage=Decimal("5"))
+
+    line.set_tax_rates([tax_rate1, tax_rate2])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
+    assert line.total_tax_amount == Money("15.00", line.currency)
+    assert line.total_amount == Money("115.00", line.currency)
+
+
+def test_recalculate_invoice_inclusive_line_tax_overrides_invoice_tax():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("110"), quantity=1, amount=Decimal("0"))
+    invoice_tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
+    line_tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
+
+    invoice.set_tax_rates([invoice_tax_rate])
+    line.set_tax_rates([line_tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.total_tax_rate == Decimal("10")
+    assert line.total_tax_amount == Money("10.00", line.currency)
+    assert line.total_amount == Money("110.00", line.currency)
+
+
+def test_recalculate_invoice_inclusive_with_zero_tax_rate():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("50"), quantity=2, amount=Decimal("0"))
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("0"))
+
+    line.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.unit_excluding_tax_amount == Money("50.00", line.currency)
+    assert line.total_tax_amount == Money("0.00", line.currency)
+    assert line.total_amount == Money("100.00", line.currency)
+
+
+def test_recalculate_invoice_inclusive_with_zero_base_amount():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("0"), quantity=1, amount=Decimal("0"))
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
+
+    line.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.unit_excluding_tax_amount == Money("0.00", line.currency)
+    assert line.total_tax_amount == Money("0.00", line.currency)
+    assert line.total_amount == Money("0.00", line.currency)
+
+
 def test_apply_line_discounts_sequential_percentages():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     coupon_1 = CouponFactory(account=line.invoice.account, currency=line.currency, percentage=Decimal("50"))
     coupon_2 = CouponFactory(account=line.invoice.account, currency=line.currency, percentage=Decimal("50"))
@@ -76,7 +213,7 @@ def test_apply_line_discounts_sequential_percentages():
 
 
 def test_apply_line_taxes_zero_taxable():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("0"), quantity=1, amount=Decimal("0"))
     tax_rate = TaxRateFactory(account=line.invoice.account, percentage=Decimal("20"))
 
@@ -90,7 +227,7 @@ def test_apply_line_taxes_zero_taxable():
 
 
 def test_recalculate_invoice_line_no_discounts_no_taxes():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("20"), quantity=2, amount=Decimal("0"))
 
     invoice.recalculate()
@@ -113,7 +250,7 @@ def test_recalculate_invoice_line_no_discounts_no_taxes():
 
 
 def test_recalculate_invoice_line_with_discounts_and_taxes():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     percent_coupon = CouponFactory(
         account=invoice.account, currency=line.currency, amount=None, percentage=Decimal("10")
@@ -149,7 +286,7 @@ def test_recalculate_invoice_line_with_discounts_and_taxes():
 
 
 def test_recalculate_invoice_line_discount_exceeds_amount():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("50"), quantity=1, amount=Decimal("0"))
     big_coupon_1 = CouponFactory(
         account=invoice.account, currency=line.currency, amount=Money(60, line.currency), percentage=None
@@ -181,7 +318,7 @@ def test_recalculate_invoice_line_discount_exceeds_amount():
 
 
 def test_recalculate_invoice_line_partial_second_discount():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("25"), quantity=1, amount=Decimal("0"))
     first_coupon = CouponFactory(
         account=invoice.account, currency=line.currency, amount=Money(10, line.currency), percentage=None
@@ -207,7 +344,7 @@ def test_recalculate_invoice_line_partial_second_discount():
 
 
 def test_recalculate_invoice_line_rounding():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     percent_coupon = CouponFactory(
         account=invoice.account,
@@ -237,7 +374,7 @@ def test_recalculate_invoice_line_rounding():
 
 
 def test_recalculate_invoice_line_multiple_taxes():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     tax_rate1 = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
     tax_rate2 = TaxRateFactory(account=invoice.account, percentage=Decimal("5"))
@@ -257,7 +394,7 @@ def test_recalculate_invoice_line_multiple_taxes():
 
 
 def test_recalculate_invoice_multiple_lines():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line1 = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     line2 = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("50"), quantity=2, amount=Decimal("0"))
     percent_coupon = CouponFactory(
@@ -298,7 +435,7 @@ def test_recalculate_invoice_multiple_lines():
 
 
 def test_recalculate_invoice_line_full_discount_zero_tax():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("50"), quantity=1, amount=Decimal("0"))
     big_coupon = CouponFactory(
         account=invoice.account, currency=line.currency, amount=Money(100, line.currency), percentage=None
@@ -328,7 +465,7 @@ def test_recalculate_invoice_line_full_discount_zero_tax():
 
 
 def test_recalculate_invoice_line_multiple_percentage_discounts():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     first = CouponFactory(account=invoice.account, currency=line.currency, percentage=Decimal("10"), amount=None)
     second = CouponFactory(account=invoice.account, currency=line.currency, percentage=Decimal("20"), amount=None)
@@ -354,7 +491,7 @@ def test_recalculate_invoice_line_multiple_percentage_discounts():
 
 
 def test_recalculate_invoice_line_clamps_large_amount():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(
         invoice=invoice, unit_amount=Decimal("10000000000000000"), quantity=1000000000000, amount=Decimal("0")
     )
@@ -369,7 +506,7 @@ def test_recalculate_invoice_line_clamps_large_amount():
 
 
 def test_apply_line_discounts_exceeding_base():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("50"), quantity=1, amount=Decimal("0"))
     big_coupon = CouponFactory(
         account=invoice.account,
@@ -391,7 +528,7 @@ def test_apply_line_discounts_exceeding_base():
 
 
 def test_apply_line_taxes_multiple_rates():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     tax_rate1 = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
     tax_rate2 = TaxRateFactory(account=invoice.account, percentage=Decimal("5"))
@@ -413,7 +550,7 @@ def test_apply_line_taxes_multiple_rates():
 
 
 def test_recalculate_invoice_line_zero_quantity():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=0, amount=Decimal("0"))
     coupon = CouponFactory(
         account=invoice.account,
@@ -444,7 +581,7 @@ def test_recalculate_invoice_line_zero_quantity():
 
 
 def test_recalculate_invoice_with_invoice_discount_and_tax():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(
         invoice=invoice,
         quantity=1,
@@ -479,7 +616,7 @@ def test_recalculate_invoice_with_invoice_discount_and_tax():
 
 
 def test_apply_invoice_discounts_sequential_and_amount():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     percent_coupon = CouponFactory(
         account=invoice.account, currency=invoice.currency, amount=None, percentage=Decimal("10")
@@ -511,7 +648,7 @@ def test_apply_invoice_discounts_sequential_and_amount():
 
 
 def test_apply_invoice_discounts_exceeding_base():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     big_coupon = CouponFactory(
         account=invoice.account, currency=invoice.currency, amount=Money(80, invoice.currency), percentage=None
@@ -543,7 +680,7 @@ def test_apply_invoice_discounts_exceeding_base():
 
 
 def test_apply_invoice_taxes_multiple_rates():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     tax_rate1 = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
     tax_rate2 = TaxRateFactory(account=invoice.account, percentage=Decimal("5"))
@@ -569,7 +706,7 @@ def test_apply_invoice_taxes_multiple_rates():
 
 
 def test_apply_invoice_taxes_zero_taxable():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
 
     invoice.set_tax_rates([tax_rate])
@@ -580,7 +717,7 @@ def test_apply_invoice_taxes_zero_taxable():
 
 
 def test_recalculate_invoice_multiple_invoice_discounts_and_taxes():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line1 = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=2, amount=Decimal("0"))
     line2 = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("50"), quantity=1, amount=Decimal("0"))
     percent_coupon = CouponFactory(
@@ -629,7 +766,7 @@ def test_recalculate_invoice_multiple_invoice_discounts_and_taxes():
 
 
 def test_recalculate_invoice_invoice_discount_exceeds_subtotal():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("40"), quantity=1, amount=Decimal("0"))
     big_coupon = CouponFactory(
         account=invoice.account, currency=invoice.currency, amount=Money(100, invoice.currency), percentage=None
@@ -659,7 +796,7 @@ def test_recalculate_invoice_invoice_discount_exceeds_subtotal():
 
 
 def test_recalculate_invoice_with_line_and_invoice_discounts_and_taxes():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     percent_coupon_line = CouponFactory(
         account=invoice.account, currency=invoice.currency, amount=None, percentage=Decimal("10")
@@ -695,7 +832,7 @@ def test_recalculate_invoice_with_line_and_invoice_discounts_and_taxes():
 
 
 def test_recalculate_invoice_line_discount_and_invoice_tax():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     coupon = CouponFactory(account=invoice.account, currency=invoice.currency, amount=None, percentage=Decimal("10"))
     tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
@@ -723,7 +860,7 @@ def test_recalculate_invoice_line_discount_and_invoice_tax():
 
 
 def test_recalculate_invoice_line_tax_and_invoice_discount():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
     tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
     coupon = CouponFactory(account=invoice.account, currency=invoice.currency, amount=None, percentage=Decimal("10"))
@@ -751,7 +888,7 @@ def test_recalculate_invoice_line_tax_and_invoice_discount():
 
 
 def test_recalculate_invoice_mixed_line_and_invoice_adjustments():
-    invoice = InvoiceFactory()
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
     line_with_discount = InvoiceLineFactory(
         invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0")
     )
