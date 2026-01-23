@@ -15,6 +15,7 @@ from django.db.models.functions import Coalesce
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.functional import cached_property
+from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
@@ -117,7 +118,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     numbering_system = models.ForeignKey(
         "numbering_systems.NumberingSystem", on_delete=models.PROTECT, related_name="invoices", null=True
     )
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     status = models.CharField(max_length=50, choices=InvoiceStatus.choices)
     issue_date = models.DateField(null=True)
     sell_date = models.DateField(null=True)
@@ -642,7 +643,7 @@ class InvoiceLine(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     description = models.CharField(max_length=255)
     quantity = models.BigIntegerField()
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     unit_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     unit_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
@@ -741,7 +742,7 @@ class InvoiceLine(models.Model):
 
 class InvoiceShipping(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_taxable_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
@@ -885,7 +886,7 @@ class InvoiceDiscountAllocation(models.Model):
     invoice_line = models.ForeignKey("InvoiceLine", on_delete=models.CASCADE, related_name="discount_allocations")
     coupon = models.ForeignKey("coupons.Coupon", on_delete=models.PROTECT, related_name="+")
     source = models.CharField(max_length=20, choices=InvoiceDiscountSource.choices)
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -924,7 +925,7 @@ class InvoiceTaxAllocation(models.Model):
     )
     tax_rate = models.ForeignKey("tax_rates.TaxRate", on_delete=models.PROTECT, related_name="+")
     source = models.CharField(max_length=20, choices=InvoiceTaxSource.choices)
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     created_at = models.DateTimeField(auto_now_add=True)
 

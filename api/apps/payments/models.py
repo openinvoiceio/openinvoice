@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.db import models
 from django.utils import timezone
+from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 
 from apps.integrations.choices import PaymentProvider
@@ -16,7 +17,7 @@ class Payment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     account = models.ForeignKey("accounts.Account", related_name="payments", on_delete=models.CASCADE)
     status = models.CharField(max_length=50, choices=PaymentStatus.choices)
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     description = models.CharField(max_length=255, null=True)
     transaction_id = models.CharField(max_length=255, null=True)

@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.functional import cached_property
+from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
@@ -98,7 +99,7 @@ class Quote(models.Model):
         related_name="quotes",
         null=True,
     )
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     status = models.CharField(max_length=50, choices=QuoteStatus.choices)
     issue_date = models.DateField(null=True)
     account = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="quotes")
@@ -462,7 +463,7 @@ class QuoteLine(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     description = models.CharField(max_length=255)
     quantity = models.BigIntegerField()
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     unit_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_amount_excluding_tax = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
@@ -565,7 +566,7 @@ class QuoteDiscount(models.Model):
         null=True,
     )
     coupon = models.ForeignKey("coupons.Coupon", on_delete=models.PROTECT, related_name="quote_discounts")
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -614,7 +615,7 @@ class QuoteTax(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255, null=True)
     rate = models.DecimalField(max_digits=5, decimal_places=2)
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     created_at = models.DateTimeField(auto_now_add=True)
 

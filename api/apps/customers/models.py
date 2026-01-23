@@ -4,6 +4,7 @@ import uuid
 from typing import TYPE_CHECKING
 
 from django.db import models
+from djmoney import settings as djmoney_settings
 
 from .managers import CustomerManager
 from .querysets import CustomerQuerySet
@@ -21,7 +22,7 @@ class Customer(models.Model):
     email = models.CharField(max_length=255, null=True)
     phone = models.CharField(max_length=255, null=True)
     description = models.CharField(max_length=255, null=True, blank=True)
-    currency = models.CharField(max_length=3, null=True)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES, null=True)
     net_payment_term = models.IntegerField(null=True)
     invoice_numbering_system = models.ForeignKey(
         "numbering_systems.NumberingSystem",

@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
@@ -17,7 +18,7 @@ from .querysets import PriceQuerySet
 class Price(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=255, null=True)
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     model = models.CharField(max_length=16, choices=PriceModel.choices, default=PriceModel.FLAT)
     status = models.CharField(max_length=20, choices=PriceStatus.choices, default=PriceStatus.ACTIVE)
@@ -133,7 +134,7 @@ class Price(models.Model):
 class PriceTier(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     price = models.ForeignKey("prices.Price", on_delete=models.CASCADE, related_name="tiers")
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     unit_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     from_value = models.PositiveIntegerField()
     to_value = models.PositiveIntegerField(null=True, validators=[MinValueValidator(1)])

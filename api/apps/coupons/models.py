@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.db import models
 from django.utils import timezone
+from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
@@ -16,7 +17,7 @@ from .querysets import CouponQuerySet
 class Coupon(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
-    currency = models.CharField(max_length=3)
+    currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency", null=True)
     percentage = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, related_name="coupons")

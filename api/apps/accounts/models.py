@@ -9,6 +9,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django_countries.fields import CountryField
+from djmoney import settings as djmoney_settings
 
 from apps.users.models import User
 
@@ -38,7 +39,7 @@ class Account(models.Model):
         null=False,
     )
     country = CountryField()
-    default_currency = models.CharField(max_length=3)
+    default_currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     invoice_footer = models.CharField(max_length=600, null=True, blank=True)
     invoice_numbering_system = models.OneToOneField(
         "numbering_systems.NumberingSystem",
