@@ -417,41 +417,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             ],
         )
 
-        # Calculate shipping
-
-        shipping_amount = zero(self.currency)
-
-        if self.shipping:
-            shipping_amount = self.shipping.amount
-            self.shipping.total_tax_amount = zero(self.currency)
-
-            tax_rates = list(self.shipping.tax_rates.order_by("invoice_shipping_tax_rates__position"))
-            self.shipping.total_tax_rate = sum((tax_rate.percentage for tax_rate in tax_rates), Decimal(0))
-
-            if self.effective_tax_behavior == InvoiceTaxBehavior.INCLUSIVE and self.shipping.total_tax_rate > 0:
-                divisor = Decimal(1) + (self.shipping.total_tax_rate / Decimal(100))
-                self.shipping.total_excluding_tax_amount = clamp_money(shipping_amount / divisor)
-                self.shipping.total_taxable_amount = self.shipping.total_excluding_tax_amount
-            else:
-                self.shipping.total_excluding_tax_amount = shipping_amount
-                self.shipping.total_taxable_amount = self.shipping.total_excluding_tax_amount
-
-            for tax_rate in tax_rates:
-                tax_amount = tax_rate.calculate_amount(self.shipping.total_taxable_amount)
-                self.shipping.total_tax_amount += tax_amount
-                self.shipping.add_tax_allocation(tax_amount, tax_rate)
-
-            self.shipping.total_amount = self.shipping.total_excluding_tax_amount + self.shipping.total_tax_amount
-            self.shipping.save(
-                update_fields=[
-                    "total_excluding_tax_amount",
-                    "total_taxable_amount",
-                    "total_tax_rate",
-                    "total_tax_amount",
-                    "total_amount",
-                ]
-            )
-
         # Calculate total
 
         subtotal_amount = sum([line.subtotal_amount for line in lines], zero(self.currency))
@@ -460,7 +425,12 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         total_tax_amount = sum([line.total_tax_amount for line in lines], zero(self.currency))
         total_amount = total_excluding_tax_amount + total_tax_amount
 
+        # Calculate shipping
+
+        shipping_amount = zero(self.currency)
         if self.shipping:
+            self.shipping.recalculate()
+            shipping_amount = self.shipping.amount
             total_excluding_tax_amount += self.shipping.total_excluding_tax_amount
             total_tax_amount += self.shipping.total_tax_amount
             total_amount += self.shipping.total_amount
@@ -707,11 +677,6 @@ class InvoiceLine(models.Model):
             return self.price.calculate_unit_amount(self.quantity)
         return self.unit_amount
 
-    def calculate_amount(self) -> Money:
-        if self.price:
-            return self.price.calculate_amount(self.quantity)
-        return self.unit_amount * self.quantity
-
     def set_coupons(self, coupons: Iterable[Coupon]) -> None:
         self.coupons.clear()
         self.coupons.through.objects.bulk_create(
@@ -748,9 +713,9 @@ class InvoiceLine(models.Model):
         )
 
     def apply_credit(self, amount: Money, quantity: int) -> None:
-        self.total_credit_amount = clamp_money(amount)
-        self.credit_quantity = quantity or 0
-        self.outstanding_amount = clamp_money(max(self.total_amount - self.total_credit_amount, zero(self.currency)))
+        self.total_credit_amount = amount
+        self.credit_quantity = quantity
+        self.outstanding_amount = max(self.total_amount - self.total_credit_amount, zero(self.currency))
         self.outstanding_quantity = max(self.quantity - self.credit_quantity, 0)
         self.save(
             update_fields=[
@@ -806,6 +771,35 @@ class InvoiceShipping(models.Model):
             source=InvoiceTaxSource.SHIPPING,
             currency=self.currency,
             amount=amount,
+        )
+
+    def recalculate(self) -> None:
+        tax_rates = list(self.tax_rates.order_by("invoice_shipping_tax_rates__position"))
+        self.total_tax_rate = sum((tax_rate.percentage for tax_rate in tax_rates), Decimal(0))
+        self.total_tax_amount = zero(self.currency)
+
+        if self.invoice.effective_tax_behavior == InvoiceTaxBehavior.INCLUSIVE and self.total_tax_rate > 0:
+            divisor = Decimal(1) + (self.total_tax_rate / Decimal(100))
+            self.total_excluding_tax_amount = self.amount / divisor
+            self.total_taxable_amount = self.total_excluding_tax_amount
+        else:
+            self.total_excluding_tax_amount = self.amount
+            self.total_taxable_amount = self.total_excluding_tax_amount
+
+        for tax_rate in tax_rates:
+            tax_amount = tax_rate.calculate_amount(self.total_taxable_amount)
+            self.total_tax_amount += tax_amount
+            self.add_tax_allocation(tax_amount, tax_rate)
+
+        self.total_amount = self.total_excluding_tax_amount + self.total_tax_amount
+        self.save(
+            update_fields=[
+                "total_excluding_tax_amount",
+                "total_taxable_amount",
+                "total_tax_rate",
+                "total_tax_amount",
+                "total_amount",
+            ]
         )
 
 

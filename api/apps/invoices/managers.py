@@ -226,7 +226,7 @@ class InvoiceManager(models.Manager):
         if previous_revision.shipping is not None:
             invoice.add_shipping(
                 shipping_rate=previous_revision.shipping.shipping_rate,
-                tax_rates=previous_revision.shipping.tax_rates.all(),
+                tax_rates=previous_revision.shipping.tax_rates.active(),
             )
 
         invoice.set_coupons(previous_revision.coupons.active())
