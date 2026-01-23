@@ -81,7 +81,7 @@ def test_void_invoice(api_client, user, account):
         "recipients": [],
         "subtotal_amount": "0.00",
         "total_discount_amount": "0.00",
-        "total_amount_excluding_tax": "0.00",
+        "total_excluding_tax_amount": "0.00",
         "shipping_amount": "0.00",
         "total_tax_amount": "0.00",
         "total_amount": "0.00",

@@ -217,7 +217,7 @@ class InvoiceFactory(DjangoModelFactory):
     description = None
     subtotal_amount = Decimal("0")
     total_discount_amount = Decimal("0")
-    total_amount_excluding_tax = Decimal("0")
+    total_excluding_tax_amount = Decimal("0")
     shipping_amount = Decimal("0")
     total_amount = Decimal("0")
     total_tax_amount = Decimal("0")
@@ -258,7 +258,7 @@ class InvoiceLineFactory(DjangoModelFactory):
     amount = Decimal("0")
     total_discount_amount = Decimal("0")
     total_taxable_amount = Decimal("0")
-    total_amount_excluding_tax = Decimal("0")
+    total_excluding_tax_amount = Decimal("0")
     total_tax_amount = Decimal("0")
     total_tax_rate = Decimal("0")
     total_amount = Decimal("0")
@@ -276,7 +276,10 @@ class InvoiceShippingFactory(DjangoModelFactory):
     shipping_rate = SubFactory(ShippingRateFactory)
     currency = LazyAttribute(lambda o: o.shipping_rate.currency)
     amount = Decimal("0")
+    total_excluding_tax_amount = Decimal("0")
+    total_taxable_amount = Decimal("0")
     tax_amount = Decimal("0")
+    total_tax_rate = Decimal("0")
     total_amount = Decimal("0")
 
 

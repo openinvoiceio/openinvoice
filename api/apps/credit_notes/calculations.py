@@ -51,7 +51,7 @@ def calculate_credit_note_line_amounts(
 
     amount_value = clamp_money(invoice_line.amount * ratio)
     total_amount = clamp_money(invoice_line.total_amount * ratio)
-    total_amount_excluding_tax = clamp_money(invoice_line.total_amount_excluding_tax * ratio)
+    total_amount_excluding_tax = clamp_money(invoice_line.total_excluding_tax_amount * ratio)
     total_tax_amount = clamp_money(invoice_line.total_tax_amount * ratio)
 
     return amount_value, total_amount_excluding_tax, total_tax_amount, total_amount, ratio

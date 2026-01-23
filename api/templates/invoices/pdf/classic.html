@@ -204,7 +204,7 @@
             {% endfor %}
             <div class="sum-row">
                 <dt class="sum-label">Total excluding tax</dt>
-                <dd class="sum-value">{% money_localize invoice.total_amount_excluding_tax %}</dd>
+                <dd class="sum-value">{% money_localize invoice.total_excluding_tax_amount %}</dd>
             </div>
             {% for tax in invoice.tax_allocations.aggregate_tax_rate %}
                 <div class="sum-row">

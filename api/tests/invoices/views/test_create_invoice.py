@@ -94,7 +94,7 @@ def test_create_invoice(api_client, user, account):
         "recipients": [customer.email],
         "subtotal_amount": "0.00",
         "total_discount_amount": "0.00",
-        "total_amount_excluding_tax": "0.00",
+        "total_excluding_tax_amount": "0.00",
         "shipping_amount": "0.00",
         "total_tax_amount": "0.00",
         "total_amount": "0.00",
@@ -180,7 +180,9 @@ def test_create_invoice_with_shipping(api_client, user, account):
     assert response.status_code == 201
     assert response.data["shipping"] == {
         "amount": "10.00",
+        "total_excluding_tax_amount": "10.00",
         "tax_amount": "1.00",
+        "total_tax_rate": "10.00",
         "total_amount": "11.00",
         "shipping_rate_id": str(shipping_rate.id),
         "tax_rates": [

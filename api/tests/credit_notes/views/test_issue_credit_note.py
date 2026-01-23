@@ -23,7 +23,7 @@ def test_issue_credit_note(api_client, user, account):
         status=InvoiceStatus.OPEN,
         total_amount=Decimal("20.00"),
         subtotal_amount=Decimal("20.00"),
-        total_amount_excluding_tax=Decimal("20.00"),
+        total_excluding_tax_amount=Decimal("20.00"),
     )
     credit_note = CreditNoteFactory(invoice=invoice, number="CN-1")
     CreditNoteLineFactory(credit_note=credit_note, invoice_line=None, amount=Decimal("20.00"))

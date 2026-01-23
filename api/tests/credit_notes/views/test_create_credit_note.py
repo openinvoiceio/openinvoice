@@ -27,7 +27,7 @@ def test_create_credit_note(api_client, user, account):
         customer=customer,
         status=InvoiceStatus.OPEN,
         subtotal_amount=Decimal("30.00"),
-        total_amount_excluding_tax=Decimal("30.00"),
+        total_excluding_tax_amount=Decimal("30.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("30.00"),
     )
@@ -38,7 +38,7 @@ def test_create_credit_note(api_client, user, account):
         quantity=1,
         unit_amount=Decimal("10.00"),
         amount=Decimal("10.00"),
-        total_amount_excluding_tax=Decimal("10.00"),
+        total_excluding_tax_amount=Decimal("10.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("10.00"),
     )
@@ -48,7 +48,7 @@ def test_create_credit_note(api_client, user, account):
         quantity=2,
         unit_amount=Decimal("10.00"),
         amount=Decimal("20.00"),
-        total_amount_excluding_tax=Decimal("20.00"),
+        total_excluding_tax_amount=Decimal("20.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("20.00"),
     )
@@ -240,7 +240,7 @@ def test_create_credit_note_requires_outstanding_balance(api_client, user, accou
         account=account,
         status=InvoiceStatus.OPEN,
         total_amount=Decimal("25.00"),
-        total_amount_excluding_tax=Decimal("25.00"),
+        total_excluding_tax_amount=Decimal("25.00"),
         subtotal_amount=Decimal("25.00"),
         total_credit_amount=Decimal("25.00"),
         outstanding_amount=Decimal("0.00"),
@@ -272,7 +272,7 @@ def test_create_credit_note_only_one_draft_allowed(api_client, user, account):
         account=account,
         status=InvoiceStatus.OPEN,
         subtotal_amount=Decimal("10.00"),
-        total_amount_excluding_tax=Decimal("10.00"),
+        total_excluding_tax_amount=Decimal("10.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("10.00"),
     )

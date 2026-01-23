@@ -76,7 +76,7 @@ def test_recalculate_invoice_line_with_inclusive_tax_behavior():
     assert line.total_amount == Money("120.00", line.currency)
 
     invoice.refresh_from_db()
-    assert invoice.total_amount_excluding_tax == Money("100.00", line.currency)
+    assert invoice.total_excluding_tax_amount == Money("100.00", line.currency)
     assert invoice.total_tax_amount == Money("20.00", line.currency)
     assert invoice.total_amount == Money("120.00", line.currency)
 
@@ -132,7 +132,7 @@ def test_recalculate_invoice_inclusive_with_discount_and_taxes():
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("90.00", line.currency)
-    assert invoice.total_amount_excluding_tax == Money("90.00", line.currency)
+    assert invoice.total_excluding_tax_amount == Money("90.00", line.currency)
     assert invoice.total_tax_amount == Money("18.00", line.currency)
     assert invoice.total_amount == Money("108.00", line.currency)
 
@@ -207,7 +207,7 @@ def test_apply_line_discounts_sequential_percentages():
 
     line.refresh_from_db()
     assert line.total_discount_amount == Money("75.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("25.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("25.00", line.currency)
     assert line.discount_allocations.count() == 2
     assert line.discount_allocations.get(coupon=coupon_1).amount == Money("50.00", line.currency)
     assert line.discount_allocations.get(coupon=coupon_2).amount == Money("25.00", line.currency)
@@ -237,7 +237,7 @@ def test_recalculate_invoice_line_no_discounts_no_taxes():
     assert line.amount == Money("40.00", line.currency)
     assert line.total_discount_amount == Money("0.00", line.currency)
     assert line.total_taxable_amount == Money("40.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("40.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("40.00", line.currency)
     assert line.total_tax_amount == Money("0.00", line.currency)
     assert line.total_tax_rate == Decimal("0")
     assert line.total_amount == Money("40.00", line.currency)
@@ -245,7 +245,7 @@ def test_recalculate_invoice_line_no_discounts_no_taxes():
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("40.00", line.currency)
     assert invoice.total_discount_amount == Money("0.00", line.currency)
-    assert invoice.total_amount_excluding_tax == Money("40.00", line.currency)
+    assert invoice.total_excluding_tax_amount == Money("40.00", line.currency)
     assert invoice.total_tax_amount == Money("0.00", line.currency)
     assert invoice.total_amount == Money("40.00", line.currency)
 
@@ -273,7 +273,7 @@ def test_recalculate_invoice_line_with_discounts_and_taxes():
     assert line.amount == Money("100.00", line.currency)
     assert line.total_discount_amount == Money("30.00", line.currency)
     assert line.total_taxable_amount == Money("70.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("70.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("70.00", line.currency)
     assert line.total_tax_amount == Money("14.00", line.currency)
     assert line.total_tax_rate == Decimal("20.00")
     assert line.total_amount == Money("84.00", line.currency)
@@ -281,7 +281,7 @@ def test_recalculate_invoice_line_with_discounts_and_taxes():
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("70.00", line.currency)
     assert invoice.total_discount_amount == Money("30.00", line.currency)
-    assert invoice.total_amount_excluding_tax == Money("70.00", line.currency)
+    assert invoice.total_excluding_tax_amount == Money("70.00", line.currency)
     assert invoice.total_tax_amount == Money("14.00", line.currency)
     assert invoice.total_amount == Money("84.00", line.currency)
 
@@ -306,14 +306,14 @@ def test_recalculate_invoice_line_discount_exceeds_amount():
     assert line.amount == Money("50.00", line.currency)
     assert line.total_discount_amount == Money("50.00", line.currency)
     assert line.total_taxable_amount == Money("0.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("0.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("0.00", line.currency)
     assert line.total_tax_amount == Money("0.00", line.currency)
     assert line.total_amount == Money("0.00", line.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("0.00", line.currency)
     assert invoice.total_discount_amount == Money("50.00", line.currency)
-    assert invoice.total_amount_excluding_tax == Money("0.00", line.currency)
+    assert invoice.total_excluding_tax_amount == Money("0.00", line.currency)
     assert invoice.total_tax_amount == Money("0.00", line.currency)
     assert invoice.total_amount == Money("0.00", line.currency)
 
@@ -369,7 +369,7 @@ def test_recalculate_invoice_line_rounding():
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("66.67", line.currency)
     assert invoice.total_discount_amount == Money("33.33", line.currency)
-    assert invoice.total_amount_excluding_tax == Money("66.67", line.currency)
+    assert invoice.total_excluding_tax_amount == Money("66.67", line.currency)
     assert invoice.total_tax_amount == Money("6.67", line.currency)
     assert invoice.total_amount == Money("73.34", line.currency)
 
@@ -413,7 +413,7 @@ def test_recalculate_invoice_multiple_lines():
     assert line1.amount == Money("100.00", line1.currency)
     assert line1.total_discount_amount == Money("0.00", line1.currency)
     assert line1.total_taxable_amount == Money("100.00", line1.currency)
-    assert line1.total_amount_excluding_tax == Money("100.00", line1.currency)
+    assert line1.total_excluding_tax_amount == Money("100.00", line1.currency)
     assert line1.total_tax_amount == Money("20.00", line1.currency)
     assert line1.total_amount == Money("120.00", line1.currency)
 
@@ -423,14 +423,14 @@ def test_recalculate_invoice_multiple_lines():
     assert line2.amount == Money("100.00", line2.currency)
     assert line2.total_discount_amount == Money("10.00", line2.currency)
     assert line2.total_taxable_amount == Money("90.00", line2.currency)
-    assert line2.total_amount_excluding_tax == Money("90.00", line2.currency)
+    assert line2.total_excluding_tax_amount == Money("90.00", line2.currency)
     assert line2.total_tax_amount == Money("18.00", line2.currency)
     assert line2.total_amount == Money("108.00", line2.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("190.00", invoice.currency)
     assert invoice.total_discount_amount == Money("10.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("190.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("190.00", invoice.currency)
     assert invoice.total_tax_amount == Money("38.00", invoice.currency)
     assert invoice.total_amount == Money("228.00", invoice.currency)
 
@@ -453,14 +453,14 @@ def test_recalculate_invoice_line_full_discount_zero_tax():
     assert line.amount == Money("50.00", line.currency)
     assert line.total_discount_amount == Money("50.00", line.currency)
     assert line.total_taxable_amount == Money("0.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("0.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("0.00", line.currency)
     assert line.total_tax_amount == Money("0.00", line.currency)
     assert line.total_amount == Money("0.00", line.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("0.00", invoice.currency)
     assert invoice.total_discount_amount == Money("50.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("0.00", line.currency)
+    assert invoice.total_excluding_tax_amount == Money("0.00", line.currency)
     assert invoice.total_tax_amount == Money("0.00", line.currency)
     assert invoice.total_amount == Money("0.00", line.currency)
 
@@ -481,13 +481,13 @@ def test_recalculate_invoice_line_multiple_percentage_discounts():
     assert line.amount == Money("100.00", line.currency)
     assert line.total_discount_amount == Money("28.00", line.currency)
     assert line.total_taxable_amount == Money("72.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("72.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("72.00", line.currency)
     assert line.total_amount == Money("72.00", line.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("72.00", line.currency)
     assert invoice.total_discount_amount == Money("28.00", line.currency)
-    assert invoice.total_amount_excluding_tax == Money("72.00", line.currency)
+    assert invoice.total_excluding_tax_amount == Money("72.00", line.currency)
     assert invoice.total_amount == Money("72.00", line.currency)
 
 
@@ -525,7 +525,7 @@ def test_apply_line_discounts_exceeding_base():
     assert line.amount == Money("50.00", line.currency)
     assert line.total_discount_amount == Money("50.00", line.currency)
     assert line.total_taxable_amount == Money("0.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("0.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("0.00", line.currency)
 
 
 def test_apply_line_taxes_multiple_rates():
@@ -571,7 +571,7 @@ def test_recalculate_invoice_line_zero_quantity():
     assert line.amount == Money("0.00", line.currency)
     assert line.total_taxable_amount == Money("0.00", line.currency)
     assert line.total_discount_amount == Money("0.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("0.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("0.00", line.currency)
     assert line.total_tax_amount == Money("0.00", line.currency)
     assert line.total_amount == Money("0.00", line.currency)
 
@@ -604,14 +604,14 @@ def test_recalculate_invoice_with_invoice_discount_and_tax():
     assert line.amount == Money("100.00", line.currency)
     assert line.total_discount_amount == Money("10.00", line.currency)
     assert line.total_taxable_amount == Money("90.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("90.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("90.00", line.currency)
     assert line.total_tax_amount == Money("18.00", line.currency)
     assert line.total_amount == Money("108.00", line.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("100.00", invoice.currency)
     assert invoice.total_discount_amount == Money("10.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("90.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("90.00", invoice.currency)
     assert invoice.total_tax_amount == Money("18.00", invoice.currency)
     assert invoice.total_amount == Money("108.00", invoice.currency)
 
@@ -636,14 +636,14 @@ def test_apply_invoice_discounts_sequential_and_amount():
     assert line.amount == Money("100.00", line.currency)
     assert line.total_discount_amount == Money("25.00", line.currency)
     assert line.total_taxable_amount == Money("75.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("75.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("75.00", line.currency)
     assert line.total_tax_amount == Money("0.00", line.currency)
     assert line.total_amount == Money("75.00", line.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("100.00", line.currency)
     assert invoice.total_discount_amount == Money("25.00", line.currency)
-    assert invoice.total_amount_excluding_tax == Money("75.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("75.00", invoice.currency)
     assert invoice.total_tax_amount == Money("0.00", line.currency)
     assert invoice.total_amount == Money("75.00", line.currency)
 
@@ -668,14 +668,14 @@ def test_apply_invoice_discounts_exceeding_base():
     assert line.amount == Money("100.00", line.currency)
     assert line.total_discount_amount == Money("100.00", line.currency)
     assert line.total_taxable_amount == Money("0.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("0.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("0.00", line.currency)
     assert line.total_tax_amount == Money("0.00", line.currency)
     assert line.total_amount == Money("0.00", line.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("100.00", invoice.currency)
     assert invoice.total_discount_amount == Money("100.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("0.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("0.00", invoice.currency)
     assert invoice.total_tax_amount == Money("0.00", invoice.currency)
     assert invoice.total_amount == Money("0.00", invoice.currency)
 
@@ -695,13 +695,13 @@ def test_apply_invoice_taxes_multiple_rates():
     assert line.tax_allocations.get(tax_rate=tax_rate2).amount == Money("5.00", line.currency)
     assert line.amount == Money("100.00", line.currency)
     assert line.total_taxable_amount == Money("100.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("100.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("100.00", line.currency)
     assert line.total_tax_amount == Money("15.00", line.currency)
     assert line.total_amount == Money("115.00", line.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("100.00", line.currency)
-    assert invoice.total_amount_excluding_tax == Money("100.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("100.00", invoice.currency)
     assert invoice.total_tax_amount == Money("15.00", invoice.currency)
     assert invoice.total_amount == Money("115.00", invoice.currency)
 
@@ -742,7 +742,7 @@ def test_recalculate_invoice_multiple_invoice_discounts_and_taxes():
     assert line1.amount == Money("200.00", line1.currency)
     assert line1.total_discount_amount == Money("44.00", line1.currency)
     assert line1.total_taxable_amount == Money("156.00", line1.currency)
-    assert line1.total_amount_excluding_tax == Money("156.00", line1.currency)
+    assert line1.total_excluding_tax_amount == Money("156.00", line1.currency)
     assert line1.total_tax_amount == Money("39.00", line1.currency)
     assert line1.total_amount == Money("195.00", line1.currency)
 
@@ -754,14 +754,14 @@ def test_recalculate_invoice_multiple_invoice_discounts_and_taxes():
     assert line2.amount == Money("50.00", line2.currency)
     assert line2.total_discount_amount == Money("11.00", line2.currency)
     assert line2.total_taxable_amount == Money("39.00", line2.currency)
-    assert line2.total_amount_excluding_tax == Money("39.00", line2.currency)
+    assert line2.total_excluding_tax_amount == Money("39.00", line2.currency)
     assert line2.total_tax_amount == Money("9.75", line2.currency)
     assert line2.total_amount == Money("48.75", line2.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("250.00", invoice.currency)
     assert invoice.total_discount_amount == Money("55.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("195.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("195.00", invoice.currency)
     assert invoice.total_tax_amount == Money("48.75", invoice.currency)
     assert invoice.total_amount == Money("243.75", invoice.currency)
 
@@ -784,14 +784,14 @@ def test_recalculate_invoice_invoice_discount_exceeds_subtotal():
     assert line.amount == Money("40.00", line.currency)
     assert line.total_discount_amount == Money("40.00", line.currency)
     assert line.total_taxable_amount == Money("0.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("0.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("0.00", line.currency)
     assert line.total_tax_amount == Money("0.00", line.currency)
     assert line.total_amount == Money("0.00", line.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("40.00", invoice.currency)
     assert invoice.total_discount_amount == Money("40.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("0.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("0.00", invoice.currency)
     assert invoice.total_tax_amount == Money("0.00", invoice.currency)
     assert invoice.total_amount == Money("0.00", invoice.currency)
 
@@ -820,14 +820,14 @@ def test_recalculate_invoice_with_line_and_invoice_discounts_and_taxes():
     assert line.amount == Money("100.00", line.currency)
     assert line.total_discount_amount == Money("10.00", line.currency)
     assert line.total_taxable_amount == Money("90.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("90.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("90.00", line.currency)
     assert line.total_tax_amount == Money("9.00", line.currency)
     assert line.total_amount == Money("99.00", line.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("90.00", invoice.currency)
     assert invoice.total_discount_amount == Money("10.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("90.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("90.00", invoice.currency)
     assert invoice.total_tax_amount == Money("9.00", invoice.currency)
     assert invoice.total_amount == Money("99.00", invoice.currency)
 
@@ -848,14 +848,14 @@ def test_recalculate_invoice_line_discount_and_invoice_tax():
     assert line.amount == Money("100.00", line.currency)
     assert line.total_discount_amount == Money("10.00", line.currency)
     assert line.total_taxable_amount == Money("90.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("90.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("90.00", line.currency)
     assert line.total_tax_amount == Money("18.00", line.currency)
     assert line.total_amount == Money("108.00", line.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("90.00", invoice.currency)
     assert invoice.total_discount_amount == Money("10.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("90.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("90.00", invoice.currency)
     assert invoice.total_tax_amount == Money("18.00", invoice.currency)
     assert invoice.total_amount == Money("108.00", invoice.currency)
 
@@ -876,14 +876,14 @@ def test_recalculate_invoice_line_tax_and_invoice_discount():
     assert line.amount == Money("100.00", line.currency)
     assert line.total_discount_amount == Money("10.00", line.currency)
     assert line.total_taxable_amount == Money("90.00", line.currency)
-    assert line.total_amount_excluding_tax == Money("90.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("90.00", line.currency)
     assert line.total_tax_amount == Money("18.00", line.currency)
     assert line.total_amount == Money("108.00", line.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("100.00", invoice.currency)
     assert invoice.total_discount_amount == Money("10.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("90.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("90.00", invoice.currency)
     assert invoice.total_tax_amount == Money("18.00", invoice.currency)
     assert invoice.total_amount == Money("108.00", invoice.currency)
 
@@ -924,7 +924,7 @@ def test_recalculate_invoice_mixed_line_and_invoice_adjustments():
     assert line_with_discount.amount == Money("100.00", line_with_discount.currency)
     assert line_with_discount.total_discount_amount == Money("10.00", line_with_discount.currency)
     assert line_with_discount.total_taxable_amount == Money("90.00", line_with_discount.currency)
-    assert line_with_discount.total_amount_excluding_tax == Money("90.00", line_with_discount.currency)
+    assert line_with_discount.total_excluding_tax_amount == Money("90.00", line_with_discount.currency)
     assert line_with_discount.total_tax_amount == Money("4.50", line_with_discount.currency)
     assert line_with_discount.total_amount == Money("94.50", line_with_discount.currency)
 
@@ -934,14 +934,14 @@ def test_recalculate_invoice_mixed_line_and_invoice_adjustments():
     assert line_with_tax.amount == Money("100.00", line_with_tax.currency)
     assert line_with_tax.total_discount_amount == Money("10.00", line_with_tax.currency)
     assert line_with_tax.total_taxable_amount == Money("90.00", line_with_tax.currency)
-    assert line_with_tax.total_amount_excluding_tax == Money("90.00", line_with_tax.currency)
+    assert line_with_tax.total_excluding_tax_amount == Money("90.00", line_with_tax.currency)
     assert line_with_tax.total_tax_amount == Money("9.00", line_with_tax.currency)
     assert line_with_tax.total_amount == Money("99.00", line_with_tax.currency)
 
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("190.00", invoice.currency)
     assert invoice.total_discount_amount == Money("20.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("180.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("180.00", invoice.currency)
     assert invoice.total_tax_amount == Money("13.50", invoice.currency)
     assert invoice.total_amount == Money("193.50", invoice.currency)
 
@@ -961,7 +961,7 @@ def test_recalculate_invoice_automatic_invoice_taxes_exclusive():
     assert line.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.INVOICE
 
     invoice.refresh_from_db()
-    assert invoice.total_amount_excluding_tax == Money("100.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("100.00", invoice.currency)
     assert invoice.total_tax_amount == Money("10.00", invoice.currency)
     assert invoice.total_amount == Money("110.00", invoice.currency)
 
@@ -982,7 +982,7 @@ def test_recalculate_invoice_automatic_invoice_taxes_inclusive():
     assert line.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.INVOICE
 
     invoice.refresh_from_db()
-    assert invoice.total_amount_excluding_tax == Money("100.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("100.00", invoice.currency)
     assert invoice.total_tax_amount == Money("20.00", invoice.currency)
     assert invoice.total_amount == Money("120.00", invoice.currency)
 
@@ -1002,7 +1002,7 @@ def test_recalculate_invoice_inclusive_invoice_taxes():
     assert line.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.INVOICE
 
     invoice.refresh_from_db()
-    assert invoice.total_amount_excluding_tax == Money("100.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("100.00", invoice.currency)
     assert invoice.total_tax_amount == Money("15.00", invoice.currency)
     assert invoice.total_amount == Money("115.00", invoice.currency)
 
@@ -1033,7 +1033,7 @@ def test_recalculate_invoice_inclusive_mixed_tax_sources():
     assert line_with_invoice_tax.tax_allocations.get(tax_rate=invoice_tax_rate).source == InvoiceTaxSource.INVOICE
 
     invoice.refresh_from_db()
-    assert invoice.total_amount_excluding_tax == Money("200.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("200.00", invoice.currency)
     assert invoice.total_tax_amount == Money("15.00", invoice.currency)
     assert invoice.total_amount == Money("215.00", invoice.currency)
 
@@ -1056,7 +1056,7 @@ def test_recalculate_invoice_inclusive_discount_zero_tax_rate():
 
     invoice.refresh_from_db()
     assert invoice.total_discount_amount == Money("10.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("90.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("90.00", invoice.currency)
     assert invoice.total_tax_amount == Money("0.00", invoice.currency)
     assert invoice.total_amount == Money("90.00", invoice.currency)
 
@@ -1072,7 +1072,10 @@ def test_recalculate_invoice_with_shipping_taxes():
     invoice.recalculate()
 
     shipping.refresh_from_db()
+    assert shipping.total_excluding_tax_amount == Money("20.00", shipping.currency)
+    assert shipping.total_taxable_amount == Money("20.00", shipping.currency)
     assert shipping.tax_amount == Money("2.00", shipping.currency)
+    assert shipping.total_tax_rate == Decimal("10")
     assert shipping.total_amount == Money("22.00", shipping.currency)
     assert shipping.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.SHIPPING
 
@@ -1082,9 +1085,38 @@ def test_recalculate_invoice_with_shipping_taxes():
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("100.00", invoice.currency)
     assert invoice.shipping_amount == Money("20.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("120.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("120.00", invoice.currency)
     assert invoice.total_tax_amount == Money("2.00", invoice.currency)
     assert invoice.total_amount == Money("122.00", invoice.currency)
+
+
+def test_recalculate_invoice_with_shipping_taxes_inclusive_behavior():
+    invoice = InvoiceFactory(currency="USD", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
+    shipping_rate = ShippingRateFactory(account=invoice.account, currency=invoice.currency, amount=Decimal("20"))
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
+
+    shipping = invoice.add_shipping(shipping_rate, tax_rates=[tax_rate])
+    shipping.set_tax_rates([tax_rate])
+    invoice.recalculate()
+
+    shipping.refresh_from_db()
+    assert shipping.total_excluding_tax_amount == Money("18.18", shipping.currency)
+    assert shipping.total_taxable_amount == Money("18.18", shipping.currency)
+    assert shipping.tax_amount == Money("1.82", shipping.currency)
+    assert shipping.total_tax_rate == Decimal("10")
+    assert shipping.total_amount == Money("20.00", shipping.currency)
+    assert shipping.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.SHIPPING
+
+    line.refresh_from_db()
+    assert line.total_amount == Money("100.00", line.currency)
+
+    invoice.refresh_from_db()
+    assert invoice.subtotal_amount == Money("100.00", invoice.currency)
+    assert invoice.shipping_amount == Money("20.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("118.18", invoice.currency)
+    assert invoice.total_tax_amount == Money("1.82", invoice.currency)
+    assert invoice.total_amount == Money("120.00", invoice.currency)
 
 
 def test_recalculate_invoice_with_no_lines():
@@ -1095,7 +1127,7 @@ def test_recalculate_invoice_with_no_lines():
     invoice.refresh_from_db()
     assert invoice.subtotal_amount == Money("0.00", invoice.currency)
     assert invoice.total_discount_amount == Money("0.00", invoice.currency)
-    assert invoice.total_amount_excluding_tax == Money("0.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("0.00", invoice.currency)
     assert invoice.total_tax_amount == Money("0.00", invoice.currency)
     assert invoice.total_amount == Money("0.00", invoice.currency)
     assert invoice.outstanding_amount == Money("0.00", invoice.currency)
@@ -1116,6 +1148,6 @@ def test_recalculate_invoice_clamps_total_amount_with_tax():
     assert line.total_tax_amount == Money(MAX_AMOUNT, line.currency)
 
     invoice.refresh_from_db()
-    assert invoice.total_amount_excluding_tax == Money(MAX_AMOUNT, invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money(MAX_AMOUNT, invoice.currency)
     assert invoice.total_tax_amount == Money(MAX_AMOUNT, invoice.currency)
     assert invoice.total_amount == Money(MAX_AMOUNT, invoice.currency)

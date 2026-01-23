@@ -65,7 +65,9 @@ class InvoiceTaxSerializer(serializers.Serializer):
 
 class InvoiceShippingSerializer(serializers.Serializer):
     amount = MoneyField(max_digits=19, decimal_places=2)
+    total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2)
     tax_amount = MoneyField(max_digits=19, decimal_places=2)
+    total_tax_rate = serializers.DecimalField(max_digits=5, decimal_places=2)
     total_amount = MoneyField(max_digits=19, decimal_places=2)
     shipping_rate_id = serializers.UUIDField(allow_null=True)
     tax_rates = TaxRateSerializer(many=True)
@@ -85,7 +87,7 @@ class InvoiceLineSerializer(serializers.Serializer):
     product_id = serializers.UUIDField(source="price.product_id", allow_null=True)
     amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)
-    total_amount_excluding_tax = MoneyField(max_digits=19, decimal_places=2, read_only=True)
+    total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)
     total_tax_rate = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
     total_amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)
@@ -138,7 +140,7 @@ class InvoiceSerializer(serializers.Serializer):
     description = serializers.CharField(allow_null=True)
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2)
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2)
-    total_amount_excluding_tax = MoneyField(max_digits=19, decimal_places=2)
+    total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2)
     shipping_amount = MoneyField(max_digits=19, decimal_places=2)
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2)
     total_amount = MoneyField(max_digits=19, decimal_places=2)

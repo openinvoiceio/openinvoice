@@ -38,7 +38,7 @@ def test_create_invoice_line_from_unit_amount(api_client, user, account):
         "product_id": None,
         "amount": "10.00",
         "total_discount_amount": "0.00",
-        "total_amount_excluding_tax": "10.00",
+        "total_excluding_tax_amount": "10.00",
         "total_tax_amount": "0.00",
         "total_tax_rate": "0.00",
         "total_amount": "10.00",
@@ -86,7 +86,7 @@ def test_create_invoice_line_from_flat_price(api_client, user, account):
         "product_id": str(price.product_id),
         "amount": "10.00",
         "total_discount_amount": "0.00",
-        "total_amount_excluding_tax": "10.00",
+        "total_excluding_tax_amount": "10.00",
         "total_tax_amount": "0.00",
         "total_tax_rate": "0.00",
         "total_amount": "10.00",
@@ -136,7 +136,7 @@ def test_create_invoice_line_from_graduated_price(api_client, user, account):
     assert response.data["price_id"] == str(price.id)
     assert response.data["unit_amount"] == "9.47"
     assert response.data["amount"] == "142.00"
-    assert response.data["total_amount_excluding_tax"] == "142.00"
+    assert response.data["total_excluding_tax_amount"] == "142.00"
     invoice.refresh_from_db()
     assert invoice.subtotal_amount.amount == Decimal("142.00")
     assert invoice.total_amount.amount == Decimal("142.00")
@@ -170,7 +170,7 @@ def test_create_invoice_line_from_volume_price(api_client, user, account):
     assert response.data["price_id"] == str(price.id)
     assert response.data["unit_amount"] == "8.00"
     assert response.data["amount"] == "120.00"
-    assert response.data["total_amount_excluding_tax"] == "120.00"
+    assert response.data["total_excluding_tax_amount"] == "120.00"
     invoice.refresh_from_db()
     assert invoice.subtotal_amount.amount == Decimal("120.00")
     assert invoice.total_amount.amount == Decimal("120.00")
@@ -198,7 +198,7 @@ def test_create_invoice_line_with_required_only_fields(api_client, user, account
         "product_id": None,
         "amount": "0.00",
         "total_discount_amount": "0.00",
-        "total_amount_excluding_tax": "0.00",
+        "total_excluding_tax_amount": "0.00",
         "total_tax_amount": "0.00",
         "total_tax_rate": "0.00",
         "total_amount": "0.00",

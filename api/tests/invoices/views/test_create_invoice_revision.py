@@ -102,7 +102,7 @@ def test_create_invoice_revision(api_client, user, account):
         "recipients": [customer.email],
         "subtotal_amount": "0.00",
         "total_discount_amount": "0.00",
-        "total_amount_excluding_tax": "0.00",
+        "total_excluding_tax_amount": "0.00",
         "shipping_amount": "0.00",
         "total_tax_amount": "0.00",
         "total_amount": "0.00",
@@ -146,7 +146,7 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
         subtotal_amount=Decimal("90"),
         total_discount_amount=Decimal("10"),
         shipping_amount=Decimal("10"),
-        total_amount_excluding_tax=Decimal("100"),
+        total_excluding_tax_amount=Decimal("100"),
         total_tax_amount=Decimal("10"),
         total_amount=Decimal("110"),
         metadata={"note": "keep"},
@@ -162,7 +162,7 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
         quantity=1,
         unit_amount=Decimal("100"),
         amount=Decimal("100"),
-        total_amount_excluding_tax=Decimal("90"),
+        total_excluding_tax_amount=Decimal("90"),
         total_discount_amount=Decimal("10"),
         total_tax_amount=Decimal("9"),
         total_amount=Decimal("99"),
@@ -193,7 +193,7 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
     assert revision.description == invoice.description
     assert revision.subtotal_amount == invoice.subtotal_amount
     assert revision.total_discount_amount == invoice.total_discount_amount
-    assert revision.total_amount_excluding_tax == invoice.total_amount_excluding_tax
+    assert revision.total_excluding_tax_amount == invoice.total_excluding_tax_amount
     assert revision.total_tax_amount == invoice.total_tax_amount
     assert revision.total_amount == invoice.total_amount
     assert revision.coupons.count() == 1

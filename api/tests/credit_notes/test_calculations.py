@@ -20,7 +20,7 @@ def test_calculate_credit_note_line_amounts_from_amount():
         quantity=4,
         unit_amount=Money("50.00", "USD"),
         amount=Money("200.00", "USD"),
-        total_amount_excluding_tax=Money("200.00", "USD"),
+        total_excluding_tax_amount=Money("200.00", "USD"),
         total_tax_amount=Money("40.00", "USD"),
         total_amount=Money("240.00", "USD"),
     )
@@ -43,7 +43,7 @@ def test_calculate_credit_note_line_amounts_invoice_line_amount_zero():
         quantity=3,
         unit_amount=Money("0.00", "USD"),
         amount=Money("0.00", "USD"),
-        total_amount_excluding_tax=Money("0.00", "USD"),
+        total_excluding_tax_amount=Money("0.00", "USD"),
         total_tax_amount=Money("0.00", "USD"),
         total_amount=Money("0.00", "USD"),
     )
@@ -66,7 +66,7 @@ def test_calculate_credit_note_line_amounts_from_quantity():
         quantity=4,
         unit_amount=Money("30.00", "USD"),
         amount=Money("120.00", "USD"),
-        total_amount_excluding_tax=Money("120.00", "USD"),
+        total_excluding_tax_amount=Money("120.00", "USD"),
         total_tax_amount=Money("24.00", "USD"),
         total_amount=Money("144.00", "USD"),
     )
@@ -89,7 +89,7 @@ def test_calculate_credit_note_line_amounts_defaults_to_invoice_line_values():
         quantity=2,
         unit_amount=Money("15.00", "USD"),
         amount=Money("30.00", "USD"),
-        total_amount_excluding_tax=Money("30.00", "USD"),
+        total_excluding_tax_amount=Money("30.00", "USD"),
         total_tax_amount=Money("6.00", "USD"),
         total_amount=Money("36.00", "USD"),
     )
@@ -98,7 +98,7 @@ def test_calculate_credit_note_line_amounts_defaults_to_invoice_line_values():
 
     assert ratio == Decimal("1")
     assert amount_value == invoice_line.amount
-    assert total_excl_tax == invoice_line.total_amount_excluding_tax
+    assert total_excl_tax == invoice_line.total_excluding_tax_amount
     assert total_tax == invoice_line.total_tax_amount
     assert total_amount == invoice_line.total_amount
 
@@ -109,7 +109,7 @@ def test_calculate_credit_note_line_amounts_clamps_ratio_to_one():
         quantity=3,
         unit_amount=Money("20.00", "USD"),
         amount=Money("60.00", "USD"),
-        total_amount_excluding_tax=Money("60.00", "USD"),
+        total_excluding_tax_amount=Money("60.00", "USD"),
         total_tax_amount=Money("12.00", "USD"),
         total_amount=Money("72.00", "USD"),
     )
@@ -121,7 +121,7 @@ def test_calculate_credit_note_line_amounts_clamps_ratio_to_one():
 
     assert ratio == Decimal("1")
     assert amount_value == invoice_line.amount
-    assert total_excl_tax == invoice_line.total_amount_excluding_tax
+    assert total_excl_tax == invoice_line.total_excluding_tax_amount
     assert total_tax == invoice_line.total_tax_amount
     assert total_amount == invoice_line.total_amount
 
@@ -132,7 +132,7 @@ def test_calculate_credit_note_line_amounts_clamps_ratio_to_zero():
         quantity=3,
         unit_amount=Money("25.00", "USD"),
         amount=Money("75.00", "USD"),
-        total_amount_excluding_tax=Money("75.00", "USD"),
+        total_excluding_tax_amount=Money("75.00", "USD"),
         total_tax_amount=Money("15.00", "USD"),
         total_amount=Money("90.00", "USD"),
     )
@@ -155,7 +155,7 @@ def test_calculate_credit_note_line_amounts_handles_zero_invoice_quantity():
         quantity=0,
         unit_amount=Money("0.00", "USD"),
         amount=Money("0.00", "USD"),
-        total_amount_excluding_tax=Money("0.00", "USD"),
+        total_excluding_tax_amount=Money("0.00", "USD"),
         total_tax_amount=Money("0.00", "USD"),
         total_amount=Money("0.00", "USD"),
     )

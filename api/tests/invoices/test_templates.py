@@ -71,7 +71,7 @@ def test_invoice_pdf_template_with_discounts_and_taxes():
     invoice = InvoiceFactory(
         subtotal_amount=Decimal("100"),
         total_discount_amount=Decimal("15"),
-        total_amount_excluding_tax=Decimal("85"),
+        total_excluding_tax_amount=Decimal("85"),
         total_tax_amount=Decimal("34"),
         total_amount=Decimal("119"),
     )
@@ -82,7 +82,7 @@ def test_invoice_pdf_template_with_discounts_and_taxes():
         quantity=1,
         amount=Decimal("100"),
         total_discount_amount=Decimal("5"),
-        total_amount_excluding_tax=Decimal("95"),
+        total_excluding_tax_amount=Decimal("95"),
         total_tax_amount=Decimal("19"),
         total_tax_rate=Decimal("20"),
         total_amount=Decimal("114"),

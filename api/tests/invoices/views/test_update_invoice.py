@@ -112,7 +112,7 @@ def test_update_invoice(api_client, user, account):
         "recipients": [],
         "subtotal_amount": f"{invoice.subtotal_amount.amount:.2f}",
         "total_discount_amount": f"{invoice.total_discount_amount.amount:.2f}",
-        "total_amount_excluding_tax": f"{invoice.total_amount_excluding_tax.amount:.2f}",
+        "total_excluding_tax_amount": f"{invoice.total_excluding_tax_amount.amount:.2f}",
         "shipping_amount": f"{invoice.shipping_amount.amount:.2f}",
         "total_tax_amount": f"{invoice.total_tax_amount.amount:.2f}",
         "total_amount": f"{invoice.total_amount.amount:.2f}",
@@ -188,8 +188,10 @@ def test_update_invoice_add_shipping(api_client, user, account):
     assert response.status_code == 200
     assert response.data["shipping"] == {
         "amount": "20.00",
-        "tax_amount": "2.00",
-        "total_amount": "22.00",
+        "total_excluding_tax_amount": "18.18",
+        "tax_amount": "1.82",
+        "total_tax_rate": "10.00",
+        "total_amount": "20.00",
         "shipping_rate_id": str(shipping_rate.id),
         "tax_rates": [
             {
@@ -208,13 +210,13 @@ def test_update_invoice_add_shipping(api_client, user, account):
         "total_taxes": [
             {
                 "tax_rate_id": str(tax_rate.id),
-                "amount": "2.00",
+                "amount": "1.82",
             }
         ],
     }
     assert response.data["shipping_amount"] == "20.00"
-    assert response.data["total_tax_amount"] == "2.00"
-    assert response.data["total_amount"] == "22.00"
+    assert response.data["total_tax_amount"] == "1.82"
+    assert response.data["total_amount"] == "20.00"
 
 
 def test_update_invoice_existing_shipping(api_client, user, account):
@@ -252,8 +254,10 @@ def test_update_invoice_existing_shipping(api_client, user, account):
     assert response.status_code == 200
     assert response.data["shipping"] == {
         "amount": "30.00",
-        "tax_amount": "4.50",
-        "total_amount": "34.50",
+        "total_excluding_tax_amount": "26.09",
+        "tax_amount": "3.91",
+        "total_tax_rate": "15.00",
+        "total_amount": "30.00",
         "shipping_rate_id": str(new_shipping_rate.id),
         "tax_rates": [
             {
@@ -272,13 +276,13 @@ def test_update_invoice_existing_shipping(api_client, user, account):
         "total_taxes": [
             {
                 "tax_rate_id": str(new_tax_rate.id),
-                "amount": "4.50",
+                "amount": "3.91",
             }
         ],
     }
     assert response.data["shipping_amount"] == "30.00"
-    assert response.data["total_tax_amount"] == "4.50"
-    assert response.data["total_amount"] == "34.50"
+    assert response.data["total_tax_amount"] == "3.91"
+    assert response.data["total_amount"] == "30.00"
 
 
 def test_update_invoice_remove_shipping(api_client, user, account):

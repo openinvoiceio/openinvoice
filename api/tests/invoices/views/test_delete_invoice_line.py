@@ -41,7 +41,7 @@ def test_delete_invoice_line_with_remaining_line(api_client, user, account):
     invoice = InvoiceFactory(
         account=account,
         subtotal_amount=Decimal("30"),
-        total_amount_excluding_tax=Decimal("30"),
+        total_excluding_tax_amount=Decimal("30"),
         total_tax_amount=Decimal("0"),
         total_amount=Decimal("30"),
     )
@@ -50,14 +50,14 @@ def test_delete_invoice_line_with_remaining_line(api_client, user, account):
         quantity=1,
         unit_amount=Decimal("10"),
         amount=Decimal("10"),
-        total_amount_excluding_tax=Decimal("10"),
+        total_excluding_tax_amount=Decimal("10"),
     )
     line2 = InvoiceLineFactory(
         invoice=invoice,
         quantity=2,
         unit_amount=Decimal("10"),
         amount=Decimal("20"),
-        total_amount_excluding_tax=Decimal("20"),
+        total_excluding_tax_amount=Decimal("20"),
     )
 
     api_client.force_login(user)

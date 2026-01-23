@@ -15,7 +15,7 @@ def test_create_credit_note_line_from_invoice_line(api_client, user, account):
     invoice = InvoiceFactory(
         account=account,
         subtotal_amount=Decimal("30.00"),
-        total_amount_excluding_tax=Decimal("30.00"),
+        total_excluding_tax_amount=Decimal("30.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("30.00"),
     )
@@ -24,7 +24,7 @@ def test_create_credit_note_line_from_invoice_line(api_client, user, account):
         quantity=1,
         unit_amount=Decimal("30.00"),
         amount=Decimal("30.00"),
-        total_amount_excluding_tax=Decimal("30.00"),
+        total_excluding_tax_amount=Decimal("30.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("30.00"),
     )
@@ -61,7 +61,7 @@ def test_create_credit_note_line_from_invoice_line_using_amount(api_client, user
     invoice = InvoiceFactory(
         account=account,
         subtotal_amount=Decimal("15.00"),
-        total_amount_excluding_tax=Decimal("15.00"),
+        total_excluding_tax_amount=Decimal("15.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("15.00"),
     )
@@ -70,7 +70,7 @@ def test_create_credit_note_line_from_invoice_line_using_amount(api_client, user
         quantity=3,
         unit_amount=Decimal("5.00"),
         amount=Decimal("15.00"),
-        total_amount_excluding_tax=Decimal("15.00"),
+        total_excluding_tax_amount=Decimal("15.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("15.00"),
     )
@@ -226,7 +226,7 @@ def test_create_credit_note_line_amount_exceeds_invoice(api_client, user, accoun
     invoice = InvoiceFactory(
         account=account,
         subtotal_amount=Decimal("10.00"),
-        total_amount_excluding_tax=Decimal("10.00"),
+        total_excluding_tax_amount=Decimal("10.00"),
         total_amount=Decimal("10.00"),
     )
     credit_note = CreditNoteFactory(invoice=invoice)
@@ -260,7 +260,7 @@ def test_create_credit_note_line_without_amount_or_quantity(api_client, user, ac
     invoice = InvoiceFactory(
         account=account,
         subtotal_amount=Decimal("12.00"),
-        total_amount_excluding_tax=Decimal("12.00"),
+        total_excluding_tax_amount=Decimal("12.00"),
         total_amount=Decimal("12.00"),
     )
     invoice_line = InvoiceLineFactory(
@@ -268,7 +268,7 @@ def test_create_credit_note_line_without_amount_or_quantity(api_client, user, ac
         quantity=3,
         unit_amount=Decimal("4.00"),
         amount=Decimal("12.00"),
-        total_amount_excluding_tax=Decimal("12.00"),
+        total_excluding_tax_amount=Decimal("12.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("12.00"),
     )
@@ -303,7 +303,7 @@ def test_create_credit_note_line_invoice_line_without_outstanding(api_client, us
     invoice = InvoiceFactory(
         account=account,
         subtotal_amount=Decimal("10.00"),
-        total_amount_excluding_tax=Decimal("10.00"),
+        total_excluding_tax_amount=Decimal("10.00"),
         total_amount=Decimal("10.00"),
     )
     invoice_line = InvoiceLineFactory(
@@ -311,7 +311,7 @@ def test_create_credit_note_line_invoice_line_without_outstanding(api_client, us
         quantity=2,
         unit_amount=Decimal("5.00"),
         amount=Decimal("10.00"),
-        total_amount_excluding_tax=Decimal("10.00"),
+        total_excluding_tax_amount=Decimal("10.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("10.00"),
         total_credit_amount=Decimal("10.00"),
@@ -349,7 +349,7 @@ def test_create_credit_note_line_requires_exclusive_amount_or_quantity(api_clien
     invoice = InvoiceFactory(
         account=account,
         subtotal_amount=Decimal("20.00"),
-        total_amount_excluding_tax=Decimal("20.00"),
+        total_excluding_tax_amount=Decimal("20.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("20.00"),
     )
@@ -358,7 +358,7 @@ def test_create_credit_note_line_requires_exclusive_amount_or_quantity(api_clien
         quantity=2,
         unit_amount=Decimal("10.00"),
         amount=Decimal("20.00"),
-        total_amount_excluding_tax=Decimal("20.00"),
+        total_excluding_tax_amount=Decimal("20.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("20.00"),
     )
@@ -393,7 +393,7 @@ def test_create_credit_note_line_amount_exceeds_outstanding(api_client, user, ac
     invoice = InvoiceFactory(
         account=account,
         subtotal_amount=Decimal("10.00"),
-        total_amount_excluding_tax=Decimal("10.00"),
+        total_excluding_tax_amount=Decimal("10.00"),
         total_amount=Decimal("10.00"),
     )
     invoice_line = InvoiceLineFactory(
@@ -401,7 +401,7 @@ def test_create_credit_note_line_amount_exceeds_outstanding(api_client, user, ac
         quantity=2,
         unit_amount=Decimal("5.00"),
         amount=Decimal("10.00"),
-        total_amount_excluding_tax=Decimal("10.00"),
+        total_excluding_tax_amount=Decimal("10.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("10.00"),
         total_credit_amount=Decimal("8.00"),
@@ -439,7 +439,7 @@ def test_create_credit_note_line_quantity_exceeds_outstanding(api_client, user, 
     invoice = InvoiceFactory(
         account=account,
         subtotal_amount=Decimal("10.00"),
-        total_amount_excluding_tax=Decimal("10.00"),
+        total_excluding_tax_amount=Decimal("10.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("10.00"),
     )
@@ -448,7 +448,7 @@ def test_create_credit_note_line_quantity_exceeds_outstanding(api_client, user, 
         quantity=2,
         unit_amount=Decimal("5.00"),
         amount=Decimal("10.00"),
-        total_amount_excluding_tax=Decimal("10.00"),
+        total_excluding_tax_amount=Decimal("10.00"),
         total_tax_amount=Decimal("0.00"),
         total_amount=Decimal("10.00"),
         credit_quantity=1,
