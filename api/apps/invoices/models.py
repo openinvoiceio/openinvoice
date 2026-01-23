@@ -298,7 +298,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         for line in lines:
             line.unit_amount = clamp_money(line.calculate_unit_amount())
             line.amount = clamp_money(line.unit_amount * line.quantity)
-            line.subtotal_amount = line.amount
             line.total_discount_amount = zero(self.currency)
             line.total_tax_amount = zero(self.currency)
 
@@ -313,6 +312,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
                 line.unit_excluding_tax_amount = line.unit_amount
 
             line.total_taxable_amount = clamp_money(line.unit_excluding_tax_amount * line.quantity)
+            line.subtotal_amount = line.total_taxable_amount
 
         # Calculate line discounts
 
@@ -323,8 +323,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             if coupons:
                 # Calculate discounts for line-level coupons
                 for coupon in coupons:
-                    discount_amount = coupon.calculate_amount(line.subtotal_amount)
-                    applicable_discount_amount = min(discount_amount, line.subtotal_amount)
+                    discount_amount = coupon.calculate_amount(line.total_taxable_amount)
+                    applicable_discount_amount = min(discount_amount, line.total_taxable_amount)
 
                     if applicable_discount_amount.amount <= 0:
                         continue
@@ -332,17 +332,20 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
                     line.subtotal_amount -= applicable_discount_amount
                     line.total_taxable_amount -= applicable_discount_amount
                     line.total_discount_amount += applicable_discount_amount
-                    line.add_discount_allocation(discount_amount, coupon, InvoiceDiscountSource.LINE)
+                    line.add_discount_allocation(applicable_discount_amount, coupon, InvoiceDiscountSource.LINE)
             else:
                 # Accumulate invoice-level discountable lines for later discount calculation
                 discountable_lines.append(line)
 
         # Calculate invoice discounts
 
-        total_taxable_amount = sum([line.subtotal_amount for line in lines], zero(self.currency))
+        total_taxable_amount = sum([line.total_taxable_amount for line in discountable_lines], zero(self.currency))
 
         for coupon in list(self.coupons.order_by("invoice_coupons__position")):
             if total_taxable_amount.amount <= 0:
+                break
+
+            if not discountable_lines:
                 break
 
             discount_amount = coupon.calculate_amount(total_taxable_amount)
@@ -420,6 +423,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         if self.shipping:
             shipping_amount = self.shipping.amount
+            self.shipping.tax_amount = zero(self.currency)
 
             tax_rates = list(self.shipping.tax_rates.order_by("invoice_shipping_tax_rates__position"))
             self.shipping.total_tax_rate = sum((tax_rate.percentage for tax_rate in tax_rates), Decimal(0))

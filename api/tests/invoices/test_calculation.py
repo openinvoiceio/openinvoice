@@ -125,18 +125,18 @@ def test_recalculate_invoice_inclusive_with_discount_and_taxes():
     line.refresh_from_db()
     assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
     assert line.amount == Money("120.00", line.currency)
-    assert line.subtotal_amount == Money("108.00", line.currency)
-    assert line.total_discount_amount == Money("12.00", line.currency)
-    assert line.total_excluding_tax_amount == Money("88.00", line.currency)
-    assert line.total_taxable_amount == Money("88.00", line.currency)
-    assert line.total_tax_amount == Money("17.60", line.currency)
-    assert line.total_amount == Money("105.60", line.currency)
+    assert line.subtotal_amount == Money("90.00", line.currency)
+    assert line.total_discount_amount == Money("10.00", line.currency)
+    assert line.total_taxable_amount == Money("90.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("90.00", line.currency)
+    assert line.total_tax_amount == Money("18.00", line.currency)
+    assert line.total_amount == Money("108.00", line.currency)
 
     invoice.refresh_from_db()
-    assert invoice.subtotal_amount == Money("108.00", line.currency)
-    assert invoice.total_excluding_tax_amount == Money("88.00", line.currency)
-    assert invoice.total_tax_amount == Money("17.60", line.currency)
-    assert invoice.total_amount == Money("105.60", line.currency)
+    assert invoice.subtotal_amount == Money("90.00", line.currency)
+    assert invoice.total_excluding_tax_amount == Money("90.00", line.currency)
+    assert invoice.total_tax_amount == Money("18.00", line.currency)
+    assert invoice.total_amount == Money("108.00", line.currency)
 
 
 def test_recalculate_invoice_inclusive_with_multiple_tax_rates():
@@ -1170,3 +1170,123 @@ def test_recalculate_invoice_clamps_total_amount_with_tax():
     assert invoice.total_excluding_tax_amount == Money(MAX_AMOUNT, invoice.currency)
     assert invoice.total_tax_amount == Money(MAX_AMOUNT, invoice.currency)
     assert invoice.total_amount == Money(MAX_AMOUNT, invoice.currency)
+
+
+def test_invoice_level_coupon_does_not_apply_to_line_with_line_coupon():
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
+    line_coupon = CouponFactory(
+        account=invoice.account, currency=invoice.currency, percentage=Decimal("10"), amount=None
+    )
+    invoice_coupon = CouponFactory(
+        account=invoice.account, currency=invoice.currency, amount=Money(50, invoice.currency), percentage=None
+    )
+
+    line.set_coupons([line_coupon])
+    invoice.set_coupons([invoice_coupon])
+    invoice.recalculate()
+    line.refresh_from_db()
+
+    # Only line coupon applied
+    assert line.discount_allocations.count() == 1
+    assert line.discount_allocations.get(coupon=line_coupon).amount == Money("10.00", invoice.currency)
+    assert not line.discount_allocations.filter(coupon=invoice_coupon).exists()
+
+    assert line.total_discount_amount == Money("10.00", invoice.currency)
+    assert line.total_amount == Money("90.00", invoice.currency)
+
+
+def test_invoice_level_fixed_discount_proportional_allocation_rounding():
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
+    line_1 = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("10"), quantity=1, amount=Decimal("0"))
+    line_2 = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("10"), quantity=1, amount=Decimal("0"))
+    coupon = CouponFactory(
+        account=invoice.account, currency=invoice.currency, amount=Money("0.01", invoice.currency), percentage=None
+    )
+
+    invoice.set_coupons([coupon])
+    invoice.recalculate()
+    line_1.refresh_from_db()
+    line_2.refresh_from_db()
+
+    # Total allocated must equal coupon amount
+    total_discount = sum(
+        (a.amount for a in invoice.discount_allocations.filter(coupon=coupon)), Money("0.00", invoice.currency)
+    )
+    assert total_discount == Money("0.01", invoice.currency)
+
+    # Exactly one line gets the cent (largest remainder tie-breaker can pick either)
+    allocations = list(invoice.discount_allocations.filter(coupon=coupon).values_list("invoice_line_id", "amount"))
+    assert len(allocations) == 1  # because you skip zero allocations
+    assert allocations[0][1] == Decimal("0.01")
+
+
+def test_invoice_level_coupons_applied_sequentially_base_reduces():
+    invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
+    fixed_coupon = CouponFactory(
+        account=invoice.account, currency=invoice.currency, amount=Money(10, invoice.currency), percentage=None
+    )
+    percentage_coupon = CouponFactory(
+        account=invoice.account, currency=invoice.currency, amount=None, percentage=Decimal("10")
+    )
+
+    invoice.set_coupons([fixed_coupon, percentage_coupon])
+    invoice.recalculate()
+    line.refresh_from_db()
+
+    # Expected: base 100 -> minus 10 -> 90; then 10% of 90 = 9; total discount = 19
+    assert line.discount_allocations.get(coupon=fixed_coupon).amount == Money("10.00", invoice.currency)
+    assert line.discount_allocations.get(coupon=percentage_coupon).amount == Money("9.00", invoice.currency)
+    assert line.total_discount_amount == Money("19.00", invoice.currency)
+    assert line.total_amount == Money("81.00", invoice.currency)
+
+
+def test_inclusive_tax_with_invoice_fixed_coupon_allocated_across_lines():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line_1 = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("120"), quantity=1, amount=Decimal("0"))  # net 100
+    line_2 = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("60"), quantity=1, amount=Decimal("0"))  # net 50
+    tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
+    coupon = CouponFactory(
+        account=invoice.account, currency=invoice.currency, amount=Money("15.00", invoice.currency), percentage=None
+    )
+
+    line_1.set_tax_rates([tax_rate])
+    line_2.set_tax_rates([tax_rate])
+    invoice.set_coupons([coupon])
+    invoice.recalculate()
+    line_1.refresh_from_db()
+    line_2.refresh_from_db()
+    invoice.refresh_from_db()
+
+    # Bases: 100 and 50 => discount shares should be 10 and 5
+    assert line_1.discount_allocations.get(coupon=coupon).amount == Money("10.00", invoice.currency)
+    assert line_2.discount_allocations.get(coupon=coupon).amount == Money("5.00", invoice.currency)
+    assert line_1.total_taxable_amount == Money("90.00", invoice.currency)
+    assert line_2.total_taxable_amount == Money("45.00", invoice.currency)
+
+    # Tax on discounted net
+    assert line_1.total_tax_amount == Money("18.00", invoice.currency)
+    assert line_2.total_tax_amount == Money("9.00", invoice.currency)
+
+    assert invoice.total_discount_amount == Money("15.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("135.00", invoice.currency)
+    assert invoice.total_tax_amount == Money("27.00", invoice.currency)
+    assert invoice.total_amount == Money("162.00", invoice.currency)
+
+
+def test_shipping_tax_allocations_do_not_mix_with_line_tax_allocations():
+    invoice = InvoiceFactory(currency="USD", tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("100"), quantity=1, amount=Decimal("0"))
+    line_tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("20"))
+    shipping_tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("10"))
+    shipping_rate = ShippingRateFactory(account=invoice.account, currency=invoice.currency, amount=Decimal("50"))
+
+    line.set_tax_rates([line_tax_rate])
+    shipping = invoice.add_shipping(shipping_rate, tax_rates=[shipping_tax_rate])
+    invoice.recalculate()
+    line.refresh_from_db()
+    shipping.refresh_from_db()
+
+    assert line.tax_allocations.get(tax_rate=line_tax_rate).source == InvoiceTaxSource.LINE
+    assert shipping.tax_allocations.get(tax_rate=shipping_tax_rate).source == InvoiceTaxSource.SHIPPING
