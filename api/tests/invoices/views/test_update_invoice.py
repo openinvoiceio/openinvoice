@@ -189,7 +189,7 @@ def test_update_invoice_add_shipping(api_client, user, account):
     assert response.data["shipping"] == {
         "amount": "20.00",
         "total_excluding_tax_amount": "18.18",
-        "tax_amount": "1.82",
+        "total_tax_amount": "1.82",
         "total_tax_rate": "10.00",
         "total_amount": "20.00",
         "shipping_rate_id": str(shipping_rate.id),
@@ -230,7 +230,7 @@ def test_update_invoice_existing_shipping(api_client, user, account):
         total_amount=Decimal(22),
     )
     shipping = InvoiceShippingFactory(
-        amount=shipping_rate.amount, tax_amount=Decimal(2), total_amount=Decimal(22), shipping_rate=shipping_rate
+        amount=shipping_rate.amount, total_tax_amount=Decimal(2), total_amount=Decimal(22), shipping_rate=shipping_rate
     )
     shipping.set_tax_rates([tax_rate])
     invoice.shipping = shipping
@@ -255,7 +255,7 @@ def test_update_invoice_existing_shipping(api_client, user, account):
     assert response.data["shipping"] == {
         "amount": "30.00",
         "total_excluding_tax_amount": "26.09",
-        "tax_amount": "3.91",
+        "total_tax_amount": "3.91",
         "total_tax_rate": "15.00",
         "total_amount": "30.00",
         "shipping_rate_id": str(new_shipping_rate.id),
@@ -296,7 +296,7 @@ def test_update_invoice_remove_shipping(api_client, user, account):
         total_amount=Decimal(22),
     )
     shipping = InvoiceShippingFactory(
-        amount=shipping_rate.amount, tax_amount=Decimal(2), total_amount=Decimal(22), shipping_rate=shipping_rate
+        amount=shipping_rate.amount, total_tax_amount=Decimal(2), total_amount=Decimal(22), shipping_rate=shipping_rate
     )
     shipping.set_tax_rates([tax_rate])
     invoice.shipping = shipping

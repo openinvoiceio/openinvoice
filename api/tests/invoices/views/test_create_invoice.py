@@ -181,7 +181,7 @@ def test_create_invoice_with_shipping(api_client, user, account):
     assert response.data["shipping"] == {
         "amount": "10.00",
         "total_excluding_tax_amount": "10.00",
-        "tax_amount": "1.00",
+        "total_tax_amount": "1.00",
         "total_tax_rate": "10.00",
         "total_amount": "11.00",
         "shipping_rate_id": str(shipping_rate.id),

@@ -1092,7 +1092,7 @@ def test_recalculate_invoice_with_shipping_taxes():
     assert shipping.amount == Money("20.00", shipping.currency)
     assert shipping.total_excluding_tax_amount == Money("20.00", shipping.currency)
     assert shipping.total_taxable_amount == Money("20.00", shipping.currency)
-    assert shipping.tax_amount == Money("2.00", shipping.currency)
+    assert shipping.total_tax_amount == Money("2.00", shipping.currency)
     assert shipping.total_tax_rate == Decimal("10")
     assert shipping.total_amount == Money("22.00", shipping.currency)
     assert shipping.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.SHIPPING
@@ -1122,7 +1122,7 @@ def test_recalculate_invoice_with_shipping_taxes_inclusive_behavior():
     assert shipping.amount == Money("20.00", shipping.currency)
     assert shipping.total_excluding_tax_amount == Money("18.18", shipping.currency)
     assert shipping.total_taxable_amount == Money("18.18", shipping.currency)
-    assert shipping.tax_amount == Money("1.82", shipping.currency)
+    assert shipping.total_tax_amount == Money("1.82", shipping.currency)
     assert shipping.total_tax_rate == Decimal("10")
     assert shipping.total_amount == Money("20.00", shipping.currency)
     assert shipping.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.SHIPPING

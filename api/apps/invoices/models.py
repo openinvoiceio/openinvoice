@@ -423,7 +423,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         if self.shipping:
             shipping_amount = self.shipping.amount
-            self.shipping.tax_amount = zero(self.currency)
+            self.shipping.total_tax_amount = zero(self.currency)
 
             tax_rates = list(self.shipping.tax_rates.order_by("invoice_shipping_tax_rates__position"))
             self.shipping.total_tax_rate = sum((tax_rate.percentage for tax_rate in tax_rates), Decimal(0))
@@ -438,16 +438,16 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
             for tax_rate in tax_rates:
                 tax_amount = tax_rate.calculate_amount(self.shipping.total_taxable_amount)
-                self.shipping.tax_amount += tax_amount
+                self.shipping.total_tax_amount += tax_amount
                 self.shipping.add_tax_allocation(tax_amount, tax_rate)
 
-            self.shipping.total_amount = self.shipping.total_excluding_tax_amount + self.shipping.tax_amount
+            self.shipping.total_amount = self.shipping.total_excluding_tax_amount + self.shipping.total_tax_amount
             self.shipping.save(
                 update_fields=[
                     "total_excluding_tax_amount",
                     "total_taxable_amount",
                     "total_tax_rate",
-                    "tax_amount",
+                    "total_tax_amount",
                     "total_amount",
                 ]
             )
@@ -462,7 +462,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         if self.shipping:
             total_excluding_tax_amount += self.shipping.total_excluding_tax_amount
-            total_tax_amount += self.shipping.tax_amount
+            total_tax_amount += self.shipping.total_tax_amount
             total_amount += self.shipping.total_amount
 
         self.subtotal_amount = clamp_money(subtotal_amount)
@@ -549,7 +549,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             amount=shipping_rate.amount,
             total_excluding_tax_amount=zero(self.currency),
             total_taxable_amount=zero(self.currency),
-            tax_amount=zero(self.currency),
+            total_tax_amount=zero(self.currency),
             total_tax_rate=Decimal(0),
             total_amount=zero(self.currency),
             shipping_rate=shipping_rate,
@@ -784,8 +784,7 @@ class InvoiceShipping(models.Model):
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_taxable_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
-    # TODO: rename it to total_tax_amount
-    tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
+    total_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_tax_rate = models.DecimalField(max_digits=5, decimal_places=2)
     total_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     created_at = models.DateTimeField(auto_now_add=True)

@@ -66,7 +66,7 @@ class InvoiceTaxSerializer(serializers.Serializer):
 class InvoiceShippingSerializer(serializers.Serializer):
     amount = MoneyField(max_digits=19, decimal_places=2)
     total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2)
-    tax_amount = MoneyField(max_digits=19, decimal_places=2)
+    total_tax_amount = MoneyField(max_digits=19, decimal_places=2)
     total_tax_rate = serializers.DecimalField(max_digits=5, decimal_places=2)
     total_amount = MoneyField(max_digits=19, decimal_places=2)
     shipping_rate_id = serializers.UUIDField(allow_null=True)
