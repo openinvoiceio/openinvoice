@@ -11,7 +11,7 @@ from apps.addresses.models import Address
 from apps.customers.models import Customer
 from apps.numbering_systems.models import NumberingSystem
 from apps.prices.models import Price
-from apps.taxes.models import TaxId
+from apps.tax_ids.models import TaxId
 from common.calculations import zero
 
 from .choices import QuoteDeliveryMethod, QuoteStatus

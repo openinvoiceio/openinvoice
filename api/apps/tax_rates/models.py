@@ -7,8 +7,8 @@ from djmoney.money import Money
 
 from common.calculations import zero
 
-from .choices import TaxIdType, TaxRateStatus
-from .managers import TaxIdManager, TaxRateManager
+from .choices import TaxRateStatus
+from .managers import TaxRateManager
 from .querysets import TaxRateQuerySet
 
 
@@ -62,18 +62,3 @@ class TaxRate(models.Model):
             return zero(base_amount.currency)
 
         return base_amount * (self.percentage / Decimal(100))
-
-
-class TaxId(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    type = models.CharField(max_length=50, choices=TaxIdType.choices)
-    number = models.CharField(max_length=255)
-    country = models.CharField(max_length=2, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    objects = TaxIdManager()
-
-    @property
-    def display_name(self) -> str:
-        return self.type.replace("_", " ").upper()

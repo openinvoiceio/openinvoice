@@ -1,7 +1,7 @@
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from apps.taxes.choices import TaxRateStatus
+from apps.tax_rates.choices import TaxRateStatus
 from tests.factories import TaxRateFactory
 
 pytestmark = pytest.mark.django_db

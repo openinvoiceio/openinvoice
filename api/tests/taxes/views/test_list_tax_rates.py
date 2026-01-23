@@ -4,8 +4,8 @@ import pytest
 from django.utils import timezone
 from drf_standardized_errors.types import ErrorType
 
-from apps.taxes.choices import TaxRateStatus
-from apps.taxes.models import TaxRate
+from apps.tax_rates.choices import TaxRateStatus
+from apps.tax_rates.models import TaxRate
 from tests.factories import TaxRateFactory
 
 pytestmark = pytest.mark.django_db

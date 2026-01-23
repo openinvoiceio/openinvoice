@@ -45,7 +45,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("api/v1/", include("apps.portal.urls")),
     path("api/v1/", include("apps.prices.urls")),
     path("api/v1/", include("apps.products.urls")),
-    path("api/v1/", include("apps.taxes.urls")),
+    path("api/v1/", include("apps.tax_rates.urls")),
     path("api/v1/", include("apps.shipping_rates.urls")),
     path("api/v1/", include("apps.users.urls")),
     re_path(

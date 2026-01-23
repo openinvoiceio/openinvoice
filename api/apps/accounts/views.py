@@ -7,8 +7,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.taxes.models import TaxId
-from apps.taxes.serializers import TaxIdCreateSerializer, TaxIdSerializer
+from apps.tax_ids.models import TaxId
+from apps.tax_ids.serializers import TaxIdCreateSerializer, TaxIdSerializer
 
 from .mail import send_invitation_email
 from .models import Account, Invitation, Member

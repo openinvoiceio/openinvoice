@@ -9,7 +9,7 @@ from django.utils import timezone
 from apps.coupons.choices import CouponStatus
 from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from apps.invoices.models import Invoice
-from apps.taxes.choices import TaxRateStatus
+from apps.tax_rates.choices import TaxRateStatus
 from common.choices import LimitCode
 from tests.factories import (
     CouponFactory,

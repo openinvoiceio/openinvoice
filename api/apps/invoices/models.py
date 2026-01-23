@@ -28,7 +28,7 @@ from apps.numbering_systems.models import NumberingSystem
 from apps.payments.models import Payment
 from apps.prices.models import Price
 from apps.shipping_rates.models import ShippingRate
-from apps.taxes.models import TaxRate
+from apps.tax_rates.models import TaxRate
 from common.calculations import allocate_proportionally, clamp_money, zero
 from common.pdf import generate_pdf
 
@@ -74,7 +74,7 @@ class InvoiceCustomer(models.Model):
         null=True,
         related_name="invoice_customer_logo",
     )
-    tax_ids = models.ManyToManyField("taxes.TaxId", related_name="invoice_customers")
+    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="invoice_customers")
 
     objects = InvoiceCustomerManager()
 
@@ -99,7 +99,7 @@ class InvoiceAccount(models.Model):
         null=True,
         related_name="invoice_account_logo",
     )
-    tax_ids = models.ManyToManyField("taxes.TaxId", related_name="invoice_accounts")
+    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="invoice_accounts")
 
     objects = InvoiceAccountManager()
 
@@ -178,7 +178,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         blank=True,
     )
     coupons = models.ManyToManyField("coupons.Coupon", through="InvoiceCoupon", related_name="+")
-    tax_rates = models.ManyToManyField("taxes.TaxRate", through="InvoiceTaxRate", related_name="+")
+    tax_rates = models.ManyToManyField("tax_rates.TaxRate", through="InvoiceTaxRate", related_name="+")
     shipping = models.OneToOneField(
         "InvoiceShipping",
         on_delete=models.SET_NULL,
@@ -487,11 +487,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
     def recalculate_paid(self) -> None:
         total_paid_amount = self.payments.succeeded().aggregate(
-            total=Coalesce(
-                Sum("amount"),
-                Value(0),
-                output_field=DecimalField(max_digits=19, decimal_places=2),
-            )
+            total=Coalesce(Sum("amount"), Value(0), output_field=DecimalField(max_digits=19, decimal_places=2))
         )["total"]
 
         self.total_paid_amount = Money(total_paid_amount or 0, self.currency)
@@ -663,7 +659,7 @@ class InvoiceLine(models.Model):
     outstanding_quantity = models.BigIntegerField(default=0)
     invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="lines")
     coupons = models.ManyToManyField("coupons.Coupon", through="InvoiceLineCoupon", related_name="+")
-    tax_rates = models.ManyToManyField("taxes.TaxRate", through="InvoiceLineTaxRate", related_name="+")
+    tax_rates = models.ManyToManyField("tax_rates.TaxRate", through="InvoiceLineTaxRate", related_name="+")
     price = models.ForeignKey("prices.Price", on_delete=models.PROTECT, related_name="invoice_lines", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -754,7 +750,7 @@ class InvoiceShipping(models.Model):
     total_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     created_at = models.DateTimeField(auto_now_add=True)
     shipping_rate = models.ForeignKey("shipping_rates.ShippingRate", on_delete=models.PROTECT)
-    tax_rates = models.ManyToManyField("taxes.TaxRate", through="InvoiceShippingTaxRate", related_name="+")
+    tax_rates = models.ManyToManyField("tax_rates.TaxRate", through="InvoiceShippingTaxRate", related_name="+")
 
     def set_tax_rates(self, tax_rates: Iterable[TaxRate]) -> None:
         self.tax_rates.clear()
@@ -834,7 +830,7 @@ class InvoiceLineCoupon(models.Model):
 class InvoiceTaxRate(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="invoice_tax_rates")
-    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="invoice_tax_rates")
+    tax_rate = models.ForeignKey("tax_rates.TaxRate", on_delete=models.PROTECT, related_name="invoice_tax_rates")
     position = models.PositiveIntegerField()
 
     class Meta:
@@ -848,7 +844,7 @@ class InvoiceTaxRate(models.Model):
 class InvoiceLineTaxRate(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     invoice_line = models.ForeignKey("InvoiceLine", on_delete=models.CASCADE, related_name="invoice_line_tax_rates")
-    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="invoice_line_tax_rates")
+    tax_rate = models.ForeignKey("tax_rates.TaxRate", on_delete=models.PROTECT, related_name="invoice_line_tax_rates")
     position = models.PositiveIntegerField()
 
     class Meta:
@@ -864,7 +860,9 @@ class InvoiceShippingTaxRate(models.Model):
     invoice_shipping = models.ForeignKey(
         "InvoiceShipping", on_delete=models.CASCADE, related_name="invoice_shipping_tax_rates"
     )
-    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="invoice_shipping_tax_rates")
+    tax_rate = models.ForeignKey(
+        "tax_rates.TaxRate", on_delete=models.PROTECT, related_name="invoice_shipping_tax_rates"
+    )
     position = models.PositiveIntegerField()
 
     class Meta:
@@ -924,11 +922,10 @@ class InvoiceTaxAllocation(models.Model):
         related_name="tax_allocations",
         null=True,
     )
-    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.PROTECT, related_name="+")
+    tax_rate = models.ForeignKey("tax_rates.TaxRate", on_delete=models.PROTECT, related_name="+")
     source = models.CharField(max_length=20, choices=InvoiceTaxSource.choices)
     currency = models.CharField(max_length=3)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
-    # TODO: also save taxable_amount
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = InvoiceTaxAllocationQuerySet.as_manager()

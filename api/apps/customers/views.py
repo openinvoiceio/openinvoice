@@ -9,8 +9,8 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 from apps.addresses.models import Address
-from apps.taxes.models import TaxId
-from apps.taxes.serializers import TaxIdCreateSerializer, TaxIdSerializer
+from apps.tax_ids.models import TaxId
+from apps.tax_ids.serializers import TaxIdCreateSerializer, TaxIdSerializer
 
 from .filtersets import CustomerFilterSet
 from .models import Customer

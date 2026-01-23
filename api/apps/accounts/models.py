@@ -54,7 +54,7 @@ class Account(models.Model):
     )
     net_payment_term = models.IntegerField()
     logo = models.OneToOneField("files.File", on_delete=models.SET_NULL, null=True, related_name="account_logo")
-    tax_ids = models.ManyToManyField("taxes.TaxId", related_name="accounts")
+    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="accounts")
     metadata = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

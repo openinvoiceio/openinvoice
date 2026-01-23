@@ -14,8 +14,8 @@ from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.prices.fields import PriceRelatedField
 from apps.prices.validators import PriceIsActive, PriceProductIsActive
 from apps.shipping_rates.fields import ShippingRateRelatedField
-from apps.taxes.fields import TaxRateRelatedField
-from apps.taxes.serializers import TaxRateSerializer
+from apps.tax_rates.fields import TaxRateRelatedField
+from apps.tax_rates.serializers import TaxRateSerializer
 from common.fields import CurrencyField, MetadataField
 from common.validators import AllOrNoneValidator, AtMostOneValidator
 

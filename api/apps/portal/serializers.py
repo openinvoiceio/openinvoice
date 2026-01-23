@@ -4,7 +4,7 @@ from rest_framework import serializers
 from apps.addresses.serializers import AddressSerializer
 from apps.customers.fields import CustomerRelatedField
 from apps.invoices.choices import InvoiceStatus
-from apps.taxes.serializers import TaxIdSerializer
+from apps.tax_ids.serializers import TaxIdSerializer
 from common.fields import CurrencyField
 
 

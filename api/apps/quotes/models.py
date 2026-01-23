@@ -21,7 +21,7 @@ from apps.files.models import File
 from apps.invoices.models import Invoice
 from apps.numbering_systems.models import NumberingSystem
 from apps.prices.models import Price
-from apps.taxes.models import TaxRate
+from apps.tax_rates.models import TaxRate
 from common.calculations import calculate_percentage_amount, clamp_money, zero
 from common.pdf import generate_pdf
 
@@ -60,7 +60,7 @@ class QuoteCustomer(models.Model):
         null=True,
         related_name="quote_customer_logo",
     )
-    tax_ids = models.ManyToManyField("taxes.TaxId", related_name="quote_customers")
+    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="quote_customers")
 
     objects = QuoteCustomerManager()
 
@@ -84,7 +84,7 @@ class QuoteAccount(models.Model):
         null=True,
         related_name="quote_account_logo",
     )
-    tax_ids = models.ManyToManyField("taxes.TaxId", related_name="quote_accounts")
+    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="quote_accounts")
 
     objects = QuoteAccountManager()
 
@@ -610,7 +610,7 @@ class QuoteTax(models.Model):
         related_name="taxes",
         null=True,
     )
-    tax_rate = models.ForeignKey("taxes.TaxRate", on_delete=models.SET_NULL, related_name="quote_taxes", null=True)
+    tax_rate = models.ForeignKey("tax_rates.TaxRate", on_delete=models.SET_NULL, related_name="quote_taxes", null=True)
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255, null=True)
     rate = models.DecimalField(max_digits=5, decimal_places=2)

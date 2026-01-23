@@ -21,7 +21,7 @@ from apps.integrations.choices import PaymentProvider
 from apps.invoices.choices import InvoiceStatus
 from apps.invoices.models import InvoiceLine
 from apps.numbering_systems.models import NumberingSystem
-from apps.taxes.models import TaxRate
+from apps.tax_rates.models import TaxRate
 from common.calculations import clamp_money, zero
 from common.pdf import generate_pdf
 
@@ -380,7 +380,7 @@ class CreditNoteTax(models.Model):
         null=True,
     )
     tax_rate = models.ForeignKey(
-        "taxes.TaxRate",
+        "tax_rates.TaxRate",
         on_delete=models.SET_NULL,
         related_name="credit_note_taxes",
         null=True,

@@ -3,7 +3,6 @@
 import uuid
 
 import django.db.models.deletion
-import encrypted_fields.fields
 from django.db import migrations, models
 
 
@@ -16,28 +15,31 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="StripeConnection",
+            name="TaxRate",
             fields=[
                 ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ("name", models.CharField(max_length=255)),
-                ("code", models.CharField(max_length=255)),
-                ("api_key", encrypted_fields.fields.EncryptedTextField()),
-                ("webhook_endpoint_id", models.CharField(max_length=255)),
-                ("webhook_secret", encrypted_fields.fields.EncryptedTextField()),
-                ("redirect_url", models.URLField(null=True)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("percentage", models.DecimalField(decimal_places=2, max_digits=5)),
+                ("country", models.CharField(max_length=2, null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("active", "Active"), ("archived", "Archived")], default="active", max_length=20
+                    ),
+                ),
+                ("archived_at", models.DateTimeField(null=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "account",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="stripe_connections",
-                        to="accounts.account",
+                        on_delete=django.db.models.deletion.CASCADE, related_name="tax_rates", to="accounts.account"
                     ),
                 ),
             ],
             options={
-                "ordering": ["created_at"],
+                "ordering": ["-created_at"],
             },
         ),
     ]

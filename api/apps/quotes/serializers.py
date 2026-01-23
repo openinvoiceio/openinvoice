@@ -10,7 +10,7 @@ from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.prices.fields import PriceRelatedField
 from apps.prices.validators import PriceIsActive, PriceProductIsActive
-from apps.taxes.fields import TaxRateRelatedField
+from apps.tax_rates.fields import TaxRateRelatedField
 from common.access import has_feature
 from common.choices import FeatureCode
 from common.fields import CurrencyField, MetadataField

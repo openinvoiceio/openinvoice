@@ -51,7 +51,8 @@ LOCAL_APPS = [
     "apps.search.apps.SearchConfig",
     "apps.shipping_rates.apps.ShippingRatesConfig",
     "apps.stripe.apps.StripeConfig",
-    "apps.taxes.apps.TaxesConfig",
+    "apps.tax_ids.apps.TaxIdsConfig",
+    "apps.tax_rates.apps.TaxRatesConfig",
     "apps.users.apps.UsersConfig",
 ]
 
@@ -320,7 +321,7 @@ SPECTACULAR_SETTINGS = {
         "MemberRoleEnum": "apps.accounts.choices.MemberRole.choices",
         "InvoiceStatusEnum": "apps.invoices.choices.InvoiceStatus.choices",
         "NumberingSystemResetIntervalEnum": "apps.numbering_systems.choices.NumberingSystemResetInterval.choices",
-        "TaxIdTypeEnum": "apps.taxes.choices.TaxIdType.choices",
+        "TaxIdTypeEnum": "apps.tax_ids.choices.TaxIdType.choices",
         "CurrencyEnum": "djmoney.settings.CURRENCY_CHOICES",
         "PaymentStatusEnum": "apps.payments.choices.PaymentStatus.choices",
         "PaymentProviderEnum": "apps.integrations.choices.PaymentProvider.choices",

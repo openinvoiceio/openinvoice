@@ -8,7 +8,7 @@ from drf_standardized_errors.types import ErrorType
 from apps.integrations.choices import PaymentProvider
 from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from apps.invoices.models import Invoice
-from apps.taxes.choices import TaxRateStatus
+from apps.tax_rates.choices import TaxRateStatus
 from common.choices import FeatureCode, LimitCode
 from tests.factories import (
     CouponFactory,

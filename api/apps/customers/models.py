@@ -56,11 +56,11 @@ class Customer(models.Model):
     )
     logo = models.OneToOneField("files.File", on_delete=models.SET_NULL, null=True, related_name="customer_logo")
     tax_rates = models.ManyToManyField(
-        "taxes.TaxRate",
+        "tax_rates.TaxRate",
         through="CustomerTaxRate",
         related_name="customers",
     )
-    tax_ids = models.ManyToManyField("taxes.TaxId", related_name="customers")
+    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="customers")
 
     objects = CustomerManager()
 
@@ -122,7 +122,7 @@ class CustomerTaxRate(models.Model):
         related_name="customer_tax_rates",
     )
     tax_rate = models.ForeignKey(
-        "taxes.TaxRate",
+        "tax_rates.TaxRate",
         on_delete=models.CASCADE,
         related_name="customer_tax_rates",
     )

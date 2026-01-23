@@ -26,7 +26,8 @@ from apps.prices.choices import PriceModel, PriceStatus
 from apps.products.choices import ProductStatus
 from apps.quotes.choices import QuoteDeliveryMethod, QuoteStatus
 from apps.shipping_rates.choices import ShippingRateStatus, ShippingRateTaxPolicy
-from apps.taxes.choices import TaxIdType, TaxRateStatus
+from apps.tax_ids.choices import TaxIdType
+from apps.tax_rates.choices import TaxRateStatus
 
 
 class UserFactory(DjangoModelFactory):
@@ -166,7 +167,7 @@ class PriceTierFactory(DjangoModelFactory):
 
 class TaxRateFactory(DjangoModelFactory):
     class Meta:
-        model = "taxes.TaxRate"
+        model = "tax_rates.TaxRate"
 
     account = SubFactory(AccountFactory)
     name = "VAT"
@@ -480,7 +481,7 @@ class PortalTokenFactory(DictFactory):
 
 class TaxIdFactory(DjangoModelFactory):
     class Meta:
-        model = "taxes.TaxId"
+        model = "tax_ids.TaxId"
 
     type = TaxIdType.US_EIN
     number = Sequence(lambda n: f"12345{n}")

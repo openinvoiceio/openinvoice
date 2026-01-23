@@ -10,7 +10,7 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 from apps.coupons.models import Coupon
-from apps.taxes.models import TaxRate
+from apps.tax_rates.models import TaxRate
 
 from .choices import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
 from .filtersets import InvoiceFilterSet

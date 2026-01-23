@@ -10,8 +10,8 @@ from apps.invoices.choices import InvoiceStatus
 from apps.invoices.fields import InvoiceLineRelatedField, InvoiceRelatedField
 from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from apps.numbering_systems.fields import NumberingSystemRelatedField
-from apps.taxes.fields import TaxRateRelatedField
-from apps.taxes.serializers import TaxIdSerializer
+from apps.tax_ids.serializers import TaxIdSerializer
+from apps.tax_rates.fields import TaxRateRelatedField
 from common.access import has_feature
 from common.calculations import clamp_money
 from common.choices import FeatureCode

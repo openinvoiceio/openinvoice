@@ -4,8 +4,9 @@ from apps.addresses.serializers import AddressSerializer
 from apps.files.fields import FileRelatedField
 from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from apps.numbering_systems.fields import NumberingSystemRelatedField
-from apps.taxes.fields import TaxRateRelatedField
-from apps.taxes.serializers import TaxIdSerializer, TaxRateSerializer
+from apps.tax_ids.serializers import TaxIdSerializer
+from apps.tax_rates.fields import TaxRateRelatedField
+from apps.tax_rates.serializers import TaxRateSerializer
 from common.fields import CurrencyField, MetadataField
 
 

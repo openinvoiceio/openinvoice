@@ -6,7 +6,7 @@ from apps.files.fields import FileRelatedField
 from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.stripe.serializers import StripeSubscriptionSerializer
-from apps.taxes.serializers import TaxIdSerializer
+from apps.tax_ids.serializers import TaxIdSerializer
 from apps.users.serializers import UserSerializer
 from common.fields import CurrencyField, MetadataField
 
