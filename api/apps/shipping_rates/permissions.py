@@ -9,4 +9,4 @@ class MaxShippingRatesLimit(WithinLimit):
     methods = ["POST"]
 
     def get_usage(self, request) -> int:
-        return ShippingRate.objects.filter(account_id=request.account.id).count()
+        return ShippingRate.objects.for_account(request.account).count()

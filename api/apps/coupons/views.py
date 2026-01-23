@@ -26,7 +26,7 @@ class CouponListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember, MaxCouponsLimit]
 
     def get_queryset(self):
-        return Coupon.objects.for_account(self.request.account.id).order_by("-created_at")
+        return Coupon.objects.for_account(self.request.account).order_by("-created_at")
 
     @extend_schema(
         operation_id="create_coupon",
@@ -62,7 +62,7 @@ class CouponRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Coupon.objects.for_account(self.request.account.id)
+        return Coupon.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="update_coupon",
@@ -112,7 +112,7 @@ class CouponArchiveAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Coupon.objects.for_account(self.request.account.id)
+        return Coupon.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="archive_coupon", request=None, responses={200: CouponSerializer})
     def post(self, request, **__):
@@ -135,7 +135,7 @@ class CouponRestoreAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Coupon.objects.for_account(self.request.account.id)
+        return Coupon.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="restore_coupon", request=None, responses={200: CouponSerializer})
     def post(self, request, **__):

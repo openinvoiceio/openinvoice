@@ -4,6 +4,7 @@ from django.db import models
 from encrypted_fields import EncryptedTextField
 
 from apps.integrations.stripe.managers import StripeConnectionManager
+from apps.integrations.stripe.querysets import StripeConnectionQuerySet
 
 
 class StripeConnection(models.Model):
@@ -18,7 +19,7 @@ class StripeConnection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = StripeConnectionManager()
+    objects = StripeConnectionManager.from_queryset(StripeConnectionQuerySet)()
 
     class Meta:
         ordering = ["created_at"]

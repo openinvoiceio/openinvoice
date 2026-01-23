@@ -44,7 +44,7 @@ class CreditNoteListCreateAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return (
-            CreditNote.objects.filter(account_id=self.request.account.id)
+            CreditNote.objects.for_account(self.request.account)
             .select_related(
                 "invoice",
                 "customer",
@@ -105,7 +105,7 @@ class CreditNoteRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return (
-            CreditNote.objects.filter(account_id=self.request.account.id)
+            CreditNote.objects.for_account(self.request.account)
             .select_related(
                 "invoice",
                 "customer",
@@ -330,7 +330,7 @@ class CreditNoteIssueAPIView(generics.GenericAPIView):
     serializer_class = CreditNoteIssueSerializer
 
     def get_queryset(self):
-        return CreditNote.objects.filter(account_id=self.request.account.id)
+        return CreditNote.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="issue_credit_note",
@@ -366,7 +366,7 @@ class CreditNoteVoidAPIView(generics.GenericAPIView):
     serializer_class = CreditNoteVoidSerializer
 
     def get_queryset(self):
-        return CreditNote.objects.filter(account_id=self.request.account.id)
+        return CreditNote.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="void_credit_note",
@@ -398,7 +398,7 @@ class CreditNotePreviewAPIView(generics.GenericAPIView):
 
     def get_queryset(self):
         return (
-            CreditNote.objects.filter(account_id=self.request.account.id)
+            CreditNote.objects.for_account(self.request.account)
             .select_related(
                 "invoice",
                 "customer",

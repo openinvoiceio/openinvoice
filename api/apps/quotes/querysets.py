@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from django.apps import apps
 from django.db import models
@@ -7,8 +10,14 @@ from djmoney.money import Money
 
 from common.calculations import zero
 
+if TYPE_CHECKING:
+    from apps.accounts.models import Account
+
 
 class QuoteQuerySet(models.QuerySet):
+    def for_account(self, account: Account):
+        return self.filter(account=account)
+
     def for_recalculation(self):
         QuoteLine = apps.get_model("quotes.QuoteLine")  # noqa: N806
         QuoteDiscount = apps.get_model("quotes.QuoteDiscount")  # noqa: N806

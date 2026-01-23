@@ -9,4 +9,4 @@ class MaxCouponsLimit(WithinLimit):
     methods = ["POST"]
 
     def get_usage(self, request) -> int:
-        return Coupon.objects.filter(account_id=request.account.id).count()
+        return Coupon.objects.for_account(request.account).count()

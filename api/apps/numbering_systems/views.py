@@ -27,7 +27,7 @@ class NumberingSystemListCreateAPIView(generics.ListAPIView):
     ]
 
     def get_queryset(self):
-        return NumberingSystem.objects.for_account(self.request.account.id)
+        return NumberingSystem.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="create_numbering_system",
@@ -62,7 +62,7 @@ class NumberingSystemRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     ]
 
     def get_queryset(self):
-        return NumberingSystem.objects.for_account(self.request.account.id)
+        return NumberingSystem.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="update_numbering_system",
@@ -113,7 +113,7 @@ class NumberingSystemArchiveAPIView(generics.GenericAPIView):
     ]
 
     def get_queryset(self):
-        return NumberingSystem.objects.for_account(self.request.account.id)
+        return NumberingSystem.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="archive_numbering_system", request=None, responses={200: NumberingSystemSerializer})
     def post(self, _, **__):
@@ -135,7 +135,7 @@ class NumberingSystemRestoreAPIView(generics.GenericAPIView):
     ]
 
     def get_queryset(self):
-        return NumberingSystem.objects.for_account(self.request.account.id)
+        return NumberingSystem.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="restore_numbering_system", request=None, responses={200: NumberingSystemSerializer})
     def post(self, _, **__):

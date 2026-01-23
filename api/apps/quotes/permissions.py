@@ -12,4 +12,4 @@ class MaxQuotesLimit(WithinLimit):
 
     def get_usage(self, request) -> int:
         now = timezone.now()
-        return Quote.objects.filter(account_id=request.account.id, created_at__month=now.month).count()
+        return Quote.objects.for_account(request.account).filter(created_at__month=now.month).count()

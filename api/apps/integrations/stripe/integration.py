@@ -53,7 +53,7 @@ class StripeIntegration(PaymentProviderIntegration):
 
     def checkout(self, invoice: "Invoice", payment_id: UUID) -> tuple[str, str | None]:
         try:
-            connection = StripeConnection.objects.get(account_id=invoice.account_id, id=invoice.payment_connection_id)
+            connection = StripeConnection.objects.for_account(invoice.account).get(id=invoice.payment_connection_id)
         except StripeConnection.DoesNotExist as e:
             raise IntegrationConnectionError from e
 

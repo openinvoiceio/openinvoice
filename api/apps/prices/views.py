@@ -22,7 +22,7 @@ class PriceListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Price.objects.for_account(self.request.account.id)
+        return Price.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="create_price",
@@ -61,7 +61,7 @@ class PriceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Price.objects.for_account(self.request.account.id)
+        return Price.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="update_price",
@@ -119,7 +119,7 @@ class PriceArchiveAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Price.objects.for_account(self.request.account.id)
+        return Price.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="archive_price", request=None, responses={200: PriceSerializer})
     def post(self, _, **__):
@@ -137,7 +137,7 @@ class PriceRestoreAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Price.objects.for_account(self.request.account.id)
+        return Price.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="restore_price", request=None, responses={200: PriceSerializer})
     def post(self, _, **__):

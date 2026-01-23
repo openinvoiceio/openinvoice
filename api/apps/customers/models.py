@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from django.db import models
 
 from .managers import CustomerManager
+from .querysets import CustomerQuerySet
 
 if TYPE_CHECKING:
     from apps.files.models import File
@@ -62,7 +63,7 @@ class Customer(models.Model):
     )
     tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="customers")
 
-    objects = CustomerManager()
+    objects = CustomerManager.from_queryset(CustomerQuerySet)()
 
     class Meta:
         ordering = ["-created_at"]

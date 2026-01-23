@@ -23,7 +23,7 @@ class ShippingRateListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember, MaxShippingRatesLimit]
 
     def get_queryset(self):
-        return ShippingRate.objects.for_account(self.request.account.id)
+        return ShippingRate.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="create_shipping_rate",
@@ -56,7 +56,7 @@ class ShippingRateRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return ShippingRate.objects.for_account(self.request.account.id)
+        return ShippingRate.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="update_shipping_rate",
@@ -105,7 +105,7 @@ class ShippingRateArchiveAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return ShippingRate.objects.for_account(self.request.account.id)
+        return ShippingRate.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="archive_shipping_rate",
@@ -127,7 +127,7 @@ class ShippingRateRestoreAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return ShippingRate.objects.for_account(self.request.account.id)
+        return ShippingRate.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="restore_shipping_rate",

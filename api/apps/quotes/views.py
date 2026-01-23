@@ -55,7 +55,7 @@ class QuoteListCreateAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return (
-            Quote.objects.filter(account_id=self.request.account.id)
+            Quote.objects.for_account(self.request.account)
             .prefetch_related(
                 Prefetch(
                     "lines",
@@ -99,7 +99,7 @@ class QuoteRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return (
-            Quote.objects.filter(account_id=self.request.account.id)
+            Quote.objects.for_account(self.request.account)
             .prefetch_related(
                 Prefetch(
                     "lines",
@@ -156,7 +156,7 @@ class QuoteFinalizeAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Quote.objects.filter(account_id=self.request.account.id)
+        return Quote.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="finalize_quote", request=None, responses={200: QuoteSerializer})
     def post(self, _, quote_id: str):
@@ -184,7 +184,7 @@ class QuoteAcceptAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Quote.objects.filter(account_id=self.request.account.id)
+        return Quote.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="accept_quote", request=None, responses={200: QuoteSerializer})
     def post(self, _, quote_id: str):
@@ -206,7 +206,7 @@ class QuoteCancelAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Quote.objects.filter(account_id=self.request.account.id)
+        return Quote.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="cancel_quote", request=None, responses={200: QuoteSerializer})
     def post(self, _, quote_id: str):
@@ -233,7 +233,7 @@ class QuotePreviewAPIView(generics.GenericAPIView):
 
     def get_queryset(self):
         return (
-            Quote.objects.filter(account_id=self.request.account.id)
+            Quote.objects.for_account(self.request.account)
             .select_related("account", "customer", "customer_on_quote", "account_on_quote")
             .prefetch_related("lines__discounts", "lines__taxes", "discounts", "taxes")
         )
@@ -399,7 +399,7 @@ class QuoteDiscountCreateAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Quote.objects.filter(account_id=self.request.account.id).select_related("customer")
+        return Quote.objects.for_account(self.request.account).select_related("customer")
 
     @extend_schema(
         operation_id="add_quote_discount",
@@ -512,7 +512,7 @@ class QuoteTaxCreateAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Quote.objects.filter(account_id=self.request.account.id).select_related("customer")
+        return Quote.objects.for_account(self.request.account).select_related("customer")
 
     @extend_schema(
         operation_id="add_quote_tax",

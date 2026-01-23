@@ -12,4 +12,4 @@ class MaxInvoicesLimit(WithinLimit):
 
     def get_usage(self, request) -> int:
         now = timezone.now()
-        return Invoice.objects.filter(account_id=request.account.id, created_at__month=now.month).count()
+        return Invoice.objects.for_account(request.account).filter(created_at__month=now.month).count()

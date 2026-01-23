@@ -12,4 +12,4 @@ class MaxCreditNotesLimit(WithinLimit):
 
     def get_usage(self, request) -> int:
         now = timezone.now()
-        return CreditNote.objects.filter(account_id=request.account.id, created_at__month=now.month).count()
+        return CreditNote.objects.for_account(request.account).filter(created_at__month=now.month).count()

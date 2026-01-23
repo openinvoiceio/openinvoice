@@ -26,7 +26,7 @@ class TaxRateListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember, MaxTaxRatesLimit]
 
     def get_queryset(self):
-        return TaxRate.objects.for_account(self.request.account.id)
+        return TaxRate.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="create_tax_rate", request=TaxRateCreateSerializer, responses={201: TaxRateSerializer})
     def post(self, request):
@@ -59,7 +59,7 @@ class TaxRateRetrieveUpdateAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return TaxRate.objects.for_account(self.request.account.id)
+        return TaxRate.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="update_tax_rate", request=TaxRateUpdateSerializer, responses={200: TaxRateSerializer})
     def put(self, request, **_):
@@ -93,7 +93,7 @@ class TaxRateArchiveAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return TaxRate.objects.for_account(self.request.account.id)
+        return TaxRate.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="archive_tax_rate", request=None, responses={200: TaxRateSerializer})
     def post(self, request, *_, **__):
@@ -117,7 +117,7 @@ class TaxRateRestoreAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return TaxRate.objects.for_account(self.request.account.id)
+        return TaxRate.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="restore_tax_rate", request=None, responses={200: TaxRateSerializer})
     def post(self, request, *_, **__):

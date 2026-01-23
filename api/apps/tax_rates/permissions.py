@@ -9,4 +9,4 @@ class MaxTaxRatesLimit(WithinLimit):
     methods = ["POST"]
 
     def get_usage(self, request) -> int:
-        return TaxRate.objects.filter(account_id=request.account.id).count()
+        return TaxRate.objects.for_account(request.account).count()

@@ -152,7 +152,7 @@ class InvitationListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Invitation.objects.filter(account_id=self.request.account.id)
+        return Invitation.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="create_invitation",
@@ -188,7 +188,7 @@ class InvitationRetrieveDestroyAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Invitation.objects.filter(account_id=self.request.account.id)
+        return Invitation.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="delete_invitation",

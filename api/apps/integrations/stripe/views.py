@@ -29,7 +29,7 @@ class StripeConnectionListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember, StripeIntegrationFeature]
 
     def get_queryset(self):
-        return StripeConnection.objects.filter(account_id=self.request.account.id)
+        return StripeConnection.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="create_stripe_connection",
@@ -61,7 +61,7 @@ class StripeConnectionRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember, StripeIntegrationFeature]
 
     def get_queryset(self):
-        return StripeConnection.objects.filter(account_id=self.request.account.id)
+        return StripeConnection.objects.for_account(self.request.account)
 
     @extend_schema(
         operation_id="update_stripe_connection",

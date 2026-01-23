@@ -40,4 +40,4 @@ class IntegrationConnectionField(serializers.PrimaryKeyRelatedField):
         account = self.context["request"].account
 
         connection_cls = apps.get_model(model_label)
-        return connection_cls.objects.filter(account_id=account.id)
+        return connection_cls.objects.for_account(account)

@@ -23,15 +23,15 @@ class SearchAPIView(generics.GenericAPIView):
         return search_filter.filter_queryset(self.request, qs, dummy_view)
 
     def get_queryset_products(self):
-        qs = Product.objects.filter(account_id=self.request.account.id)
+        qs = Product.objects.for_account(self.request.account)
         return self.apply_search_filter(qs, ["id", "name", "description"])[:5]
 
     def get_queryset_invoices(self):
-        qs = Invoice.objects.filter(account_id=self.request.account.id)
+        qs = Invoice.objects.for_account(self.request.account)
         return self.apply_search_filter(qs, ["id", "number", "customer__name", "customer__email"])[:5]
 
     def get_queryset_customers(self):
-        qs = Customer.objects.filter(account_id=self.request.account.id)
+        qs = Customer.objects.for_account(self.request.account)
         return self.apply_search_filter(qs, ["id", "name", "email", "phone", "description"])[:5]
 
     @extend_schema(

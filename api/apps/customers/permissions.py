@@ -9,4 +9,4 @@ class MaxCustomersLimit(WithinLimit):
     methods = ["POST"]
 
     def get_usage(self, request) -> int:
-        return Customer.objects.filter(account_id=request.account.id).count()
+        return Customer.objects.for_account(request.account).count()

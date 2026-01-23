@@ -49,7 +49,7 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return (
-            Invoice.objects.filter(account_id=self.request.account.id)
+            Invoice.objects.for_account(self.request.account)
             .select_related("previous_revision")
             .prefetch_related(
                 Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
@@ -125,7 +125,7 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return (
-            Invoice.objects.filter(account_id=self.request.account.id)
+            Invoice.objects.for_account(self.request.account)
             .select_related("previous_revision")
             .prefetch_related(
                 Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
@@ -236,7 +236,7 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
 
     def get_queryset(self):
         return (
-            Invoice.objects.filter(account_id=self.request.account.id)
+            Invoice.objects.for_account(self.request.account)
             .select_related("previous_revision")
             .prefetch_related(
                 Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
@@ -336,7 +336,7 @@ class InvoiceVoidAPIView(generics.GenericAPIView):
 
     def get_queryset(self):
         return (
-            Invoice.objects.filter(account_id=self.request.account.id)
+            Invoice.objects.for_account(self.request.account)
             .select_related("previous_revision")
             .prefetch_related(
                 Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
@@ -374,7 +374,7 @@ class InvoiceFinalizeAPIView(generics.GenericAPIView):
 
     def get_queryset(self):
         return (
-            Invoice.objects.filter(account_id=self.request.account.id)
+            Invoice.objects.for_account(self.request.account)
             .select_related("previous_revision")
             .prefetch_related(
                 Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
@@ -423,7 +423,7 @@ class InvoicePreviewAPIView(generics.GenericAPIView):
 
     def get_queryset(self):
         return (
-            Invoice.objects.filter(account_id=self.request.account.id)
+            Invoice.objects.for_account(self.request.account)
             .select_related("previous_revision")
             .prefetch_related(
                 Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),

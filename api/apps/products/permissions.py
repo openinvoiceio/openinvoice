@@ -9,4 +9,4 @@ class MaxProductsLimit(WithinLimit):
     methods = ["POST"]
 
     def get_usage(self, request) -> int:
-        return Product.objects.filter(account_id=request.account.id).count()
+        return Product.objects.for_account(request.account).count()

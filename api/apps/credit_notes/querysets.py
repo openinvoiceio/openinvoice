@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from django.db import models
 from django.db.models import Sum
@@ -8,8 +11,14 @@ from common.calculations import clamp_money
 
 from .choices import CreditNoteStatus
 
+if TYPE_CHECKING:
+    from apps.accounts.models import Account
+
 
 class CreditNoteQuerySet(models.QuerySet):
+    def for_account(self, account: Account):
+        return self.filter(account=account)
+
     def issued(self):
         return self.filter(status=CreditNoteStatus.ISSUED)
 

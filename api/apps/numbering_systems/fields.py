@@ -11,4 +11,4 @@ class NumberingSystemRelatedField(serializers.PrimaryKeyRelatedField):
 
     def get_queryset(self):
         account = self.context["request"].account
-        return NumberingSystem.objects.for_account(account.id).for_applies_to(self.applies_to)
+        return NumberingSystem.objects.for_account(account).for_applies_to(self.applies_to)

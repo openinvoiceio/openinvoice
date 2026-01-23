@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from django.db import models
@@ -8,8 +9,14 @@ from django_cte import CTE, with_cte
 
 from apps.invoices.choices import InvoiceDiscountSource, InvoiceTaxSource
 
+if TYPE_CHECKING:
+    from apps.accounts.models import Account
+
 
 class InvoiceQuerySet(models.QuerySet):
+    def for_account(self, account: Account):
+        return self.filter(account=account)
+
     def revisions(self, head_id: UUID):
         def make_cte(cte):
             anchor = (

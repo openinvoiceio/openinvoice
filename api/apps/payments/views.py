@@ -22,7 +22,7 @@ class PaymentListCreateAPIView(generics.ListAPIView):
     filterset_class = PaymentFilterSet
 
     def get_queryset(self):
-        return Payment.objects.filter(account_id=self.request.account.id)
+        return Payment.objects.for_account(self.request.account)
 
     @extend_schema(operation_id="record_payment", request=PaymentRecordSerializer, responses={201: PaymentSerializer})
     def post(self, request):
@@ -57,4 +57,4 @@ class PaymentRetrieveAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Payment.objects.filter(account_id=self.request.account.id)
+        return Payment.objects.for_account(self.request.account)
