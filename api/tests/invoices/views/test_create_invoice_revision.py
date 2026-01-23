@@ -162,6 +162,7 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
         quantity=1,
         unit_amount=Decimal("100"),
         amount=Decimal("100"),
+        subtotal_amount=Decimal("90"),
         total_excluding_tax_amount=Decimal("90"),
         total_discount_amount=Decimal("10"),
         total_tax_amount=Decimal("9"),

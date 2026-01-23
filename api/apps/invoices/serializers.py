@@ -86,6 +86,7 @@ class InvoiceLineSerializer(serializers.Serializer):
     price_id = serializers.UUIDField(allow_null=True)
     product_id = serializers.UUIDField(source="price.product_id", allow_null=True)
     amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)
+    subtotal_amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)
     total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)

@@ -215,7 +215,7 @@ class InvoiceFactory(DjangoModelFactory):
     due_date = LazyFunction(lambda: timezone.now().date())
     footer = None
     description = None
-    subtotal_amount = Decimal("0")
+    subtotal_amount = SelfAttribute("total_amount")
     total_discount_amount = Decimal("0")
     total_excluding_tax_amount = Decimal("0")
     shipping_amount = Decimal("0")
@@ -256,6 +256,7 @@ class InvoiceLineFactory(DjangoModelFactory):
     unit_amount = Decimal("0")
     unit_excluding_tax_amount = SelfAttribute("unit_amount")
     amount = Decimal("0")
+    subtotal_amount = Decimal("0")
     total_discount_amount = Decimal("0")
     total_taxable_amount = Decimal("0")
     total_excluding_tax_amount = Decimal("0")

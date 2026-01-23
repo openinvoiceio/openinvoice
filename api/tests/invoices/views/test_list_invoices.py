@@ -153,6 +153,7 @@ def test_list_invoices_with_line(api_client, user, account):
             "price_id": None,
             "product_id": None,
             "amount": "0.00",
+            "subtotal_amount": "0.00",
             "total_discount_amount": "0.00",
             "total_excluding_tax_amount": "0.00",
             "total_tax_amount": "0.00",

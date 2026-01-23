@@ -353,6 +353,7 @@ class Quote(models.Model):
                 price=line.price,
                 total_tax_rate=line.total_tax_rate,
                 amount=zero(invoice.currency),
+                subtotal_amount=zero(invoice.currency),
                 total_discount_amount=zero(invoice.currency),
                 total_taxable_amount=zero(invoice.currency),
                 total_excluding_tax_amount=zero(invoice.currency),
