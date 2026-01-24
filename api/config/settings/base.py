@@ -307,6 +307,7 @@ SPECTACULAR_SETTINGS = {
     ],
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "OPERATION_ID_METHOD_POSITION": "POST",  # TODO: change it to 'PRE'
     # Add drf standardized errors this way, because it is not used by any other path or schemas
     "APPEND_COMPONENTS": {
         "schemas": {
@@ -331,6 +332,11 @@ SPECTACULAR_SETTINGS = {
         "NumberingSystemAppliesToEnum": "apps.numbering_systems.choices.NumberingSystemAppliesTo.choices",
         "QuoteStatusEnum": "apps.quotes.choices.QuoteStatus.choices",
         "ShippingRateTaxPolicyEnum": "apps.shipping_rates.choices.ShippingRateTaxPolicy.choices",
+        # According to https://drf-spectacular.readthedocs.io/en/latest/faq.html#i-get-warnings-regarding-my-enum-or-my-enum-names-have-a-weird-suffix
+        # we can't set separate names for e.g. PriceStatusEnum and TaxRateStatusEnum
+        # because they use the same set of choices, so we use ProductCatalogStatusEnum
+        # for all product catalog related status enums
+        "ProductCatalogStatusEnum": "apps.products.choices.ProductStatus.choices",
     },
 }
 

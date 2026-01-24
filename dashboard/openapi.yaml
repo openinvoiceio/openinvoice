@@ -1682,6 +1682,16 @@ paths:
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - archived
+        description: |-
+          * `active` - Active
+          * `archived` - Archived
       tags:
       - coupons
       security:
@@ -1763,6 +1773,50 @@ paths:
           description: ''
     delete:
       operationId: delete_coupon
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - coupons
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+          description: ''
+  /api/v1/coupons/{id}/archive:
+    post:
+      operationId: archive_coupon
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - coupons
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+          description: ''
+  /api/v1/coupons/{id}/restore:
+    post:
+      operationId: restore_coupon
       parameters:
       - in: path
         name: id
@@ -2164,41 +2218,17 @@ paths:
       operationId: customers_list
       parameters:
       - in: query
-        name: created_at
+        name: created_at_after
         schema:
           type: string
           format: date-time
       - in: query
-        name: created_at_eq
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_gt
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_gte
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_lt
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_lte
+        name: created_at_before
         schema:
           type: string
           format: date-time
       - in: query
         name: currency
-        schema:
-          type: string
-      - in: query
-        name: currency_in
         schema:
           type: array
           items:
@@ -2810,60 +2840,12 @@ paths:
       - cookieAuth: []
       - tokenAuth: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/InvoiceLine'
           description: ''
-  /api/v1/invoice-lines/{invoice_line_id}/discounts/{id}:
-    delete:
-      operationId: delete_invoice_line_discount
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - in: path
-        name: invoice_line_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - invoice-lines
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/v1/invoice-lines/{invoice_line_id}/taxes/{id}:
-    delete:
-      operationId: delete_invoice_line_tax
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - in: path
-        name: invoice_line_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - invoice-lines
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/invoice-lines/{id}:
     put:
       operationId: update_invoice_line
@@ -2881,7 +2863,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/InvoiceLineUpdate'
-        required: true
       security:
       - cookieAuth: []
       - tokenAuth: []
@@ -2909,62 +2890,6 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/v1/invoice-lines/{id}/discounts:
-    post:
-      operationId: apply_invoice_line_discount
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - invoice-lines
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InvoiceLineDiscountCreate'
-        required: true
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InvoiceLineDiscount'
-          description: ''
-  /api/v1/invoice-lines/{id}/taxes:
-    post:
-      operationId: apply_invoice_line_tax
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - invoice-lines
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InvoiceLineTaxCreate'
-        required: true
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InvoiceLineTax'
-          description: ''
   /api/v1/invoices:
     get:
       operationId: invoices_list
@@ -3119,6 +3044,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/InvoiceCreate'
+        required: true
       security:
       - cookieAuth: []
       - tokenAuth: []
@@ -3129,54 +3055,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Invoice'
           description: ''
-  /api/v1/invoices/{invoice_id}/discounts/{id}:
-    delete:
-      operationId: delete_invoice_discount
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - in: path
-        name: invoice_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - invoices
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/v1/invoices/{invoice_id}/taxes/{id}:
-    delete:
-      operationId: delete_invoice_tax
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - in: path
-        name: invoice_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - invoices
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/invoices/{id}:
     get:
       operationId: invoices_retrieve
@@ -3242,34 +3120,6 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/v1/invoices/{id}/discounts:
-    post:
-      operationId: apply_invoice_discount
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - invoices
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InvoiceDiscountCreate'
-        required: true
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InvoiceDiscount'
-          description: ''
   /api/v1/invoices/{id}/finalize:
     post:
       operationId: finalize_invoice
@@ -3321,9 +3171,54 @@ paths:
               schema:
                 type: string
           description: ''
-  /api/v1/invoices/{id}/taxes:
+  /api/v1/invoices/{id}/revisions:
+    get:
+      operationId: list_invoice_revisions
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInvoiceList'
+          description: ''
     post:
-      operationId: apply_invoice_tax
+      operationId: create_invoice_revision
       parameters:
       - in: path
         name: id
@@ -3337,17 +3232,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InvoiceTaxCreate'
-        required: true
+              $ref: '#/components/schemas/InvoiceRevisionCreate'
       security:
       - cookieAuth: []
       - tokenAuth: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InvoiceTax'
+                $ref: '#/components/schemas/Invoice'
           description: ''
   /api/v1/invoices/{id}/void:
     post:
@@ -3411,6 +3305,16 @@ paths:
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - archived
+        description: |-
+          * `active` - Active
+          * `archived` - Archived
       tags:
       - numbering-systems
       security:
@@ -3509,6 +3413,50 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/numbering-systems/{id}/archive:
+    post:
+      operationId: archive_numbering_system
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - numbering-systems
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumberingSystem'
+          description: ''
+  /api/v1/numbering-systems/{id}/restore:
+    post:
+      operationId: restore_numbering_system
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - numbering-systems
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumberingSystem'
+          description: ''
   /api/v1/payments:
     get:
       operationId: payments_list
@@ -3696,27 +3644,12 @@ paths:
       operationId: prices_list
       parameters:
       - in: query
-        name: created_at_eq
+        name: created_at_after
         schema:
           type: string
           format: date-time
       - in: query
-        name: created_at_gt
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_gte
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_lt
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_lte
+        name: created_at_before
         schema:
           type: string
           format: date-time
@@ -3724,10 +3657,6 @@ paths:
         name: currency
         schema:
           type: string
-      - in: query
-        name: is_active
-        schema:
-          type: boolean
       - name: ordering
         required: false
         in: query
@@ -3757,6 +3686,16 @@ paths:
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - archived
+        description: |-
+          * `active` - Active
+          * `archived` - Archived
       tags:
       - prices
       security:
@@ -3880,9 +3819,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Price'
           description: ''
-  /api/v1/prices/{id}/unarchive:
+  /api/v1/prices/{id}/restore:
     post:
-      operationId: unarchive_price
+      operationId: restore_price
       parameters:
       - in: path
         name: id
@@ -3907,36 +3846,17 @@ paths:
       operationId: products_list
       parameters:
       - in: query
-        name: created_at_eq
+        name: created_at_after
         schema:
           type: string
           format: date-time
       - in: query
-        name: created_at_gt
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_gte
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_lt
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_lte
+        name: created_at_before
         schema:
           type: string
           format: date-time
       - in: query
         name: has_active_prices
-        schema:
-          type: boolean
-      - in: query
-        name: is_active
         schema:
           type: boolean
       - name: ordering
@@ -3967,6 +3887,16 @@ paths:
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - archived
+        description: |-
+          * `active` - Active
+          * `archived` - Archived
       tags:
       - products
       security:
@@ -4086,9 +4016,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Product'
           description: ''
-  /api/v1/products/{id}/unarchive:
+  /api/v1/products/{id}/restore:
     post:
-      operationId: unarchive_product
+      operationId: restore_product
       parameters:
       - in: path
         name: id
@@ -4755,6 +4685,16 @@ paths:
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - archived
+        description: |-
+          * `active` - Active
+          * `archived` - Archived
       tags:
       - shipping-rates
       security:
@@ -4874,9 +4814,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ShippingRate'
           description: ''
-  /api/v1/shipping-rates/{id}/unarchive:
+  /api/v1/shipping-rates/{id}/restore:
     post:
-      operationId: unarchive_shipping_rate
+      operationId: restore_shipping_rate
       parameters:
       - in: path
         name: id
@@ -4937,34 +4877,15 @@ paths:
       operationId: tax_rates_list
       parameters:
       - in: query
-        name: created_at_eq
+        name: created_at_after
         schema:
           type: string
           format: date-time
       - in: query
-        name: created_at_gt
+        name: created_at_before
         schema:
           type: string
           format: date-time
-      - in: query
-        name: created_at_gte
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_lt
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_lte
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: is_active
-        schema:
-          type: boolean
       - name: ordering
         required: false
         in: query
@@ -4989,6 +4910,16 @@ paths:
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - archived
+        description: |-
+          * `active` - Active
+          * `archived` - Archived
       tags:
       - tax-rates
       security:
@@ -5091,9 +5022,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaxRate'
           description: ''
-  /api/v1/tax-rates/{id}/unarchive:
+  /api/v1/tax-rates/{id}/restore:
     post:
-      operationId: unarchive_tax_rate
+      operationId: restore_tax_rate
       parameters:
       - in: path
         name: id
@@ -5813,6 +5744,7 @@ components:
           nullable: true
         net_payment_term:
           type: integer
+          minimum: 0
         metadata: {}
         subscription:
           allOf:
@@ -5925,6 +5857,7 @@ components:
           nullable: true
         net_payment_term:
           type: integer
+          minimum: 0
         metadata: {}
         logo_id:
           type: string
@@ -6502,6 +6435,8 @@ components:
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           nullable: true
+        status:
+          $ref: '#/components/schemas/ProductCatalogStatusEnum'
         created_at:
           type: string
           format: date-time
@@ -6509,14 +6444,20 @@ components:
           type: string
           format: date-time
           nullable: true
+        archived_at:
+          type: string
+          format: date-time
+          nullable: true
       required:
       - account_id
       - amount
+      - archived_at
       - created_at
       - currency
       - id
       - name
       - percentage
+      - status
       - updated_at
     CouponCreate:
       type: object
@@ -6772,9 +6713,7 @@ components:
         description:
           type: string
           nullable: true
-        billing_address:
-          $ref: '#/components/schemas/Address'
-        shipping_address:
+        address:
           $ref: '#/components/schemas/Address'
         logo_id:
           type: string
@@ -6786,7 +6725,7 @@ components:
             $ref: '#/components/schemas/TaxId'
           readOnly: true
       required:
-      - billing_address
+      - address
       - description
       - email
       - id
@@ -6795,7 +6734,6 @@ components:
       - logo_id
       - name
       - phone
-      - shipping_address
       - tax_ids
     CreditNoteIssue:
       type: object
@@ -7694,6 +7632,7 @@ components:
           nullable: true
         net_payment_term:
           type: integer
+          minimum: 0
           nullable: true
         invoice_numbering_system_id:
           type: string
@@ -7707,10 +7646,12 @@ components:
           type: string
           nullable: true
         metadata: {}
-        billing_address:
+        address:
           $ref: '#/components/schemas/Address'
-        shipping_address:
-          $ref: '#/components/schemas/Address'
+        shipping:
+          allOf:
+          - $ref: '#/components/schemas/CustomerShipping'
+          nullable: true
         tax_rates:
           type: array
           items:
@@ -7738,7 +7679,7 @@ components:
           nullable: true
       required:
       - account_id
-      - billing_address
+      - address
       - created_at
       - credit_note_numbering_system_id
       - currency
@@ -7754,7 +7695,7 @@ components:
       - name
       - net_payment_term
       - phone
-      - shipping_address
+      - shipping
       - tax_ids
       - tax_rates
       - updated_at
@@ -7791,6 +7732,7 @@ components:
           nullable: true
         net_payment_term:
           type: integer
+          minimum: 0
           nullable: true
         invoice_numbering_system_id:
           type: string
@@ -7801,13 +7743,13 @@ components:
           format: uuid
           nullable: true
         metadata: {}
-        billing_address:
+        address:
           allOf:
           - $ref: '#/components/schemas/Address'
           nullable: true
-        shipping_address:
+        shipping:
           allOf:
-          - $ref: '#/components/schemas/Address'
+          - $ref: '#/components/schemas/CustomerShipping'
           nullable: true
         logo_id:
           type: string
@@ -7815,6 +7757,19 @@ components:
           nullable: true
       required:
       - name
+    CustomerShipping:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          nullable: true
     CustomerTaxRateAssign:
       type: object
       properties:
@@ -7856,6 +7811,7 @@ components:
           nullable: true
         net_payment_term:
           type: integer
+          minimum: 0
           nullable: true
         invoice_numbering_system_id:
           type: string
@@ -7866,13 +7822,13 @@ components:
           format: uuid
           nullable: true
         metadata: {}
-        billing_address:
+        address:
           allOf:
           - $ref: '#/components/schemas/Address'
           nullable: true
-        shipping_address:
+        shipping:
           allOf:
-          - $ref: '#/components/schemas/Address'
+          - $ref: '#/components/schemas/CustomerShipping'
           nullable: true
         logo_id:
           type: string
@@ -8095,16 +8051,10 @@ components:
           type: string
           format: uuid
           nullable: true
-        previous_revision_id:
-          type: string
-          format: uuid
-          nullable: true
-        latest_revision_id:
-          type: string
-          format: uuid
-          nullable: true
         currency:
           $ref: '#/components/schemas/CurrencyEnum'
+        tax_behavior:
+          $ref: '#/components/schemas/TaxBehaviorEnum'
         issue_date:
           type: string
           format: date
@@ -8119,6 +8069,7 @@ components:
           nullable: true
         net_payment_term:
           type: integer
+          minimum: 0
         delivery_method:
           $ref: '#/components/schemas/DeliveryMethodEnum'
         recipients:
@@ -8150,7 +8101,11 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
-        total_amount_excluding_tax:
+        total_excluding_tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
+        shipping_amount:
           type: string
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
@@ -8209,41 +8164,50 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceLine'
+        shipping:
+          $ref: '#/components/schemas/InvoiceShipping'
+        coupons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coupon'
         discounts:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceDiscount'
           readOnly: true
+        total_discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceDiscount'
+          readOnly: true
+        tax_rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxRate'
         taxes:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceTax'
           readOnly: true
-        discount_breakdown:
+        total_taxes:
           type: array
           items:
-            $ref: '#/components/schemas/InvoiceDiscountBreakdownItem'
-          readOnly: true
-        tax_breakdown:
-          type: array
-          items:
-            $ref: '#/components/schemas/InvoiceTaxBreakdownItem'
+            $ref: '#/components/schemas/InvoiceTax'
           readOnly: true
       required:
       - account
+      - coupons
       - created_at
       - currency
       - custom_fields
       - customer
       - delivery_method
       - description
-      - discount_breakdown
       - discounts
       - due_date
       - footer
       - id
       - issue_date
-      - latest_revision_id
       - lines
       - metadata
       - net_payment_term
@@ -8255,19 +8219,23 @@ components:
       - payment_connection_id
       - payment_provider
       - pdf_id
-      - previous_revision_id
       - recipients
       - sell_date
+      - shipping
+      - shipping_amount
       - status
       - subtotal_amount
-      - tax_breakdown
+      - tax_behavior
+      - tax_rates
       - taxes
       - total_amount
-      - total_amount_excluding_tax
       - total_credit_amount
       - total_discount_amount
+      - total_discounts
+      - total_excluding_tax_amount
       - total_paid_amount
       - total_tax_amount
+      - total_taxes
       - updated_at
       - voided_at
     InvoiceAccount:
@@ -8319,13 +8287,12 @@ components:
           type: string
           format: uuid
           nullable: true
-        previous_revision_id:
-          type: string
-          format: uuid
         currency:
           allOf:
           - $ref: '#/components/schemas/CurrencyEnum'
           nullable: true
+        tax_behavior:
+          $ref: '#/components/schemas/TaxBehaviorEnum'
         issue_date:
           type: string
           format: date
@@ -8340,6 +8307,7 @@ components:
           nullable: true
         net_payment_term:
           type: integer
+          minimum: 0
           nullable: true
         metadata:
           nullable: true
@@ -8368,6 +8336,22 @@ components:
           items:
             type: string
             format: email
+        tax_rates:
+          type: array
+          items:
+            type: string
+            format: uuid
+        coupons:
+          type: array
+          items:
+            type: string
+            format: uuid
+        shipping:
+          allOf:
+          - $ref: '#/components/schemas/InvoiceShippingAdd'
+          nullable: true
+      required:
+      - customer_id
     InvoiceCustomer:
       type: object
       properties:
@@ -8391,16 +8375,14 @@ components:
         description:
           type: string
           nullable: true
-        billing_address:
-          $ref: '#/components/schemas/Address'
-        shipping_address:
+        address:
           $ref: '#/components/schemas/Address'
         logo_id:
           type: string
           format: uuid
           nullable: true
       required:
-      - billing_address
+      - address
       - description
       - email
       - id
@@ -8409,49 +8391,18 @@ components:
       - logo_id
       - name
       - phone
-      - shipping_address
     InvoiceDiscount:
       type: object
       properties:
-        id:
+        coupon_id:
           type: string
           format: uuid
-        coupon:
-          allOf:
-          - $ref: '#/components/schemas/Coupon'
-          readOnly: true
         amount:
           type: string
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
       required:
       - amount
-      - coupon
-      - id
-    InvoiceDiscountBreakdownItem:
-      type: object
-      properties:
-        name:
-          type: string
-          nullable: true
-        amount:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
-        coupon_id:
-          type: string
-          format: uuid
-      required:
-      - amount
-      - coupon_id
-      - name
-    InvoiceDiscountCreate:
-      type: object
-      properties:
-        coupon_id:
-          type: string
-          format: uuid
-      required:
       - coupon_id
     InvoiceLine:
       type: object
@@ -8480,12 +8431,17 @@ components:
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
           readOnly: true
+        subtotal_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
+          readOnly: true
         total_discount_amount:
           type: string
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
           readOnly: true
-        total_amount_excluding_tax:
+        total_excluding_tax_amount:
           type: string
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
@@ -8521,16 +8477,37 @@ components:
         outstanding_quantity:
           type: integer
           readOnly: true
+        coupons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coupon'
         discounts:
           type: array
           items:
-            $ref: '#/components/schemas/InvoiceLineDiscount'
+            $ref: '#/components/schemas/InvoiceDiscount'
+          readOnly: true
+        total_discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceDiscount'
+          readOnly: true
+        tax_rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxRate'
         taxes:
           type: array
           items:
-            $ref: '#/components/schemas/InvoiceLineTax'
+            $ref: '#/components/schemas/InvoiceTax'
+          readOnly: true
+        total_taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceTax'
+          readOnly: true
       required:
       - amount
+      - coupons
       - credit_quantity
       - description
       - discounts
@@ -8540,13 +8517,17 @@ components:
       - price_id
       - product_id
       - quantity
+      - subtotal_amount
+      - tax_rates
       - taxes
       - total_amount
-      - total_amount_excluding_tax
       - total_credit_amount
       - total_discount_amount
+      - total_discounts
+      - total_excluding_tax_amount
       - total_tax_amount
       - total_tax_rate
+      - total_taxes
       - unit_amount
     InvoiceLineCreate:
       type: object
@@ -8556,9 +8537,11 @@ components:
           format: uuid
         description:
           type: string
+          default: ''
           maxLength: 255
         quantity:
           type: integer
+          default: 1
         unit_amount:
           type: string
           format: decimal
@@ -8566,73 +8549,18 @@ components:
         price_id:
           type: string
           format: uuid
+        tax_rates:
+          type: array
+          items:
+            type: string
+            format: uuid
+        coupons:
+          type: array
+          items:
+            type: string
+            format: uuid
       required:
-      - description
       - invoice_id
-      - quantity
-    InvoiceLineDiscount:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        coupon:
-          allOf:
-          - $ref: '#/components/schemas/Coupon'
-          readOnly: true
-        amount:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
-      required:
-      - amount
-      - coupon
-      - id
-    InvoiceLineDiscountCreate:
-      type: object
-      properties:
-        coupon_id:
-          type: string
-          format: uuid
-      required:
-      - coupon_id
-    InvoiceLineTax:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        tax_rate_id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        rate:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
-        amount:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
-      required:
-      - amount
-      - description
-      - id
-      - name
-      - rate
-      - tax_rate_id
-    InvoiceLineTaxCreate:
-      type: object
-      properties:
-        tax_rate_id:
-          type: string
-          format: uuid
-      required:
-      - tax_rate_id
     InvoiceLineUpdate:
       type: object
       properties:
@@ -8648,9 +8576,161 @@ components:
         price_id:
           type: string
           format: uuid
+        tax_rates:
+          type: array
+          items:
+            type: string
+            format: uuid
+        coupons:
+          type: array
+          items:
+            type: string
+            format: uuid
+    InvoiceRevisionCreate:
+      type: object
+      properties:
+        number:
+          type: string
+          nullable: true
+          maxLength: 255
+        numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          nullable: true
+        tax_behavior:
+          $ref: '#/components/schemas/TaxBehaviorEnum'
+        issue_date:
+          type: string
+          format: date
+          nullable: true
+        sell_date:
+          type: string
+          format: date
+          nullable: true
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        net_payment_term:
+          type: integer
+          minimum: 0
+          nullable: true
+        metadata:
+          nullable: true
+        custom_fields:
+          nullable: true
+        footer:
+          type: string
+          nullable: true
+          maxLength: 600
+        description:
+          type: string
+          nullable: true
+          maxLength: 600
+        payment_provider:
+          allOf:
+          - $ref: '#/components/schemas/PaymentProviderEnum'
+          nullable: true
+        payment_connection_id:
+          type: string
+          format: uuid
+          nullable: true
+        delivery_method:
+          $ref: '#/components/schemas/DeliveryMethodEnum'
+        recipients:
+          type: array
+          items:
+            type: string
+            format: email
+        tax_rates:
+          type: array
+          items:
+            type: string
+            format: uuid
+        coupons:
+          type: array
+          items:
+            type: string
+            format: uuid
+        shipping:
+          allOf:
+          - $ref: '#/components/schemas/InvoiceShippingAdd'
+          nullable: true
+    InvoiceShipping:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          nullable: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
+        total_excluding_tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
+        total_tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
+        total_tax_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
+        shipping_rate_id:
+          type: string
+          format: uuid
+          nullable: true
+        tax_rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxRate'
+        total_taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceTax'
+          readOnly: true
       required:
-      - description
-      - quantity
+      - address
+      - amount
+      - name
+      - phone
+      - shipping_rate_id
+      - tax_rates
+      - total_amount
+      - total_excluding_tax_amount
+      - total_tax_amount
+      - total_tax_rate
+      - total_taxes
+    InvoiceShippingAdd:
+      type: object
+      properties:
+        shipping_rate_id:
+          type: string
+          format: uuid
+        tax_rates:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+      - shipping_rate_id
     InvoiceStatusEnum:
       enum:
       - draft
@@ -8666,56 +8746,15 @@ components:
     InvoiceTax:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
         tax_rate_id:
           type: string
           format: uuid
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        rate:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
         amount:
           type: string
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
       required:
       - amount
-      - description
-      - id
-      - name
-      - rate
-      - tax_rate_id
-    InvoiceTaxBreakdownItem:
-      type: object
-      properties:
-        name:
-          type: string
-        rate:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
-        amount:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
-      required:
-      - amount
-      - name
-      - rate
-    InvoiceTaxCreate:
-      type: object
-      properties:
-        tax_rate_id:
-          type: string
-          format: uuid
-      required:
       - tax_rate_id
     InvoiceUpdate:
       type: object
@@ -8733,6 +8772,8 @@ components:
           nullable: true
         currency:
           $ref: '#/components/schemas/CurrencyEnum'
+        tax_behavior:
+          $ref: '#/components/schemas/TaxBehaviorEnum'
         issue_date:
           type: string
           format: date
@@ -8747,6 +8788,7 @@ components:
           nullable: true
         net_payment_term:
           type: integer
+          minimum: 0
         metadata: {}
         custom_fields: {}
         footer:
@@ -8772,6 +8814,20 @@ components:
           items:
             type: string
             format: email
+        tax_rates:
+          type: array
+          items:
+            type: string
+            format: uuid
+        coupons:
+          type: array
+          items:
+            type: string
+            format: uuid
+        shipping:
+          allOf:
+          - $ref: '#/components/schemas/InvoiceShippingAdd'
+          nullable: true
     Member:
       type: object
       properties:
@@ -8817,6 +8873,8 @@ components:
           $ref: '#/components/schemas/NumberingSystemAppliesToEnum'
         reset_interval:
           $ref: '#/components/schemas/NumberingSystemResetIntervalEnum'
+        status:
+          $ref: '#/components/schemas/ProductCatalogStatusEnum'
         created_at:
           type: string
           format: date-time
@@ -8824,12 +8882,18 @@ components:
           type: string
           format: date-time
           nullable: true
+        archived_at:
+          type: string
+          format: date-time
+          nullable: true
       required:
       - applies_to
+      - archived_at
       - created_at
       - description
       - id
       - reset_interval
+      - status
       - template
       - updated_at
     NumberingSystemAppliesToEnum:
@@ -9513,24 +9577,54 @@ components:
         phone:
           type: string
           nullable: true
-        billing_address:
+        address:
           $ref: '#/components/schemas/Address'
-        shipping_address:
-          $ref: '#/components/schemas/Address'
+        shipping:
+          allOf:
+          - $ref: '#/components/schemas/PortalCustomerShipping'
+          nullable: true
         tax_ids:
           type: array
           items:
             $ref: '#/components/schemas/TaxId'
       required:
-      - billing_address
+      - address
       - email
       - id
       - legal_name
       - legal_number
       - name
       - phone
-      - shipping_address
+      - shipping
       - tax_ids
+    PortalCustomerShipping:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          $ref: '#/components/schemas/Address'
+      required:
+      - address
+      - name
+      - phone
+    PortalCustomerShippingUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          nullable: true
     PortalCustomerUpdate:
       type: object
       properties:
@@ -9549,10 +9643,12 @@ components:
         phone:
           type: string
           nullable: true
-        billing_address:
+        address:
           $ref: '#/components/schemas/Address'
-        shipping_address:
-          $ref: '#/components/schemas/Address'
+        shipping:
+          allOf:
+          - $ref: '#/components/schemas/PortalCustomerShippingUpdate'
+          nullable: true
     PortalInvoice:
       type: object
       properties:
@@ -9625,8 +9721,8 @@ components:
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
         model:
           $ref: '#/components/schemas/PriceModelEnum'
-        is_active:
-          type: boolean
+        status:
+          $ref: '#/components/schemas/ProductCatalogStatusEnum'
         metadata: {}
         is_used:
           type: boolean
@@ -9656,11 +9752,11 @@ components:
       - created_at
       - currency
       - id
-      - is_active
       - is_used
       - metadata
       - model
       - product
+      - status
       - tiers
       - updated_at
     PriceCreate:
@@ -9714,8 +9810,8 @@ components:
         description:
           type: string
           maxLength: 1000
-        is_active:
-          type: boolean
+        status:
+          $ref: '#/components/schemas/ProductCatalogStatusEnum'
         default_price_id:
           type: string
           format: uuid
@@ -9729,14 +9825,19 @@ components:
           type: string
           format: date-time
           nullable: true
+        archived_at:
+          type: string
+          format: date-time
+          nullable: true
       required:
+      - archived_at
       - created_at
       - default_price_id
       - description
       - id
-      - is_active
       - metadata
       - name
+      - status
       - updated_at
     PriceTier:
       type: object
@@ -9807,8 +9908,8 @@ components:
           type: string
           nullable: true
           maxLength: 600
-        is_active:
-          type: boolean
+        status:
+          $ref: '#/components/schemas/ProductCatalogStatusEnum'
         url:
           type: string
           format: uri
@@ -9836,20 +9937,33 @@ components:
           type: string
           format: date-time
           nullable: true
+        archived_at:
+          type: string
+          format: date-time
+          nullable: true
       required:
       - account_id
+      - archived_at
       - created_at
       - default_price
       - description
       - id
       - image_id
       - image_url
-      - is_active
       - metadata
       - name
       - prices_count
+      - status
       - updated_at
       - url
+    ProductCatalogStatusEnum:
+      enum:
+      - active
+      - archived
+      type: string
+      description: |-
+        * `active` - Active
+        * `archived` - Archived
     ProductCreate:
       type: object
       properties:
@@ -10137,16 +10251,14 @@ components:
         description:
           type: string
           nullable: true
-        billing_address:
-          $ref: '#/components/schemas/Address'
-        shipping_address:
+        address:
           $ref: '#/components/schemas/Address'
         logo_id:
           type: string
           format: uuid
           nullable: true
       required:
-      - billing_address
+      - address
       - description
       - email
       - id
@@ -10155,7 +10267,6 @@ components:
       - logo_id
       - name
       - phone
-      - shipping_address
     QuoteDiscount:
       type: object
       properties:
@@ -10495,8 +10606,8 @@ components:
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
         tax_policy:
           $ref: '#/components/schemas/ShippingRateTaxPolicyEnum'
-        is_active:
-          type: boolean
+        status:
+          $ref: '#/components/schemas/ProductCatalogStatusEnum'
         metadata: {}
         created_at:
           type: string
@@ -10517,9 +10628,9 @@ components:
       - created_at
       - currency
       - id
-      - is_active
       - metadata
       - name
+      - status
       - tax_policy
       - updated_at
     ShippingRateCreate:
@@ -10669,6 +10780,16 @@ components:
       - price_id
       - started_at
       - status
+    TaxBehaviorEnum:
+      enum:
+      - inclusive
+      - exclusive
+      - automatic
+      type: string
+      description: |-
+        * `inclusive` - Inclusive
+        * `exclusive` - Exclusive
+        * `automatic` - Automatic
     TaxId:
       type: object
       properties:
@@ -10959,23 +11080,28 @@ components:
           allOf:
           - $ref: '#/components/schemas/CountryEnum'
           nullable: true
-        is_active:
-          type: boolean
+        status:
+          $ref: '#/components/schemas/ProductCatalogStatusEnum'
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
+        archived_at:
+          type: string
+          format: date-time
+          nullable: true
       required:
       - account_id
+      - archived_at
       - country
       - created_at
       - description
       - id
-      - is_active
       - name
       - percentage
+      - status
       - updated_at
     TaxRateCreate:
       type: object
