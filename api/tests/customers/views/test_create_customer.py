@@ -26,8 +26,12 @@ def test_create_customer(api_client, user, account):
             "invoice_numbering_system_id": None,
             "credit_note_numbering_system_id": None,
             "metadata": {"note": "value"},
-            "billing_address": {"line1": "123", "country": "PL"},
-            "shipping_address": {"line1": "321", "country": "PL"},
+            "address": {"line1": "123", "country": "PL"},
+            "shipping": {
+                "name": "Customer Shipping",
+                "phone": "987654321",
+                "address": {"line1": "321", "country": "PL"},
+            },
             "logo_id": None,
         },
     )
@@ -47,7 +51,7 @@ def test_create_customer(api_client, user, account):
         "credit_note_numbering_system_id": None,
         "description": "Important customer",
         "metadata": {"note": "value"},
-        "billing_address": {
+        "address": {
             "country": "PL",
             "line1": "123",
             "line2": None,
@@ -55,13 +59,17 @@ def test_create_customer(api_client, user, account):
             "postal_code": None,
             "state": None,
         },
-        "shipping_address": {
-            "country": "PL",
-            "line1": "321",
-            "line2": None,
-            "locality": None,
-            "postal_code": None,
-            "state": None,
+        "shipping": {
+            "name": "Customer Shipping",
+            "phone": "987654321",
+            "address": {
+                "country": "PL",
+                "line1": "321",
+                "line2": None,
+                "locality": None,
+                "postal_code": None,
+                "state": None,
+            },
         },
         "tax_rates": [],
         "tax_ids": [],

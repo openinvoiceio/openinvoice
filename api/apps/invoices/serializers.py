@@ -37,8 +37,7 @@ class InvoiceCustomerSerializer(serializers.Serializer):
     email = serializers.CharField(allow_null=True, source="effective_customer.email")
     phone = serializers.CharField(allow_null=True, source="effective_customer.phone")
     description = serializers.CharField(allow_null=True, source="effective_customer.description")
-    billing_address = AddressSerializer(source="effective_customer.billing_address")
-    shipping_address = AddressSerializer(source="effective_customer.shipping_address")
+    address = AddressSerializer(source="effective_customer.address")
     logo_id = serializers.UUIDField(allow_null=True, source="effective_customer.logo_id")
 
 
@@ -64,6 +63,9 @@ class InvoiceTaxSerializer(serializers.Serializer):
 
 
 class InvoiceShippingSerializer(serializers.Serializer):
+    name = serializers.CharField(source="effective_name", allow_null=True)
+    phone = serializers.CharField(source="effective_phone", allow_null=True)
+    address = AddressSerializer(source="effective_address", allow_null=True)
     amount = MoneyField(max_digits=19, decimal_places=2)
     total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2)
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2)

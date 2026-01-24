@@ -27,6 +27,18 @@ class PortalSessionSerializer(serializers.Serializer):
     portal_url = serializers.URLField()
 
 
+class PortalCustomerShippingSerializer(serializers.Serializer):
+    name = serializers.CharField(allow_null=True)
+    phone = serializers.CharField(allow_null=True)
+    address = AddressSerializer()
+
+
+class PortalCustomerShippingUpdateSerializer(serializers.Serializer):
+    name = serializers.CharField(allow_null=True, required=False)
+    phone = serializers.CharField(allow_null=True, required=False)
+    address = AddressSerializer(allow_null=True, required=False)
+
+
 class PortalCustomerSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     name = serializers.CharField(allow_null=True)
@@ -34,8 +46,8 @@ class PortalCustomerSerializer(serializers.Serializer):
     legal_number = serializers.CharField(allow_null=True)
     email = serializers.EmailField(allow_null=True)
     phone = serializers.CharField(allow_null=True)
-    billing_address = AddressSerializer()
-    shipping_address = AddressSerializer()
+    address = AddressSerializer()
+    shipping = PortalCustomerShippingSerializer(allow_null=True)
     tax_ids = TaxIdSerializer(many=True)
 
 
@@ -45,5 +57,5 @@ class PortalCustomerUpdateSerializer(serializers.Serializer):
     legal_number = serializers.CharField(allow_null=True, required=False)
     email = serializers.EmailField(allow_null=True, required=False)
     phone = serializers.CharField(allow_null=True, required=False)
-    billing_address = AddressSerializer(required=False)
-    shipping_address = AddressSerializer(required=False)
+    address = AddressSerializer(required=False)
+    shipping = PortalCustomerShippingUpdateSerializer(allow_null=True, required=False)

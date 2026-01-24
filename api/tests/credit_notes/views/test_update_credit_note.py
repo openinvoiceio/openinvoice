@@ -26,8 +26,7 @@ def _assign_invoice_snapshots(invoice):
         email=invoice.customer.email,
         phone=invoice.customer.phone,
         description=invoice.customer.description,
-        billing_address=AddressFactory(),
-        shipping_address=AddressFactory(),
+        address=AddressFactory(),
         logo=None,
     )
     invoice.account_on_invoice = InvoiceAccount.objects.create(
@@ -106,21 +105,13 @@ def test_update_credit_note(api_client, user, account):
             "email": customer_snapshot.email,
             "phone": customer_snapshot.phone,
             "description": customer_snapshot.description,
-            "billing_address": {
-                "line1": customer_snapshot.billing_address.line1,
-                "line2": customer_snapshot.billing_address.line2,
-                "locality": customer_snapshot.billing_address.locality,
-                "state": customer_snapshot.billing_address.state,
-                "postal_code": customer_snapshot.billing_address.postal_code,
-                "country": str(customer_snapshot.billing_address.country),
-            },
-            "shipping_address": {
-                "line1": customer_snapshot.shipping_address.line1,
-                "line2": customer_snapshot.shipping_address.line2,
-                "locality": customer_snapshot.shipping_address.locality,
-                "state": customer_snapshot.shipping_address.state,
-                "postal_code": customer_snapshot.shipping_address.postal_code,
-                "country": str(customer_snapshot.shipping_address.country),
+            "address": {
+                "line1": customer_snapshot.address.line1,
+                "line2": customer_snapshot.address.line2,
+                "locality": customer_snapshot.address.locality,
+                "state": customer_snapshot.address.state,
+                "postal_code": customer_snapshot.address.postal_code,
+                "country": str(customer_snapshot.address.country),
             },
             "logo_id": None,
             "tax_ids": [],

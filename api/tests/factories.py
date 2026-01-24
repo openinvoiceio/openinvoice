@@ -113,9 +113,18 @@ class CustomerFactory(DjangoModelFactory):
     net_payment_term = 0
     metadata = {}
     account = SubFactory(AccountFactory)
-    billing_address = SubFactory(AddressFactory)
-    shipping_address = SubFactory(AddressFactory)
+    address = SubFactory(AddressFactory)
+    shipping = None
     logo = None
+
+
+class CustomerShippingFactory(DjangoModelFactory):
+    class Meta:
+        model = "customers.CustomerShipping"
+
+    name = "Shipping Customer"
+    phone = "987654321"
+    address = SubFactory(AddressFactory)
 
 
 class CouponFactory(DjangoModelFactory):
@@ -349,8 +358,7 @@ class QuoteCustomerFactory(DjangoModelFactory):
     email = LazyAttribute(lambda o: o.customer.email)
     phone = LazyAttribute(lambda o: o.customer.phone)
     description = LazyAttribute(lambda o: o.customer.description)
-    billing_address = SubFactory(AddressFactory)
-    shipping_address = SubFactory(AddressFactory)
+    address = SubFactory(AddressFactory)
     logo = None
 
     @post_generation

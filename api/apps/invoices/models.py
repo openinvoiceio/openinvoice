@@ -19,6 +19,7 @@ from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
+from apps.addresses.models import Address
 from apps.coupons.models import Coupon
 from apps.credit_notes.choices import CreditNoteStatus
 from apps.customers.models import Customer
@@ -59,15 +60,10 @@ class InvoiceCustomer(models.Model):
     email = models.CharField(max_length=255, null=True)
     phone = models.CharField(max_length=255, null=True)
     description = models.CharField(max_length=255, null=True, blank=True)
-    billing_address = models.OneToOneField(
+    address = models.OneToOneField(
         "addresses.Address",
         on_delete=models.PROTECT,
-        related_name="invoice_customer_billing_address",
-    )
-    shipping_address = models.OneToOneField(
-        "addresses.Address",
-        on_delete=models.PROTECT,
-        related_name="invoice_customer_shipping_address",
+        related_name="invoice_customer_address",
     )
     logo = models.ForeignKey(
         "files.File",
@@ -218,6 +214,10 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
                 condition=Q(previous_revision__isnull=False),
             ),
         ]
+
+    @property
+    def is_draft(self) -> bool:
+        return self.status == InvoiceStatus.DRAFT
 
     @property
     def effective_customer(self):
@@ -558,6 +558,12 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.customer_on_invoice = InvoiceCustomer.objects.from_customer(self.customer)
         self.account_on_invoice = InvoiceAccount.objects.from_account(self.account)
 
+        if self.shipping:
+            self.shipping.name = self.customer.shipping_name
+            self.shipping.phone = self.customer.shipping_phone
+            self.shipping.address = Address.objects.from_address(self.customer.shipping_address)
+            self.shipping.save(update_fields=["name", "phone", "address"])
+
         if self.number is None and self.numbering_system is not None:
             self.number = self.generate_number()
 
@@ -742,6 +748,14 @@ class InvoiceLine(models.Model):
 
 class InvoiceShipping(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, null=True)
+    phone = models.CharField(max_length=255, null=True)
+    address = models.OneToOneField(
+        "addresses.Address",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="invoice_shipping_address",
+    )
     currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
@@ -752,6 +766,18 @@ class InvoiceShipping(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     shipping_rate = models.ForeignKey("shipping_rates.ShippingRate", on_delete=models.PROTECT)
     tax_rates = models.ManyToManyField("tax_rates.TaxRate", through="InvoiceShippingTaxRate", related_name="+")
+
+    @property
+    def effective_name(self) -> str | None:
+        return self.invoice.customer.shipping_name if self.invoice.is_draft else self.name
+
+    @property
+    def effective_phone(self) -> str | None:
+        return self.invoice.customer.shipping_phone if self.invoice.is_draft else self.phone
+
+    @property
+    def effective_address(self) -> Address | None:
+        return self.invoice.customer.shipping_address if self.invoice.is_draft else self.address
 
     def set_tax_rates(self, tax_rates: Iterable[TaxRate]) -> None:
         self.tax_rates.clear()

@@ -3,16 +3,14 @@ from drf_standardized_errors.types import ErrorType
 from freezegun import freeze_time
 
 from apps.portal.crypto import sign_portal_token
-from tests.factories import (
-    CustomerFactory,
-    PortalTokenFactory,
-)
+from tests.factories import CustomerFactory, CustomerShippingFactory, PortalTokenFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def test_retrieve_customer_via_portal(api_client, account):
-    customer = CustomerFactory(account=account, name="Old")
+    shipping = CustomerShippingFactory()
+    customer = CustomerFactory(account=account, name="Old", shipping=shipping)
     token = PortalTokenFactory(customer=customer)["token"]
 
     response = api_client.get("/api/v1/portal/customer", HTTP_AUTHORIZATION=f"Bearer {token}")
@@ -25,21 +23,25 @@ def test_retrieve_customer_via_portal(api_client, account):
         "legal_number": customer.legal_number,
         "email": customer.email,
         "phone": customer.phone,
-        "billing_address": {
-            "line1": customer.billing_address.line1,
-            "line2": customer.billing_address.line2,
-            "locality": customer.billing_address.locality,
-            "state": customer.billing_address.state,
-            "postal_code": customer.billing_address.postal_code,
-            "country": customer.billing_address.country,
+        "address": {
+            "line1": customer.address.line1,
+            "line2": customer.address.line2,
+            "locality": customer.address.locality,
+            "state": customer.address.state,
+            "postal_code": customer.address.postal_code,
+            "country": customer.address.country,
         },
-        "shipping_address": {
-            "line1": customer.shipping_address.line1,
-            "line2": customer.shipping_address.line2,
-            "locality": customer.shipping_address.locality,
-            "state": customer.shipping_address.state,
-            "postal_code": customer.shipping_address.postal_code,
-            "country": customer.shipping_address.country,
+        "shipping": {
+            "name": shipping.name,
+            "phone": shipping.phone,
+            "address": {
+                "line1": shipping.address.line1,
+                "line2": shipping.address.line2,
+                "locality": shipping.address.locality,
+                "state": shipping.address.state,
+                "postal_code": shipping.address.postal_code,
+                "country": shipping.address.country,
+            },
         },
         "tax_ids": [],
     }

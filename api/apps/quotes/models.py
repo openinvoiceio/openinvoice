@@ -45,15 +45,10 @@ class QuoteCustomer(models.Model):
     email = models.CharField(max_length=255, null=True)
     phone = models.CharField(max_length=255, null=True)
     description = models.CharField(max_length=255, null=True, blank=True)
-    billing_address = models.OneToOneField(
+    address = models.OneToOneField(
         "addresses.Address",
         on_delete=models.PROTECT,
-        related_name="quote_customer_billing_address",
-    )
-    shipping_address = models.OneToOneField(
-        "addresses.Address",
-        on_delete=models.PROTECT,
-        related_name="quote_customer_shipping_address",
+        related_name="quote_customer_address",
     )
     logo = models.ForeignKey(
         "files.File",
@@ -422,11 +417,10 @@ class Quote(models.Model):
                 "account__logo",
                 "account__address",
                 "customer",
-                "customer__billing_address",
-                "customer__shipping_address",
+                "customer__address",
+                "customer__shipping__address",
                 "customer__logo",
-                "customer_on_quote__billing_address",
-                "customer_on_quote__shipping_address",
+                "customer_on_quote__address",
                 "customer_on_quote__logo",
                 "account_on_quote__address",
                 "account_on_quote__logo",

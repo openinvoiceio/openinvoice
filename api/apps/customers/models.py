@@ -10,6 +10,7 @@ from .managers import CustomerManager
 from .querysets import CustomerQuerySet
 
 if TYPE_CHECKING:
+    from apps.addresses.models import Address
     from apps.files.models import File
     from apps.numbering_systems.models import NumberingSystem
 
@@ -44,17 +45,17 @@ class Customer(models.Model):
         on_delete=models.CASCADE,
         related_name="customers",
     )
-    billing_address = models.OneToOneField(
+    address = models.OneToOneField(
         "addresses.Address",
         on_delete=models.CASCADE,
-        related_name="customer_billing_address",
+        related_name="customer_address",
         null=False,
     )
-    shipping_address = models.OneToOneField(
-        "addresses.Address",
-        on_delete=models.CASCADE,
-        related_name="customer_shipping_address",
-        null=False,
+    shipping = models.OneToOneField(
+        "CustomerShipping",
+        on_delete=models.SET_NULL,
+        related_name="customer",
+        null=True,
     )
     logo = models.OneToOneField("files.File", on_delete=models.SET_NULL, null=True, related_name="customer_logo")
     tax_rates = models.ManyToManyField(
@@ -68,6 +69,18 @@ class Customer(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+    @property
+    def shipping_name(self) -> str | None:
+        return self.shipping.name if self.shipping else self.name
+
+    @property
+    def shipping_phone(self) -> str | None:
+        return self.shipping.phone if self.shipping else self.phone
+
+    @property
+    def shipping_address(self) -> Address:
+        return self.shipping.address if self.shipping else self.address
 
     def update(
         self,
@@ -115,6 +128,10 @@ class Customer(models.Model):
 
         self.save(update_fields=["name", "legal_name", "legal_number", "email", "phone"])
 
+    def add_shipping(self, name: str | None, phone: str | None, address: Address) -> None:
+        self.shipping = CustomerShipping.objects.create(name=name, phone=phone, address=address)
+        self.save(update_fields=["shipping"])
+
 
 class CustomerTaxRate(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -131,3 +148,23 @@ class CustomerTaxRate(models.Model):
 
     class Meta:
         unique_together = ("customer", "tax_rate")
+
+
+class CustomerShipping(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, null=True)
+    phone = models.CharField(max_length=255, null=True)
+    address = models.OneToOneField(
+        "addresses.Address",
+        on_delete=models.CASCADE,
+        related_name="customer_shipping_address",
+    )
+
+    def update(
+        self,
+        name: str | None,
+        phone: str | None,
+    ) -> None:
+        self.name = name
+        self.phone = phone
+        self.save()

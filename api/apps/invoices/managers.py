@@ -34,8 +34,7 @@ class InvoiceCustomerManager(models.Manager):
             email=customer.email,
             phone=customer.phone,
             description=customer.description,
-            billing_address=Address.objects.from_address(customer.billing_address),
-            shipping_address=Address.objects.from_address(customer.shipping_address),
+            address=Address.objects.from_address(customer.address),
             logo=customer.logo.clone() if customer.logo else None,
         )
         invoice_customer.tax_ids.set(TaxId.objects.from_customer(customer))

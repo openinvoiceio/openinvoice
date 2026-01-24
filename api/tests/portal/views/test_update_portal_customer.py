@@ -1,10 +1,7 @@
 import pytest
 from drf_standardized_errors.types import ErrorType
 
-from tests.factories import (
-    CustomerFactory,
-    PortalTokenFactory,
-)
+from tests.factories import CustomerFactory, CustomerShippingFactory, PortalTokenFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -21,8 +18,8 @@ def test_update_customer_via_portal(api_client, account):
             "phone": "123",
             "legal_name": "LN",
             "legal_number": "42",
-            "billing_address": {"line1": "New line1"},
-            "shipping_address": {"country": "US"},
+            "address": {"line1": "New line1"},
+            "shipping": {"address": {"country": "US"}},
         },
         HTTP_AUTHORIZATION=f"Bearer {token}",
     )
@@ -35,21 +32,25 @@ def test_update_customer_via_portal(api_client, account):
         "legal_number": "42",
         "email": "new@example.com",
         "phone": "123",
-        "billing_address": {
+        "address": {
             "line1": "New line1",
-            "line2": customer.billing_address.line2,
-            "locality": customer.billing_address.locality,
-            "state": customer.billing_address.state,
-            "postal_code": customer.billing_address.postal_code,
-            "country": customer.billing_address.country,
+            "line2": customer.address.line2,
+            "locality": customer.address.locality,
+            "state": customer.address.state,
+            "postal_code": customer.address.postal_code,
+            "country": customer.address.country,
         },
-        "shipping_address": {
-            "line1": customer.shipping_address.line1,
-            "line2": customer.shipping_address.line2,
-            "locality": customer.shipping_address.locality,
-            "state": customer.shipping_address.state,
-            "postal_code": customer.shipping_address.postal_code,
-            "country": "US",
+        "shipping": {
+            "name": None,
+            "phone": None,
+            "address": {
+                "line1": None,
+                "line2": None,
+                "locality": None,
+                "state": None,
+                "postal_code": None,
+                "country": "US",
+            },
         },
         "tax_ids": [],
     }
@@ -69,3 +70,84 @@ def test_update_customer_requires_authentication(api_client):
             }
         ],
     }
+
+
+def test_update_customer_shipping_partial_update(api_client, account):
+    shipping = CustomerShippingFactory(name="Portal Ship", phone="222")
+    customer = CustomerFactory(account=account, shipping=shipping)
+    token = PortalTokenFactory(customer=customer)["token"]
+
+    response = api_client.put(
+        "/api/v1/portal/customer",
+        {
+            "shipping": {
+                "phone": "999",
+                "address": {"line1": "Portal Line"},
+            }
+        },
+        HTTP_AUTHORIZATION=f"Bearer {token}",
+    )
+
+    assert response.status_code == 200
+    customer.refresh_from_db()
+    assert customer.shipping is not None
+    assert customer.shipping.name == "Portal Ship"
+    assert customer.shipping.phone == "999"
+    assert customer.shipping.address.line1 == "Portal Line"
+    assert customer.shipping.address.line2 == customer.shipping.address.line2
+
+
+def test_update_customer_remover_shipping(api_client, account):
+    shipping = CustomerShippingFactory()
+    customer = CustomerFactory(account=account, shipping=shipping)
+    token = PortalTokenFactory(customer=customer)["token"]
+
+    response = api_client.put(
+        "/api/v1/portal/customer",
+        {"shipping": None},
+        HTTP_AUTHORIZATION=f"Bearer {token}",
+    )
+
+    assert response.status_code == 200
+    customer.refresh_from_db()
+    assert customer.shipping is None
+
+
+def test_update_customer_add_shipping(api_client, account):
+    customer = CustomerFactory(account=account)
+    token = PortalTokenFactory(customer=customer)["token"]
+
+    response = api_client.put(
+        "/api/v1/portal/customer",
+        {
+            "shipping": {
+                "name": "Portal New",
+                "phone": "333",
+                "address": {"line1": "Portal New", "country": "US"},
+            }
+        },
+        HTTP_AUTHORIZATION=f"Bearer {token}",
+    )
+
+    assert response.status_code == 200
+    customer.refresh_from_db()
+    assert customer.shipping is not None
+    assert customer.shipping.name == "Portal New"
+    assert customer.shipping.phone == "333"
+    assert customer.shipping.address.line1 == "Portal New"
+    assert customer.shipping.address.country == "US"
+
+
+def test_update_customer_remove_shipping_missing(api_client, account):
+    customer = CustomerFactory(account=account)
+    token = PortalTokenFactory(customer=customer)["token"]
+
+    response = api_client.put(
+        "/api/v1/portal/customer",
+        {"shipping": None},
+        HTTP_AUTHORIZATION=f"Bearer {token}",
+    )
+
+    assert response.status_code == 200
+    customer.refresh_from_db()
+    assert customer.shipping is None

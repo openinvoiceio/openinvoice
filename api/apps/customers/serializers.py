@@ -10,6 +10,12 @@ from apps.tax_rates.serializers import TaxRateSerializer
 from common.fields import CurrencyField, MetadataField
 
 
+class CustomerShippingSerializer(serializers.Serializer):
+    name = serializers.CharField(allow_null=True, required=False)
+    phone = serializers.CharField(allow_null=True, required=False)
+    address = AddressSerializer(allow_null=True, required=False)
+
+
 class CustomerSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     account_id = serializers.UUIDField()
@@ -24,8 +30,8 @@ class CustomerSerializer(serializers.Serializer):
     credit_note_numbering_system_id = serializers.UUIDField(allow_null=True)
     description = serializers.CharField(allow_null=True)
     metadata = MetadataField()
-    billing_address = AddressSerializer()
-    shipping_address = AddressSerializer()
+    address = AddressSerializer()
+    shipping = CustomerShippingSerializer(allow_null=True)
     tax_rates = TaxRateSerializer(many=True, read_only=True)
     tax_ids = TaxIdSerializer(many=True, read_only=True)
     logo_id = serializers.UUIDField(allow_null=True)
@@ -56,8 +62,8 @@ class CustomerCreateSerializer(serializers.Serializer):
         required=False,
     )
     metadata = MetadataField(required=False)
-    billing_address = AddressSerializer(allow_null=True, required=False)
-    shipping_address = AddressSerializer(allow_null=True, required=False)
+    address = AddressSerializer(allow_null=True, required=False)
+    shipping = CustomerShippingSerializer(allow_null=True, required=False)
     logo_id = FileRelatedField(source="logo", allow_null=True, required=False)
 
 
@@ -83,8 +89,8 @@ class CustomerUpdateSerializer(serializers.Serializer):
         required=False,
     )
     metadata = MetadataField(required=False)
-    billing_address = AddressSerializer(allow_null=True, required=False)
-    shipping_address = AddressSerializer(allow_null=True, required=False)
+    address = AddressSerializer(allow_null=True, required=False)
+    shipping = CustomerShippingSerializer(allow_null=True, required=False)
     logo_id = FileRelatedField(source="logo", allow_null=True, required=False)
 
 

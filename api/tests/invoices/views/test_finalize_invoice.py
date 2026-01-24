@@ -11,7 +11,16 @@ from apps.integrations.choices import PaymentProvider
 from apps.integrations.exceptions import IntegrationError
 from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from apps.payments.choices import PaymentStatus
-from tests.factories import InvoiceFactory, InvoiceLineFactory, StripeConnectionFactory
+from tests.factories import (
+    AddressFactory,
+    CustomerFactory,
+    CustomerShippingFactory,
+    InvoiceFactory,
+    InvoiceLineFactory,
+    ShippingRateFactory,
+    StripeConnectionFactory,
+    TaxRateFactory,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -54,21 +63,13 @@ def test_finalize_invoice(api_client, user, account):
             "email": invoice.customer.email,
             "phone": invoice.customer.phone,
             "description": invoice.customer.description,
-            "billing_address": {
-                "line1": invoice.customer.billing_address.line1,
-                "line2": invoice.customer.billing_address.line2,
-                "locality": invoice.customer.billing_address.locality,
-                "state": invoice.customer.billing_address.state,
-                "postal_code": invoice.customer.billing_address.postal_code,
-                "country": invoice.customer.billing_address.country,
-            },
-            "shipping_address": {
-                "line1": invoice.customer.shipping_address.line1,
-                "line2": invoice.customer.shipping_address.line2,
-                "locality": invoice.customer.shipping_address.locality,
-                "state": invoice.customer.shipping_address.state,
-                "postal_code": invoice.customer.shipping_address.postal_code,
-                "country": invoice.customer.shipping_address.country,
+            "address": {
+                "line1": invoice.customer.address.line1,
+                "line2": invoice.customer.address.line2,
+                "locality": invoice.customer.address.locality,
+                "state": invoice.customer.address.state,
+                "postal_code": invoice.customer.address.postal_code,
+                "country": invoice.customer.address.country,
             },
             "logo_id": None,
         },
@@ -149,6 +150,46 @@ def test_finalize_invoice(api_client, user, account):
     assert invoice.opened_at is not None
 
 
+def test_finalize_invoice_with_shipping_uses_customer_shipping_snapshot(api_client, user, account):
+    shipping_address = AddressFactory(line1="123 Shipping St", country="US")
+    customer_shipping = CustomerShippingFactory(name="Ship to", phone="555", address=shipping_address)
+    customer = CustomerFactory(account=account, name="Bill to", phone="111", shipping=customer_shipping)
+    invoice = InvoiceFactory(account=account, customer=customer, total_amount=Decimal("0.00"))
+    shipping_rate = ShippingRateFactory(account=account, amount=Decimal("12.00"))
+    tax_rate = TaxRateFactory(account=account, percentage=Decimal("10.00"))
+    invoice.add_shipping(shipping_rate=shipping_rate, tax_rates=[tax_rate])
+    invoice.recalculate()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.post(f"/api/v1/invoices/{invoice.id}/finalize")
+
+    assert response.status_code == 200
+    assert response.data["shipping"]["name"] == customer_shipping.name
+    assert response.data["shipping"]["phone"] == customer_shipping.phone
+    assert response.data["shipping"]["address"]["line1"] == shipping_address.line1
+    assert response.data["shipping"]["address"]["country"] == shipping_address.country
+
+
+def test_finalize_invoice_with_shipping_uses_customer_fallback(api_client, user, account):
+    customer = CustomerFactory(account=account, name="Bill to", phone="111", shipping=None)
+    invoice = InvoiceFactory(account=account, customer=customer, total_amount=Decimal("0.00"))
+    shipping_rate = ShippingRateFactory(account=account, amount=Decimal("8.00"))
+    tax_rate = TaxRateFactory(account=account, percentage=Decimal("5.00"))
+    invoice.add_shipping(shipping_rate=shipping_rate, tax_rates=[tax_rate])
+    invoice.recalculate()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.post(f"/api/v1/invoices/{invoice.id}/finalize")
+
+    assert response.status_code == 200
+    assert response.data["shipping"]["name"] == customer.name
+    assert response.data["shipping"]["phone"] == customer.phone
+    assert response.data["shipping"]["address"]["line1"] == customer.address.line1
+    assert response.data["shipping"]["address"]["country"] == customer.address.country
+
+
 def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account):
     invoice = InvoiceFactory(account=account)
 
@@ -179,21 +220,13 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
             "email": invoice.customer.email,
             "phone": invoice.customer.phone,
             "description": invoice.customer.description,
-            "billing_address": {
-                "line1": invoice.customer.billing_address.line1,
-                "line2": invoice.customer.billing_address.line2,
-                "locality": invoice.customer.billing_address.locality,
-                "state": invoice.customer.billing_address.state,
-                "postal_code": invoice.customer.billing_address.postal_code,
-                "country": invoice.customer.billing_address.country,
-            },
-            "shipping_address": {
-                "line1": invoice.customer.shipping_address.line1,
-                "line2": invoice.customer.shipping_address.line2,
-                "locality": invoice.customer.shipping_address.locality,
-                "state": invoice.customer.shipping_address.state,
-                "postal_code": invoice.customer.shipping_address.postal_code,
-                "country": invoice.customer.shipping_address.country,
+            "address": {
+                "line1": invoice.customer.address.line1,
+                "line2": invoice.customer.address.line2,
+                "locality": invoice.customer.address.locality,
+                "state": invoice.customer.address.state,
+                "postal_code": invoice.customer.address.postal_code,
+                "country": invoice.customer.address.country,
             },
             "logo_id": None,
         },

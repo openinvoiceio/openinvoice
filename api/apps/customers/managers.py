@@ -18,8 +18,7 @@ class CustomerManager(models.Manager):
         self,
         account: Account,
         name: str,
-        billing_address: Address,
-        shipping_address: Address,
+        address: Address,
         legal_name: str | None = None,
         legal_number: str | None = None,
         email: str | None = None,
@@ -45,7 +44,6 @@ class CustomerManager(models.Manager):
             invoice_numbering_system=invoice_numbering_system,
             credit_note_numbering_system=credit_note_numbering_system,
             metadata=metadata or {},
-            billing_address=billing_address,
-            shipping_address=shipping_address,
+            address=address,
             logo=logo,
         )

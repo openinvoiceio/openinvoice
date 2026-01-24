@@ -98,7 +98,7 @@
                     </p>
                 {% endif %}
                 <address class="party-detail">
-                    {% include "address.html" with address=quote.effective_customer.billing_address %}
+                    {% include "address.html" with address=quote.effective_customer.address %}
                 </address>
                 {% if quote.effective_customer.email %}
                     <p class="party-detail">{{ quote.effective_customer.email }}</p>

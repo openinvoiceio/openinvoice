@@ -51,21 +51,13 @@ def test_create_invoice(api_client, user, account):
             "email": customer.email,
             "phone": customer.phone,
             "description": customer.description,
-            "billing_address": {
-                "line1": customer.billing_address.line1,
-                "line2": customer.billing_address.line2,
-                "locality": customer.billing_address.locality,
-                "state": customer.billing_address.state,
-                "postal_code": customer.billing_address.postal_code,
-                "country": customer.billing_address.country,
-            },
-            "shipping_address": {
-                "line1": customer.shipping_address.line1,
-                "line2": customer.shipping_address.line2,
-                "locality": customer.shipping_address.locality,
-                "state": customer.shipping_address.state,
-                "postal_code": customer.shipping_address.postal_code,
-                "country": customer.shipping_address.country,
+            "address": {
+                "line1": customer.address.line1,
+                "line2": customer.address.line2,
+                "locality": customer.address.locality,
+                "state": customer.address.state,
+                "postal_code": customer.address.postal_code,
+                "country": customer.address.country,
             },
             "logo_id": None,
         },
@@ -179,6 +171,16 @@ def test_create_invoice_with_shipping(api_client, user, account):
 
     assert response.status_code == 201
     assert response.data["shipping"] == {
+        "name": customer.name,
+        "phone": customer.phone,
+        "address": {
+            "line1": customer.address.line1,
+            "line2": customer.address.line2,
+            "locality": customer.address.locality,
+            "state": customer.address.state,
+            "postal_code": customer.address.postal_code,
+            "country": customer.address.country,
+        },
         "amount": "10.00",
         "total_excluding_tax_amount": "10.00",
         "total_tax_amount": "1.00",

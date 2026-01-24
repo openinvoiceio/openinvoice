@@ -69,21 +69,13 @@ def test_update_invoice(api_client, user, account):
             "email": invoice.customer.email,
             "phone": invoice.customer.phone,
             "description": invoice.customer.description,
-            "billing_address": {
-                "line1": invoice.customer.billing_address.line1,
-                "line2": invoice.customer.billing_address.line2,
-                "locality": invoice.customer.billing_address.locality,
-                "state": invoice.customer.billing_address.state,
-                "postal_code": invoice.customer.billing_address.postal_code,
-                "country": invoice.customer.billing_address.country,
-            },
-            "shipping_address": {
-                "line1": invoice.customer.shipping_address.line1,
-                "line2": invoice.customer.shipping_address.line2,
-                "locality": invoice.customer.shipping_address.locality,
-                "state": invoice.customer.shipping_address.state,
-                "postal_code": invoice.customer.shipping_address.postal_code,
-                "country": invoice.customer.shipping_address.country,
+            "address": {
+                "line1": invoice.customer.address.line1,
+                "line2": invoice.customer.address.line2,
+                "locality": invoice.customer.address.locality,
+                "state": invoice.customer.address.state,
+                "postal_code": invoice.customer.address.postal_code,
+                "country": invoice.customer.address.country,
             },
             "logo_id": None,
         },
@@ -187,6 +179,16 @@ def test_update_invoice_add_shipping(api_client, user, account):
 
     assert response.status_code == 200
     assert response.data["shipping"] == {
+        "name": invoice.customer.name,
+        "phone": invoice.customer.phone,
+        "address": {
+            "line1": invoice.customer.address.line1,
+            "line2": invoice.customer.address.line2,
+            "locality": invoice.customer.address.locality,
+            "state": invoice.customer.address.state,
+            "postal_code": invoice.customer.address.postal_code,
+            "country": invoice.customer.address.country,
+        },
         "amount": "20.00",
         "total_excluding_tax_amount": "18.18",
         "total_tax_amount": "1.82",
@@ -253,6 +255,16 @@ def test_update_invoice_existing_shipping(api_client, user, account):
 
     assert response.status_code == 200
     assert response.data["shipping"] == {
+        "name": invoice.customer.name,
+        "phone": invoice.customer.phone,
+        "address": {
+            "line1": invoice.customer.address.line1,
+            "line2": invoice.customer.address.line2,
+            "locality": invoice.customer.address.locality,
+            "state": invoice.customer.address.state,
+            "postal_code": invoice.customer.address.postal_code,
+            "country": invoice.customer.address.country,
+        },
         "amount": "30.00",
         "total_excluding_tax_amount": "26.09",
         "total_tax_amount": "3.91",

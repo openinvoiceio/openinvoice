@@ -28,8 +28,7 @@ class QuoteCustomerSerializer(serializers.Serializer):
     email = serializers.CharField(allow_null=True, source="effective_customer.email")
     phone = serializers.CharField(allow_null=True, source="effective_customer.phone")
     description = serializers.CharField(allow_null=True, source="effective_customer.description")
-    billing_address = AddressSerializer(source="effective_customer.billing_address")
-    shipping_address = AddressSerializer(source="effective_customer.shipping_address")
+    address = AddressSerializer(source="effective_customer.address")
     logo_id = serializers.UUIDField(allow_null=True, source="effective_customer.logo_id")
 
 

@@ -38,22 +38,15 @@ def test_assign_customer_tax_rate(api_client, user, account):
         "credit_note_numbering_system_id": None,
         "description": customer.description,
         "metadata": customer.metadata,
-        "billing_address": {
-            "country": customer.billing_address.country,
-            "line1": customer.billing_address.line1,
-            "line2": customer.billing_address.line2,
-            "locality": customer.billing_address.locality,
-            "postal_code": customer.billing_address.postal_code,
-            "state": customer.billing_address.state,
+        "address": {
+            "country": customer.address.country,
+            "line1": customer.address.line1,
+            "line2": customer.address.line2,
+            "locality": customer.address.locality,
+            "postal_code": customer.address.postal_code,
+            "state": customer.address.state,
         },
-        "shipping_address": {
-            "country": customer.shipping_address.country,
-            "line1": customer.shipping_address.line1,
-            "line2": customer.shipping_address.line2,
-            "locality": customer.shipping_address.locality,
-            "postal_code": customer.shipping_address.postal_code,
-            "state": customer.shipping_address.state,
-        },
+        "shipping": None,
         "tax_rates": [
             {
                 "id": str(tax_rate.id),

@@ -30,8 +30,7 @@ class CreditNoteCustomerSerializer(serializers.Serializer):
     email = serializers.CharField(allow_null=True)
     phone = serializers.CharField(allow_null=True)
     description = serializers.CharField(allow_null=True)
-    billing_address = AddressSerializer()
-    shipping_address = AddressSerializer()
+    address = AddressSerializer()
     logo_id = serializers.UUIDField(allow_null=True)
     tax_ids = TaxIdSerializer(many=True, read_only=True)
 

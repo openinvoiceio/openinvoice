@@ -47,9 +47,7 @@ class CustomerListCreateAPIView(generics.ListAPIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        billing_address = Address.objects.create_address(**data.get("billing_address", {}))
-        shipping_address = Address.objects.create_address(**data.get("shipping_address", {}))
-
+        address = Address.objects.create_address(**(data.get("address") or {}))
         customer = Customer.objects.create_customer(
             account=request.account,
             name=data["name"],
@@ -63,10 +61,16 @@ class CustomerListCreateAPIView(generics.ListAPIView):
             invoice_numbering_system=data.get("invoice_numbering_system"),
             credit_note_numbering_system=data.get("credit_note_numbering_system"),
             metadata=data.get("metadata"),
-            billing_address=billing_address,
-            shipping_address=shipping_address,
+            address=address,
             logo=data.get("logo"),
         )
+
+        if "shipping" in data:
+            customer.add_shipping(
+                name=data["shipping"].get("name"),
+                phone=data["shipping"].get("phone"),
+                address=Address.objects.create_address(**(data["shipping"].get("address") or {})),
+            )
 
         logger.info(
             "Customer created",
@@ -116,8 +120,24 @@ class CustomerRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             logo=data.get("logo", customer.logo),
         )
 
-        customer.billing_address.update(**data.get("billing_address", {}))
-        customer.shipping_address.update(**data.get("shipping_address", {}))
+        customer.address.update(**data.get("address", {}))
+
+        if "shipping" in data:
+            if data["shipping"] is None:
+                if customer.shipping:
+                    customer.shipping.delete()
+            elif customer.shipping:
+                customer.shipping.update(
+                    name=data["shipping"].get("name", customer.shipping.name),
+                    phone=data["shipping"].get("phone", customer.shipping.phone),
+                )
+                customer.shipping.address.update(**(data["shipping"].get("address", {}) or {}))
+            else:
+                customer.add_shipping(
+                    name=data["shipping"].get("name"),
+                    phone=data["shipping"].get("phone"),
+                    address=Address.objects.create_address(**(data["shipping"].get("address") or {})),
+                )
 
         logger.info("Customer updated", account_id=request.account.id, customer_id=customer.id)
 
