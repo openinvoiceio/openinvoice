@@ -305,15 +305,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             line_tax_rates = list(line.tax_rates.order_by("invoice_line_tax_rates__position"))
             tax_rates = line_tax_rates if line_tax_rates else invoice_tax_rates
             line.total_tax_rate = sum((tax_rate.percentage for tax_rate in tax_rates), Decimal(0))
-
-            if self.effective_tax_behavior == InvoiceTaxBehavior.INCLUSIVE and line.total_tax_rate > 0:
-                divisor = Decimal(1) + (line.total_tax_rate / Decimal(100))
-                line.unit_excluding_tax_amount = clamp_money(line.unit_amount / divisor)
-            else:
-                line.unit_excluding_tax_amount = line.unit_amount
-
-            line.total_taxable_amount = clamp_money(line.unit_excluding_tax_amount * line.quantity)
-            line.subtotal_amount = line.total_taxable_amount
+            line.unit_excluding_tax_amount = line.unit_amount / line.tax_multiplier
+            line.subtotal_amount = line.amount
 
         # Calculate line discounts
 
@@ -324,54 +317,57 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             if coupons:
                 # Calculate discounts for line-level coupons
                 for coupon in coupons:
-                    discount_amount = coupon.calculate_amount(line.total_taxable_amount)
-                    applicable_discount_amount = min(discount_amount, line.total_taxable_amount)
+                    discount_amount = coupon.calculate_amount(line.subtotal_amount)
+                    applicable_discount_amount = min(discount_amount, line.subtotal_amount)
 
                     if applicable_discount_amount.amount <= 0:
                         continue
 
                     line.subtotal_amount -= applicable_discount_amount
-                    line.total_taxable_amount -= applicable_discount_amount
                     line.total_discount_amount += applicable_discount_amount
                     line.add_discount_allocation(applicable_discount_amount, coupon, InvoiceDiscountSource.LINE)
             else:
                 # Accumulate invoice-level discountable lines for later discount calculation
                 discountable_lines.append(line)
 
+        # Calculate taxable amount
+
+        for line in lines:
+            line.total_taxable_amount = line.subtotal_amount / line.tax_multiplier
+
         # Calculate invoice discounts
 
-        total_taxable_amount = sum([line.total_taxable_amount for line in discountable_lines], zero(self.currency))
+        total_discountable_amount = sum(
+            (line.total_taxable_amount * line.tax_multiplier for line in discountable_lines),
+            start=zero(self.currency),
+        )
 
         for coupon in list(self.coupons.order_by("invoice_coupons__position")):
-            if total_taxable_amount.amount <= 0:
+            if total_discountable_amount.amount <= 0:
                 break
 
             if not discountable_lines:
                 break
 
-            discount_amount = coupon.calculate_amount(total_taxable_amount)
+            discount_amount = coupon.calculate_amount(total_discountable_amount)
             if discount_amount.amount <= 0:
                 continue
 
-            # Allocate discount amount proportionally across discountable lines
-            # This is required to make sure discounts fully consumed independent of lines amount
-            bases = [line.total_taxable_amount for line in discountable_lines]
+            bases = [line.total_taxable_amount * line.tax_multiplier for line in discountable_lines]
             discount_shares = allocate_proportionally(discount_amount, bases=bases)
 
-            # For each share amount update remaining lines discountable amount and record line discount
             for line, share_amount in zip(discountable_lines, discount_shares, strict=False):
-                share_amount = min(share_amount, line.total_taxable_amount)
-                # This insures we don't create zero-amount discounts
+                base_amount = line.total_taxable_amount * line.tax_multiplier
+                share_amount = min(share_amount, base_amount)
                 if share_amount.amount <= 0:
                     continue
 
-                line.total_taxable_amount -= share_amount
+                line.total_taxable_amount -= share_amount / line.tax_multiplier
                 line.total_discount_amount += share_amount
                 line.add_discount_allocation(share_amount, coupon, InvoiceDiscountSource.INVOICE)
 
-            # Update remaining invoice base for next coupon
-            total_taxable_amount = sum(
-                (line.total_taxable_amount for line in discountable_lines),
+            total_discountable_amount = sum(
+                (line.total_taxable_amount * line.tax_multiplier for line in discountable_lines),
                 start=zero(self.currency),
             )
 
@@ -679,6 +675,12 @@ class InvoiceLine(models.Model):
         if self.price:
             return self.price.calculate_unit_amount(self.quantity)
         return self.unit_amount
+
+    @property
+    def tax_multiplier(self) -> Decimal:
+        if self.invoice.effective_tax_behavior == InvoiceTaxBehavior.INCLUSIVE and self.total_tax_rate > 0:
+            return Decimal(1) + (self.total_tax_rate / Decimal(100))
+        return Decimal(1)
 
     def set_coupons(self, coupons: Iterable[Coupon]) -> None:
         self.coupons.clear()
