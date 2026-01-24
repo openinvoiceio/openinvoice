@@ -340,6 +340,7 @@ class Quote(models.Model):
         )
 
         for line in self.lines.all():
+            # TODO: use InvoiceLine.create_line?
             new_line = invoice.lines.create(
                 description=line.description,
                 quantity=line.quantity,
@@ -351,6 +352,7 @@ class Quote(models.Model):
                 amount=zero(invoice.currency),
                 subtotal_amount=zero(invoice.currency),
                 total_discount_amount=zero(invoice.currency),
+                total_discountable_amount=zero(invoice.currency),
                 total_taxable_amount=zero(invoice.currency),
                 total_excluding_tax_amount=zero(invoice.currency),
                 total_tax_amount=zero(invoice.currency),
