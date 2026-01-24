@@ -69,7 +69,7 @@ class CustomerListCreateAPIView(generics.ListAPIView):
             customer.add_shipping(
                 name=data["shipping"].get("name"),
                 phone=data["shipping"].get("phone"),
-                address=Address.objects.create_address(**(data["shipping"].get("address") or {})),
+                address_data=data["shipping"].get("address"),
             )
 
         logger.info(
@@ -130,13 +130,13 @@ class CustomerRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
                 customer.shipping.update(
                     name=data["shipping"].get("name", customer.shipping.name),
                     phone=data["shipping"].get("phone", customer.shipping.phone),
+                    address_data=data["shipping"].get("address", {}),
                 )
-                customer.shipping.address.update(**(data["shipping"].get("address", {}) or {}))
             else:
                 customer.add_shipping(
                     name=data["shipping"].get("name"),
                     phone=data["shipping"].get("phone"),
-                    address=Address.objects.create_address(**(data["shipping"].get("address") or {})),
+                    address_data=data["shipping"].get("address", {}),
                 )
 
         logger.info("Customer updated", account_id=request.account.id, customer_id=customer.id)

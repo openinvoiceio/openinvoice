@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING
 from django.db import models
 from djmoney import settings as djmoney_settings
 
+from apps.addresses.models import Address
+
 from .managers import CustomerManager
 from .querysets import CustomerQuerySet
 
 if TYPE_CHECKING:
-    from apps.addresses.models import Address
     from apps.files.models import File
     from apps.numbering_systems.models import NumberingSystem
 
@@ -128,7 +129,8 @@ class Customer(models.Model):
 
         self.save(update_fields=["name", "legal_name", "legal_number", "email", "phone"])
 
-    def add_shipping(self, name: str | None, phone: str | None, address: Address) -> None:
+    def add_shipping(self, name: str | None, phone: str | None, address_data: dict | None) -> None:
+        address = Address.objects.create_address(**(address_data or {}))
         self.shipping = CustomerShipping.objects.create(name=name, phone=phone, address=address)
         self.save(update_fields=["shipping"])
 
@@ -164,7 +166,9 @@ class CustomerShipping(models.Model):
         self,
         name: str | None,
         phone: str | None,
+        address_data: dict | None,
     ) -> None:
         self.name = name
         self.phone = phone
+        self.address.update(**(address_data or {}))
         self.save()

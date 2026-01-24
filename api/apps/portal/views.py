@@ -6,7 +6,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
-from apps.addresses.models import Address
 from apps.invoices.choices import InvoiceStatus
 from apps.invoices.models import Invoice
 
@@ -94,13 +93,13 @@ class PortalCustomerAPIView(generics.RetrieveAPIView):
                 customer.shipping.update(
                     name=data["shipping"].get("name", customer.shipping.name),
                     phone=data["shipping"].get("phone", customer.shipping.phone),
+                    address_data=data["shipping"].get("address", {}),
                 )
-                customer.shipping.address.update(**(data["shipping"].get("address", {}) or {}))
             else:
                 customer.add_shipping(
                     name=data["shipping"].get("name"),
                     phone=data["shipping"].get("phone"),
-                    address=Address.objects.create_address(**(data["shipping"].get("address") or {})),
+                    address_data=data["shipping"].get("address"),
                 )
 
         logger.info(

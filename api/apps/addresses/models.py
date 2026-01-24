@@ -26,7 +26,6 @@ class Address(models.Model):
 
     def update(
         self,
-        *,
         line1: str | None | UnsetType = empty,
         line2: str | None | UnsetType = empty,
         locality: str | None | UnsetType = empty,
