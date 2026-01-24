@@ -9,9 +9,11 @@
 export interface InvoiceLineCreate {
   invoice_id: string;
   /** @maxLength 255 */
-  description: string;
-  quantity: number;
+  description?: string;
+  quantity?: number;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   unit_amount?: string;
   price_id?: string;
+  tax_rates?: string[];
+  coupons?: string[];
 }

@@ -10,4 +10,4 @@ import type { Address } from "./address";
 /**
  * @nullable
  */
-export type CustomerUpdateBillingAddress = Address | null;
+export type PortalCustomerShippingUpdateAddress = Address | null;

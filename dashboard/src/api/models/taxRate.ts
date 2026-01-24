@@ -5,6 +5,7 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { ProductCatalogStatusEnum } from "./productCatalogStatusEnum";
 import type { TaxRateCountry } from "./taxRateCountry";
 
 export interface TaxRate {
@@ -17,7 +18,9 @@ export interface TaxRate {
   percentage: string;
   /** @nullable */
   country: TaxRateCountry;
-  is_active: boolean;
+  status: ProductCatalogStatusEnum;
   created_at: string;
   updated_at: string;
+  /** @nullable */
+  archived_at: string | null;
 }

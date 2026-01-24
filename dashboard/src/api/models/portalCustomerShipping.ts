@@ -5,11 +5,12 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { Address } from "./address";
 
-export interface InvoiceDiscountBreakdownItem {
+export interface PortalCustomerShipping {
   /** @nullable */
   name: string | null;
-  /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
-  amount: string;
-  coupon_id: string;
+  /** @nullable */
+  phone: string | null;
+  address: Address;
 }

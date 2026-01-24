@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { PriceProductMetadata } from "./priceProductMetadata";
+import type { ProductCatalogStatusEnum } from "./productCatalogStatusEnum";
 
 export interface PriceProduct {
   id: string;
@@ -13,7 +14,7 @@ export interface PriceProduct {
   name: string;
   /** @maxLength 1000 */
   description: string;
-  is_active: boolean;
+  status: ProductCatalogStatusEnum;
   /** @nullable */
   default_price_id: string | null;
   /** @nullable */
@@ -21,4 +22,6 @@ export interface PriceProduct {
   created_at: string;
   /** @nullable */
   updated_at: string | null;
+  /** @nullable */
+  archived_at: string | null;
 }

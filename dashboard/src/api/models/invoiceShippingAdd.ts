@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface InvoiceLineDiscountCreate {
-  coupon_id: string;
+export interface InvoiceShippingAdd {
+  shipping_rate_id: string;
+  tax_rates?: string[];
 }

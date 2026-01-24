@@ -864,3 +864,161 @@ export const useDeleteNumberingSystem = <
 
   return useMutation(mutationOptions, queryClient);
 };
+export const archiveNumberingSystem = (
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<NumberingSystem>(
+    { url: `/api/v1/numbering-systems/${id}/archive`, method: "POST", signal },
+    options,
+  );
+};
+
+export const getArchiveNumberingSystemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof archiveNumberingSystem>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof archiveNumberingSystem>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["archiveNumberingSystem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof archiveNumberingSystem>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return archiveNumberingSystem(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ArchiveNumberingSystemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof archiveNumberingSystem>>
+>;
+
+export type ArchiveNumberingSystemMutationError = ErrorType<unknown>;
+
+export const useArchiveNumberingSystem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof archiveNumberingSystem>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof archiveNumberingSystem>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getArchiveNumberingSystemMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const restoreNumberingSystem = (
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<NumberingSystem>(
+    { url: `/api/v1/numbering-systems/${id}/restore`, method: "POST", signal },
+    options,
+  );
+};
+
+export const getRestoreNumberingSystemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof restoreNumberingSystem>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof restoreNumberingSystem>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["restoreNumberingSystem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof restoreNumberingSystem>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return restoreNumberingSystem(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RestoreNumberingSystemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof restoreNumberingSystem>>
+>;
+
+export type RestoreNumberingSystemMutationError = ErrorType<unknown>;
+
+export const useRestoreNumberingSystem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof restoreNumberingSystem>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof restoreNumberingSystem>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getRestoreNumberingSystemMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};

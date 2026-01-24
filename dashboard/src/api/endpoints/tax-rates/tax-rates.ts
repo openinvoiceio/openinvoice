@@ -833,35 +833,35 @@ export const useArchiveTaxRate = <
 
   return useMutation(mutationOptions, queryClient);
 };
-export const unarchiveTaxRate = (
+export const restoreTaxRate = (
   id: string,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
   return axiosInstance<TaxRate>(
-    { url: `/api/v1/tax-rates/${id}/unarchive`, method: "POST", signal },
+    { url: `/api/v1/tax-rates/${id}/restore`, method: "POST", signal },
     options,
   );
 };
 
-export const getUnarchiveTaxRateMutationOptions = <
+export const getRestoreTaxRateMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof unarchiveTaxRate>>,
+    Awaited<ReturnType<typeof restoreTaxRate>>,
     TError,
     { id: string },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof unarchiveTaxRate>>,
+  Awaited<ReturnType<typeof restoreTaxRate>>,
   TError,
   { id: string },
   TContext
 > => {
-  const mutationKey = ["unarchiveTaxRate"];
+  const mutationKey = ["restoreTaxRate"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -871,30 +871,30 @@ export const getUnarchiveTaxRateMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof unarchiveTaxRate>>,
+    Awaited<ReturnType<typeof restoreTaxRate>>,
     { id: string }
   > = (props) => {
     const { id } = props ?? {};
 
-    return unarchiveTaxRate(id, requestOptions);
+    return restoreTaxRate(id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type UnarchiveTaxRateMutationResult = NonNullable<
-  Awaited<ReturnType<typeof unarchiveTaxRate>>
+export type RestoreTaxRateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof restoreTaxRate>>
 >;
 
-export type UnarchiveTaxRateMutationError = ErrorType<unknown>;
+export type RestoreTaxRateMutationError = ErrorType<unknown>;
 
-export const useUnarchiveTaxRate = <
+export const useRestoreTaxRate = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof unarchiveTaxRate>>,
+      Awaited<ReturnType<typeof restoreTaxRate>>,
       TError,
       { id: string },
       TContext
@@ -903,12 +903,12 @@ export const useUnarchiveTaxRate = <
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof unarchiveTaxRate>>,
+  Awaited<ReturnType<typeof restoreTaxRate>>,
   TError,
   { id: string },
   TContext
 > => {
-  const mutationOptions = getUnarchiveTaxRateMutationOptions(options);
+  const mutationOptions = getRestoreTaxRateMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

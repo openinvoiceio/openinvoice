@@ -943,35 +943,35 @@ export const useArchiveShippingRate = <
 
   return useMutation(mutationOptions, queryClient);
 };
-export const unarchiveShippingRate = (
+export const restoreShippingRate = (
   id: string,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
   return axiosInstance<ShippingRate>(
-    { url: `/api/v1/shipping-rates/${id}/unarchive`, method: "POST", signal },
+    { url: `/api/v1/shipping-rates/${id}/restore`, method: "POST", signal },
     options,
   );
 };
 
-export const getUnarchiveShippingRateMutationOptions = <
+export const getRestoreShippingRateMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof unarchiveShippingRate>>,
+    Awaited<ReturnType<typeof restoreShippingRate>>,
     TError,
     { id: string },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof unarchiveShippingRate>>,
+  Awaited<ReturnType<typeof restoreShippingRate>>,
   TError,
   { id: string },
   TContext
 > => {
-  const mutationKey = ["unarchiveShippingRate"];
+  const mutationKey = ["restoreShippingRate"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -981,30 +981,30 @@ export const getUnarchiveShippingRateMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof unarchiveShippingRate>>,
+    Awaited<ReturnType<typeof restoreShippingRate>>,
     { id: string }
   > = (props) => {
     const { id } = props ?? {};
 
-    return unarchiveShippingRate(id, requestOptions);
+    return restoreShippingRate(id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type UnarchiveShippingRateMutationResult = NonNullable<
-  Awaited<ReturnType<typeof unarchiveShippingRate>>
+export type RestoreShippingRateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof restoreShippingRate>>
 >;
 
-export type UnarchiveShippingRateMutationError = ErrorType<unknown>;
+export type RestoreShippingRateMutationError = ErrorType<unknown>;
 
-export const useUnarchiveShippingRate = <
+export const useRestoreShippingRate = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof unarchiveShippingRate>>,
+      Awaited<ReturnType<typeof restoreShippingRate>>,
       TError,
       { id: string },
       TContext
@@ -1013,12 +1013,12 @@ export const useUnarchiveShippingRate = <
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof unarchiveShippingRate>>,
+  Awaited<ReturnType<typeof restoreShippingRate>>,
   TError,
   { id: string },
   TContext
 > => {
-  const mutationOptions = getUnarchiveShippingRateMutationOptions(options);
+  const mutationOptions = getRestoreShippingRateMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

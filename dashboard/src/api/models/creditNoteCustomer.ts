@@ -21,8 +21,7 @@ export interface CreditNoteCustomer {
   phone: string | null;
   /** @nullable */
   description: string | null;
-  billing_address: Address;
-  shipping_address: Address;
+  address: Address;
   /** @nullable */
   logo_id: string | null;
   readonly tax_ids: readonly TaxId[];

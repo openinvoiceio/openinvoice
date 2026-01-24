@@ -6,15 +6,14 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { DeliveryMethodEnum } from "./deliveryMethodEnum";
-import type { InvoiceCreateCurrency } from "./invoiceCreateCurrency";
-import type { InvoiceCreateCustomFields } from "./invoiceCreateCustomFields";
-import type { InvoiceCreateMetadata } from "./invoiceCreateMetadata";
-import type { InvoiceCreatePaymentProvider } from "./invoiceCreatePaymentProvider";
-import type { InvoiceCreateShipping } from "./invoiceCreateShipping";
+import type { InvoiceRevisionCreateCurrency } from "./invoiceRevisionCreateCurrency";
+import type { InvoiceRevisionCreateCustomFields } from "./invoiceRevisionCreateCustomFields";
+import type { InvoiceRevisionCreateMetadata } from "./invoiceRevisionCreateMetadata";
+import type { InvoiceRevisionCreatePaymentProvider } from "./invoiceRevisionCreatePaymentProvider";
+import type { InvoiceRevisionCreateShipping } from "./invoiceRevisionCreateShipping";
 import type { TaxBehaviorEnum } from "./taxBehaviorEnum";
 
-export interface InvoiceCreate {
-  customer_id: string;
+export interface InvoiceRevisionCreate {
   /**
    * @maxLength 255
    * @nullable
@@ -23,7 +22,7 @@ export interface InvoiceCreate {
   /** @nullable */
   numbering_system_id?: string | null;
   /** @nullable */
-  currency?: InvoiceCreateCurrency;
+  currency?: InvoiceRevisionCreateCurrency;
   tax_behavior?: TaxBehaviorEnum;
   /** @nullable */
   issue_date?: string | null;
@@ -37,9 +36,9 @@ export interface InvoiceCreate {
    */
   net_payment_term?: number | null;
   /** @nullable */
-  metadata?: InvoiceCreateMetadata;
+  metadata?: InvoiceRevisionCreateMetadata;
   /** @nullable */
-  custom_fields?: InvoiceCreateCustomFields;
+  custom_fields?: InvoiceRevisionCreateCustomFields;
   /**
    * @maxLength 600
    * @nullable
@@ -51,7 +50,7 @@ export interface InvoiceCreate {
    */
   description?: string | null;
   /** @nullable */
-  payment_provider?: InvoiceCreatePaymentProvider;
+  payment_provider?: InvoiceRevisionCreatePaymentProvider;
   /** @nullable */
   payment_connection_id?: string | null;
   delivery_method?: DeliveryMethodEnum;
@@ -59,5 +58,5 @@ export interface InvoiceCreate {
   tax_rates?: string[];
   coupons?: string[];
   /** @nullable */
-  shipping?: InvoiceCreateShipping;
+  shipping?: InvoiceRevisionCreateShipping;
 }

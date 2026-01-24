@@ -9,6 +9,7 @@ import type { CurrencyEnum } from "./currencyEnum";
 import type { PriceModelEnum } from "./priceModelEnum";
 import type { PriceProduct } from "./priceProduct";
 import type { PriceTier } from "./priceTier";
+import type { ProductCatalogStatusEnum } from "./productCatalogStatusEnum";
 
 export interface Price {
   id: string;
@@ -18,7 +19,7 @@ export interface Price {
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   amount?: string;
   model: PriceModelEnum;
-  is_active: boolean;
+  status: ProductCatalogStatusEnum;
   metadata: unknown;
   is_used: boolean;
   /**

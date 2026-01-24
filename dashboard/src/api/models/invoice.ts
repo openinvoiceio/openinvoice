@@ -5,17 +5,19 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { Coupon } from "./coupon";
 import type { CurrencyEnum } from "./currencyEnum";
 import type { DeliveryMethodEnum } from "./deliveryMethodEnum";
 import type { InvoiceAccount } from "./invoiceAccount";
 import type { InvoiceCustomer } from "./invoiceCustomer";
 import type { InvoiceDiscount } from "./invoiceDiscount";
-import type { InvoiceDiscountBreakdownItem } from "./invoiceDiscountBreakdownItem";
 import type { InvoiceLine } from "./invoiceLine";
 import type { InvoicePaymentProvider } from "./invoicePaymentProvider";
+import type { InvoiceShipping } from "./invoiceShipping";
 import type { InvoiceStatusEnum } from "./invoiceStatusEnum";
 import type { InvoiceTax } from "./invoiceTax";
-import type { InvoiceTaxBreakdownItem } from "./invoiceTaxBreakdownItem";
+import type { TaxBehaviorEnum } from "./taxBehaviorEnum";
+import type { TaxRate } from "./taxRate";
 
 export interface Invoice {
   id: string;
@@ -24,17 +26,15 @@ export interface Invoice {
   readonly number: string | null;
   /** @nullable */
   numbering_system_id: string | null;
-  /** @nullable */
-  previous_revision_id: string | null;
-  /** @nullable */
-  latest_revision_id: string | null;
   currency: CurrencyEnum;
+  tax_behavior: TaxBehaviorEnum;
   /** @nullable */
   issue_date: string | null;
   /** @nullable */
   sell_date: string | null;
   /** @nullable */
   due_date: string | null;
+  /** @minimum 0 */
   net_payment_term: number;
   delivery_method: DeliveryMethodEnum;
   recipients: string[];
@@ -51,7 +51,9 @@ export interface Invoice {
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   total_discount_amount: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
-  total_amount_excluding_tax: string;
+  total_excluding_tax_amount: string;
+  /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
+  shipping_amount: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   total_tax_amount: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
@@ -78,8 +80,11 @@ export interface Invoice {
   /** @nullable */
   pdf_id: string | null;
   lines: InvoiceLine[];
+  shipping: InvoiceShipping;
+  coupons: Coupon[];
   readonly discounts: readonly InvoiceDiscount[];
+  readonly total_discounts: readonly InvoiceDiscount[];
+  tax_rates: TaxRate[];
   readonly taxes: readonly InvoiceTax[];
-  readonly discount_breakdown: readonly InvoiceDiscountBreakdownItem[];
-  readonly tax_breakdown: readonly InvoiceTaxBreakdownItem[];
+  readonly total_taxes: readonly InvoiceTax[];
 }

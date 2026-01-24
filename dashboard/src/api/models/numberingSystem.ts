@@ -7,6 +7,7 @@
  */
 import type { NumberingSystemAppliesToEnum } from "./numberingSystemAppliesToEnum";
 import type { NumberingSystemResetIntervalEnum } from "./numberingSystemResetIntervalEnum";
+import type { ProductCatalogStatusEnum } from "./productCatalogStatusEnum";
 
 export interface NumberingSystem {
   id: string;
@@ -16,7 +17,10 @@ export interface NumberingSystem {
   description: string | null;
   applies_to: NumberingSystemAppliesToEnum;
   reset_interval: NumberingSystemResetIntervalEnum;
+  status: ProductCatalogStatusEnum;
   created_at: string;
   /** @nullable */
   updated_at: string | null;
+  /** @nullable */
+  archived_at: string | null;
 }

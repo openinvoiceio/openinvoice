@@ -832,3 +832,161 @@ export const useDeleteCoupon = <
 
   return useMutation(mutationOptions, queryClient);
 };
+export const archiveCoupon = (
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<Coupon>(
+    { url: `/api/v1/coupons/${id}/archive`, method: "POST", signal },
+    options,
+  );
+};
+
+export const getArchiveCouponMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof archiveCoupon>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof archiveCoupon>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["archiveCoupon"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof archiveCoupon>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return archiveCoupon(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ArchiveCouponMutationResult = NonNullable<
+  Awaited<ReturnType<typeof archiveCoupon>>
+>;
+
+export type ArchiveCouponMutationError = ErrorType<unknown>;
+
+export const useArchiveCoupon = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof archiveCoupon>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof archiveCoupon>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getArchiveCouponMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const restoreCoupon = (
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<Coupon>(
+    { url: `/api/v1/coupons/${id}/restore`, method: "POST", signal },
+    options,
+  );
+};
+
+export const getRestoreCouponMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof restoreCoupon>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof restoreCoupon>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["restoreCoupon"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof restoreCoupon>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return restoreCoupon(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RestoreCouponMutationResult = NonNullable<
+  Awaited<ReturnType<typeof restoreCoupon>>
+>;
+
+export type RestoreCouponMutationError = ErrorType<unknown>;
+
+export const useRestoreCoupon = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof restoreCoupon>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof restoreCoupon>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getRestoreCouponMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};

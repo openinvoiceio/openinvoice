@@ -7,6 +7,7 @@
  */
 import type { Address } from "./address";
 import type { CustomerCurrency } from "./customerCurrency";
+import type { CustomerShippingProperty } from "./customerShippingProperty";
 import type { TaxId } from "./taxId";
 import type { TaxRate } from "./taxRate";
 
@@ -24,7 +25,10 @@ export interface Customer {
   phone: string | null;
   /** @nullable */
   currency: CustomerCurrency;
-  /** @nullable */
+  /**
+   * @minimum 0
+   * @nullable
+   */
   net_payment_term: number | null;
   /** @nullable */
   invoice_numbering_system_id: string | null;
@@ -33,8 +37,9 @@ export interface Customer {
   /** @nullable */
   description: string | null;
   metadata: unknown;
-  billing_address: Address;
-  shipping_address: Address;
+  address: Address;
+  /** @nullable */
+  shipping: CustomerShippingProperty;
   readonly tax_rates: readonly TaxRate[];
   readonly tax_ids: readonly TaxId[];
   /** @nullable */

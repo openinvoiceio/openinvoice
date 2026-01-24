@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { NumberingSystemsListAppliesTo } from "./numberingSystemsListAppliesTo";
+import type { NumberingSystemsListStatus } from "./numberingSystemsListStatus";
 
 export type NumberingSystemsListParams = {
   /**
@@ -30,4 +31,9 @@ export type NumberingSystemsListParams = {
    * A search term.
    */
   search?: string;
+  /**
+   * * `active` - Active
+   * `archived` - Archived
+   */
+  status?: NumberingSystemsListStatus;
 };

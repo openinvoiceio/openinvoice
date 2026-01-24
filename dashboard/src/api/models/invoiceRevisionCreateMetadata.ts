@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface InvoiceTaxCreate {
-  tax_rate_id: string;
-}
+/**
+ * @nullable
+ */
+export type InvoiceRevisionCreateMetadata = unknown | null;

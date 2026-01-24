@@ -5,6 +5,7 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { ProductCatalogStatusEnum } from "./productCatalogStatusEnum";
 import type { ProductDefaultPrice } from "./productDefaultPrice";
 
 export interface Product {
@@ -17,7 +18,7 @@ export interface Product {
    * @nullable
    */
   description: string | null;
-  is_active: boolean;
+  status: ProductCatalogStatusEnum;
   /** @nullable */
   url: string | null;
   /** @nullable */
@@ -31,4 +32,6 @@ export interface Product {
   created_at: string;
   /** @nullable */
   updated_at: string | null;
+  /** @nullable */
+  archived_at: string | null;
 }

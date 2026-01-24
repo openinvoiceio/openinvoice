@@ -8,6 +8,8 @@
 import type { CurrencyEnum } from "./currencyEnum";
 import type { DeliveryMethodEnum } from "./deliveryMethodEnum";
 import type { InvoiceUpdatePaymentProvider } from "./invoiceUpdatePaymentProvider";
+import type { InvoiceUpdateShipping } from "./invoiceUpdateShipping";
+import type { TaxBehaviorEnum } from "./taxBehaviorEnum";
 
 export interface InvoiceUpdate {
   customer_id?: string;
@@ -19,12 +21,14 @@ export interface InvoiceUpdate {
   /** @nullable */
   numbering_system_id?: string | null;
   currency?: CurrencyEnum;
+  tax_behavior?: TaxBehaviorEnum;
   /** @nullable */
   issue_date?: string | null;
   /** @nullable */
   sell_date?: string | null;
   /** @nullable */
   due_date?: string | null;
+  /** @minimum 0 */
   net_payment_term?: number;
   metadata?: unknown;
   custom_fields?: unknown;
@@ -44,4 +48,8 @@ export interface InvoiceUpdate {
   payment_connection_id?: string | null;
   delivery_method?: DeliveryMethodEnum;
   recipients?: string[];
+  tax_rates?: string[];
+  coupons?: string[];
+  /** @nullable */
+  shipping?: InvoiceUpdateShipping;
 }

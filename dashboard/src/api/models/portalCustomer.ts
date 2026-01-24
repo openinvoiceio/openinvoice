@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Address } from "./address";
+import type { PortalCustomerShippingProperty } from "./portalCustomerShippingProperty";
 import type { TaxId } from "./taxId";
 
 export interface PortalCustomer {
@@ -20,7 +21,8 @@ export interface PortalCustomer {
   email: string | null;
   /** @nullable */
   phone: string | null;
-  billing_address: Address;
-  shipping_address: Address;
+  address: Address;
+  /** @nullable */
+  shipping: PortalCustomerShippingProperty;
   tax_ids: TaxId[];
 }

@@ -5,7 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { Address } from "./address";
 
-export interface InvoiceLineTaxCreate {
-  tax_rate_id: string;
-}
+/**
+ * @nullable
+ */
+export type CustomerUpdateAddress = Address | null;

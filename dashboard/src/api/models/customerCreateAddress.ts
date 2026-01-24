@@ -5,9 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { Address } from "./address";
 
-export interface InvoiceDiscount {
-  coupon_id: string;
-  /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
-  amount: string;
-}
+/**
+ * @nullable
+ */
+export type CustomerCreateAddress = Address | null;

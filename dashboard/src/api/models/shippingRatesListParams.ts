@@ -5,6 +5,7 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { ShippingRatesListStatus } from "./shippingRatesListStatus";
 
 export type ShippingRatesListParams = {
   /**
@@ -23,4 +24,9 @@ export type ShippingRatesListParams = {
    * A search term.
    */
   search?: string;
+  /**
+   * * `active` - Active
+   * `archived` - Archived
+   */
+  status?: ShippingRatesListStatus;
 };

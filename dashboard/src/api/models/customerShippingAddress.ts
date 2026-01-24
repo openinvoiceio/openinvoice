@@ -5,7 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { Address } from "./address";
 
-export interface InvoiceDiscountCreate {
-  coupon_id: string;
-}
+/**
+ * @nullable
+ */
+export type CustomerShippingAddress = Address | null;

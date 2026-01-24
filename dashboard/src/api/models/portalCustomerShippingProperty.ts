@@ -5,9 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { Address } from "./address";
+import type { PortalCustomerShipping } from "./portalCustomerShipping";
 
 /**
  * @nullable
  */
-export type CustomerCreateBillingAddress = Address | null;
+export type PortalCustomerShippingProperty = PortalCustomerShipping | null;

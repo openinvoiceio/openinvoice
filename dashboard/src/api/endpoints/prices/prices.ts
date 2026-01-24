@@ -882,35 +882,35 @@ export const useArchivePrice = <
 
   return useMutation(mutationOptions, queryClient);
 };
-export const unarchivePrice = (
+export const restorePrice = (
   id: string,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
   return axiosInstance<Price>(
-    { url: `/api/v1/prices/${id}/unarchive`, method: "POST", signal },
+    { url: `/api/v1/prices/${id}/restore`, method: "POST", signal },
     options,
   );
 };
 
-export const getUnarchivePriceMutationOptions = <
+export const getRestorePriceMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof unarchivePrice>>,
+    Awaited<ReturnType<typeof restorePrice>>,
     TError,
     { id: string },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof unarchivePrice>>,
+  Awaited<ReturnType<typeof restorePrice>>,
   TError,
   { id: string },
   TContext
 > => {
-  const mutationKey = ["unarchivePrice"];
+  const mutationKey = ["restorePrice"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -920,30 +920,30 @@ export const getUnarchivePriceMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof unarchivePrice>>,
+    Awaited<ReturnType<typeof restorePrice>>,
     { id: string }
   > = (props) => {
     const { id } = props ?? {};
 
-    return unarchivePrice(id, requestOptions);
+    return restorePrice(id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type UnarchivePriceMutationResult = NonNullable<
-  Awaited<ReturnType<typeof unarchivePrice>>
+export type RestorePriceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof restorePrice>>
 >;
 
-export type UnarchivePriceMutationError = ErrorType<unknown>;
+export type RestorePriceMutationError = ErrorType<unknown>;
 
-export const useUnarchivePrice = <
+export const useRestorePrice = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof unarchivePrice>>,
+      Awaited<ReturnType<typeof restorePrice>>,
       TError,
       { id: string },
       TContext
@@ -952,12 +952,12 @@ export const useUnarchivePrice = <
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof unarchivePrice>>,
+  Awaited<ReturnType<typeof restorePrice>>,
   TError,
   { id: string },
   TContext
 > => {
-  const mutationOptions = getUnarchivePriceMutationOptions(options);
+  const mutationOptions = getRestorePriceMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

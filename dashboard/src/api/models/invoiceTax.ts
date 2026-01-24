@@ -7,13 +7,7 @@
  */
 
 export interface InvoiceTax {
-  id: string;
   tax_rate_id: string;
-  name: string;
-  /** @nullable */
-  description: string | null;
-  /** @pattern ^-?\d{0,3}(?:\.\d{0,2})?$ */
-  rate: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   amount: string;
 }

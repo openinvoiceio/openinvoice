@@ -5,9 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { CustomerCreateBillingAddress } from "./customerCreateBillingAddress";
+import type { CustomerCreateAddress } from "./customerCreateAddress";
 import type { CustomerCreateCurrency } from "./customerCreateCurrency";
-import type { CustomerCreateShippingAddress } from "./customerCreateShippingAddress";
+import type { CustomerCreateShipping } from "./customerCreateShipping";
 
 export interface CustomerCreate {
   /** @maxLength 255 */
@@ -39,7 +39,10 @@ export interface CustomerCreate {
   description?: string | null;
   /** @nullable */
   currency?: CustomerCreateCurrency;
-  /** @nullable */
+  /**
+   * @minimum 0
+   * @nullable
+   */
   net_payment_term?: number | null;
   /** @nullable */
   invoice_numbering_system_id?: string | null;
@@ -47,9 +50,9 @@ export interface CustomerCreate {
   credit_note_numbering_system_id?: string | null;
   metadata?: unknown;
   /** @nullable */
-  billing_address?: CustomerCreateBillingAddress;
+  address?: CustomerCreateAddress;
   /** @nullable */
-  shipping_address?: CustomerCreateShippingAddress;
+  shipping?: CustomerCreateShipping;
   /** @nullable */
   logo_id?: string | null;
 }

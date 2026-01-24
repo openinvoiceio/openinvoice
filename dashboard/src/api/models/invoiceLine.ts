@@ -5,8 +5,10 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { InvoiceLineDiscount } from "./invoiceLineDiscount";
-import type { InvoiceLineTax } from "./invoiceLineTax";
+import type { Coupon } from "./coupon";
+import type { InvoiceDiscount } from "./invoiceDiscount";
+import type { InvoiceTax } from "./invoiceTax";
+import type { TaxRate } from "./taxRate";
 
 export interface InvoiceLine {
   id: string;
@@ -21,9 +23,11 @@ export interface InvoiceLine {
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   readonly amount: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
+  readonly subtotal_amount: string;
+  /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   readonly total_discount_amount: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
-  readonly total_amount_excluding_tax: string;
+  readonly total_excluding_tax_amount: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   readonly total_tax_amount: string;
   /** @pattern ^-?\d{0,3}(?:\.\d{0,2})?$ */
@@ -36,6 +40,10 @@ export interface InvoiceLine {
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   readonly outstanding_amount: string;
   readonly outstanding_quantity: number;
-  discounts: InvoiceLineDiscount[];
-  taxes: InvoiceLineTax[];
+  coupons: Coupon[];
+  readonly discounts: readonly InvoiceDiscount[];
+  readonly total_discounts: readonly InvoiceDiscount[];
+  tax_rates: TaxRate[];
+  readonly taxes: readonly InvoiceTax[];
+  readonly total_taxes: readonly InvoiceTax[];
 }

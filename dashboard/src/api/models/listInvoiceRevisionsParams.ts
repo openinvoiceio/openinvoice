@@ -6,13 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CustomersListParams = {
-  created_at_after?: string;
-  created_at_before?: string;
-  /**
-   * Multiple values may be separated by commas.
-   */
-  currency?: string[];
+export type ListInvoiceRevisionsParams = {
   /**
    * Which field to use when ordering the results.
    */

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CurrencyEnum } from "./currencyEnum";
+import type { ProductCatalogStatusEnum } from "./productCatalogStatusEnum";
 
 export interface Coupon {
   id: string;
@@ -22,7 +23,10 @@ export interface Coupon {
    * @pattern ^-?\d{0,3}(?:\.\d{0,2})?$
    */
   percentage: string | null;
+  status: ProductCatalogStatusEnum;
   created_at: string;
   /** @nullable */
   updated_at: string | null;
+  /** @nullable */
+  archived_at: string | null;
 }

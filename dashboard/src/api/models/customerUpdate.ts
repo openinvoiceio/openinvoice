@@ -5,9 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { CustomerUpdateBillingAddress } from "./customerUpdateBillingAddress";
+import type { CustomerUpdateAddress } from "./customerUpdateAddress";
 import type { CustomerUpdateCurrency } from "./customerUpdateCurrency";
-import type { CustomerUpdateShippingAddress } from "./customerUpdateShippingAddress";
+import type { CustomerUpdateShipping } from "./customerUpdateShipping";
 
 export interface CustomerUpdate {
   /** @maxLength 255 */
@@ -39,7 +39,10 @@ export interface CustomerUpdate {
   description?: string | null;
   /** @nullable */
   currency?: CustomerUpdateCurrency;
-  /** @nullable */
+  /**
+   * @minimum 0
+   * @nullable
+   */
   net_payment_term?: number | null;
   /** @nullable */
   invoice_numbering_system_id?: string | null;
@@ -47,9 +50,9 @@ export interface CustomerUpdate {
   credit_note_numbering_system_id?: string | null;
   metadata?: unknown;
   /** @nullable */
-  billing_address?: CustomerUpdateBillingAddress;
+  address?: CustomerUpdateAddress;
   /** @nullable */
-  shipping_address?: CustomerUpdateShippingAddress;
+  shipping?: CustomerUpdateShipping;
   /** @nullable */
   logo_id?: string | null;
 }

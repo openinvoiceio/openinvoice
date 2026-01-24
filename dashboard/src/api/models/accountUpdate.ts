@@ -41,6 +41,7 @@ export interface AccountUpdate {
   invoice_numbering_system_id?: string | null;
   /** @nullable */
   credit_note_numbering_system_id?: string | null;
+  /** @minimum 0 */
   net_payment_term?: number;
   metadata?: unknown;
   /** @nullable */

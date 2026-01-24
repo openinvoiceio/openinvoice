@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CurrencyEnum } from "./currencyEnum";
+import type { ProductCatalogStatusEnum } from "./productCatalogStatusEnum";
 import type { ShippingRateTaxPolicyEnum } from "./shippingRateTaxPolicyEnum";
 
 export interface ShippingRate {
@@ -22,7 +23,7 @@ export interface ShippingRate {
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   amount: string;
   tax_policy: ShippingRateTaxPolicyEnum;
-  is_active: boolean;
+  status: ProductCatalogStatusEnum;
   metadata: unknown;
   created_at: string;
   /** @nullable */

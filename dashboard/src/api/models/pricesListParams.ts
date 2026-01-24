@@ -5,15 +5,12 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { PricesListStatus } from "./pricesListStatus";
 
 export type PricesListParams = {
-  created_at_eq?: string;
-  created_at_gt?: string;
-  created_at_gte?: string;
-  created_at_lt?: string;
-  created_at_lte?: string;
+  created_at_after?: string;
+  created_at_before?: string;
   currency?: string;
-  is_active?: boolean;
   /**
    * Which field to use when ordering the results.
    */
@@ -31,4 +28,9 @@ export type PricesListParams = {
    * A search term.
    */
   search?: string;
+  /**
+   * * `active` - Active
+   * `archived` - Archived
+   */
+  status?: PricesListStatus;
 };

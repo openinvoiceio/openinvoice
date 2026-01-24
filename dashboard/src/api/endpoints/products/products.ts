@@ -911,35 +911,35 @@ export const useArchiveProduct = <
 
   return useMutation(mutationOptions, queryClient);
 };
-export const unarchiveProduct = (
+export const restoreProduct = (
   id: string,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
   return axiosInstance<Product>(
-    { url: `/api/v1/products/${id}/unarchive`, method: "POST", signal },
+    { url: `/api/v1/products/${id}/restore`, method: "POST", signal },
     options,
   );
 };
 
-export const getUnarchiveProductMutationOptions = <
+export const getRestoreProductMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof unarchiveProduct>>,
+    Awaited<ReturnType<typeof restoreProduct>>,
     TError,
     { id: string },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof unarchiveProduct>>,
+  Awaited<ReturnType<typeof restoreProduct>>,
   TError,
   { id: string },
   TContext
 > => {
-  const mutationKey = ["unarchiveProduct"];
+  const mutationKey = ["restoreProduct"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -949,30 +949,30 @@ export const getUnarchiveProductMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof unarchiveProduct>>,
+    Awaited<ReturnType<typeof restoreProduct>>,
     { id: string }
   > = (props) => {
     const { id } = props ?? {};
 
-    return unarchiveProduct(id, requestOptions);
+    return restoreProduct(id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type UnarchiveProductMutationResult = NonNullable<
-  Awaited<ReturnType<typeof unarchiveProduct>>
+export type RestoreProductMutationResult = NonNullable<
+  Awaited<ReturnType<typeof restoreProduct>>
 >;
 
-export type UnarchiveProductMutationError = ErrorType<unknown>;
+export type RestoreProductMutationError = ErrorType<unknown>;
 
-export const useUnarchiveProduct = <
+export const useRestoreProduct = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof unarchiveProduct>>,
+      Awaited<ReturnType<typeof restoreProduct>>,
       TError,
       { id: string },
       TContext
@@ -981,12 +981,12 @@ export const useUnarchiveProduct = <
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof unarchiveProduct>>,
+  Awaited<ReturnType<typeof restoreProduct>>,
   TError,
   { id: string },
   TContext
 > => {
-  const mutationOptions = getUnarchiveProductMutationOptions(options);
+  const mutationOptions = getRestoreProductMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

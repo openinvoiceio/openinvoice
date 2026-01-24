@@ -5,6 +5,7 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { CouponsListStatus } from "./couponsListStatus";
 
 export type CouponsListParams = {
   /**
@@ -27,4 +28,9 @@ export type CouponsListParams = {
    * A search term.
    */
   search?: string;
+  /**
+   * * `active` - Active
+   * `archived` - Archived
+   */
+  status?: CouponsListStatus;
 };

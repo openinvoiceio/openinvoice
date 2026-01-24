@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Address } from "./address";
+import type { PortalCustomerUpdateShipping } from "./portalCustomerUpdateShipping";
 
 export interface PortalCustomerUpdate {
   name?: string;
@@ -17,6 +18,7 @@ export interface PortalCustomerUpdate {
   email?: string | null;
   /** @nullable */
   phone?: string | null;
-  billing_address?: Address;
-  shipping_address?: Address;
+  address?: Address;
+  /** @nullable */
+  shipping?: PortalCustomerUpdateShipping;
 }

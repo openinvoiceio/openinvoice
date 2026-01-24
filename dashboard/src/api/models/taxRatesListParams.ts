@@ -5,14 +5,11 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { TaxRatesListStatus } from "./taxRatesListStatus";
 
 export type TaxRatesListParams = {
-  created_at_eq?: string;
-  created_at_gt?: string;
-  created_at_gte?: string;
-  created_at_lt?: string;
-  created_at_lte?: string;
-  is_active?: boolean;
+  created_at_after?: string;
+  created_at_before?: string;
   /**
    * Which field to use when ordering the results.
    */
@@ -29,4 +26,9 @@ export type TaxRatesListParams = {
    * A search term.
    */
   search?: string;
+  /**
+   * * `active` - Active
+   * `archived` - Archived
+   */
+  status?: TaxRatesListStatus;
 };
