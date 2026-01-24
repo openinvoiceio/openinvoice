@@ -1,10 +1,6 @@
 import {
-  useApplyInvoiceLineDiscount,
-  useApplyInvoiceLineTax,
   useCreateInvoiceLine,
   useDeleteInvoiceLine,
-  useDeleteInvoiceLineDiscount,
-  useDeleteInvoiceLineTax,
   useUpdateInvoiceLine,
 } from "@/api/endpoints/invoice-lines/invoice-lines";
 import {
@@ -63,7 +59,6 @@ import { formatAmount, formatPercentage } from "@/lib/formatters";
 import { formatPrice } from "@/lib/products.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import Decimal from "decimal.js";
 import { PlusIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import CurrencyInput from "react-currency-input-field";
@@ -108,22 +103,18 @@ function InvoiceLineForm({
   const discountsLimitReached = line.discounts.length >= MAX_DISCOUNTS;
   const taxesLimitReached = line.taxes.length >= MAX_TAXES;
 
-  async function invalidate() {
-    await queryClient.invalidateQueries({
-      queryKey: getInvoicesListQueryKey(),
-    });
-    await queryClient.invalidateQueries({
-      queryKey: getInvoicesRetrieveQueryKey(invoice.id),
-    });
-    await queryClient.invalidateQueries({
-      queryKey: getPreviewInvoiceQueryKey(invoice.id),
-    });
-  }
-
   const updateInvoiceLine = useUpdateInvoiceLine({
     mutation: {
       onSuccess: async () => {
-        await invalidate();
+        await queryClient.invalidateQueries({
+          queryKey: getInvoicesListQueryKey(),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: getInvoicesRetrieveQueryKey(invoice.id),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: getPreviewInvoiceQueryKey(invoice.id),
+        });
       },
       onError: (error) => {
         const { message, description } = getErrorSummary(error);
@@ -131,60 +122,9 @@ function InvoiceLineForm({
       },
     },
   });
-  const applyInvoiceLineDiscount = useApplyInvoiceLineDiscount({
-    mutation: {
-      onSuccess: async () => {
-        await invalidate();
-      },
-      onError: (error) => {
-        const { message, description } = getErrorSummary(error);
-        toast.error(message, { description: description });
-      },
-    },
-  });
-  const deleteInvoiceLineDiscount = useDeleteInvoiceLineDiscount({
-    mutation: {
-      onSuccess: async () => {
-        await invalidate();
-      },
-      onError: (error) => {
-        const { message, description } = getErrorSummary(error);
-        toast.error(message, { description: description });
-      },
-    },
-  });
-  const applyInvoiceLineTax = useApplyInvoiceLineTax({
-    mutation: {
-      onSuccess: async () => {
-        await invalidate();
-      },
-      onError: (error) => {
-        const { message, description } = getErrorSummary(error);
-        toast.error(message, { description: description });
-      },
-    },
-  });
-  const deleteInvoiceLineTax = useDeleteInvoiceLineTax({
-    mutation: {
-      onSuccess: async () => {
-        await invalidate();
-      },
-      onError: (error) => {
-        const { message, description } = getErrorSummary(error);
-        toast.error(message, { description: description });
-      },
-    },
-  });
-
-  const isPending =
-    updateInvoiceLine.isPending ||
-    applyInvoiceLineDiscount.isPending ||
-    deleteInvoiceLineDiscount.isPending ||
-    applyInvoiceLineTax.isPending ||
-    deleteInvoiceLineTax.isPending;
 
   async function onSubmit(values: FormValuesOutput) {
-    if (isPending) return;
+    if (updateInvoiceLine.isPending) return;
     await updateInvoiceLine.mutateAsync({
       id: line.id,
       data: {
@@ -324,31 +264,32 @@ function InvoiceLineForm({
             )}
           />
         </FormCardContent>
-        {line.taxes.length > 0 && (
+        {line.tax_rates.length > 0 && (
           <FormCardContent className="gap-2">
             <FormLabel>Line taxes</FormLabel>
             <div>
-              {line.taxes.map((tax) => (
-                <div key={tax.id} className="flex gap-2">
-                  <span className="flex flex-grow-1 items-center justify-between">
-                    <div className="flex gap-2">
-                      <span>{tax.name}</span>
-                      <span className="text-muted-foreground">
-                        {formatPercentage(tax.rate)}
-                      </span>
-                    </div>
-                    <span>{formatAmount(tax.amount, invoice.currency)}</span>
-                  </span>
+              {line.tax_rates.map((tax_rate) => (
+                <div key={tax_rate.id} className="flex gap-2">
+                  <div className="flex flex-grow-1 items-center gap-2">
+                    <span>{tax_rate.name}</span>
+                    <span className="text-muted-foreground">
+                      {formatPercentage(tax_rate.percentage)}
+                    </span>
+                  </div>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     className="text-muted-foreground size-8"
-                    aria-label={`Remove tax ${tax.name}`}
+                    aria-label={`Remove tax ${tax_rate.name}`}
                     onClick={() =>
-                      deleteInvoiceLineTax.mutateAsync({
-                        id: tax.id,
-                        invoiceLineId: line.id,
+                      updateInvoiceLine.mutateAsync({
+                        id: line.id,
+                        data: {
+                          tax_rates: line.tax_rates
+                            .filter((t) => t.id !== tax_rate.id)
+                            .map((t) => t.id),
+                        },
                       })
                     }
                   >
@@ -359,41 +300,35 @@ function InvoiceLineForm({
             </div>
           </FormCardContent>
         )}
-        {line.discounts.length > 0 && (
+        {line.coupons.length > 0 && (
           <FormCardContent className="gap-2">
             <FormLabel>Line discounts</FormLabel>
             <div className="grid">
-              {line.discounts.map((discount) => (
-                <div key={discount.id} className="flex w-full gap-2">
-                  <span className="flex flex-grow-1 items-center justify-between">
-                    <div className="flex gap-2">
-                      <span>{discount.coupon.name}</span>
-                      <span className="text-muted-foreground">
-                        {discount.coupon.amount
-                          ? formatAmount(
-                              discount.coupon.amount,
-                              discount.coupon.currency,
-                            )
-                          : formatPercentage(
-                              discount.coupon.percentage as string,
-                            )}{" "}
-                        off
-                      </span>
-                    </div>
-                    <span>
-                      -{formatAmount(discount.amount, invoice.currency)}
+              {line.coupons.map((coupon) => (
+                <div key={coupon.id} className="flex w-full gap-2">
+                  <div className="flex flex-grow-1 items-center gap-2">
+                    <span>{coupon.name}</span>
+                    <span className="text-muted-foreground">
+                      {coupon.amount
+                        ? formatAmount(coupon.amount, coupon.currency)
+                        : formatPercentage(coupon.percentage as string)}{" "}
+                      off
                     </span>
-                  </span>
+                  </div>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     className="text-muted-foreground size-8"
-                    aria-label={`Remove discount ${discount.coupon.name}`}
+                    aria-label={`Remove discount ${coupon.name}`}
                     onClick={() =>
-                      deleteInvoiceLineDiscount.mutateAsync({
-                        id: discount.id,
-                        invoiceLineId: line.id,
+                      updateInvoiceLine.mutateAsync({
+                        id: line.id,
+                        data: {
+                          coupons: line.coupons
+                            .filter((c) => c.id !== coupon.id)
+                            .map((c) => c.id),
+                        },
                       })
                     }
                   >
@@ -413,9 +348,14 @@ function InvoiceLineForm({
                   currency={invoice.currency}
                   onSelect={async (selected) => {
                     if (!selected) return;
-                    await applyInvoiceLineDiscount.mutateAsync({
+                    await updateInvoiceLine.mutateAsync({
                       id: line.id,
-                      data: { coupon_id: selected.id },
+                      data: {
+                        coupons: [
+                          ...line.coupons.map((c) => c.id),
+                          selected.id,
+                        ],
+                      },
                     });
                   }}
                 >
@@ -425,7 +365,7 @@ function InvoiceLineForm({
                     size="sm"
                     disabled={discountsLimitReached}
                   >
-                    {applyInvoiceLineDiscount.isPending ? (
+                    {updateInvoiceLine.isPending ? (
                       <Spinner variant="outline" />
                     ) : (
                       <PlusIcon className="text-muted-foreground" />
@@ -448,9 +388,14 @@ function InvoiceLineForm({
                   align="start"
                   onSelect={async (selected) => {
                     if (!selected) return;
-                    await applyInvoiceLineTax.mutateAsync({
+                    await updateInvoiceLine.mutateAsync({
                       id: line.id,
-                      data: { tax_rate_id: selected.id },
+                      data: {
+                        tax_rates: [
+                          ...line.tax_rates.map((t) => t.id),
+                          selected.id,
+                        ],
+                      },
                     });
                   }}
                 >
@@ -460,7 +405,7 @@ function InvoiceLineForm({
                     size="sm"
                     disabled={taxesLimitReached}
                   >
-                    {applyInvoiceLineTax.isPending ? (
+                    {updateInvoiceLine.isPending ? (
                       <Spinner variant="outline" />
                     ) : (
                       <PlusIcon className="text-muted-foreground" />
@@ -552,30 +497,13 @@ export function InvoiceLinesCard({ invoice }: { invoice: Invoice }) {
               <div className="flex items-center gap-2">
                 {line.discounts.length > 0 && (
                   <Badge variant="secondary" className="text-muted-foreground">
-                    {formatAmount(
-                      line.discounts
-                        .reduce(
-                          (acc, discount) =>
-                            acc.plus(new Decimal(discount.amount)),
-                          new Decimal(0),
-                        )
-                        .toString(),
-                      invoice.currency,
-                    )}{" "}
+                    {formatAmount(line.total_discount_amount, invoice.currency)}{" "}
                     off
                   </Badge>
                 )}
                 {line.taxes.length > 0 && (
                   <Badge variant="secondary" className="text-muted-foreground">
-                    {formatPercentage(
-                      line.taxes
-                        .reduce(
-                          (acc, tax) => acc.plus(new Decimal(tax.rate)),
-                          new Decimal(0),
-                        )
-                        .toString(),
-                    )}{" "}
-                    tax
+                    {formatPercentage(line.total_tax_rate)} tax
                   </Badge>
                 )}
                 {!line.price_id && <Badge variant="secondary">One-time</Badge>}
@@ -625,7 +553,6 @@ export function InvoiceLinesCard({ invoice }: { invoice: Invoice }) {
                 invoice_id: invoice.id,
                 price_id: selected.id,
                 description: selected.product.name,
-                quantity: 1,
               },
             });
           }}
@@ -637,9 +564,7 @@ export function InvoiceLinesCard({ invoice }: { invoice: Invoice }) {
                 await createInvoiceLine.mutateAsync({
                   data: {
                     invoice_id: invoice.id,
-                    unit_amount: "0",
                     description: value,
-                    quantity: 1,
                   },
                 });
               },

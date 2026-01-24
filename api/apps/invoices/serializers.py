@@ -54,11 +54,14 @@ class InvoiceAccountSerializer(serializers.Serializer):
 
 class InvoiceDiscountSerializer(serializers.Serializer):
     coupon_id = serializers.UUIDField()
+    name = serializers.CharField()
     amount = MoneyField(max_digits=19, decimal_places=2)
 
 
 class InvoiceTaxSerializer(serializers.Serializer):
     tax_rate_id = serializers.UUIDField()
+    name = serializers.CharField()
+    percentage = serializers.DecimalField(max_digits=5, decimal_places=2)
     amount = MoneyField(max_digits=19, decimal_places=2)
 
 
@@ -158,6 +161,7 @@ class InvoiceSerializer(serializers.Serializer):
     paid_at = serializers.DateTimeField(allow_null=True)
     voided_at = serializers.DateTimeField(allow_null=True)
     pdf_id = serializers.UUIDField(allow_null=True)
+    previous_revision_id = serializers.UUIDField(allow_null=True)
     lines = InvoiceLineSerializer(many=True)
     shipping = InvoiceShippingSerializer()
     coupons = CouponSerializer(many=True)

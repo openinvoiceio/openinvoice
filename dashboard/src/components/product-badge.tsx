@@ -1,4 +1,6 @@
+import type { ProductCatalogStatusEnum } from "@/api/models";
 import { Badge } from "@/components/ui/badge";
+import { formatEnum } from "@/lib/formatters.ts";
 import { cn } from "@/lib/utils";
 import { cva } from "class-variance-authority";
 import React from "react";
@@ -16,21 +18,18 @@ const statusVariants = cva("capitalize border-transparent", {
 });
 
 export function ProductBadge({
-  isActive,
+  status,
   className,
   ...props
 }: React.ComponentProps<typeof Badge> & {
-  isActive: boolean;
+  status: ProductCatalogStatusEnum;
 }) {
   return (
     <Badge
-      className={cn(
-        statusVariants({ variant: isActive ? "active" : "archived" }),
-        className,
-      )}
+      className={cn(statusVariants({ variant: status }), className)}
       {...props}
     >
-      {isActive ? "Active" : "Archived"}
+      {formatEnum(status)}
     </Badge>
   );
 }

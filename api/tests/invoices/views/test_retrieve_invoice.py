@@ -98,6 +98,7 @@ def test_retrieve_invoice(api_client, user, account):
         "paid_at": None,
         "voided_at": None,
         "pdf_id": None,
+        "previous_revision_id": None,
         "lines": [],
         "coupons": [],
         "discounts": [],
@@ -184,6 +185,7 @@ def test_retrieve_invoice_excludes_line_discounts_from_invoice_level(api_client,
     assert response.data["total_discounts"] == [
         {
             "coupon_id": str(coupon.id),
+            "name": coupon.name,
             "amount": "2.00",
         }
     ]
@@ -191,12 +193,14 @@ def test_retrieve_invoice_excludes_line_discounts_from_invoice_level(api_client,
     assert line_data["discounts"] == [
         {
             "coupon_id": str(coupon.id),
+            "name": coupon.name,
             "amount": "2.00",
         }
     ]
     assert line_data["total_discounts"] == [
         {
             "coupon_id": str(coupon.id),
+            "name": coupon.name,
             "amount": "2.00",
         }
     ]
@@ -228,6 +232,8 @@ def test_retrieve_invoice_excludes_line_taxes_from_invoice_level(api_client, use
     assert response.data["total_taxes"] == [
         {
             "tax_rate_id": str(tax_rate.id),
+            "name": tax_rate.name,
+            "percentage": "20.00",
             "amount": "2.00",
         }
     ]
@@ -235,12 +241,16 @@ def test_retrieve_invoice_excludes_line_taxes_from_invoice_level(api_client, use
     assert line_data["taxes"] == [
         {
             "tax_rate_id": str(tax_rate.id),
+            "name": tax_rate.name,
+            "percentage": "20.00",
             "amount": "2.00",
         }
     ]
     assert line_data["total_taxes"] == [
         {
             "tax_rate_id": str(tax_rate.id),
+            "name": tax_rate.name,
+            "percentage": "20.00",
             "amount": "2.00",
         }
     ]

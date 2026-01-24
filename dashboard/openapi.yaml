@@ -8160,6 +8160,10 @@ components:
           type: string
           format: uuid
           nullable: true
+        previous_revision_id:
+          type: string
+          format: uuid
+          nullable: true
         lines:
           type: array
           items:
@@ -8219,6 +8223,7 @@ components:
       - payment_connection_id
       - payment_provider
       - pdf_id
+      - previous_revision_id
       - recipients
       - sell_date
       - shipping
@@ -8397,6 +8402,8 @@ components:
         coupon_id:
           type: string
           format: uuid
+        name:
+          type: string
         amount:
           type: string
           format: decimal
@@ -8404,6 +8411,7 @@ components:
       required:
       - amount
       - coupon_id
+      - name
     InvoiceLine:
       type: object
       properties:
@@ -8749,12 +8757,20 @@ components:
         tax_rate_id:
           type: string
           format: uuid
+        name:
+          type: string
+        percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
         amount:
           type: string
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
       required:
       - amount
+      - name
+      - percentage
       - tax_rate_id
     InvoiceUpdate:
       type: object

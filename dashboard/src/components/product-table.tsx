@@ -1,4 +1,4 @@
-import type { Product } from "@/api/models";
+import { ProductCatalogStatusEnum, type Product } from "@/api/models";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { ProductDropdown } from "@/components/product-dropdown";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -62,7 +62,7 @@ export const columns: ColumnDef<Product>[] = [
             </AvatarFallback>
           </Avatar>
           <div className="font-medium">{row.getValue("name")}</div>
-          {!row.original.is_active && (
+          {row.original.status == ProductCatalogStatusEnum.archived && (
             <Badge variant="secondary">Archived</Badge>
           )}
         </div>

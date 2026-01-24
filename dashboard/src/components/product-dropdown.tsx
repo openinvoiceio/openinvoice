@@ -3,9 +3,9 @@ import {
   getProductsRetrieveQueryKey,
   useArchiveProduct,
   useDeleteProduct,
-  useUnarchiveProduct,
+  useRestoreProduct,
 } from "@/api/endpoints/products/products";
-import type { Product } from "@/api/models";
+import { ProductCatalogStatusEnum, type Product } from "@/api/models";
 import { popModal, pushModal } from "@/components/push-modals";
 import {
   ActionDropdown,
@@ -16,12 +16,12 @@ import { getErrorSummary } from "@/lib/api/errors";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ArchiveIcon,
+  ArchiveRestoreIcon,
   CopyIcon,
   PencilIcon,
   PlusIcon,
   Trash2Icon,
 } from "lucide-react";
-import { useCallback } from "react";
 import { toast } from "sonner";
 
 function useEditProductAction(): DropdownAction<Product> {
@@ -49,40 +49,20 @@ export function useCopyIdAction(): DropdownAction<Product> {
   };
 }
 
-function useArchiveToggleProductAction(): DropdownAction<Product> {
+function useArchiveProductAction(): DropdownAction<Product> {
   const queryClient = useQueryClient();
-
-  const invalidate = useCallback(
-    async (id: string) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: getProductsListQueryKey() }),
-        queryClient.invalidateQueries({
-          queryKey: getProductsRetrieveQueryKey(id),
-        }),
-      ]);
-    },
-    [queryClient],
-  );
-
-  const archive = useArchiveProduct({
+  const { mutate } = useArchiveProduct({
     mutation: {
-      onSuccess: async (p) => {
-        await invalidate(p.id);
+      onSuccess: async (data) => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: getProductsListQueryKey(),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getProductsRetrieveQueryKey(data.id),
+          }),
+        ]);
         toast.success("Product archived");
-        popModal();
-      },
-      onError: (error) => {
-        const { message, description } = getErrorSummary(error);
-        toast.error(message, { description });
-      },
-    },
-  });
-
-  const unarchive = useUnarchiveProduct({
-    mutation: {
-      onSuccess: async (p) => {
-        await invalidate(p.id);
-        toast.success("Product unarchived");
         popModal();
       },
       onError: (error) => {
@@ -94,14 +74,42 @@ function useArchiveToggleProductAction(): DropdownAction<Product> {
 
   return {
     key: "archive",
-    label: (p) => (p.is_active ? "Archive" : "Unarchive"),
+    label: "Archive",
     icon: ArchiveIcon,
-    shortcut: "A",
-    hotkey: "a",
-    onSelect: (p) =>
-      p.is_active
-        ? archive.mutate({ id: p.id })
-        : unarchive.mutate({ id: p.id }),
+    visible: (product) => product.status == ProductCatalogStatusEnum.active,
+    onSelect: (product) => mutate({ id: product.id }),
+  };
+}
+
+function useRestoreProductAction(): DropdownAction<Product> {
+  const queryClient = useQueryClient();
+  const { mutate } = useRestoreProduct({
+    mutation: {
+      onSuccess: async (data) => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: getProductsListQueryKey(),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getProductsRetrieveQueryKey(data.id),
+          }),
+        ]);
+        toast.success("Product restored");
+        popModal();
+      },
+      onError: (error) => {
+        const { message, description } = getErrorSummary(error);
+        toast.error(message, { description });
+      },
+    },
+  });
+
+  return {
+    key: "restore",
+    label: "Restore",
+    icon: ArchiveRestoreIcon,
+    visible: (product) => product.status == ProductCatalogStatusEnum.archived,
+    onSelect: (product) => mutate({ id: product.id }),
   };
 }
 
@@ -112,7 +120,7 @@ function useNewPriceAction(): DropdownAction<Product> {
     icon: PlusIcon,
     shortcut: "N",
     hotkey: "n",
-    visible: (p) => p.is_active,
+    visible: (p) => p.status == ProductCatalogStatusEnum.active,
     onSelect: (p) => pushModal("PriceCreateSheet", { productId: p.id }),
   };
 }
@@ -155,7 +163,12 @@ function useDeleteProductAction(): DropdownAction<Product> {
   };
 }
 
-export type ProductActionKey = "edit" | "archive" | "new-price" | "delete";
+export type ProductActionKey =
+  | "edit"
+  | "archive"
+  | "restore"
+  | "new-price"
+  | "delete";
 
 export function ProductDropdown({
   product,
@@ -171,7 +184,13 @@ export function ProductDropdown({
       actions={actions}
       sections={[
         { items: [useEditProductAction(), useCopyIdAction()] },
-        { items: [useNewPriceAction(), useArchiveToggleProductAction()] },
+        {
+          items: [
+            useNewPriceAction(),
+            useArchiveProductAction(),
+            useRestoreProductAction(),
+          ],
+        },
         { items: [useDeleteProductAction()], danger: true },
       ]}
       {...props}

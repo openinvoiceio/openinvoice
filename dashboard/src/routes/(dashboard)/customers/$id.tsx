@@ -588,6 +588,12 @@ function RouteComponent() {
                 <DataListValue>{customer.phone || "-"}</DataListValue>
               </DataListItem>
               <DataListItem>
+                <DataListLabel>Billing address</DataListLabel>
+                <DataListValue>
+                  <AddressView address={customer.address} />
+                </DataListValue>
+              </DataListItem>
+              <DataListItem>
                 <DataListLabel>Description</DataListLabel>
                 <DataListValue>{customer.description || "-"}</DataListValue>
               </DataListItem>
@@ -627,21 +633,37 @@ function RouteComponent() {
                 </DataListValue>
               </DataListItem>
             </DataList>
-            <DataSidebarSeparator />
-            <DataList orientation="vertical" className="gap-3 px-4" size="sm">
-              <DataListItem>
-                <DataListLabel>Billing address</DataListLabel>
-                <DataListValue>
-                  <AddressView address={customer.billing_address} />
-                </DataListValue>
-              </DataListItem>
-              <DataListItem>
-                <DataListLabel>Shipping address</DataListLabel>
-                <DataListValue>
-                  <AddressView address={customer.shipping_address} />
-                </DataListValue>
-              </DataListItem>
-            </DataList>
+            {customer.shipping && (
+              <>
+                <DataSidebarSeparator />
+                <DataList
+                  orientation="vertical"
+                  className="gap-3 px-4"
+                  size="sm"
+                >
+                  <DataListItem>
+                    <DataListLabel>Shipping name</DataListLabel>
+                    <DataListValue>
+                      {customer.shipping.name || "-"}
+                    </DataListValue>
+                  </DataListItem>
+                  <DataListItem>
+                    <DataListLabel>Shipping phone</DataListLabel>
+                    <DataListValue>
+                      {customer.shipping.phone || "-"}
+                    </DataListValue>
+                  </DataListItem>
+                  <DataListItem>
+                    <DataListLabel>Shipping address</DataListLabel>
+                    <DataListValue>
+                      <AddressView
+                        address={customer.shipping.address || undefined}
+                      />
+                    </DataListValue>
+                  </DataListItem>
+                </DataList>
+              </>
+            )}
           </DataSidebarContent>
           <DataSidebarContent value="metadata">
             <DataSidebarTitle>Metadata</DataSidebarTitle>

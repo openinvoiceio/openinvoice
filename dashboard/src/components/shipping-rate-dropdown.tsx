@@ -1,9 +1,10 @@
 import {
   getShippingRatesListQueryKey,
+  getShippingRatesRetrieveQueryKey,
   useArchiveShippingRate,
-  useUnarchiveShippingRate,
+  useRestoreShippingRate,
 } from "@/api/endpoints/shipping-rates/shipping-rates.ts";
-import type { ShippingRate } from "@/api/models";
+import { ProductCatalogStatusEnum, type ShippingRate } from "@/api/models";
 import { popModal, pushModal } from "@/components/push-modals";
 import {
   ActionDropdown,
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/action-dropdown";
 import { getErrorSummary } from "@/lib/api/errors";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArchiveIcon, PencilIcon } from "lucide-react";
+import { ArchiveIcon, ArchiveRestoreIcon, PencilIcon } from "lucide-react";
 import { toast } from "sonner";
 
 function useEditShippingRateAction(): DropdownAction<ShippingRate> {
@@ -27,32 +28,20 @@ function useEditShippingRateAction(): DropdownAction<ShippingRate> {
   };
 }
 
-function useArchiveToggleShippingRateAction(): DropdownAction<ShippingRate> {
+function useArchiveShippingRateAction(): DropdownAction<ShippingRate> {
   const queryClient = useQueryClient();
-
-  const archiveShippingRate = useArchiveShippingRate({
+  const { mutate } = useArchiveShippingRate({
     mutation: {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: getShippingRatesListQueryKey(),
-        });
+      onSuccess: async (data) => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: getShippingRatesListQueryKey(),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getShippingRatesRetrieveQueryKey(data.id),
+          }),
+        ]);
         toast.success("Shipping rate archived");
-        popModal();
-      },
-      onError: (error) => {
-        const { message, description } = getErrorSummary(error);
-        toast.error(message, { description });
-      },
-    },
-  });
-
-  const unarchiveShippingRate = useUnarchiveShippingRate({
-    mutation: {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: getShippingRatesListQueryKey(),
-        });
-        toast.success("Shipping rate unarchived");
         popModal();
       },
       onError: (error) => {
@@ -64,18 +53,48 @@ function useArchiveToggleShippingRateAction(): DropdownAction<ShippingRate> {
 
   return {
     key: "archive",
-    label: (r) => (r.is_active ? "Archive" : "Unarchive"),
+    label: "Archive",
     icon: ArchiveIcon,
-    shortcut: "A",
-    hotkey: "a",
-    onSelect: (r) =>
-      r.is_active
-        ? archiveShippingRate.mutate({ id: r.id })
-        : unarchiveShippingRate.mutate({ id: r.id }),
+    visible: (shippingRate) =>
+      shippingRate.status == ProductCatalogStatusEnum.active,
+    onSelect: (shippingRate) => mutate({ id: shippingRate.id }),
   };
 }
 
-export type ShippingRateActionKey = "edit" | "archive";
+function useRestoreShippingRateAction(): DropdownAction<ShippingRate> {
+  const queryClient = useQueryClient();
+  const { mutate } = useRestoreShippingRate({
+    mutation: {
+      onSuccess: async (data) => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: getShippingRatesListQueryKey(),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getShippingRatesRetrieveQueryKey(data.id),
+          }),
+        ]);
+        toast.success("Shipping rate restored");
+        popModal();
+      },
+      onError: (error) => {
+        const { message, description } = getErrorSummary(error);
+        toast.error(message, { description });
+      },
+    },
+  });
+
+  return {
+    key: "restore",
+    label: "Restore",
+    icon: ArchiveRestoreIcon,
+    visible: (shippingRate) =>
+      shippingRate.status == ProductCatalogStatusEnum.archived,
+    onSelect: (shippingRate) => mutate({ id: shippingRate.id }),
+  };
+}
+
+export type ShippingRateActionKey = "edit" | "archive" | "restore";
 
 export function ShippingRateDropdown({
   shippingRate,
@@ -93,7 +112,12 @@ export function ShippingRateDropdown({
       actions={actions}
       sections={[
         { items: [useEditShippingRateAction()] },
-        { items: [useArchiveToggleShippingRateAction()] },
+        {
+          items: [
+            useArchiveShippingRateAction(),
+            useRestoreShippingRateAction(),
+          ],
+        },
       ]}
       {...props}
     />

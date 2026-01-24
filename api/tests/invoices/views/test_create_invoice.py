@@ -101,6 +101,7 @@ def test_create_invoice(api_client, user, account):
         "paid_at": None,
         "voided_at": None,
         "pdf_id": None,
+        "previous_revision_id": None,
         "lines": [],
         "coupons": [],
         "discounts": [],
@@ -204,6 +205,8 @@ def test_create_invoice_with_shipping(api_client, user, account):
         "total_taxes": [
             {
                 "tax_rate_id": str(tax_rate.id),
+                "name": tax_rate.name,
+                "percentage": "10.00",
                 "amount": "1.00",
             }
         ],

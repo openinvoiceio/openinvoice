@@ -121,21 +121,42 @@ function RouteComponent() {
               <DataList orientation="vertical" className="gap-4 text-sm">
                 <DataListItem>
                   <DataListLabel>Email</DataListLabel>
-                  <DataListValue>{customer.email}</DataListValue>
+                  <DataListValue>{customer.email || "-"}</DataListValue>
+                </DataListItem>
+                <DataListItem>
+                  <DataListLabel>Phone</DataListLabel>
+                  <DataListValue>{customer.phone || "-"}</DataListValue>
                 </DataListItem>
                 <DataListItem>
                   <DataListLabel>Billing address</DataListLabel>
                   <DataListValue>
-                    <AddressView address={customer.billing_address} />
-                  </DataListValue>
-                </DataListItem>
-                <DataListItem>
-                  <DataListLabel>Shipping address</DataListLabel>
-                  <DataListValue>
-                    <AddressView address={customer.shipping_address} />
+                    <AddressView address={customer.address} />
                   </DataListValue>
                 </DataListItem>
               </DataList>
+
+              {customer.shipping && (
+                <DataList orientation="vertical" className="gap-4 text-sm">
+                  <DataListItem>
+                    <DataListLabel>Shipping mame</DataListLabel>
+                    <DataListValue>
+                      {customer.shipping.name || "-"}
+                    </DataListValue>
+                  </DataListItem>
+                  <DataListItem>
+                    <DataListLabel>Shipping phone</DataListLabel>
+                    <DataListValue>
+                      {customer.shipping.phone || "-"}
+                    </DataListValue>
+                  </DataListItem>
+                  <DataListItem>
+                    <DataListLabel>Shipping address</DataListLabel>
+                    <DataListValue>
+                      <AddressView address={customer.shipping.address} />
+                    </DataListValue>
+                  </DataListItem>
+                </DataList>
+              )}
             </div>
           </Section>
 

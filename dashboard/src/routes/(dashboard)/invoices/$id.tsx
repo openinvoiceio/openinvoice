@@ -108,10 +108,6 @@ function RouteComponent() {
   const { id } = Route.useParams();
   const { queryClient } = Route.useRouteContext();
   const { data: invoice } = useInvoicesRetrieve(id);
-  const previousRevisionId = invoice?.previous_revision_id ?? "";
-  const { data: previousRevision } = useInvoicesRetrieve(previousRevisionId, {
-    query: { enabled: !!previousRevisionId },
-  });
   const { data: numberingSystem } = useNumberingSystemsRetrieve(
     invoice?.numbering_system_id || "",
     { query: { enabled: !!invoice?.numbering_system_id } },
@@ -332,7 +328,7 @@ function RouteComponent() {
                 <DataListItem>
                   <DataListLabel>Billing address</DataListLabel>
                   <DataListValue>
-                    <AddressView address={invoice.customer.billing_address} />
+                    <AddressView address={invoice.customer.address} />
                   </DataListValue>
                 </DataListItem>
               </DataList>
@@ -410,21 +406,8 @@ function RouteComponent() {
                       </TableCell>
                     </TableRow>
                     {line.discounts.map((discount) => (
-                      <TableRow key={discount.id}>
-                        <TableCell className="flex gap-2 pl-8">
-                          <span>{discount.coupon.name}</span>
-                          <span className="text-muted-foreground">
-                            {discount.coupon.amount
-                              ? formatAmount(
-                                  discount.coupon.amount,
-                                  discount.coupon.currency,
-                                )
-                              : formatPercentage(
-                                  discount.coupon.percentage as string,
-                                )}{" "}
-                            off
-                          </span>
-                        </TableCell>
+                      <TableRow key={discount.coupon_id}>
+                        <TableCell className="pl-8">{discount.name}</TableCell>
                         <TableCell />
                         {hasLineTaxes && <TableCell />}
                         <TableCell />
@@ -470,19 +453,19 @@ function RouteComponent() {
                   </TableCell>
                   <TableCell className="p-0" />
                 </TableRow>
-                {invoice.discount_breakdown.map((item) => (
-                  <TableRow key={item.coupon_id}>
+                {invoice.discounts.map((discount) => (
+                  <TableRow key={discount.coupon_id}>
                     <TableCell
                       colSpan={summaryColSpan}
                       className="text-right font-medium"
                     >
-                      {item.name}
+                      {discount.name}
                     </TableCell>
                     <TableCell
                       className="font-medium text-emerald-400"
                       align="right"
                     >
-                      -{formatAmount(item.amount, invoice.currency)}
+                      -{formatAmount(discount.amount, invoice.currency)}
                     </TableCell>
                     <TableCell className="p-0" />
                   </TableRow>
@@ -496,22 +479,22 @@ function RouteComponent() {
                   </TableCell>
                   <TableCell className="font-medium" align="right">
                     {formatAmount(
-                      invoice.total_amount_excluding_tax,
+                      invoice.total_excluding_tax_amount,
                       invoice.currency,
                     )}
                   </TableCell>
                   <TableCell className="p-0" />
                 </TableRow>
-                {invoice.tax_breakdown.map((item) => (
-                  <TableRow key={item.name}>
+                {invoice.total_taxes.map((tax) => (
+                  <TableRow key={tax.tax_rate_id}>
                     <TableCell
                       colSpan={summaryColSpan}
                       className="text-right font-medium"
                     >
-                      {item.name} {formatPercentage(item.rate)}
+                      {tax.name} {formatPercentage(tax.percentage)}
                     </TableCell>
                     <TableCell className="font-medium" align="right">
-                      {formatAmount(item.amount, invoice.currency)}
+                      {formatAmount(tax.amount, invoice.currency)}
                     </TableCell>
                     <TableCell className="p-0" />
                   </TableRow>
@@ -692,19 +675,6 @@ function RouteComponent() {
                   <DataListLabel>Issue date</DataListLabel>
                   <DataListValue>
                     {formatDate(invoice.issue_date)}
-                  </DataListValue>
-                </DataListItem>
-              )}
-              {previousRevision && (
-                <DataListItem>
-                  <DataListLabel>Previous revision</DataListLabel>
-                  <DataListValue>
-                    <Link
-                      to="/invoices/$id"
-                      params={{ id: previousRevision.id }}
-                    >
-                      {previousRevision.number}
-                    </Link>
                   </DataListValue>
                 </DataListItem>
               )}

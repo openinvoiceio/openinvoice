@@ -288,9 +288,7 @@ function RouteComponent() {
                 <DataListItem>
                   <DataListLabel>Billing address</DataListLabel>
                   <DataListValue>
-                    <AddressView
-                      address={creditNote.customer.billing_address}
-                    />
+                    <AddressView address={creditNote.customer.address} />
                   </DataListValue>
                 </DataListItem>
               </DataList>

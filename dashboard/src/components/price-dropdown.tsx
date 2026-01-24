@@ -3,14 +3,14 @@ import {
   getPricesRetrieveQueryKey,
   useArchivePrice,
   useDeletePrice,
-  useUnarchivePrice,
+  useRestorePrice,
 } from "@/api/endpoints/prices/prices";
 import {
   getProductsListQueryKey,
   getProductsRetrieveQueryKey,
   useUpdateProduct,
 } from "@/api/endpoints/products/products";
-import type { Price } from "@/api/models";
+import { ProductCatalogStatusEnum, type Price } from "@/api/models";
 import { popModal, pushModal } from "@/components/push-modals";
 import {
   ActionDropdown,
@@ -21,12 +21,12 @@ import { getErrorSummary } from "@/lib/api/errors";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ArchiveIcon,
+  ArchiveRestoreIcon,
   CopyIcon,
   PencilIcon,
   StarIcon,
   Trash2Icon,
 } from "lucide-react";
-import { useCallback } from "react";
 import { toast } from "sonner";
 
 function useEditPriceAction(): DropdownAction<Price> {
@@ -54,40 +54,18 @@ export function useCopyIdAction(): DropdownAction<Price> {
   };
 }
 
-function useArchiveToggleAction(): DropdownAction<Price> {
+function useArchivePriceAction(): DropdownAction<Price> {
   const queryClient = useQueryClient();
-
-  const invalidate = useCallback(
-    async (id: string) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: getPricesListQueryKey() }),
-        queryClient.invalidateQueries({
-          queryKey: getPricesRetrieveQueryKey(id),
-        }),
-      ]);
-    },
-    [queryClient],
-  );
-
-  const archivePrice = useArchivePrice({
+  const { mutate } = useArchivePrice({
     mutation: {
-      onSuccess: async (p) => {
-        await invalidate(p.id);
+      onSuccess: async (data) => {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: getPricesListQueryKey() }),
+          queryClient.invalidateQueries({
+            queryKey: getPricesRetrieveQueryKey(data.id),
+          }),
+        ]);
         toast.success("Price archived");
-        popModal();
-      },
-      onError: (error) => {
-        const { message, description } = getErrorSummary(error);
-        toast.error(message, { description });
-      },
-    },
-  });
-
-  const unarchivePrice = useUnarchivePrice({
-    mutation: {
-      onSuccess: async (p) => {
-        await invalidate(p.id);
-        toast.success("Price unarchived");
         popModal();
       },
       onError: (error) => {
@@ -99,14 +77,40 @@ function useArchiveToggleAction(): DropdownAction<Price> {
 
   return {
     key: "archive",
-    label: (p) => (p.is_active ? "Archive" : "Unarchive"),
+    label: "Archive",
     icon: ArchiveIcon,
-    shortcut: "A",
-    hotkey: "a",
-    onSelect: (p) =>
-      p.is_active
-        ? archivePrice.mutate({ id: p.id })
-        : unarchivePrice.mutate({ id: p.id }),
+    visible: (price) => price.status == ProductCatalogStatusEnum.active,
+    onSelect: (price) => mutate({ id: price.id }),
+  };
+}
+
+function useRestorePriceAction(): DropdownAction<Price> {
+  const queryClient = useQueryClient();
+  const { mutate } = useRestorePrice({
+    mutation: {
+      onSuccess: async (data) => {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: getPricesListQueryKey() }),
+          queryClient.invalidateQueries({
+            queryKey: getPricesRetrieveQueryKey(data.id),
+          }),
+        ]);
+        toast.success("Price restored");
+        popModal();
+      },
+      onError: (error) => {
+        const { message, description } = getErrorSummary(error);
+        toast.error(message, { description });
+      },
+    },
+  });
+
+  return {
+    key: "restore",
+    label: "Restore",
+    icon: ArchiveRestoreIcon,
+    visible: (price) => price.status == ProductCatalogStatusEnum.archived,
+    onSelect: (price) => mutate({ id: price.id }),
   };
 }
 
@@ -140,7 +144,9 @@ function useSetDefaultPriceAction(): DropdownAction<Price> {
     shortcut: "S",
     hotkey: "s",
     visible: (p) =>
-      p.is_active && p.product.is_active && p.id !== p.product.default_price_id,
+      p.status == ProductCatalogStatusEnum.active &&
+      p.product.status == ProductCatalogStatusEnum.active &&
+      p.id !== p.product.default_price_id,
     onSelect: (p) =>
       void mutateAsync({
         id: p.product.id,
@@ -189,6 +195,7 @@ export type PriceActionKey =
   | "edit"
   | "copy-id"
   | "archive"
+  | "restore"
   | "set-as-default"
   | "delete";
 
@@ -206,7 +213,13 @@ export function PriceDropdown({
       actions={actions}
       sections={[
         { items: [useEditPriceAction(), useCopyIdAction()] },
-        { items: [useSetDefaultPriceAction(), useArchiveToggleAction()] },
+        {
+          items: [
+            useSetDefaultPriceAction(),
+            useArchivePriceAction(),
+            useRestorePriceAction(),
+          ],
+        },
         { items: [useDeletePriceAction()], danger: true },
       ]}
       {...props}

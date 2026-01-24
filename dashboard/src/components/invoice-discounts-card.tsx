@@ -2,8 +2,7 @@ import {
   getInvoicesListQueryKey,
   getInvoicesRetrieveQueryKey,
   getPreviewInvoiceQueryKey,
-  useApplyInvoiceDiscount,
-  useDeleteInvoiceDiscount,
+  useUpdateInvoice,
 } from "@/api/endpoints/invoices/invoices";
 import { type Invoice } from "@/api/models";
 import { CouponCombobox } from "@/components/coupon-combobox.tsx";
@@ -36,33 +35,18 @@ export function InvoiceDiscountsCard({ invoice }: { invoice: Invoice }) {
   const queryClient = useQueryClient();
   const limitReached = invoice.discounts.length >= MAX_DISCOUNTS;
 
-  async function invalidate() {
-    await queryClient.invalidateQueries({
-      queryKey: getInvoicesListQueryKey(),
-    });
-    await queryClient.invalidateQueries({
-      queryKey: getInvoicesRetrieveQueryKey(invoice.id),
-    });
-    await queryClient.invalidateQueries({
-      queryKey: getPreviewInvoiceQueryKey(invoice.id),
-    });
-  }
-
-  const applyInvoiceDiscount = useApplyInvoiceDiscount({
+  const updateInvoice = useUpdateInvoice({
     mutation: {
       onSuccess: async () => {
-        await invalidate();
-      },
-      onError: (error) => {
-        const { message, description } = getErrorSummary(error);
-        toast.error(message, { description });
-      },
-    },
-  });
-  const deleteInvoiceDiscount = useDeleteInvoiceDiscount({
-    mutation: {
-      onSuccess: async () => {
-        await invalidate();
+        await queryClient.invalidateQueries({
+          queryKey: getInvoicesListQueryKey(),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: getInvoicesRetrieveQueryKey(invoice.id),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: getPreviewInvoiceQueryKey(invoice.id),
+        });
       },
       onError: (error) => {
         const { message, description } = getErrorSummary(error);
@@ -80,35 +64,31 @@ export function InvoiceDiscountsCard({ invoice }: { invoice: Invoice }) {
         </FormCardDescription>
       </FormCardHeader>
       <FormCardContent className="gap-2">
-        {invoice.discounts.map((discount) => (
-          <div key={discount.id} className="flex gap-2 text-sm">
-            <span className="flex flex-grow-1 items-center justify-between">
-              <div className="flex gap-2">
-                <span>{discount.coupon.name}</span>
-                <span className="text-muted-foreground">
-                  {discount.coupon.amount
-                    ? formatAmount(
-                        discount.coupon.amount,
-                        discount.coupon.currency,
-                      )
-                    : formatPercentage(
-                        discount.coupon.percentage as string,
-                      )}{" "}
-                  off
-                </span>
-              </div>
-              <span>-{formatAmount(discount.amount, invoice.currency)}</span>
-            </span>
+        {invoice.coupons.map((coupon) => (
+          <div key={coupon.id} className="flex gap-2 text-sm">
+            <div className="flex flex-grow-1 gap-2">
+              <span>{coupon.name}</span>
+              <span className="text-muted-foreground">
+                {coupon.amount
+                  ? formatAmount(coupon.amount, coupon.currency)
+                  : formatPercentage(coupon.percentage as string)}{" "}
+                off
+              </span>
+            </div>
             <Button
               type="button"
               variant="ghost"
               size="icon"
               className="text-muted-foreground size-8"
-              aria-label={`Remove discount ${discount.coupon.name}`}
+              aria-label={`Remove discount ${coupon.name}`}
               onClick={() =>
-                deleteInvoiceDiscount.mutateAsync({
-                  invoiceId: invoice.id,
-                  id: discount.id,
+                updateInvoice.mutateAsync({
+                  id: invoice.id,
+                  data: {
+                    coupons: invoice.coupons
+                      .filter((c) => c.id !== coupon.id)
+                      .map((c) => c.id),
+                  },
                 })
               }
             >
@@ -116,7 +96,7 @@ export function InvoiceDiscountsCard({ invoice }: { invoice: Invoice }) {
             </Button>
           </div>
         ))}
-        {invoice.discounts.length === 0 && (
+        {invoice.coupons.length === 0 && (
           <Empty className="border border-dashed">
             <EmptyHeader>
               <EmptyTitle>No discounts added yet</EmptyTitle>
@@ -137,9 +117,14 @@ export function InvoiceDiscountsCard({ invoice }: { invoice: Invoice }) {
                 currency={invoice.currency}
                 onSelect={async (selected) => {
                   if (!selected) return;
-                  await applyInvoiceDiscount.mutateAsync({
+                  await updateInvoice.mutateAsync({
                     id: invoice.id,
-                    data: { coupon_id: selected.id },
+                    data: {
+                      coupons: [
+                        ...invoice.coupons.map((c) => c.id),
+                        selected.id,
+                      ],
+                    },
                   });
                 }}
               >
@@ -149,7 +134,7 @@ export function InvoiceDiscountsCard({ invoice }: { invoice: Invoice }) {
                   size="sm"
                   disabled={limitReached}
                 >
-                  {applyInvoiceDiscount.isPending ? (
+                  {updateInvoice.isPending ? (
                     <Spinner variant="outline" />
                   ) : (
                     <PlusIcon className="text-muted-foreground" />

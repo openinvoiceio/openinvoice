@@ -111,6 +111,7 @@ def test_finalize_invoice(api_client, user, account):
         "paid_at": ANY,
         "voided_at": None,
         "pdf_id": str(invoice.pdf_id),
+        "previous_revision_id": None,
         "lines": [
             {
                 "id": str(line.id),
@@ -268,6 +269,7 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
         "paid_at": ANY,
         "voided_at": None,
         "pdf_id": str(invoice.pdf_id),
+        "previous_revision_id": None,
         "lines": [],
         "coupons": [],
         "discounts": [],

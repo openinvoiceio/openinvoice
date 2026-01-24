@@ -50,7 +50,7 @@ const schema = z.object({
   legal_name: z.string().optional(),
   legal_number: z.string().optional(),
   email: z.email("Invalid email address").optional(),
-  billing_address: z.object({
+  address: z.object({
     line1: z.string().optional(),
     line2: z.string().optional(),
     locality: z.string().optional(),
@@ -80,17 +80,17 @@ export function CustomerPortalEditSheet({
       legal_name: customer.legal_name || "",
       legal_number: customer.legal_number || "",
       email: customer.email || "",
-      billing_address: {
-        line1: customer.billing_address?.line1 || "",
-        line2: customer.billing_address?.line2 || "",
-        locality: customer.billing_address?.locality || "",
-        state: customer.billing_address?.state || "",
-        postalCode: customer.billing_address?.postal_code || "",
-        country: customer.billing_address?.country || undefined,
+      address: {
+        line1: customer.address?.line1 || "",
+        line2: customer.address?.line2 || "",
+        locality: customer.address?.locality || "",
+        state: customer.address?.state || "",
+        postalCode: customer.address?.postal_code || "",
+        country: customer.address?.country || undefined,
       },
     },
   });
-  const country = form.watch("billing_address.country");
+  const country = form.watch("address.country");
   const countryData = allCountries.find(
     ([, countrySlug]) => countrySlug === country,
   );
@@ -123,13 +123,13 @@ export function CustomerPortalEditSheet({
         legal_name: values.legal_name || null,
         legal_number: values.legal_number || null,
         email: values.email,
-        billing_address: {
-          line1: values.billing_address.line1 || null,
-          line2: values.billing_address.line2 || null,
-          locality: values.billing_address.locality || null,
-          state: values.billing_address.state || null,
-          postal_code: values.billing_address.postalCode || null,
-          country: values.billing_address.country || null,
+        address: {
+          line1: values.address.line1 || null,
+          line2: values.address.line2 || null,
+          locality: values.address.locality || null,
+          state: values.address.state || null,
+          postal_code: values.address.postalCode || null,
+          country: values.address.country || null,
         },
       },
     });
@@ -219,7 +219,7 @@ export function CustomerPortalEditSheet({
             <FormSheetGroupTitle>Billing address</FormSheetGroupTitle>
             <FormField
               control={form.control}
-              name="billing_address.line1"
+              name="address.line1"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Line 1</FormLabel>
@@ -233,7 +233,7 @@ export function CustomerPortalEditSheet({
             />
             <FormField
               control={form.control}
-              name="billing_address.line2"
+              name="address.line2"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Line 2</FormLabel>
@@ -249,7 +249,7 @@ export function CustomerPortalEditSheet({
             />
             <FormField
               control={form.control}
-              name="billing_address.locality"
+              name="address.locality"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Locality</FormLabel>
@@ -263,7 +263,7 @@ export function CustomerPortalEditSheet({
             />
             <FormField
               control={form.control}
-              name="billing_address.postalCode"
+              name="address.postalCode"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Postal code</FormLabel>
@@ -277,7 +277,7 @@ export function CustomerPortalEditSheet({
             />
             <FormField
               control={form.control}
-              name="billing_address.country"
+              name="address.country"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Country</FormLabel>
@@ -301,7 +301,7 @@ export function CustomerPortalEditSheet({
             />
             <FormField
               control={form.control}
-              name="billing_address.state"
+              name="address.state"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>State</FormLabel>

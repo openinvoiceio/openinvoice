@@ -2,8 +2,7 @@ import {
   getInvoicesListQueryKey,
   getInvoicesRetrieveQueryKey,
   getPreviewInvoiceQueryKey,
-  useApplyInvoiceTax,
-  useDeleteInvoiceTax,
+  useUpdateInvoice,
 } from "@/api/endpoints/invoices/invoices";
 import { type Invoice } from "@/api/models";
 import { TaxRateCombobox } from "@/components/tax-rate-combobox.tsx";
@@ -27,7 +26,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip.tsx";
 import { MAX_TAXES } from "@/config/invoices";
 import { getErrorSummary } from "@/lib/api/errors";
-import { formatAmount, formatPercentage } from "@/lib/formatters.ts";
+import { formatPercentage } from "@/lib/formatters.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { PlusIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -36,33 +35,18 @@ export function InvoiceTaxesCard({ invoice }: { invoice: Invoice }) {
   const queryClient = useQueryClient();
   const limitReached = invoice.taxes.length >= MAX_TAXES;
 
-  async function invalidate() {
-    await queryClient.invalidateQueries({
-      queryKey: getInvoicesListQueryKey(),
-    });
-    await queryClient.invalidateQueries({
-      queryKey: getInvoicesRetrieveQueryKey(invoice.id),
-    });
-    await queryClient.invalidateQueries({
-      queryKey: getPreviewInvoiceQueryKey(invoice.id),
-    });
-  }
-
-  const applyInvoiceTax = useApplyInvoiceTax({
+  const updateInvoice = useUpdateInvoice({
     mutation: {
       onSuccess: async () => {
-        await invalidate();
-      },
-      onError: (error) => {
-        const { message, description } = getErrorSummary(error);
-        toast.error(message, { description });
-      },
-    },
-  });
-  const deleteInvoiceTax = useDeleteInvoiceTax({
-    mutation: {
-      onSuccess: async () => {
-        await invalidate();
+        await queryClient.invalidateQueries({
+          queryKey: getInvoicesListQueryKey(),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: getInvoicesRetrieveQueryKey(invoice.id),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: getPreviewInvoiceQueryKey(invoice.id),
+        });
       },
       onError: (error) => {
         const { message, description } = getErrorSummary(error);
@@ -80,27 +64,28 @@ export function InvoiceTaxesCard({ invoice }: { invoice: Invoice }) {
         </FormCardDescription>
       </FormCardHeader>
       <FormCardContent className="gap-2">
-        {invoice.taxes.map((tax) => (
-          <div key={tax.id} className="flex gap-2 text-sm">
-            <span className="flex flex-grow-1 items-center justify-between">
-              <div className="flex gap-2">
-                <span>{tax.name}</span>
-                <span className="text-muted-foreground">
-                  {formatPercentage(tax.rate)}
-                </span>
-              </div>
-              <span>{formatAmount(tax.amount, invoice.currency)}</span>
-            </span>
+        {invoice.tax_rates.map((tax_rate) => (
+          <div key={tax_rate.id} className="flex gap-2 text-sm">
+            <div className="flex flex-grow-1 items-center gap-2">
+              <span>{tax_rate.name}</span>
+              <span className="text-muted-foreground">
+                {formatPercentage(tax_rate.percentage)}
+              </span>
+            </div>
             <Button
               type="button"
               variant="ghost"
               size="icon"
               className="text-muted-foreground size-8"
-              aria-label={`Remove tax ${tax.name}`}
+              aria-label={`Remove tax ${tax_rate.name}`}
               onClick={() =>
-                deleteInvoiceTax.mutateAsync({
-                  invoiceId: invoice.id,
-                  id: tax.id,
+                updateInvoice.mutate({
+                  id: invoice.id,
+                  data: {
+                    tax_rates: invoice.tax_rates
+                      .filter((tr) => tr.id !== tax_rate.id)
+                      .map((tr) => tr.id),
+                  },
                 })
               }
             >
@@ -108,7 +93,7 @@ export function InvoiceTaxesCard({ invoice }: { invoice: Invoice }) {
             </Button>
           </div>
         ))}
-        {invoice.taxes.length === 0 && (
+        {invoice.tax_rates.length === 0 && (
           <Empty className="border border-dashed">
             <EmptyHeader>
               <EmptyTitle>No taxes added yet</EmptyTitle>
@@ -128,9 +113,14 @@ export function InvoiceTaxesCard({ invoice }: { invoice: Invoice }) {
                 align="start"
                 onSelect={async (selected) => {
                   if (!selected) return;
-                  await applyInvoiceTax.mutateAsync({
+                  await updateInvoice.mutateAsync({
                     id: invoice.id,
-                    data: { tax_rate_id: selected.id },
+                    data: {
+                      tax_rates: [
+                        ...invoice.tax_rates.map((tr) => tr.id),
+                        selected.id,
+                      ],
+                    },
                   });
                 }}
               >
@@ -140,7 +130,7 @@ export function InvoiceTaxesCard({ invoice }: { invoice: Invoice }) {
                   size="sm"
                   disabled={limitReached}
                 >
-                  {applyInvoiceTax.isPending ? (
+                  {updateInvoice.isPending ? (
                     <Spinner variant="outline" />
                   ) : (
                     <PlusIcon className="text-muted-foreground" />

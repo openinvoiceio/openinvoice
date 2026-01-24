@@ -79,6 +79,8 @@ export interface Invoice {
   voided_at: string | null;
   /** @nullable */
   pdf_id: string | null;
+  /** @nullable */
+  previous_revision_id: string | null;
   lines: InvoiceLine[];
   shipping: InvoiceShipping;
   coupons: Coupon[];

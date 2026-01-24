@@ -88,6 +88,7 @@ def test_void_invoice(api_client, user, account):
         "paid_at": None,
         "voided_at": invoice.voided_at.isoformat().replace("+00:00", "Z"),
         "pdf_id": None,
+        "previous_revision_id": None,
         "lines": [],
         "coupons": [],
         "discounts": [],

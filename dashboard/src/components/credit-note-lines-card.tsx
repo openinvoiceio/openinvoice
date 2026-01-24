@@ -630,7 +630,7 @@ export function CreditNoteLinesCard({
                       {formatPercentage(
                         invoiceLine.taxes
                           .reduce(
-                            (acc, tax) => acc.plus(new Decimal(tax.rate)),
+                            (acc, tax) => acc.plus(new Decimal(tax.percentage)),
                             new Decimal(0),
                           )
                           .toString(),

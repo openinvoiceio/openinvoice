@@ -36,25 +36,24 @@ export function CustomerBillingAddressCard({
       },
     },
   });
-  const address = customer.billing_address;
 
   return (
     <AddressCard
       title="Billing Address"
       description="Manage your billing address"
       defaultValues={{
-        line1: address.line1 || "",
-        line2: address.line2 || "",
-        locality: address.locality || "",
-        state: address.state || "",
-        postalCode: address.postal_code || "",
-        country: address.country || undefined,
+        line1: customer.address.line1 || "",
+        line2: customer.address.line2 || "",
+        locality: customer.address.locality || "",
+        state: customer.address.state || "",
+        postalCode: customer.address.postal_code || "",
+        country: customer.address.country || undefined,
       }}
       onSubmit={async (values) => {
         await mutateAsync({
           id: customer.id,
           data: {
-            billing_address: {
+            address: {
               line1: values.line1 || null,
               line2: values.line2 || null,
               locality: values.locality || null,

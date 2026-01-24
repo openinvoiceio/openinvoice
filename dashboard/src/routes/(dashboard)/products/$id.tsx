@@ -176,7 +176,7 @@ function RouteComponent() {
               <div>
                 <div className="flex items-center gap-2 self-start">
                   <SectionTitle>{product.name}</SectionTitle>
-                  <ProductBadge isActive={product.is_active} />
+                  <ProductBadge status={product.status} />
                 </div>
                 <SectionDescription>{description}</SectionDescription>
               </div>

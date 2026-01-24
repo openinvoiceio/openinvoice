@@ -1,4 +1,4 @@
-import type { ShippingRate } from "@/api/models";
+import { ProductCatalogStatusEnum, type ShippingRate } from "@/api/models";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { ShippingRateDropdown } from "@/components/shipping-rate-dropdown.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
@@ -39,7 +39,7 @@ export const columns: ColumnDef<ShippingRate>[] = [
       return (
         <div className="flex min-w-40 gap-2 font-medium">
           {value || "-"}
-          {!row.original.is_active && (
+          {row.original.status == ProductCatalogStatusEnum.archived && (
             <Badge variant="secondary">Archived</Badge>
           )}
         </div>

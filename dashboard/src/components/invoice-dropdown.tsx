@@ -8,7 +8,7 @@ import {
   getInvoicesListQueryKey,
   getInvoicesRetrieveQueryKey,
   getPreviewInvoiceQueryKey,
-  useCreateInvoice,
+  useCreateInvoiceRevision,
   useDeleteInvoice,
   useFinalizeInvoice,
   useVoidInvoice,
@@ -177,10 +177,9 @@ export function useIssueCreditNoteAction(): DropdownAction<Invoice> {
 export function useReviseInvoiceAction(): DropdownAction<Invoice> {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { mutateAsync, isPending } = useCreateInvoice({
+  const { mutateAsync, isPending } = useCreateInvoiceRevision({
     mutation: {
-      onSuccess: async (revision, variables) => {
-        const previousRevisionId = variables?.data.previous_revision_id ?? null;
+      onSuccess: async (revision) => {
         await Promise.all([
           queryClient.invalidateQueries({
             queryKey: getInvoicesListQueryKey(),
@@ -191,13 +190,17 @@ export function useReviseInvoiceAction(): DropdownAction<Invoice> {
           queryClient.invalidateQueries({
             queryKey: getPreviewInvoiceQueryKey(revision.id),
           }),
-          ...(previousRevisionId
+          ...(revision.previous_revision_id
             ? [
                 queryClient.invalidateQueries({
-                  queryKey: getInvoicesRetrieveQueryKey(previousRevisionId),
+                  queryKey: getInvoicesRetrieveQueryKey(
+                    revision.previous_revision_id,
+                  ),
                 }),
                 queryClient.invalidateQueries({
-                  queryKey: getPreviewInvoiceQueryKey(previousRevisionId),
+                  queryKey: getPreviewInvoiceQueryKey(
+                    revision.previous_revision_id,
+                  ),
                 }),
               ]
             : []),
@@ -222,8 +225,7 @@ export function useReviseInvoiceAction(): DropdownAction<Invoice> {
     icon: RotateCcwIcon,
     visible: (i) => i.status === InvoiceStatusEnum.open,
     disabled: () => isPending,
-    onSelect: (invoice) =>
-      void mutateAsync({ data: { previous_revision_id: invoice.id } }),
+    onSelect: (invoice) => void mutateAsync({ id: invoice.id, data: {} }),
   };
 }
 

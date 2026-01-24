@@ -119,6 +119,7 @@ def test_update_invoice(api_client, user, account):
         "paid_at": None,
         "voided_at": None,
         "pdf_id": None,
+        "previous_revision_id": None,
         "lines": [],
         "coupons": [],
         "discounts": [],
@@ -212,6 +213,8 @@ def test_update_invoice_add_shipping(api_client, user, account):
         "total_taxes": [
             {
                 "tax_rate_id": str(tax_rate.id),
+                "name": tax_rate.name,
+                "percentage": "10.00",
                 "amount": "1.82",
             }
         ],
@@ -288,6 +291,8 @@ def test_update_invoice_existing_shipping(api_client, user, account):
         "total_taxes": [
             {
                 "tax_rate_id": str(new_tax_rate.id),
+                "name": new_tax_rate.name,
+                "percentage": "15.00",
                 "amount": "3.91",
             }
         ],

@@ -44,7 +44,7 @@ import { Input } from "./ui/input";
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.email("Invalid email address").optional(),
-  billing_address: z.object({
+  address: z.object({
     line1: z.string().optional(),
     line2: z.string().optional(),
     locality: z.string().optional(),
@@ -63,7 +63,7 @@ export function CustomerOnboardingCard() {
     defaultValues: {
       name: "",
       email: undefined,
-      billing_address: {
+      address: {
         line1: "",
         line2: "",
         locality: "",
@@ -73,7 +73,7 @@ export function CustomerOnboardingCard() {
       },
     },
   });
-  const country = form.watch("billing_address.country");
+  const country = form.watch("address.country");
   const countryData = allCountries.find(
     ([, countrySlug]) => countrySlug === country,
   );
@@ -100,13 +100,13 @@ export function CustomerOnboardingCard() {
       data: {
         name: values.name,
         email: values.email,
-        billing_address: {
-          line1: values.billing_address.line1 || null,
-          line2: values.billing_address.line2 || null,
-          locality: values.billing_address.locality || null,
-          state: values.billing_address.state || null,
-          postal_code: values.billing_address.postalCode || null,
-          country: values.billing_address.country || null,
+        address: {
+          line1: values.address.line1 || null,
+          line2: values.address.line2 || null,
+          locality: values.address.locality || null,
+          state: values.address.state || null,
+          postal_code: values.address.postalCode || null,
+          country: values.address.country || null,
         },
       },
     });
@@ -162,7 +162,7 @@ export function CustomerOnboardingCard() {
           <FormCardContent>
             <FormField
               control={form.control}
-              name="billing_address.line1"
+              name="address.line1"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Line 1</FormLabel>
@@ -176,7 +176,7 @@ export function CustomerOnboardingCard() {
             />
             <FormField
               control={form.control}
-              name="billing_address.line2"
+              name="address.line2"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Line 2</FormLabel>
@@ -195,7 +195,7 @@ export function CustomerOnboardingCard() {
           <FormCardContent className="grid-cols-2">
             <FormField
               control={form.control}
-              name="billing_address.locality"
+              name="address.locality"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Locality</FormLabel>
@@ -209,7 +209,7 @@ export function CustomerOnboardingCard() {
             />
             <FormField
               control={form.control}
-              name="billing_address.postalCode"
+              name="address.postalCode"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Postal code</FormLabel>
@@ -226,7 +226,7 @@ export function CustomerOnboardingCard() {
           <FormCardContent className="grid-cols-2">
             <FormField
               control={form.control}
-              name="billing_address.country"
+              name="address.country"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Country</FormLabel>
@@ -250,7 +250,7 @@ export function CustomerOnboardingCard() {
             />
             <FormField
               control={form.control}
-              name="billing_address.state"
+              name="address.state"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>State</FormLabel>

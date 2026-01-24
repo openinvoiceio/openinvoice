@@ -36,31 +36,33 @@ export function CustomerShippingAddressCard({
       },
     },
   });
-  const address = customer.shipping_address;
+  if (!customer.shipping?.address) return null;
 
   return (
     <AddressCard
       title="Shipping Address"
       description="Manage your shipping address"
       defaultValues={{
-        line1: address.line1 || "",
-        line2: address.line2 || "",
-        locality: address.locality || "",
-        state: address.state || "",
-        postalCode: address.postal_code || "",
-        country: address.country || undefined,
+        line1: customer.shipping.address.line1 || "",
+        line2: customer.shipping.address.line2 || "",
+        locality: customer.shipping.address.locality || "",
+        state: customer.shipping.address.state || "",
+        postalCode: customer.shipping.address.postal_code || "",
+        country: customer.shipping.address.country || undefined,
       }}
       onSubmit={async (values) => {
         await mutateAsync({
           id: customer.id,
           data: {
-            shipping_address: {
-              line1: values.line1 || null,
-              line2: values.line2 || null,
-              locality: values.locality || null,
-              state: values.state || null,
-              postal_code: values.postalCode || null,
-              country: values.country || null,
+            shipping: {
+              address: {
+                line1: values.line1 || null,
+                line2: values.line2 || null,
+                locality: values.locality || null,
+                state: values.state || null,
+                postal_code: values.postalCode || null,
+                country: values.country || null,
+              },
             },
           },
         });

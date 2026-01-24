@@ -1,4 +1,4 @@
-import { type Price } from "@/api/models";
+import { ProductCatalogStatusEnum, type Price } from "@/api/models";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { PriceDropdown } from "@/components/price-dropdown";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +42,7 @@ export const columns: ColumnDef<Price>[] = [
           {row.original.product.default_price_id === row.original.id && (
             <Badge>Default</Badge>
           )}
-          {!row.original.is_active && (
+          {row.original.status == ProductCatalogStatusEnum.archived && (
             <Badge variant="secondary">Archived</Badge>
           )}
         </div>

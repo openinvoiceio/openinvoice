@@ -164,6 +164,7 @@ def test_search_all(api_client, user, account):
                 "paid_at": None,
                 "voided_at": None,
                 "pdf_id": None,
+                "previous_revision_id": None,
                 "lines": [],
                 "coupons": [],
                 "discounts": [],

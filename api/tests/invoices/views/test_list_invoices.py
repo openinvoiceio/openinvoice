@@ -96,6 +96,7 @@ def test_list_invoices(api_client, user, account):
                 "paid_at": None,
                 "voided_at": None,
                 "pdf_id": None,
+                "previous_revision_id": None,
                 "lines": [],
                 "coupons": [],
                 "discounts": [],

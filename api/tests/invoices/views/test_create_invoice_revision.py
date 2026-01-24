@@ -109,6 +109,7 @@ def test_create_invoice_revision(api_client, user, account):
         "paid_at": None,
         "voided_at": None,
         "pdf_id": None,
+        "previous_revision_id": str(invoice.id),
         "lines": [],
         "coupons": [],
         "discounts": [],

@@ -8,6 +8,7 @@
 
 export interface InvoiceDiscount {
   coupon_id: string;
+  name: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   amount: string;
 }

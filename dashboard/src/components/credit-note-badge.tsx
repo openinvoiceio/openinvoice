@@ -1,5 +1,6 @@
 import { CreditNoteStatusEnum } from "@/api/models";
 import { Badge } from "@/components/ui/badge";
+import { formatEnum } from "@/lib/formatters.ts";
 import { cn } from "@/lib/utils";
 import { cva } from "class-variance-authority";
 import React from "react";
@@ -32,7 +33,7 @@ export function CreditNoteBadge({
       className={cn(statusVariants({ variant: status }), className)}
       {...props}
     >
-      {status.replace("_", " ")}
+      {formatEnum(status)}
     </Badge>
   );
 }

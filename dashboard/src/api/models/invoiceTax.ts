@@ -8,6 +8,9 @@
 
 export interface InvoiceTax {
   tax_rate_id: string;
+  name: string;
+  /** @pattern ^-?\d{0,3}(?:\.\d{0,2})?$ */
+  percentage: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   amount: string;
 }
