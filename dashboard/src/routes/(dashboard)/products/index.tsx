@@ -3,7 +3,7 @@ import {
   productsList,
   useProductsList,
 } from "@/api/endpoints/products/products";
-import type { Product } from "@/api/models";
+import { ProductCatalogStatusEnum, type Product } from "@/api/models";
 import {
   AppHeader,
   AppHeaderActions,
@@ -49,6 +49,7 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDataTable } from "@/hooks/use-data-table";
+import { formatEnum } from "@/lib/formatters";
 import { getSortingStateParser } from "@/lib/parsers";
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -67,8 +68,28 @@ import {
   parseAsIsoDateTime,
   parseAsString,
   parseAsStringEnum,
-  useQueryState,
+  useQueryStates,
 } from "nuqs";
+
+const statusValues = Object.values(
+  ProductCatalogStatusEnum,
+) as ProductCatalogStatusEnum[];
+const statusFilterValues: Array<ProductCatalogStatusEnum | "all"> = [
+  ...statusValues,
+  "all",
+];
+type StatusFilter = (typeof statusFilterValues)[number];
+
+const searchParams = {
+  page: parseAsInteger.withDefault(1),
+  perPage: parseAsInteger.withDefault(20),
+  sort: getSortingStateParser<Product>().withDefault([
+    { id: "created_at", desc: true },
+  ]),
+  name: parseAsString.withDefault(""),
+  status: parseAsStringEnum(statusFilterValues).withDefault("active"),
+  created_at: parseAsArrayOf(parseAsIsoDateTime).withDefault([]),
+};
 
 export const Route = createFileRoute("/(dashboard)/products/")({
   component: RouteComponent,
@@ -76,23 +97,8 @@ export const Route = createFileRoute("/(dashboard)/products/")({
 
 function RouteComponent() {
   const navigate = Route.useNavigate();
-  const [page] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [perPage] = useQueryState("perPage", parseAsInteger.withDefault(20));
-  const [sort] = useQueryState(
-    "sort",
-    getSortingStateParser<Product>().withDefault([
-      { id: "created_at", desc: true },
-    ]),
-  );
-  const [name] = useQueryState("name", parseAsString.withDefault(""));
-  const [status, setStatus] = useQueryState(
-    "status",
-    parseAsStringEnum(["active", "archived", "all"]).withDefault("active"),
-  );
-  const [created_at] = useQueryState(
-    "created_at",
-    parseAsArrayOf(parseAsIsoDateTime).withDefault([]),
-  );
+  const [{ page, perPage, sort, name, status, created_at }, setQueryState] =
+    useQueryStates(searchParams);
   const hasFilters =
     (name?.trim()?.length ?? 0) > 0 ||
     created_at.length === 2 ||
@@ -110,11 +116,13 @@ function RouteComponent() {
     }),
   });
 
-  const metrics = [
-    { value: "all" as const, label: "All" },
-    { value: "active" as const, label: "Active" },
-    { value: "archived" as const, label: "Archived" },
-  ] as const;
+  const metrics: Array<{ value: StatusFilter; label: string }> = [
+    { value: "all", label: "All" },
+    ...statusValues.map((value) => ({
+      value,
+      label: formatEnum(value),
+    })),
+  ];
 
   const counters = useQueries({
     queries: metrics.map(({ value }) => ({
@@ -200,7 +208,9 @@ function RouteComponent() {
                       <MetricCardButton
                         key={item.value}
                         selected={status === item.value}
-                        onClick={() => setStatus(item.value)}
+                        onClick={() =>
+                          setQueryState({ status: item.value, page: 1 })
+                        }
                       >
                         <MetricCardHeader className="flex items-center justify-between">
                           <MetricCardTitle>{item.label}</MetricCardTitle>

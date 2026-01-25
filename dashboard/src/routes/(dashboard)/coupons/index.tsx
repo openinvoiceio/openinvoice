@@ -1,5 +1,9 @@
-import { useCouponsList } from "@/api/endpoints/coupons/coupons";
-import type { Coupon } from "@/api/models";
+import {
+  couponsList,
+  getCouponsListQueryKey,
+  useCouponsList,
+} from "@/api/endpoints/coupons/coupons";
+import { ProductCatalogStatusEnum, type Coupon } from "@/api/models";
 import {
   AppHeader,
   AppHeaderActions,
@@ -30,6 +34,13 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty.tsx";
 import {
+  MetricCardButton,
+  MetricCardGroup,
+  MetricCardHeader,
+  MetricCardTitle,
+  MetricCardValue,
+} from "@/components/ui/metric-card";
+import {
   Section,
   SectionGroup,
   SectionHeader,
@@ -38,11 +49,14 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDataTable } from "@/hooks/use-data-table";
+import { formatEnum } from "@/lib/formatters";
 import { getSortingStateParser } from "@/lib/parsers";
+import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { addDays, formatISO } from "date-fns";
 import {
   BoxIcon,
+  ListFilterIcon,
   PercentIcon,
   PlusIcon,
   TagIcon,
@@ -53,8 +67,29 @@ import {
   parseAsInteger,
   parseAsIsoDateTime,
   parseAsString,
+  parseAsStringEnum,
   useQueryStates,
 } from "nuqs";
+
+const statusValues = Object.values(
+  ProductCatalogStatusEnum,
+) as ProductCatalogStatusEnum[];
+const statusFilterValues: Array<ProductCatalogStatusEnum | "all"> = [
+  ...statusValues,
+  "all",
+];
+type StatusFilter = (typeof statusFilterValues)[number];
+
+const searchParams = {
+  page: parseAsInteger.withDefault(1),
+  perPage: parseAsInteger.withDefault(20),
+  sort: getSortingStateParser<Coupon>().withDefault([
+    { id: "created_at", desc: true },
+  ]),
+  name: parseAsString.withDefault(""),
+  created_at: parseAsArrayOf(parseAsIsoDateTime).withDefault([]),
+  status: parseAsStringEnum(statusFilterValues).withDefault("active"),
+};
 
 export const Route = createFileRoute("/(dashboard)/coupons/")({
   component: RouteComponent,
@@ -62,25 +97,38 @@ export const Route = createFileRoute("/(dashboard)/coupons/")({
 
 function RouteComponent() {
   const navigate = Route.useNavigate();
-  const [{ page, perPage, sort, name, created_at }] = useQueryStates({
-    page: parseAsInteger.withDefault(1),
-    perPage: parseAsInteger.withDefault(20),
-    sort: getSortingStateParser<Coupon>().withDefault([
-      { id: "created_at", desc: true },
-    ]),
-    name: parseAsString.withDefault(""),
-    created_at: parseAsArrayOf(parseAsIsoDateTime).withDefault([]),
-  });
+  const [{ page, perPage, sort, name, created_at, status }, setQueryState] =
+    useQueryStates(searchParams);
 
   const { data } = useCouponsList({
     page,
     page_size: perPage,
     ordering: sort.map((s) => `${s.desc ? "-" : ""}${s.id}`).join(","),
     ...(name && { search: name }),
+    ...(status !== "all" && { status }),
     ...(created_at.length == 2 && {
       created_at_gte: formatISO(new Date(created_at[0])),
       created_at_lte: formatISO(addDays(new Date(created_at[1]), 1)),
     }),
+  });
+
+  const metrics: Array<{ value: StatusFilter; label: string }> = [
+    { value: "all", label: "All" },
+    ...statusValues.map((value) => ({
+      value,
+      label: formatEnum(value),
+    })),
+  ];
+
+  const counters = useQueries({
+    queries: metrics.map(({ value }) => ({
+      queryKey: getCouponsListQueryKey({
+        ...(value === "all" ? {} : { status: value }),
+      }),
+      queryFn: () =>
+        couponsList({ ...(value === "all" ? {} : { status: value }) }),
+      staleTime: 30_000,
+    })),
   });
   const { table } = useDataTable({
     data: data?.results || [],
@@ -148,7 +196,29 @@ function RouteComponent() {
                   Shipping rates
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="/coupons">
+              <TabsContent value="/coupons" className="my-2 grid gap-4">
+                <MetricCardGroup className="flex">
+                  {metrics.map((item, index) => {
+                    const query = counters[index];
+                    return (
+                      <MetricCardButton
+                        key={item.value}
+                        selected={status === item.value}
+                        onClick={() =>
+                          setQueryState({ status: item.value, page: 1 })
+                        }
+                      >
+                        <MetricCardHeader className="flex items-center justify-between">
+                          <MetricCardTitle>{item.label}</MetricCardTitle>
+                          <ListFilterIcon className="size-4" />
+                        </MetricCardHeader>
+                        <MetricCardValue>
+                          {query.isLoading ? "…" : query.data?.count}
+                        </MetricCardValue>
+                      </MetricCardButton>
+                    );
+                  })}
+                </MetricCardGroup>
                 <DataTableContainer>
                   <DataTableToolbar table={table}>
                     <DataTableFilterList table={table} />

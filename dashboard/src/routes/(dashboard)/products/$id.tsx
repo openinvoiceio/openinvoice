@@ -1,10 +1,15 @@
-import { usePricesList } from "@/api/endpoints/prices/prices";
+import {
+  getPricesListQueryKey,
+  pricesList,
+  usePricesList,
+} from "@/api/endpoints/prices/prices";
 import {
   getProductsListQueryKey,
   getProductsRetrieveQueryKey,
   useProductsRetrieve,
   useUpdateProduct,
 } from "@/api/endpoints/products/products";
+import { ProductCatalogStatusEnum } from "@/api/models";
 import {
   AppHeader,
   AppHeaderActions,
@@ -46,6 +51,13 @@ import {
 } from "@/components/ui/empty.tsx";
 import { Metadata } from "@/components/ui/metadata.tsx";
 import {
+  MetricCardButton,
+  MetricCardGroup,
+  MetricCardHeader,
+  MetricCardTitle,
+  MetricCardValue,
+} from "@/components/ui/metric-card";
+import {
   Section,
   SectionDescription,
   SectionGroup,
@@ -55,20 +67,35 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar.tsx";
 import { useDataTable } from "@/hooks/use-data-table";
 import { getErrorSummary } from "@/lib/api/errors.ts";
-import { formatDatetime } from "@/lib/formatters";
+import { formatDatetime, formatEnum } from "@/lib/formatters";
 import { formatPrices } from "@/lib/products.ts";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   BoxIcon,
   BracesIcon,
   InfoIcon,
+  ListFilterIcon,
   MoreHorizontalIcon,
   PencilIcon,
   PlusIcon,
 } from "lucide-react";
+import { parseAsStringEnum, useQueryStates } from "nuqs";
 import { useMemo } from "react";
 import { toast } from "sonner";
+
+const statusValues = Object.values(
+  ProductCatalogStatusEnum,
+) as ProductCatalogStatusEnum[];
+const statusFilterValues: Array<ProductCatalogStatusEnum | "all"> = [
+  ...statusValues,
+  "all",
+];
+type StatusFilter = (typeof statusFilterValues)[number];
+
+const searchParams = {
+  status: parseAsStringEnum(statusFilterValues).withDefault("active"),
+};
 
 export const Route = createFileRoute("/(dashboard)/products/$id")({
   component: RouteComponent,
@@ -79,10 +106,33 @@ function RouteComponent() {
   const queryClient = useQueryClient();
   const { data: product } = useProductsRetrieve(id);
   const pageSize = 20;
+  const [{ status }, setQueryState] = useQueryStates(searchParams);
   const { data: prices } = usePricesList({
     page_size: pageSize,
     ordering: "-created_at",
     product_id: id,
+    ...(status !== "all" && { status }),
+  });
+  const metrics: Array<{ value: StatusFilter; label: string }> = [
+    { value: "all", label: "All" },
+    ...statusValues.map((value) => ({
+      value,
+      label: formatEnum(value),
+    })),
+  ];
+  const counters = useQueries({
+    queries: metrics.map(({ value }) => ({
+      queryKey: getPricesListQueryKey({
+        product_id: id,
+        ...(value === "all" ? {} : { status: value }),
+      }),
+      queryFn: () =>
+        pricesList({
+          product_id: id,
+          ...(value === "all" ? {} : { status: value }),
+        }),
+      staleTime: 30_000,
+    })),
   });
   const { table } = useDataTable({
     data: prices?.results || [],
@@ -186,37 +236,59 @@ function RouteComponent() {
             <SectionHeader>
               <SectionTitle>Prices</SectionTitle>
             </SectionHeader>
-            <DataTableContainer>
-              <DataTable table={table}>
-                <Empty>
-                  <EmptyHeader>
-                    <EmptyTitle>
-                      Add your first price for {product.name}
-                    </EmptyTitle>
-                    <EmptyDescription>
-                      Prices define how much and how you charge for your
-                      products.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                  <EmptyContent>
-                    <Button
-                      size="sm"
-                      onClick={() =>
-                        pushModal("PriceCreateSheet", {
-                          productId: product.id,
-                        })
-                      }
+            <div className="my-2 grid gap-4">
+              <MetricCardGroup className="flex">
+                {metrics.map((item, index) => {
+                  const query = counters[index];
+                  return (
+                    <MetricCardButton
+                      key={item.value}
+                      selected={status === item.value}
+                      onClick={() => setQueryState({ status: item.value })}
                     >
-                      <PlusIcon />
-                      Add price
-                    </Button>
-                  </EmptyContent>
-                </Empty>
-              </DataTable>
-              <DataTableFooter>
-                <DataTablePagination table={table} />
-              </DataTableFooter>
-            </DataTableContainer>
+                      <MetricCardHeader className="flex items-center justify-between">
+                        <MetricCardTitle>{item.label}</MetricCardTitle>
+                        <ListFilterIcon className="size-4" />
+                      </MetricCardHeader>
+                      <MetricCardValue>
+                        {query.isLoading ? "…" : query.data?.count}
+                      </MetricCardValue>
+                    </MetricCardButton>
+                  );
+                })}
+              </MetricCardGroup>
+              <DataTableContainer>
+                <DataTable table={table}>
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyTitle>
+                        Add your first price for {product.name}
+                      </EmptyTitle>
+                      <EmptyDescription>
+                        Prices define how much and how you charge for your
+                        products.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          pushModal("PriceCreateSheet", {
+                            productId: product.id,
+                          })
+                        }
+                      >
+                        <PlusIcon />
+                        Add price
+                      </Button>
+                    </EmptyContent>
+                  </Empty>
+                </DataTable>
+                <DataTableFooter>
+                  <DataTablePagination table={table} />
+                </DataTableFooter>
+              </DataTableContainer>
+            </div>
           </Section>
         </SectionGroup>
         <DataSidebar defaultValue="overview">

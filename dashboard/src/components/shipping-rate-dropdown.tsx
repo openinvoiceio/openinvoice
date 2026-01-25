@@ -14,7 +14,12 @@ import {
 } from "@/components/ui/action-dropdown";
 import { getErrorSummary } from "@/lib/api/errors";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArchiveIcon, ArchiveRestoreIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  ArchiveIcon,
+  ArchiveRestoreIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { toast } from "sonner";
 
 function useEditShippingRateAction(): DropdownAction<ShippingRate> {

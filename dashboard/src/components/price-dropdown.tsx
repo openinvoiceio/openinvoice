@@ -159,11 +159,11 @@ function useDeletePriceAction(): DropdownAction<Price> {
   const queryClient = useQueryClient();
   const { mutateAsync } = useDeletePrice({
     mutation: {
-      onSuccess: async (p) => {
+      onSuccess: async (_, variables) => {
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: getPricesListQueryKey() }),
           queryClient.invalidateQueries({
-            queryKey: getPricesRetrieveQueryKey(p.id),
+            queryKey: getPricesRetrieveQueryKey(variables.id),
           }),
         ]);
         toast.success("Price deleted");
