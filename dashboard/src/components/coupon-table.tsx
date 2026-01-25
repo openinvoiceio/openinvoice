@@ -1,6 +1,7 @@
-import type { Coupon } from "@/api/models";
+import { ProductCatalogStatusEnum, type Coupon } from "@/api/models";
 import { CouponDropdown } from "@/components/coupon-dropdown";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -39,7 +40,14 @@ export const columns: ColumnDef<Coupon>[] = [
     accessorKey: "name",
     cell: ({ row }) => {
       const value: string | undefined = row.getValue("name");
-      return <div className="font-medium">{value || "-"}</div>;
+      return (
+        <div className="flex min-w-40 gap-2 font-medium">
+          {value || "-"}
+          {row.original.status == ProductCatalogStatusEnum.archived && (
+            <Badge variant="secondary">Archived</Badge>
+          )}
+        </div>
+      );
     },
     meta: {
       label: "Name",

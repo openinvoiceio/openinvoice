@@ -1,6 +1,7 @@
-import type { TaxRate } from "@/api/models";
+import { ProductCatalogStatusEnum, type TaxRate } from "@/api/models";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { TaxRateDropdown } from "@/components/tax-rate-dropdown";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -39,7 +40,14 @@ export const columns: ColumnDef<TaxRate>[] = [
     accessorKey: "name",
     cell: ({ row }) => {
       const value: string | undefined = row.getValue("name");
-      return <div className="font-medium">{value || "-"}</div>;
+      return (
+        <div className="flex min-w-40 gap-2 font-medium">
+          {value || "-"}
+          {row.original.status == ProductCatalogStatusEnum.archived && (
+            <Badge variant="secondary">Archived</Badge>
+          )}
+        </div>
+      );
     },
     meta: {
       label: "Name",

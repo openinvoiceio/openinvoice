@@ -316,6 +316,12 @@ function RouteComponent() {
                 <DataListValue>{product.description || "-"}</DataListValue>
               </DataListItem>
               <DataListItem>
+                <DataListLabel>Status</DataListLabel>
+                <DataListValue>
+                  <ProductBadge status={product.status} />
+                </DataListValue>
+              </DataListItem>
+              <DataListItem>
                 <DataListLabel>Created</DataListLabel>
                 <DataListValue>
                   {formatDatetime(product.created_at)}
