@@ -99,28 +99,52 @@
         </section>
 
         <section class="party party-customer">
-            <h2 class="party-title">Bill to</h2>
-            <p class="party-detail">
-                {{ invoice.effective_customer.legal_name|default:invoice.effective_customer.name }}
-            </p>
-            {% if invoice.effective_customer.legal_number %}
-                <p class="party-detail">
-                    <span>{{ invoice.effective_customer.legal_number }}</span>
-                </p>
-            {% endif %}
-            <address class="party-detail">
-                {% include "address.html" with address=invoice.effective_customer.address %}
-            </address>
-            <p class="party-detail">
-                {% if invoice.effective_customer.email %}
-                    <span>{{ invoice.effective_customer.email }}</span>
+            <div class="party-columns">
+                <div>
+                    <h2 class="party-title">Bill to</h2>
+                    <p class="party-detail">
+                        {{ invoice.effective_customer.legal_name|default:invoice.effective_customer.name }}
+                    </p>
+                    {% if invoice.effective_customer.legal_number %}
+                        <p class="party-detail">
+                            <span>{{ invoice.effective_customer.legal_number }}</span>
+                        </p>
+                    {% endif %}
+                    <address class="party-detail">
+                        {% include "address.html" with address=invoice.effective_customer.address %}
+                    </address>
+                    <p class="party-detail">
+                        {% if invoice.effective_customer.email %}
+                            <span>{{ invoice.effective_customer.email }}</span>
+                        {% endif %}
+                    </p>
+                    {% for tax_id in invoice.effective_customer.tax_ids.all %}
+                        <p class="party-detail">
+                            <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
+                        </p>
+                    {% endfor %}
+                </div>
+                {% if invoice.shipping %}
+                    <div>
+                        <h2 class="party-title">Ship to</h2>
+                        {% if invoice.shipping.effective_name %}
+                            <p class="party-detail">
+                                {{ invoice.shipping.effective_name }}
+                            </p>
+                        {% endif %}
+                        {% if invoice.shipping.effective_phone %}
+                            <p class="party-detail">
+                                <span>{{ invoice.shipping.effective_phone }}</span>
+                            </p>
+                        {% endif %}
+                        {% if invoice.shipping.effective_address %}
+                            <address class="party-detail">
+                                {% include "address.html" with address=invoice.shipping.effective_address %}
+                            </address>
+                        {% endif %}
+                    </div>
                 {% endif %}
-            </p>
-            {% for tax_id in invoice.effective_customer.tax_ids.all %}
-                <p class="party-detail">
-                    <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
-                </p>
-            {% endfor %}
+            </div>
         </section>
     </section>
 
@@ -197,6 +221,12 @@
                     <dd class="sum-value sum-discount">-{% money_localize discount.amount invoice.currency %}</dd>
                 </div>
             {% endfor %}
+            {% if invoice.shipping %}
+                <div class="sum-row">
+                    <dt class="sum-label">Shipping fee</dt>
+                    <dd class="sum-value">{% money_localize invoice.shipping_amount %}</dd>
+                </div>
+            {% endif %}
             <div class="sum-row">
                 <dt class="sum-label">Total excluding tax</dt>
                 <dd class="sum-value">{% money_localize invoice.total_excluding_tax_amount %}</dd>

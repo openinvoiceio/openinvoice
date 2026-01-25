@@ -4,10 +4,14 @@ import pytest
 from django.template.loader import render_to_string
 
 from tests.factories import (
+    AccountFactory,
     CouponFactory,
+    CustomerFactory,
+    CustomerShippingFactory,
     InvoiceFactory,
     InvoiceLineFactory,
     PaymentFactory,
+    ShippingRateFactory,
     TaxRateFactory,
 )
 
@@ -103,6 +107,38 @@ def test_invoice_pdf_template_with_discounts_and_taxes():
     assert f'style="padding-left:20px;">{coupon.name}</td>' in body
     assert tax_rate.name in body
     assert "20%" in body
+
+
+def test_invoice_pdf_template_with_shipping_and_discount_summary():
+    account = AccountFactory()
+    customer_shipping = CustomerShippingFactory()
+    customer = CustomerFactory(
+        account=account,
+        currency=account.default_currency,
+        shipping=customer_shipping,
+    )
+    invoice = InvoiceFactory(account=account, customer=customer)
+    InvoiceLineFactory(
+        invoice=invoice,
+        description="Line item",
+        unit_amount=Decimal("100"),
+        quantity=1,
+        amount=Decimal("100"),
+    )
+    shipping_rate = ShippingRateFactory(account=invoice.account, currency=invoice.currency)
+    coupon = CouponFactory(account=invoice.account, currency=invoice.currency)
+
+    invoice.add_shipping(shipping_rate=shipping_rate, tax_rates=[])
+    invoice.set_coupons([coupon])
+    invoice.recalculate()
+
+    body = render_to_string("invoices/pdf/classic.html", {"invoice": invoice})
+
+    assert "Ship to" in body
+    assert customer_shipping.name in body
+    assert customer_shipping.phone in body
+    assert "Shipping fee" in body
+    assert body.index(coupon.name) < body.index("Shipping fee")
 
 
 def test_invoice_pdf_template_without_line_tax_column():
