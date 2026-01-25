@@ -8,6 +8,7 @@ import {
   getInvoicesListQueryKey,
   getInvoicesRetrieveQueryKey,
   getPreviewInvoiceQueryKey,
+  useCloneInvoice,
   useCreateInvoiceRevision,
   useDeleteInvoice,
   useFinalizeInvoice,
@@ -27,6 +28,7 @@ import { useNavigate } from "@tanstack/react-router";
 import {
   CheckIcon,
   CopyIcon,
+  CopyPlusIcon,
   CreditCardIcon,
   DownloadIcon,
   FileMinusIcon,
@@ -229,6 +231,40 @@ export function useReviseInvoiceAction(): DropdownAction<Invoice> {
   };
 }
 
+export function useCloneInvoiceAction(): DropdownAction<Invoice> {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { mutateAsync, isPending } = useCloneInvoice({
+    mutation: {
+      onSuccess: async (clonedInvoice) => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: getInvoicesListQueryKey(),
+          }),
+        ]);
+
+        toast.success("Invoice cloned");
+        await navigate({
+          to: "/invoices/$id/edit",
+          params: { id: clonedInvoice.id },
+        });
+      },
+      onError: (error) => {
+        const { message, description } = getErrorSummary(error);
+        toast.error(message, { description });
+      },
+    },
+  });
+
+  return {
+    key: "clone",
+    label: "Clone",
+    icon: CopyPlusIcon,
+    disabled: () => isPending,
+    onSelect: (invoice) => void mutateAsync({ id: invoice.id }),
+  };
+}
+
 export function useDownloadInvoiceAction(
   invoice: Invoice,
 ): DropdownAction<Invoice> {
@@ -327,6 +363,7 @@ export function useDeleteInvoiceAction(): DropdownAction<Invoice> {
 
 export type InvoiceActionKey =
   | "edit"
+  | "clone"
   | "copy-id"
   | "finalize"
   | "record-payment"
@@ -349,7 +386,7 @@ export function InvoiceDropdown({
       data={invoice}
       actions={actions}
       sections={[
-        { items: [useEditInvoiceAction(), useCopyIdAction()] },
+        { items: [useEditInvoiceAction(), useCopyIdAction(), useCloneInvoiceAction()] },
         {
           items: [
             useFinalizeInvoiceAction(),

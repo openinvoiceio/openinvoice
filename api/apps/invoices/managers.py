@@ -233,6 +233,81 @@ class InvoiceManager(models.Manager):
 
         return invoice
 
+    def clone_invoice(self, invoice: Invoice) -> Invoice:
+        InvoiceHead = apps.get_model("invoices", "InvoiceHead")
+        head = InvoiceHead.objects.create(root=None)
+
+        new_invoice = self.create(
+            head=head,
+            account=invoice.account,
+            customer=invoice.customer,
+            number=None,
+            numbering_system=invoice.numbering_system,
+            currency=invoice.currency,
+            status=InvoiceStatus.DRAFT,
+            issue_date=None,
+            sell_date=None,
+            due_date=None,
+            net_payment_term=invoice.net_payment_term,
+            metadata={},
+            custom_fields=invoice.custom_fields,
+            footer=invoice.footer,
+            description=invoice.description,
+            payment_provider=invoice.payment_provider,
+            payment_connection_id=invoice.payment_connection_id,
+            subtotal_amount=zero(invoice.currency),
+            total_discount_amount=zero(invoice.currency),
+            total_excluding_tax_amount=zero(invoice.currency),
+            shipping_amount=zero(invoice.currency),
+            total_tax_amount=zero(invoice.currency),
+            total_amount=zero(invoice.currency),
+            total_credit_amount=zero(invoice.currency),
+            total_paid_amount=zero(invoice.currency),
+            outstanding_amount=zero(invoice.currency),
+            delivery_method=invoice.delivery_method,
+            recipients=invoice.recipients,
+            tax_behavior=invoice.tax_behavior,
+        )
+
+        head.root = new_invoice
+        head.save(update_fields=["root"])
+
+        for line in invoice.lines.all():
+            new_line = new_invoice.lines.create(
+                invoice=new_invoice,
+                description=line.description,
+                quantity=line.quantity,
+                currency=invoice.currency,
+                unit_amount=line.unit_amount,
+                unit_excluding_tax_amount=zero(invoice.currency),
+                price=line.price,
+                total_tax_rate=Decimal(9),
+                amount=zero(invoice.currency),
+                subtotal_amount=zero(invoice.currency),
+                total_discount_amount=zero(invoice.currency),
+                total_taxable_amount=zero(invoice.currency),
+                total_excluding_tax_amount=zero(invoice.currency),
+                total_tax_amount=zero(invoice.currency),
+                total_amount=zero(invoice.currency),
+                total_credit_amount=zero(invoice.currency),
+                credit_quantity=0,
+                outstanding_amount=zero(invoice.currency),
+                outstanding_quantity=line.quantity,
+            )
+            new_line.set_coupons(line.coupons.active())
+            new_line.set_tax_rates(line.tax_rates.active())
+
+        if invoice.shipping is not None:
+            new_invoice.add_shipping(
+                shipping_rate=invoice.shipping.shipping_rate,
+                tax_rates=invoice.shipping.tax_rates.active(),
+            )
+
+        new_invoice.set_coupons(invoice.coupons.active())
+        new_invoice.set_tax_rates(invoice.tax_rates.active())
+
+        return new_invoice
+
 
 class InvoiceLineManager(models.Manager):
     def create_line(

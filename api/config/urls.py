@@ -58,6 +58,8 @@ if settings.DEBUG:
     urlpatterns += [
         path("api/v1/schema/", SpectacularAPIView.as_view()),
         path("api/v1/docs/", SpectacularSwaggerView.as_view(url_name="schema")),
-        path("silk/", include("silk.urls", namespace="silk")),
     ]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if "silk" in settings.INSTALLED_APPS:
+    urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]

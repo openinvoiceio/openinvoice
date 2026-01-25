@@ -75,7 +75,6 @@ THIRD_PARTY_APPS = [
     "health_check.db",
     "rest_framework",
     "rest_framework.authtoken",
-    "silk",
     "storages",
 ]
 

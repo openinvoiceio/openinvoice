@@ -304,6 +304,36 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class InvoiceCloneAPIView(generics.GenericAPIView):
+    queryset = Invoice.objects.none()
+    serializer_class = InvoiceSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember, MaxInvoicesLimit]
+
+    def get_queryset(self):
+        return Invoice.objects.for_account(self.request.account).eager_load()
+
+    @extend_schema(
+        operation_id="clone_invoice",
+        request=None,
+        responses={201: InvoiceSerializer},
+    )
+    def post(self, *_, **__):
+        invoice = self.get_object()
+        new_invoice = Invoice.objects.clone_invoice(invoice)
+
+        with numeric_overflow():
+            new_invoice.recalculate()
+
+        logger.info(
+            "Invoice cloned",
+            invoice_id=invoice.id,
+            new_invoice_id=new_invoice.id,
+        )
+
+        serializer = InvoiceSerializer(new_invoice)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 class InvoiceVoidAPIView(generics.GenericAPIView):
     queryset = Invoice.objects.none()
     serializer_class = InvoiceSerializer

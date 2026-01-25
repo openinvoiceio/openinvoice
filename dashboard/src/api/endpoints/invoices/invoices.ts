@@ -835,6 +835,85 @@ export const useDeleteInvoice = <
 
   return useMutation(mutationOptions, queryClient);
 };
+export const cloneInvoice = (
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<Invoice>(
+    { url: `/api/v1/invoices/${id}/clone`, method: "POST", signal },
+    options,
+  );
+};
+
+export const getCloneInvoiceMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cloneInvoice>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cloneInvoice>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["cloneInvoice"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cloneInvoice>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return cloneInvoice(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CloneInvoiceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof cloneInvoice>>
+>;
+
+export type CloneInvoiceMutationError = ErrorType<unknown>;
+
+export const useCloneInvoice = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof cloneInvoice>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof cloneInvoice>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getCloneInvoiceMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
 export const finalizeInvoice = (
   id: string,
   options?: SecondParameter<typeof axiosInstance>,

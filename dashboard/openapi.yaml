@@ -3120,6 +3120,28 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/invoices/{id}/clone:
+    post:
+      operationId: clone_invoice
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
   /api/v1/invoices/{id}/finalize:
     post:
       operationId: finalize_invoice
