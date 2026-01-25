@@ -1,5 +1,4 @@
 from .base import *  # noqa
-from .base import MIDDLEWARE
 
 # General
 
@@ -7,10 +6,6 @@ DEBUG = True
 SECRET_KEY = "django-insecure-a&fp91p%2ybxhoui#s+gm7+mkd(+2*os#e@ncucqz6ra#f%8d4"  # noqa: S105
 SALT_KEY = "insecure-salt-key"
 ALLOWED_HOSTS = ["localhost"]
-
-# Middlewares
-
-MIDDLEWARE = ["silk.middleware.SilkyMiddleware", *MIDDLEWARE]
 
 # Vite
 
