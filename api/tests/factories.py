@@ -288,7 +288,6 @@ class InvoiceShippingFactory(DjangoModelFactory):
     currency = LazyAttribute(lambda o: o.shipping_rate.currency)
     amount = Decimal("0")
     total_excluding_tax_amount = Decimal("0")
-    total_taxable_amount = Decimal("0")
     total_tax_amount = Decimal("0")
     total_tax_rate = Decimal("0")
     total_amount = Decimal("0")

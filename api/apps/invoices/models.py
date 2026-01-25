@@ -299,15 +299,14 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         for line in lines:
             amount = line.price.calculate_amount(line.quantity) if line.price else line.unit_amount * line.quantity
             line.amount = clamp_money(amount)
-            line.total_discount_amount = zero(self.currency)
-            line.total_tax_amount = zero(self.currency)
-
             line_tax_rates = list(line.tax_rates.order_by("invoice_line_tax_rates__position"))
             tax_rates = line_tax_rates if line_tax_rates else invoice_tax_rates
             line.total_tax_rate = sum((tax_rate.percentage for tax_rate in tax_rates), Decimal(0))
             line.unit_excluding_tax_amount = line.unit_amount / line.tax_multiplier
             line.subtotal_amount = line.amount
             line.total_taxable_amount = line.amount
+            line.total_discount_amount = zero(self.currency)
+            line.total_tax_amount = zero(self.currency)
 
         # Calculate line discounts
 
@@ -499,7 +498,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             currency=self.currency,
             amount=shipping_rate.amount,
             total_excluding_tax_amount=zero(self.currency),
-            total_taxable_amount=zero(self.currency),
             total_tax_amount=zero(self.currency),
             total_tax_rate=Decimal(0),
             total_amount=zero(self.currency),
@@ -744,7 +742,6 @@ class InvoiceShipping(models.Model):
     currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
-    total_taxable_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_tax_rate = models.DecimalField(max_digits=5, decimal_places=2)
     total_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
@@ -763,6 +760,12 @@ class InvoiceShipping(models.Model):
     @property
     def effective_address(self) -> Address | None:
         return self.invoice.customer.shipping_address if self.invoice.is_draft else self.address
+
+    @property
+    def tax_multiplier(self) -> Decimal:
+        if self.invoice.effective_tax_behavior == InvoiceTaxBehavior.INCLUSIVE and self.total_tax_rate > 0:
+            return Decimal(1) + (self.total_tax_rate / Decimal(100))
+        return Decimal(1)
 
     def set_tax_rates(self, tax_rates: Iterable[TaxRate]) -> None:
         self.tax_rates.clear()
@@ -784,18 +787,11 @@ class InvoiceShipping(models.Model):
     def recalculate(self) -> None:
         tax_rates = list(self.tax_rates.order_by("invoice_shipping_tax_rates__position"))
         self.total_tax_rate = sum((tax_rate.percentage for tax_rate in tax_rates), Decimal(0))
+        self.total_excluding_tax_amount = self.amount / self.tax_multiplier
         self.total_tax_amount = zero(self.currency)
 
-        if self.invoice.effective_tax_behavior == InvoiceTaxBehavior.INCLUSIVE and self.total_tax_rate > 0:
-            divisor = Decimal(1) + (self.total_tax_rate / Decimal(100))
-            self.total_excluding_tax_amount = self.amount / divisor
-            self.total_taxable_amount = self.total_excluding_tax_amount
-        else:
-            self.total_excluding_tax_amount = self.amount
-            self.total_taxable_amount = self.total_excluding_tax_amount
-
         for tax_rate in tax_rates:
-            tax_amount = tax_rate.calculate_amount(self.total_taxable_amount)
+            tax_amount = tax_rate.calculate_amount(self.total_excluding_tax_amount)
             self.total_tax_amount += tax_amount
             self.add_tax_allocation(tax_amount, tax_rate)
 
@@ -803,7 +799,6 @@ class InvoiceShipping(models.Model):
         self.save(
             update_fields=[
                 "total_excluding_tax_amount",
-                "total_taxable_amount",
                 "total_tax_rate",
                 "total_tax_amount",
                 "total_amount",
