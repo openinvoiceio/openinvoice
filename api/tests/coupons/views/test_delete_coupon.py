@@ -2,8 +2,8 @@ import uuid
 
 import pytest
 
-from apps.coupons.choices import CouponStatus
-from tests.factories import CouponFactory
+from apps.coupons.models import Coupon
+from tests.factories import CouponFactory, InvoiceCouponFactory, InvoiceFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -15,10 +15,8 @@ def test_delete_coupon(api_client, user, account):
     api_client.force_account(account)
     response = api_client.delete(f"/api/v1/coupons/{coupon.id}")
 
-    assert response.status_code == 200
-    coupon.refresh_from_db()
-    assert coupon.status == CouponStatus.ARCHIVED
-    assert response.data["id"] == str(coupon.id)
+    assert response.status_code == 204
+    assert not Coupon.objects.filter(id=coupon.id).exists()
 
 
 def test_delete_coupon_not_found(api_client, user, account):
@@ -53,15 +51,26 @@ def test_delete_coupon_requires_account(api_client, user):
     }
 
 
-def test_delete_archived_coupon_not_allowed(api_client, user, account):
-    coupon = CouponFactory(account=account, status=CouponStatus.ARCHIVED)
+def test_delete_coupon_in_use(api_client, user, account):
+    coupon = CouponFactory(account=account)
+    invoice = InvoiceFactory(account=account, currency=coupon.currency)
+    InvoiceCouponFactory(invoice=invoice, coupon=coupon)
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.delete(f"/api/v1/coupons/{coupon.id}")
 
-    assert response.status_code == 200
-    assert response.data["status"] == "archived"
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": None,
+                "code": "invalid",
+                "detail": "This object cannot be deleted because it has related data.",
+            }
+        ],
+    }
 
 
 def test_delete_coupon_requires_authentication(api_client, account):

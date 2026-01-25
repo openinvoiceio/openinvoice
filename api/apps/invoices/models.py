@@ -696,9 +696,6 @@ class InvoiceLine(models.Model):
         self.price = price
         self.save()
 
-        if self.price:
-            self.price.mark_as_used()
-
 
 class InvoiceShipping(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

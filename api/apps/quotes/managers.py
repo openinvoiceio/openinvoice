@@ -101,9 +101,6 @@ class QuoteLineManager(models.Manager):
 
         quote_line.recalculate()
 
-        if price:
-            price.mark_as_used()
-
         return quote_line
 
 

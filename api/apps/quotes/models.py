@@ -90,7 +90,7 @@ class Quote(models.Model):
     number = models.CharField(max_length=255, null=True)
     numbering_system = models.ForeignKey(
         "numbering_systems.NumberingSystem",
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         related_name="quotes",
         null=True,
     )
@@ -537,9 +537,6 @@ class QuoteLine(models.Model):
         self.save(update_fields=["description", "quantity", "unit_amount", "price"])
         self.recalculate()
 
-        if self.price:
-            self.price.mark_as_used()
-
 
 class QuoteDiscount(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -596,7 +593,7 @@ class QuoteTax(models.Model):
         related_name="taxes",
         null=True,
     )
-    tax_rate = models.ForeignKey("tax_rates.TaxRate", on_delete=models.SET_NULL, related_name="quote_taxes", null=True)
+    tax_rate = models.ForeignKey("tax_rates.TaxRate", on_delete=models.PROTECT, related_name="quote_taxes", null=True)
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255, null=True)
     rate = models.DecimalField(max_digits=5, decimal_places=2)

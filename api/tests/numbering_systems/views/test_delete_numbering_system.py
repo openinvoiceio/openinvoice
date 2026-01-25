@@ -20,7 +20,7 @@ def test_delete_numbering_system(api_client, user, subscribed_account):
     assert response.status_code == 204
 
 
-def test_delete_numbering_system_with_invoices(api_client, user, subscribed_account):
+def test_delete_numbering_system_in_use(api_client, user, subscribed_account):
     numbering_system = NumberingSystemFactory(account=subscribed_account)
     InvoiceFactory(account=subscribed_account, numbering_system=numbering_system)
 
@@ -35,7 +35,7 @@ def test_delete_numbering_system_with_invoices(api_client, user, subscribed_acco
             {
                 "attr": None,
                 "code": "invalid",
-                "detail": "Cannot delete numbering system with associated documents",
+                "detail": "This object cannot be deleted because it has related data.",
             }
         ],
     }

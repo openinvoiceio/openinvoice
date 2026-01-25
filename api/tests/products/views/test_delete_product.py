@@ -87,7 +87,7 @@ def test_delete_product_with_prices(api_client, user, account):
             {
                 "attr": None,
                 "code": "invalid",
-                "detail": "Product is restricted and cannot be deleted.",
+                "detail": "This object cannot be deleted because it has related data.",
             }
         ],
     }

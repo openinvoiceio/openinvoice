@@ -758,7 +758,7 @@ export const deleteCoupon = (
   id: string,
   options?: SecondParameter<typeof axiosInstance>,
 ) => {
-  return axiosInstance<Coupon>(
+  return axiosInstance<void>(
     { url: `/api/v1/coupons/${id}`, method: "DELETE" },
     options,
   );

@@ -2,6 +2,7 @@ import {
   getShippingRatesListQueryKey,
   getShippingRatesRetrieveQueryKey,
   useArchiveShippingRate,
+  useDeleteShippingRate,
   useRestoreShippingRate,
 } from "@/api/endpoints/shipping-rates/shipping-rates.ts";
 import { ProductCatalogStatusEnum, type ShippingRate } from "@/api/models";
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/action-dropdown";
 import { getErrorSummary } from "@/lib/api/errors";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArchiveIcon, ArchiveRestoreIcon, PencilIcon } from "lucide-react";
+import { ArchiveIcon, ArchiveRestoreIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 function useEditShippingRateAction(): DropdownAction<ShippingRate> {
@@ -94,7 +95,44 @@ function useRestoreShippingRateAction(): DropdownAction<ShippingRate> {
   };
 }
 
-export type ShippingRateActionKey = "edit" | "archive" | "restore";
+function useDeleteShippingRateAction(): DropdownAction<ShippingRate> {
+  const queryClient = useQueryClient();
+  const { mutateAsync } = useDeleteShippingRate({
+    mutation: {
+      onSuccess: async (_data, { id }) => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: getShippingRatesListQueryKey(),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getShippingRatesRetrieveQueryKey(id),
+          }),
+        ]);
+        toast.success("Shipping rate deleted");
+        popModal();
+      },
+      onError: (error) => {
+        const { message, description } = getErrorSummary(error);
+        toast.error(message, { description });
+      },
+    },
+  });
+
+  return {
+    key: "delete",
+    label: "Delete",
+    icon: Trash2Icon,
+    shortcut: "⌘⌫",
+    hotkey: "mod+backspace",
+    onSelect: (shippingRate) =>
+      pushModal("DestructiveDialog", {
+        entity: shippingRate.name || "Shipping rate",
+        onConfirm: () => void mutateAsync({ id: shippingRate.id }),
+      }),
+  };
+}
+
+export type ShippingRateActionKey = "edit" | "archive" | "restore" | "delete";
 
 export function ShippingRateDropdown({
   shippingRate,
@@ -118,6 +156,7 @@ export function ShippingRateDropdown({
             useRestoreShippingRateAction(),
           ],
         },
+        { items: [useDeleteShippingRateAction()], danger: true },
       ]}
       {...props}
     />

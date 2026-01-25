@@ -1,4 +1,5 @@
 import structlog
+from django.db.models.deletion import ProtectedError
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
@@ -85,6 +86,23 @@ class TaxRateRetrieveUpdateAPIView(generics.RetrieveAPIView):
 
         serializer = TaxRateSerializer(tax_rate)
         return Response(serializer.data)
+
+    @extend_schema(operation_id="delete_tax_rate", request=None, responses={204: None})
+    def delete(self, request, **__):
+        tax_rate = self.get_object()
+
+        try:
+            tax_rate.delete()
+        except ProtectedError as e:
+            raise ValidationError("This object cannot be deleted because it has related data.") from e
+
+        logger.info(
+            "Tax rate deleted",
+            account_id=request.account.id,
+            tax_rate_id=tax_rate.id,
+        )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TaxRateArchiveAPIView(generics.GenericAPIView):

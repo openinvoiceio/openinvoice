@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from tests.factories import ShippingRateFactory
+from tests.factories import InvoiceFactory, InvoiceShippingFactory, ShippingRateFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -52,6 +52,28 @@ def test_delete_shipping_rate_rejects_foreign_account(api_client, user, account)
                 "attr": None,
                 "code": "not_found",
                 "detail": "Not found.",
+            }
+        ],
+    }
+
+
+def test_delete_shipping_rate_in_use(api_client, user, account):
+    shipping_rate = ShippingRateFactory(account=account)
+    shipping = InvoiceShippingFactory(shipping_rate=shipping_rate)
+    InvoiceFactory(account=account, shipping=shipping)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.delete(f"/api/v1/shipping-rates/{shipping_rate.id}")
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": None,
+                "code": "invalid",
+                "detail": "This object cannot be deleted because it has related data.",
             }
         ],
     }

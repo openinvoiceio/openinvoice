@@ -321,7 +321,7 @@ class InvoiceLineManager(models.Manager):
         currency = invoice.currency
         unit_amount = price.calculate_unit_amount(quantity) if price else unit_amount
 
-        invoice_line = self.create(
+        return self.create(
             invoice=invoice,
             description=description,
             quantity=quantity,
@@ -342,8 +342,3 @@ class InvoiceLineManager(models.Manager):
             outstanding_amount=zero(currency),
             outstanding_quantity=quantity,
         )
-
-        if price:
-            price.mark_as_used()
-
-        return invoice_line

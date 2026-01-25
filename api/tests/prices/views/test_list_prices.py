@@ -45,7 +45,6 @@ def test_list_prices(api_client, user, account):
                 "model": PriceModel.FLAT,
                 "status": "active",
                 "metadata": {},
-                "is_used": False,
                 "code": None,
                 "created_at": ANY,
                 "updated_at": ANY,

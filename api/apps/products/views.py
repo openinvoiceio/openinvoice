@@ -1,3 +1,4 @@
+from django.db.models.deletion import ProtectedError
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
@@ -105,10 +106,10 @@ class ProductRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     def delete(self, _, **__):
         product = self.get_object()
 
-        if product.prices.exists():
-            raise ValidationError("Product is restricted and cannot be deleted.")
-
-        product.delete()
+        try:
+            product.delete()
+        except ProtectedError as e:
+            raise ValidationError("This object cannot be deleted because it has related data.") from e
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

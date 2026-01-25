@@ -732,7 +732,7 @@ export const deletePrice = (
   id: string,
   options?: SecondParameter<typeof axiosInstance>,
 ) => {
-  return axiosInstance<Price>(
+  return axiosInstance<void>(
     { url: `/api/v1/prices/${id}`, method: "DELETE" },
     options,
   );

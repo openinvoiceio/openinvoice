@@ -37,7 +37,7 @@ class CreditNote(models.Model):
     number = models.CharField(max_length=255, null=True)
     numbering_system = models.ForeignKey(
         "numbering_systems.NumberingSystem",
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         related_name="credit_notes",
         null=True,
     )
@@ -380,7 +380,7 @@ class CreditNoteTax(models.Model):
     )
     tax_rate = models.ForeignKey(
         "tax_rates.TaxRate",
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         related_name="credit_note_taxes",
         null=True,
     )

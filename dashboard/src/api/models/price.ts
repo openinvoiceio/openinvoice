@@ -21,7 +21,6 @@ export interface Price {
   model: PriceModelEnum;
   status: ProductCatalogStatusEnum;
   metadata: unknown;
-  is_used: boolean;
   /**
    * @maxLength 255
    * @nullable

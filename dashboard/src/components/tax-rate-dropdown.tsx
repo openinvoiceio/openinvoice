@@ -2,6 +2,7 @@ import {
   getTaxRatesListQueryKey,
   getTaxRatesRetrieveQueryKey,
   useArchiveTaxRate,
+  useDeleteTaxRate,
   useRestoreTaxRate,
 } from "@/api/endpoints/tax-rates/tax-rates";
 import { ProductCatalogStatusEnum, type TaxRate } from "@/api/models";
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/action-dropdown";
 import { getErrorSummary } from "@/lib/api/errors";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArchiveIcon, ArchiveRestoreIcon, PencilIcon } from "lucide-react";
+import { ArchiveIcon, ArchiveRestoreIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 function useEditTaxRateAction(): DropdownAction<TaxRate> {
@@ -91,7 +92,44 @@ function useRestoreTaxRateAction(): DropdownAction<TaxRate> {
   };
 }
 
-export type TaxRateActionKey = "edit" | "archive" | "restore";
+function useDeleteTaxRateAction(): DropdownAction<TaxRate> {
+  const queryClient = useQueryClient();
+  const { mutateAsync } = useDeleteTaxRate({
+    mutation: {
+      onSuccess: async (_data, { id }) => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: getTaxRatesListQueryKey(),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getTaxRatesRetrieveQueryKey(id),
+          }),
+        ]);
+        toast.success("Tax rate deleted");
+        popModal();
+      },
+      onError: (error) => {
+        const { message, description } = getErrorSummary(error);
+        toast.error(message, { description });
+      },
+    },
+  });
+
+  return {
+    key: "delete",
+    label: "Delete",
+    icon: Trash2Icon,
+    shortcut: "⌘⌫",
+    hotkey: "mod+backspace",
+    onSelect: (taxRate) =>
+      pushModal("DestructiveDialog", {
+        entity: taxRate.name || "Tax rate",
+        onConfirm: () => void mutateAsync({ id: taxRate.id }),
+      }),
+  };
+}
+
+export type TaxRateActionKey = "edit" | "archive" | "restore" | "delete";
 
 export function TaxRateDropdown({
   taxRate,
@@ -108,6 +146,7 @@ export function TaxRateDropdown({
       sections={[
         { items: [useEditTaxRateAction()] },
         { items: [useArchiveTaxRateAction(), useRestoreTaxRateAction()] },
+        { items: [useDeleteTaxRateAction()], danger: true },
       ]}
       {...props}
     />

@@ -27,7 +27,7 @@ class Product(models.Model):
     account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, related_name="products")
     image = models.ForeignKey("files.File", on_delete=models.SET_NULL, null=True)
     default_price = models.ForeignKey(
-        "prices.Price", on_delete=models.SET_NULL, null=True, related_name="default_product"
+        "prices.Price", on_delete=models.PROTECT, null=True, related_name="default_product"
     )
 
     objects = ProductManager.from_queryset(ProductQuerySet)()

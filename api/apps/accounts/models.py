@@ -43,13 +43,13 @@ class Account(models.Model):
     invoice_footer = models.CharField(max_length=600, null=True, blank=True)
     invoice_numbering_system = models.OneToOneField(
         "numbering_systems.NumberingSystem",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="invoice_numbering_account",
         null=True,
     )
     credit_note_numbering_system = models.OneToOneField(
         "numbering_systems.NumberingSystem",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="credit_note_numbering_account",
         null=True,
     )

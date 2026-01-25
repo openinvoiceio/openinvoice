@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from tests.factories import PriceFactory
+from tests.factories import InvoiceFactory, InvoiceLineFactory, PriceFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -54,8 +54,10 @@ def test_delete_price_requires_account(api_client, user):
     }
 
 
-def test_delete_price_used(api_client, user, account):
-    price = PriceFactory(account=account, is_used=True)
+def test_delete_price_in_use(api_client, user, account):
+    price = PriceFactory(account=account)
+    invoice = InvoiceFactory(account=account, currency=price.currency)
+    InvoiceLineFactory(invoice=invoice, price=price, currency=price.currency)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -68,7 +70,7 @@ def test_delete_price_used(api_client, user, account):
             {
                 "attr": None,
                 "code": "invalid",
-                "detail": "Used prices cannot be deleted",
+                "detail": "This object cannot be deleted because it has related data.",
             }
         ],
     }
@@ -90,7 +92,7 @@ def test_delete_price_default(api_client, user, account):
             {
                 "attr": None,
                 "code": "invalid",
-                "detail": "Default prices cannot be deleted",
+                "detail": "This object cannot be deleted because it has related data.",
             }
         ],
     }

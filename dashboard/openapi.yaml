@@ -1786,12 +1786,8 @@ paths:
       - cookieAuth: []
       - tokenAuth: []
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Coupon'
-          description: ''
+        '204':
+          description: No response body
   /api/v1/coupons/{id}/archive:
     post:
       operationId: archive_coupon
@@ -3813,12 +3809,8 @@ paths:
       - cookieAuth: []
       - tokenAuth: []
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Price'
-          description: ''
+        '204':
+          description: No response body
   /api/v1/prices/{id}/archive:
     post:
       operationId: archive_price
@@ -5022,6 +5014,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaxRate'
           description: ''
+    delete:
+      operationId: delete_tax_rate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - tax-rates
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/tax-rates/{id}/archive:
     post:
       operationId: archive_tax_rate
@@ -9762,8 +9771,6 @@ components:
         status:
           $ref: '#/components/schemas/ProductCatalogStatusEnum'
         metadata: {}
-        is_used:
-          type: boolean
         code:
           type: string
           nullable: true
@@ -9790,7 +9797,6 @@ components:
       - created_at
       - currency
       - id
-      - is_used
       - metadata
       - model
       - product

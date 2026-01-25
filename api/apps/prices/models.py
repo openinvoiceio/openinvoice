@@ -22,7 +22,6 @@ class Price(models.Model):
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     model = models.CharField(max_length=16, choices=PriceModel.choices, default=PriceModel.FLAT)
     status = models.CharField(max_length=20, choices=PriceStatus.choices, default=PriceStatus.ACTIVE)
-    is_used = models.BooleanField(default=False)
     metadata = models.JSONField(default=dict)
     archived_at = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -30,7 +29,7 @@ class Price(models.Model):
     account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, related_name="prices")
     product = models.ForeignKey(
         "products.Product",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         null=False,
         related_name="prices",
     )
@@ -68,13 +67,6 @@ class Price(models.Model):
         self.status = PriceStatus.ACTIVE
         self.archived_at = None
         self.save()
-
-    def mark_as_used(self) -> None:
-        if self.is_used:
-            return
-
-        self.is_used = True
-        self.save(update_fields=["is_used", "updated_at"])
 
     def add_tier(self, unit_amount: Money, from_value: int, to_value: int | None) -> "PriceTier":
         return self.tiers.create(

@@ -1,3 +1,4 @@
+from django.db.models.deletion import ProtectedError
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
@@ -95,10 +96,10 @@ class NumberingSystemRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     def delete(self, *_, **__):
         numbering_system = self.get_object()
 
-        if numbering_system.has_documents():
-            raise ValidationError("Cannot delete numbering system with associated documents")
-
-        numbering_system.delete()
+        try:
+            numbering_system.delete()
+        except ProtectedError as e:
+            raise ValidationError("This object cannot be deleted because it has related data.") from e
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

@@ -1,4 +1,5 @@
 import structlog
+from django.db.models.deletion import ProtectedError
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
@@ -90,20 +91,23 @@ class CouponRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     @extend_schema(
         operation_id="delete_coupon",
         request=None,
-        responses={200: CouponSerializer},
+        responses={204: None},
     )
     def delete(self, request, **__):
         coupon = self.get_object()
 
-        coupon.archive()
+        try:
+            coupon.delete()
+        except ProtectedError as e:
+            raise ValidationError("This object cannot be deleted because it has related data.") from e
+
         logger.info(
-            "Coupon archived",
+            "Coupon deleted",
             account_id=request.account.id,
             coupon_id=coupon.id,
         )
 
-        serializer = CouponSerializer(coupon)
-        return Response(serializer.data)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CouponArchiveAPIView(generics.GenericAPIView):

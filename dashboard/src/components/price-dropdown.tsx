@@ -182,7 +182,6 @@ function useDeletePriceAction(): DropdownAction<Price> {
     icon: Trash2Icon,
     shortcut: "⌘⌫",
     hotkey: "mod+backspace",
-    visible: (p) => !p.is_used, // hide entirely when used
     onSelect: (p) =>
       pushModal("DestructiveDialog", {
         entity: p.code || p.id,

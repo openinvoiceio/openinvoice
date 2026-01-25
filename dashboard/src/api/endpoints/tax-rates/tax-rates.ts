@@ -754,6 +754,84 @@ export const useUpdateTaxRate = <
 
   return useMutation(mutationOptions, queryClient);
 };
+export const deleteTaxRate = (
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+) => {
+  return axiosInstance<void>(
+    { url: `/api/v1/tax-rates/${id}`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getDeleteTaxRateMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTaxRate>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteTaxRate>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteTaxRate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteTaxRate>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteTaxRate(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteTaxRateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteTaxRate>>
+>;
+
+export type DeleteTaxRateMutationError = ErrorType<unknown>;
+
+export const useDeleteTaxRate = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteTaxRate>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteTaxRate>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteTaxRateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
 export const archiveTaxRate = (
   id: string,
   options?: SecondParameter<typeof axiosInstance>,

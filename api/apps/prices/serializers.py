@@ -48,7 +48,6 @@ class PriceSerializer(serializers.Serializer):
     model = serializers.ChoiceField(choices=PriceModel.choices)
     status = serializers.ChoiceField(choices=PriceStatus.choices)
     metadata = MetadataField()
-    is_used = serializers.BooleanField()
     code = serializers.CharField(allow_null=True, max_length=255)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)

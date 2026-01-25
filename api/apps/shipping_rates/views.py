@@ -1,3 +1,4 @@
+from django.db.models.deletion import ProtectedError
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
@@ -92,7 +93,10 @@ class ShippingRateRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     def delete(self, _, **__):
         shipping_rate = self.get_object()
 
-        shipping_rate.delete()
+        try:
+            shipping_rate.delete()
+        except ProtectedError as e:
+            raise ValidationError("This object cannot be deleted because it has related data.") from e
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

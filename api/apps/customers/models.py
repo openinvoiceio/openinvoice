@@ -28,13 +28,13 @@ class Customer(models.Model):
     net_payment_term = models.PositiveIntegerField(null=True)
     invoice_numbering_system = models.ForeignKey(
         "numbering_systems.NumberingSystem",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="invoice_numbering_customers",
         null=True,
     )
     credit_note_numbering_system = models.ForeignKey(
         "numbering_systems.NumberingSystem",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="credit_note_numbering_customers",
         null=True,
     )
@@ -144,7 +144,7 @@ class CustomerTaxRate(models.Model):
     )
     tax_rate = models.ForeignKey(
         "tax_rates.TaxRate",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="customer_tax_rates",
     )
 
