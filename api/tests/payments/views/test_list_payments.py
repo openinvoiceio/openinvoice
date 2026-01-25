@@ -2,7 +2,6 @@ from decimal import Decimal
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.invoices.choices import InvoiceStatus
 from tests.factories import InvoiceFactory, PaymentFactory
@@ -94,7 +93,7 @@ def test_list_payments_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -111,7 +110,7 @@ def test_list_payments_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

@@ -3,7 +3,6 @@ from unittest.mock import ANY
 from uuid import uuid4
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.invoices.choices import InvoiceStatus
 from apps.payments.choices import PaymentStatus
@@ -68,7 +67,7 @@ def test_record_payment_invalid_status(api_client, user, account, status):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "invoice_id",
@@ -97,7 +96,7 @@ def test_record_payment_amount_exceeds_total(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "amount",
@@ -122,7 +121,7 @@ def test_record_payment_requires_authentication(api_client, account):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -148,7 +147,7 @@ def test_record_payment_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -175,7 +174,7 @@ def test_record_payment_rejects_foreign_account(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "invoice_id",
@@ -202,7 +201,7 @@ def test_record_payment_invoice_not_found(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "invoice_id",

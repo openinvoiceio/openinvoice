@@ -1,7 +1,6 @@
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.integrations.stripe.models import StripeConnection
 from common.choices import FeatureCode
@@ -72,7 +71,7 @@ def test_create_stripe_connection_stripe_webhook_endpoint_failure(api_client, us
 
     assert response.status_code == 500
     assert response.data == {
-        "type": ErrorType.SERVER_ERROR,
+        "type": "server_error",
         "errors": [
             {
                 "attr": None,
@@ -95,7 +94,7 @@ def test_create_stripe_connection_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -119,7 +118,7 @@ def test_create_stripe_connection_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -148,7 +147,7 @@ def test_create_stripe_connection_without_available_feature(api_client, user, ac
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

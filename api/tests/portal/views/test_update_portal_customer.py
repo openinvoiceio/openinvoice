@@ -1,5 +1,4 @@
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from tests.factories import CustomerFactory, CustomerShippingFactory, PortalTokenFactory
 
@@ -61,7 +60,7 @@ def test_update_customer_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

@@ -1,7 +1,6 @@
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.numbering_systems.choices import (
     NumberingSystemAppliesTo,
@@ -49,7 +48,7 @@ def test_create_numbering_system_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -73,7 +72,7 @@ def test_create_numbering_system_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -94,7 +93,7 @@ def test_create_numbering_system_invalid_template_unknown_placeholder(api_client
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "template",
@@ -115,7 +114,7 @@ def test_create_numbering_system_invalid_template_unmatched_braces(api_client, u
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "template",
@@ -139,7 +138,7 @@ def test_create_numbering_system_custom_forbidden(api_client, user, account, set
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

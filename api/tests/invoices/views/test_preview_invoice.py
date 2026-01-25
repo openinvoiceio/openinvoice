@@ -1,7 +1,6 @@
 import uuid
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.invoices.choices import InvoiceStatus
 from tests.factories import InvoiceFactory
@@ -67,7 +66,7 @@ def test_preview_invoice_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "status_code": 403,
         "errors": [
             {

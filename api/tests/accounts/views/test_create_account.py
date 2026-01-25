@@ -1,7 +1,6 @@
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.accounts.session import ACTIVE_ACCOUNT_SESSION_KEY
 from apps.numbering_systems.choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
@@ -74,7 +73,7 @@ def test_create_account_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -97,7 +96,7 @@ def test_create_account_limit_exceeded(api_client, user, settings):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

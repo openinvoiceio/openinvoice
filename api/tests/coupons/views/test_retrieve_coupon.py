@@ -2,7 +2,6 @@ import uuid
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.coupons.choices import CouponStatus
 from tests.factories import CouponFactory
@@ -40,7 +39,7 @@ def test_retrieve_coupon_not_found(api_client, user, account):
 
     assert response.status_code == 404
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [{"attr": None, "code": "not_found", "detail": "Not found."}],
     }
 
@@ -53,7 +52,7 @@ def test_retrieve_coupon_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -82,7 +81,7 @@ def test_retrieve_coupon_requires_authentication(api_client, account):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -102,7 +101,7 @@ def test_retrieve_coupon_rejects_foreign_account(api_client, user, account):
 
     assert response.status_code == 404
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

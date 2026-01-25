@@ -4,7 +4,6 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 from djmoney.money import Money
-from drf_standardized_errors.types import ErrorType
 
 from apps.prices.choices import PriceModel, PriceStatus
 from tests.factories import PriceFactory, ProductFactory
@@ -206,7 +205,7 @@ def test_update_price_non_continuous_tiers(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "tiers",
@@ -236,7 +235,7 @@ def test_update_price_invalid_tier_range(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "tiers.0.to_value",
@@ -259,7 +258,7 @@ def test_update_price_rejects_foreign_account(api_client, user, account):
 
     assert response.status_code == 404
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -279,7 +278,7 @@ def test_update_price_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -302,7 +301,7 @@ def test_update_price_archived(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": None,
@@ -323,7 +322,7 @@ def test_update_price_requires_authentication(api_client, account):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

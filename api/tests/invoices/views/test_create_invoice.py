@@ -3,7 +3,6 @@ from decimal import Decimal
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.integrations.choices import PaymentProvider
 from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
@@ -234,7 +233,7 @@ def test_create_invoice_with_invalid_shipping_rate(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.shipping_rate_id",
@@ -263,7 +262,7 @@ def test_create_invoice_with_foreign_shipping_rate(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.shipping_rate_id",
@@ -295,7 +294,7 @@ def test_create_invoice_with_invalid_shipping_tax_rate(api_client, user, account
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.tax_rates",
@@ -326,7 +325,7 @@ def test_create_invoice_with_foreign_shipping_tax_rate(api_client, user, account
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.tax_rates",
@@ -357,7 +356,7 @@ def test_create_invoice_overflow_returns_validation_error(api_client, user, acco
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": None,
@@ -388,7 +387,7 @@ def test_create_invoice_with_duplicate_shipping_tax_rates(api_client, user, acco
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.tax_rates",
@@ -421,7 +420,7 @@ def test_create_invoice_shipping_tax_rates_limit_exceeded(api_client, user, acco
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.tax_rates",
@@ -449,7 +448,7 @@ def test_create_invoice_with_automatic_delivery_and_without_entitlement(api_clie
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "delivery_method",
@@ -472,7 +471,7 @@ def test_create_invoice_customer_not_found(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "customer_id",
@@ -492,7 +491,7 @@ def test_create_invoice_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -513,7 +512,7 @@ def test_create_invoice_requires_authentication(api_client, account):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -540,7 +539,7 @@ def test_create_invoice_numbering_system_not_found(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "numbering_system_id",
@@ -588,7 +587,7 @@ def test_create_invoice_with_unknown_payment_connection(api_client, user, accoun
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "payment_connection_id",
@@ -615,7 +614,7 @@ def test_create_invoice_payment_provider_without_connection(api_client, user, ac
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "non_field_errors",
@@ -634,7 +633,7 @@ def test_create_invoice_requires_customer(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "customer_id",
@@ -660,7 +659,7 @@ def test_create_invoice_limit_exceeded(api_client, user, account, settings):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -707,7 +706,7 @@ def test_create_invoice_with_coupons_invalid_currency(api_client, user, account)
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "coupons.1",
@@ -734,7 +733,7 @@ def test_create_invoice_with_duplicate_coupons(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "coupons",
@@ -763,7 +762,7 @@ def test_create_invoice_with_foreign_coupon(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "coupons",
@@ -793,7 +792,7 @@ def test_create_invoice_coupons_limit_exceeded(api_client, user, account, settin
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "coupons",
@@ -839,7 +838,7 @@ def test_create_invoice_with_duplicate_tax_rates(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "tax_rates",
@@ -867,7 +866,7 @@ def test_create_invoice_with_foreign_tax_rate(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "tax_rates",
@@ -896,7 +895,7 @@ def test_create_invoice_tax_rates_limit_exceeded(api_client, user, account, sett
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "tax_rates",

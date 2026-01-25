@@ -1,7 +1,6 @@
 import uuid
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from tests.factories import TaxIdFactory
 
@@ -28,7 +27,7 @@ def test_delete_account_tax_id_not_found(api_client, user, account):
 
     assert response.status_code == 404
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -44,7 +43,7 @@ def test_delete_account_tax_id_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -61,7 +60,7 @@ def test_delete_account_tax_id_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

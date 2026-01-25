@@ -1,7 +1,6 @@
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 pytestmark = pytest.mark.django_db
 
@@ -67,7 +66,7 @@ def test_retrieve_profile_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {"attr": None, "code": "not_authenticated", "detail": "Authentication credentials were not provided."}
         ],

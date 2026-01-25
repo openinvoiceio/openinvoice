@@ -1,7 +1,6 @@
 import uuid
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.numbering_systems.choices import NumberingSystemStatus
 from tests.factories import NumberingSystemFactory
@@ -40,7 +39,7 @@ def test_archive_numbering_system_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -58,7 +57,7 @@ def test_archive_numbering_system_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -78,7 +77,7 @@ def test_archive_numbering_system_rejects_foreign_account(api_client, user, acco
 
     assert response.status_code == 404
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

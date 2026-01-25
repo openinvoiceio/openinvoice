@@ -1,7 +1,6 @@
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.accounts.choices import InvitationStatus, MemberRole
 from apps.accounts.models import Member
@@ -53,7 +52,7 @@ def test_accept_invitation_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -108,7 +107,7 @@ def test_accept_invitation_invalid_code(api_client, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "non_field_errors",
@@ -140,7 +139,7 @@ def test_accept_invitation_expired(api_client, account, monkeypatch):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "non_field_errors",

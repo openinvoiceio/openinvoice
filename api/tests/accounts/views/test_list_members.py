@@ -2,7 +2,6 @@ import uuid
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.accounts.choices import MemberRole
 from apps.accounts.models import Member
@@ -49,7 +48,7 @@ def test_list_members_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -66,7 +65,7 @@ def test_list_members_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -88,7 +87,7 @@ def test_list_members_from_other_account(api_client, user, account):
 
     assert response.status_code == 404
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

@@ -5,7 +5,6 @@ from unittest.mock import ANY
 
 import pytest
 from django.utils import timezone
-from drf_standardized_errors.types import ErrorType
 
 from apps.coupons.choices import CouponStatus
 from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
@@ -220,7 +219,7 @@ def test_create_invoice_revision_overflow_returns_validation_error(api_client, u
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": None,

@@ -4,7 +4,6 @@ from unittest.mock import ANY
 
 import pytest
 from django.utils import timezone
-from drf_standardized_errors.types import ErrorType
 
 from apps.integrations.choices import PaymentProvider
 from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
@@ -243,7 +242,7 @@ def test_update_invoice_overflow_returns_validation_error(api_client, user, acco
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": None,
@@ -397,7 +396,7 @@ def test_update_invoice_invalid_shipping_rate(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.shipping_rate_id",
@@ -425,7 +424,7 @@ def test_update_invoice_foreign_shipping_rate(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.shipping_rate_id",
@@ -456,7 +455,7 @@ def test_update_invoice_shipping_invalid_tax_rate(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.tax_rates",
@@ -487,7 +486,7 @@ def test_update_invoice_shipping_foreign_tax_rate(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.tax_rates",
@@ -517,7 +516,7 @@ def test_update_invoice_shipping_duplicate_tax_rates(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.tax_rates",
@@ -549,7 +548,7 @@ def test_update_invoice_shipping_tax_rates_limit_exceeded(api_client, user, acco
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "shipping.tax_rates",
@@ -589,7 +588,7 @@ def test_update_invoice_with_unknown_payment_connection(api_client, user, accoun
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "payment_connection_id",
@@ -615,7 +614,7 @@ def test_update_invoice_payment_provider_without_connection(api_client, user, ac
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "non_field_errors",
@@ -652,7 +651,7 @@ def test_update_invoice_revision_requires_same_customer(api_client, user, accoun
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "customer_id",
@@ -688,7 +687,7 @@ def test_update_invoice_customer_not_found(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "customer_id",
@@ -720,7 +719,7 @@ def test_update_invoice_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -755,7 +754,7 @@ def test_update_invoice_rejects_foreign_account(api_client, user, account):
 
     assert response.status_code == 404
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -798,7 +797,7 @@ def test_update_invoice_non_draft(api_client, user, account, status):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": None,
@@ -834,7 +833,7 @@ def test_update_invoice_numbering_system_not_found(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "numbering_system_id",
@@ -961,7 +960,7 @@ def test_update_invoice_with_automatic_delivery_and_without_entitlement(api_clie
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "delivery_method",
@@ -985,7 +984,7 @@ def test_update_invoice_requires_authentication(api_client, account):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

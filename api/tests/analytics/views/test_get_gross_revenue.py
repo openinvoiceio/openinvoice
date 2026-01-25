@@ -2,7 +2,6 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 from freezegun import freeze_time
 
 from apps.invoices.choices import InvoiceStatus
@@ -217,7 +216,7 @@ def test_get_gross_revenue_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

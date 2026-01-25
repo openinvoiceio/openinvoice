@@ -4,7 +4,6 @@ from decimal import Decimal
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.coupons.choices import CouponStatus
 from apps.integrations.choices import PaymentProvider
@@ -413,7 +412,7 @@ def test_clone_invoice_overflow_returns_validation_error(api_client, user, accou
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": None,

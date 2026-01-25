@@ -2,7 +2,6 @@ import uuid
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.numbering_systems.choices import NumberingSystemResetInterval, NumberingSystemStatus
 from tests.factories import (
@@ -94,7 +93,7 @@ def test_update_numbering_system_archived(api_client, user, subscribed_account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": None,
@@ -118,7 +117,7 @@ def test_update_numbering_system_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -143,7 +142,7 @@ def test_update_numbering_system_requires_authentication(api_client, subscribed_
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

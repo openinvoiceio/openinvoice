@@ -3,7 +3,6 @@ from decimal import Decimal
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
 from apps.invoices.models import InvoiceAccount, InvoiceCustomer
@@ -157,7 +156,7 @@ def test_update_credit_note_with_automatic_delivery_and_without_entitlement(api_
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "delivery_method",
@@ -184,7 +183,7 @@ def test_update_credit_note_numbering_system_not_found(api_client, user, account
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "numbering_system_id",
@@ -214,7 +213,7 @@ def test_update_credit_note_numbering_system_mismatch(api_client, user, account)
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "numbering_system_id",
@@ -247,7 +246,7 @@ def test_update_credit_note_cannot_modify_issued(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": None,
@@ -274,7 +273,7 @@ def test_update_credit_note_requires_authentication(api_client, account):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -300,7 +299,7 @@ def test_update_credit_note_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

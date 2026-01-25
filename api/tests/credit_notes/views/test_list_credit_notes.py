@@ -4,7 +4,6 @@ from unittest.mock import ANY
 
 import pytest
 from django.utils import timezone
-from drf_standardized_errors.types import ErrorType
 
 from apps.credit_notes.choices import CreditNoteStatus
 from apps.credit_notes.models import CreditNote
@@ -168,7 +167,7 @@ def test_list_credit_notes_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -186,7 +185,7 @@ def test_list_credit_notes_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

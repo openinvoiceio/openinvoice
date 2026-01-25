@@ -3,7 +3,6 @@ from unittest.mock import ANY
 
 import pytest
 from django.utils import timezone
-from drf_standardized_errors.types import ErrorType
 
 from apps.products.choices import ProductStatus
 from tests.factories import ProductFactory
@@ -57,7 +56,7 @@ def test_archive_product_rejects_foreign_account(api_client, user, account):
 
     assert response.status_code == 404
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -74,7 +73,7 @@ def test_archive_product_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -92,7 +91,7 @@ def test_archive_product_requires_authentication(api_client, account):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

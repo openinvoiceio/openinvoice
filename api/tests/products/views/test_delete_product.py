@@ -1,7 +1,6 @@
 import uuid
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from tests.factories import PriceFactory, ProductFactory
 
@@ -27,7 +26,7 @@ def test_delete_product_rejects_foreign_account(api_client, user, account):
 
     assert response.status_code == 404
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -44,7 +43,7 @@ def test_delete_product_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -62,7 +61,7 @@ def test_delete_product_requires_authentication(api_client, account):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -83,7 +82,7 @@ def test_delete_product_with_prices(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": None,

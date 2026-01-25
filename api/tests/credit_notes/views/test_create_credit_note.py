@@ -3,7 +3,6 @@ from decimal import Decimal
 from unittest.mock import ANY
 
 import pytest
-from drf_standardized_errors.types import ErrorType
 
 from apps.invoices.choices import InvoiceStatus
 from apps.numbering_systems.choices import NumberingSystemAppliesTo
@@ -113,7 +112,7 @@ def test_create_credit_note_with_automatic_delivery_and_without_entitlement(api_
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "delivery_method",
@@ -132,7 +131,7 @@ def test_create_credit_note_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -153,7 +152,7 @@ def test_create_credit_note_requires_account(api_client, user):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -177,7 +176,7 @@ def test_create_credit_note_requires_finalized_invoice(api_client, user, account
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "invoice_id",
@@ -200,7 +199,7 @@ def test_create_credit_note_invoice_not_found(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "invoice_id",
@@ -224,7 +223,7 @@ def test_create_credit_note_rejects_foreign_account(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "invoice_id",
@@ -256,7 +255,7 @@ def test_create_credit_note_requires_outstanding_balance(api_client, user, accou
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "invoice_id",
@@ -288,7 +287,7 @@ def test_create_credit_note_only_one_draft_allowed(api_client, user, account):
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "invoice_id",
@@ -315,7 +314,7 @@ def test_create_credit_note_numbering_system_not_found(api_client, user, account
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "numbering_system_id",
@@ -342,7 +341,7 @@ def test_create_credit_note_rejects_foreign_numbering_system(api_client, user, a
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "numbering_system_id",
@@ -369,7 +368,7 @@ def test_create_credit_note_numbering_system_mismatch(api_client, user, account)
 
     assert response.status_code == 400
     assert response.data == {
-        "type": ErrorType.VALIDATION_ERROR,
+        "type": "validation_error",
         "errors": [
             {
                 "attr": "numbering_system_id",
@@ -419,7 +418,7 @@ def test_create_credit_note_limit_exceeded(api_client, user, account, settings):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,

@@ -2,7 +2,6 @@ from unittest.mock import MagicMock
 
 import pytest
 import stripe
-from drf_standardized_errors.types import ErrorType
 
 from tests.factories import StripeCustomerFactory
 
@@ -35,7 +34,7 @@ def test_create_billing_portal_requires_authentication(api_client):
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -52,7 +51,7 @@ def test_create_billing_portal_requires_account(api_client, user, mock_billing_s
 
     assert response.status_code == 403
     assert response.data == {
-        "type": ErrorType.CLIENT_ERROR,
+        "type": "client_error",
         "errors": [
             {
                 "attr": None,
@@ -82,7 +81,7 @@ def test_create_billing_portal_stripe_error(
 
     assert response.status_code == 500
     assert response.data == {
-        "type": ErrorType.SERVER_ERROR,
+        "type": "server_error",
         "errors": [
             {
                 "attr": None,
