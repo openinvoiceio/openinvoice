@@ -268,7 +268,6 @@ class InvoiceLineFactory(DjangoModelFactory):
     amount = Decimal("0")
     subtotal_amount = Decimal("0")
     total_discount_amount = Decimal("0")
-    total_discountable_amount = Decimal("0")
     total_taxable_amount = Decimal("0")
     total_excluding_tax_amount = Decimal("0")
     total_tax_amount = Decimal("0")

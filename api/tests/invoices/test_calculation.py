@@ -71,7 +71,7 @@ def test_recalculate_invoice_line_with_inclusive_tax_behavior():
     line.refresh_from_db()
     assert line.amount == Money("120.00", line.currency)
     assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
-    assert line.total_taxable_amount == Money("100.00", line.currency)
+    assert line.total_taxable_amount == Money("120.00", line.currency)
     assert line.total_tax_amount == Money("20.00", line.currency)
     assert line.total_amount == Money("120.00", line.currency)
 
@@ -107,7 +107,7 @@ def test_recalculate_invoice_line_with_automatic_tax_behavior_inclusive():
     line.refresh_from_db()
     assert line.amount == Money("240.00", line.currency)
     assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
-    assert line.total_taxable_amount == Money("200.00", line.currency)
+    assert line.total_taxable_amount == Money("240.00", line.currency)
     assert line.total_tax_amount == Money("40.00", line.currency)
     assert line.total_amount == Money("240.00", line.currency)
 
@@ -127,7 +127,7 @@ def test_recalculate_invoice_inclusive_with_discount_and_taxes():
     assert line.amount == Money("120.00", line.currency)
     assert line.subtotal_amount == Money("108.00", line.currency)
     assert line.total_discount_amount == Money("12.00", line.currency)
-    assert line.total_taxable_amount == Money("90.00", line.currency)
+    assert line.total_taxable_amount == Money("108.00", line.currency)
     assert line.total_excluding_tax_amount == Money("90.00", line.currency)
     assert line.total_tax_amount == Money("18.00", line.currency)
     assert line.total_amount == Money("108.00", line.currency)
@@ -994,7 +994,7 @@ def test_recalculate_invoice_automatic_invoice_taxes_inclusive():
 
     line.refresh_from_db()
     assert line.unit_excluding_tax_amount == Money("100.00", line.currency)
-    assert line.total_taxable_amount == Money("100.00", line.currency)
+    assert line.total_taxable_amount == Money("120.00", line.currency)
     assert line.total_tax_amount == Money("20.00", line.currency)
     assert line.total_amount == Money("120.00", line.currency)
     assert line.tax_allocations.get(tax_rate=tax_rate).source == InvoiceTaxSource.INVOICE
@@ -1263,8 +1263,8 @@ def test_inclusive_tax_with_invoice_fixed_coupon_allocated_across_lines():
     # Gross bases: 120 and 60 => discount shares should be 10 and 5
     assert line_1.discount_allocations.get(coupon=coupon).amount == Money("10.00", invoice.currency)
     assert line_2.discount_allocations.get(coupon=coupon).amount == Money("5.00", invoice.currency)
-    assert line_1.total_taxable_amount == Money("91.67", invoice.currency)
-    assert line_2.total_taxable_amount == Money("45.83", invoice.currency)
+    assert line_1.total_taxable_amount == Money("110.00", invoice.currency)
+    assert line_2.total_taxable_amount == Money("55.00", invoice.currency)
 
     # Tax on discounted net
     assert line_1.total_tax_amount == Money("18.33", invoice.currency)

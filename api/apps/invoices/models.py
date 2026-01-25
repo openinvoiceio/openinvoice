@@ -307,7 +307,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             line.total_tax_rate = sum((tax_rate.percentage for tax_rate in tax_rates), Decimal(0))
             line.unit_excluding_tax_amount = line.unit_amount / line.tax_multiplier
             line.subtotal_amount = line.amount
-            line.total_discountable_amount = line.amount
+            line.total_taxable_amount = line.amount
 
         # Calculate line discounts
 
@@ -324,7 +324,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
                         continue
 
                     line.subtotal_amount -= discount_amount
-                    line.total_discountable_amount -= discount_amount
+                    line.total_taxable_amount -= discount_amount
                     line.total_discount_amount += discount_amount
                     line.add_discount_allocation(discount_amount, coupon, InvoiceDiscountSource.LINE)
             else:
@@ -333,48 +333,41 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         # Calculate invoice discounts
 
-        total_discountable_amount = sum(
-            (line.total_discountable_amount for line in discountable_lines),
+        total_taxable_amount = sum(
+            (line.total_taxable_amount for line in discountable_lines),
             start=zero(self.currency),
         )
 
         for coupon in list(self.coupons.order_by("invoice_coupons__position")):
-            if total_discountable_amount.amount <= 0:
+            if total_taxable_amount.amount <= 0 or not discountable_lines:
                 break
 
-            if not discountable_lines:
-                break
-
-            discount_amount = coupon.calculate_amount(total_discountable_amount)
+            discount_amount = coupon.calculate_amount(total_taxable_amount)
             if discount_amount.amount <= 0:
                 continue
 
-            bases = [line.total_discountable_amount for line in discountable_lines]
+            bases = [line.total_taxable_amount for line in discountable_lines]
             discount_shares = allocate_proportionally(discount_amount, bases=bases)
 
             for line, share_amount in zip(discountable_lines, discount_shares, strict=False):
-                share_amount = min(share_amount, line.total_discountable_amount)
+                share_amount = min(share_amount, line.total_taxable_amount)
                 if share_amount.amount <= 0:
                     continue
 
-                line.total_discountable_amount -= share_amount
+                total_taxable_amount -= share_amount
+                line.total_taxable_amount -= share_amount
                 line.total_discount_amount += share_amount
                 line.add_discount_allocation(share_amount, coupon, InvoiceDiscountSource.INVOICE)
-
-            total_discountable_amount = sum(
-                (line.total_discountable_amount for line in discountable_lines),
-                start=zero(self.currency),
-            )
 
         # Calculate taxes
 
         for line in lines:
             line_tax_rates = list(line.tax_rates.order_by("invoice_line_tax_rates__position"))
             tax_rates = line_tax_rates if line_tax_rates else invoice_tax_rates
-            line.total_taxable_amount = line.total_discountable_amount / line.tax_multiplier
+            line.total_excluding_tax_amount = line.total_taxable_amount / line.tax_multiplier
 
             for tax_rate in tax_rates:
-                tax_amount = tax_rate.calculate_amount(line.total_taxable_amount)
+                tax_amount = tax_rate.calculate_amount(line.total_excluding_tax_amount)
                 if tax_amount.amount <= 0:
                     continue
 
@@ -385,7 +378,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
                 else:
                     line.add_tax_allocations(tax_amount, tax_rate, InvoiceTaxSource.INVOICE)
 
-            line.total_excluding_tax_amount = line.total_taxable_amount
             line.total_amount = line.total_excluding_tax_amount + line.total_tax_amount
             line.outstanding_amount = line.total_amount
             line.outstanding_quantity = line.quantity
@@ -400,7 +392,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
                 "amount",
                 "subtotal_amount",
                 "total_discount_amount",
-                "total_discountable_amount",
                 "total_taxable_amount",
                 "total_excluding_tax_amount",
                 "total_tax_amount",
@@ -648,7 +639,6 @@ class InvoiceLine(models.Model):
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
-    total_discountable_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_taxable_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
