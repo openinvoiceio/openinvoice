@@ -1,5 +1,5 @@
 import { usePricesList } from "@/api/endpoints/prices/prices";
-import type { Price } from "@/api/models";
+import { PricesListStatus, type Price } from "@/api/models";
 import { pushModal } from "@/components/push-modals";
 import {
   Command,
@@ -26,6 +26,7 @@ export function PriceCombobox({
   selected,
   onSelect,
   currency,
+  status,
   actions,
   className,
   children,
@@ -34,6 +35,7 @@ export function PriceCombobox({
   selected?: Price | null;
   onSelect?: (price: Price | null) => Promise<void>;
   currency?: string;
+  status?: PricesListStatus;
   actions?: {
     name: string;
     onClick: (value: string) => Promise<void>;
@@ -48,6 +50,7 @@ export function PriceCombobox({
       ordering: "product_id,-created_at",
       ...(search ? { search: debounce } : {}),
       ...(currency ? { currency } : {}),
+      ...(status ? { status } : {}),
     },
     { query: { enabled: open } },
   );

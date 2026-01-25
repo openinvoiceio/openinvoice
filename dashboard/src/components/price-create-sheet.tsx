@@ -7,7 +7,12 @@ import {
   getProductsRetrieveQueryKey,
   useProductsRetrieve,
 } from "@/api/endpoints/products/products";
-import { CurrencyEnum, PriceModelEnum, type Price } from "@/api/models";
+import {
+  CurrencyEnum,
+  PriceModelEnum,
+  ProductsListStatus,
+  type Price,
+} from "@/api/models";
 import { CurrencyCombobox } from "@/components/currency-combobox.tsx";
 import { ProductCombobox } from "@/components/product-combobox.tsx";
 import { popModal } from "@/components/push-modals";
@@ -201,6 +206,7 @@ export function PriceCreateSheet({
                       onSelect={async (selected) => {
                         field.onChange(selected?.id);
                       }}
+                      status={ProductsListStatus.active}
                       withoutPrice={true}
                     >
                       <ComboboxButton>

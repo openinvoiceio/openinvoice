@@ -1,6 +1,7 @@
 import { useNumberingSystemsList } from "@/api/endpoints/numbering-systems/numbering-systems";
 import {
   NumberingSystemAppliesToEnum,
+  NumberingSystemsListStatus,
   type NumberingSystem,
 } from "@/api/models";
 import { pushModal } from "@/components/push-modals";
@@ -29,6 +30,7 @@ export function NumberingSystemCombobox({
   appliesTo,
   selected,
   onSelect,
+  status,
   className,
   children,
   ...props
@@ -36,6 +38,7 @@ export function NumberingSystemCombobox({
   appliesTo: NumberingSystemAppliesToEnum;
   selected?: NumberingSystem | null;
   onSelect?: (numberingSystem: NumberingSystem | null) => Promise<void>;
+  status?: NumberingSystemsListStatus;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -47,6 +50,7 @@ export function NumberingSystemCombobox({
       ordering: "-created_at",
       applies_to: appliesTo,
       ...(search ? { search: debounce } : {}),
+      ...(status ? { status } : {}),
     },
     { query: { enabled: open } },
   );

@@ -5,7 +5,7 @@ import {
   useAddQuoteTax,
   useRemoveQuoteTax,
 } from "@/api/endpoints/quotes/quotes";
-import { type Quote } from "@/api/models";
+import { TaxRatesListStatus, type Quote } from "@/api/models";
 import { TaxRateCombobox } from "@/components/tax-rate-combobox.tsx";
 import { Button } from "@/components/ui/button";
 import {
@@ -125,6 +125,7 @@ export function QuoteTaxesCard({ quote }: { quote: Quote }) {
             <span tabIndex={limitReached ? 0 : undefined}>
               <TaxRateCombobox
                 align="start"
+                status={TaxRatesListStatus.active}
                 onSelect={async (selected) => {
                   if (!selected) return;
                   await addQuoteTax.mutateAsync({

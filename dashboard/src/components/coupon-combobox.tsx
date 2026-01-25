@@ -1,5 +1,5 @@
 import { useCouponsList } from "@/api/endpoints/coupons/coupons";
-import { CurrencyEnum, type Coupon } from "@/api/models";
+import { CouponsListStatus, CurrencyEnum, type Coupon } from "@/api/models";
 import { pushModal } from "@/components/push-modals";
 import {
   Command,
@@ -26,6 +26,7 @@ export function CouponCombobox({
   selected,
   onSelect,
   currency,
+  status,
   className,
   children,
   ...props
@@ -33,6 +34,7 @@ export function CouponCombobox({
   selected?: Coupon | null;
   onSelect?: (coupon: Coupon | null) => Promise<void>;
   currency?: CurrencyEnum;
+  status?: CouponsListStatus;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -43,6 +45,7 @@ export function CouponCombobox({
       ordering: "-created_at",
       ...(search ? { search: debounce } : {}),
       ...(currency ? { currency: [currency] } : {}),
+      ...(status ? { status } : {}),
     },
     { query: { enabled: open } },
   );

@@ -25,12 +25,14 @@ import React, { useState } from "react";
 export function ShippingRateCombobox({
   selected,
   onSelect,
+  status,
   className,
   children,
   ...props
 }: Omit<React.ComponentProps<typeof PopoverContent>, "onSelect"> & {
   selected?: ShippingRate | null;
   onSelect?: (shippingRate: ShippingRate | null) => Promise<void>;
+  status?: ShippingRatesListStatus;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -39,7 +41,7 @@ export function ShippingRateCombobox({
     {
       page_size: 3,
       ordering: "-created_at",
-      status: ShippingRatesListStatus.active,
+      ...(status ? { status } : {}),
       ...(search ? { search: debounce } : {}),
     },
     { query: { enabled: open } },

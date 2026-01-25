@@ -1,5 +1,5 @@
 import { useTaxRatesList } from "@/api/endpoints/tax-rates/tax-rates";
-import type { TaxRate } from "@/api/models";
+import { TaxRatesListStatus, type TaxRate } from "@/api/models";
 import { pushModal } from "@/components/push-modals";
 import {
   Command,
@@ -25,12 +25,14 @@ import React, { useState } from "react";
 export function TaxRateCombobox({
   selected,
   onSelect,
+  status,
   className,
   children,
   ...props
 }: Omit<React.ComponentProps<typeof PopoverContent>, "onSelect"> & {
   selected?: TaxRate | null;
   onSelect?: (taxRate: TaxRate | null) => Promise<void>;
+  status?: TaxRatesListStatus;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -40,6 +42,7 @@ export function TaxRateCombobox({
       page_size: 3,
       ordering: "-created_at",
       ...(search ? { search: debounce } : {}),
+      ...(status ? { status } : {}),
     },
     { query: { enabled: open } },
   );

@@ -13,7 +13,13 @@ import {
   getQuotesListQueryKey,
   getQuotesRetrieveQueryKey,
 } from "@/api/endpoints/quotes/quotes";
-import type { Quote, QuoteLine } from "@/api/models";
+import {
+  CouponsListStatus,
+  PricesListStatus,
+  TaxRatesListStatus,
+  type Quote,
+  type QuoteLine,
+} from "@/api/models";
 import { CouponCombobox } from "@/components/coupon-combobox.tsx";
 import { PriceCombobox } from "@/components/price-combobox.tsx";
 import { TaxRateCombobox } from "@/components/tax-rate-combobox.tsx";
@@ -239,6 +245,7 @@ function QuoteLineForm({ line, quote }: { line: QuoteLine; quote: Quote }) {
                         await submit();
                       }}
                       currency={quote.currency}
+                      status={PricesListStatus.active}
                     >
                       <ComboboxButton>
                         {price ? (
@@ -405,6 +412,7 @@ function QuoteLineForm({ line, quote }: { line: QuoteLine; quote: Quote }) {
                 <CouponCombobox
                   align="start"
                   currency={quote.currency}
+                  status={CouponsListStatus.active}
                   onSelect={async (selected) => {
                     if (!selected) return;
                     await addQuoteLineDiscount.mutateAsync({
@@ -440,6 +448,7 @@ function QuoteLineForm({ line, quote }: { line: QuoteLine; quote: Quote }) {
               <span tabIndex={taxesLimitReached ? 0 : undefined}>
                 <TaxRateCombobox
                   align="start"
+                  status={TaxRatesListStatus.active}
                   onSelect={async (selected) => {
                     if (!selected) return;
                     await addQuoteLineTax.mutateAsync({
@@ -618,6 +627,7 @@ export function QuoteLinesCard({ quote }: { quote: Quote }) {
             });
           }}
           currency={quote.currency}
+          status={PricesListStatus.active}
           actions={[
             {
               name: "Add one-time price",

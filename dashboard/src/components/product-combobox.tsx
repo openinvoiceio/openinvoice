@@ -1,5 +1,5 @@
 import { useProductsList } from "@/api/endpoints/products/products";
-import type { Product } from "@/api/models";
+import { ProductsListStatus, type Product } from "@/api/models";
 import { pushModal } from "@/components/push-modals";
 import {
   Command,
@@ -26,6 +26,7 @@ export function ProductCombobox({
   selected,
   onSelect,
   withoutPrice,
+  status,
   className,
   children,
   ...props
@@ -33,6 +34,7 @@ export function ProductCombobox({
   selected?: Product | null;
   onSelect?: (product: Product | null) => Promise<void>;
   withoutPrice?: boolean;
+  status?: ProductsListStatus;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -42,6 +44,7 @@ export function ProductCombobox({
       page_size: 3,
       ordering: "-created_at",
       ...(search ? { search: debounce } : {}),
+      ...(status ? { status } : {}),
     },
     { query: { enabled: open } },
   );

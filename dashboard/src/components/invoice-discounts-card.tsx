@@ -4,7 +4,7 @@ import {
   getPreviewInvoiceQueryKey,
   useUpdateInvoice,
 } from "@/api/endpoints/invoices/invoices";
-import { type Invoice } from "@/api/models";
+import { CouponsListStatus, type Invoice } from "@/api/models";
 import { CouponCombobox } from "@/components/coupon-combobox.tsx";
 import { Button } from "@/components/ui/button";
 import {
@@ -115,6 +115,7 @@ export function InvoiceDiscountsCard({ invoice }: { invoice: Invoice }) {
               <CouponCombobox
                 align="start"
                 currency={invoice.currency}
+                status={CouponsListStatus.active}
                 onSelect={async (selected) => {
                   if (!selected) return;
                   await updateInvoice.mutateAsync({

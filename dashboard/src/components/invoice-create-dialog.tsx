@@ -9,8 +9,11 @@ import {
 import { useNumberingSystemsRetrieve } from "@/api/endpoints/numbering-systems/numbering-systems";
 import { useTaxRatesRetrieve } from "@/api/endpoints/tax-rates/tax-rates";
 import {
+  CouponsListStatus,
   CurrencyEnum,
   NumberingSystemsListAppliesTo,
+  NumberingSystemsListStatus,
+  TaxRatesListStatus,
   type Customer,
 } from "@/api/models";
 import { CouponCombobox } from "@/components/coupon-combobox";
@@ -239,6 +242,7 @@ export function InvoiceCreateDialog({
                 align="start"
                 appliesTo={NumberingSystemsListAppliesTo.invoice}
                 selected={numberingSystem}
+                status={NumberingSystemsListStatus.active}
                 onSelect={async (value) => {
                   form.setValue("numbering_system_id", value?.id || null);
                 }}
@@ -260,6 +264,7 @@ export function InvoiceCreateDialog({
                 align="start"
                 currency={currency}
                 selected={coupon}
+                status={CouponsListStatus.active}
                 onSelect={async (value) => {
                   form.setValue("coupon_id", value?.id || null);
                 }}
@@ -280,6 +285,7 @@ export function InvoiceCreateDialog({
               <TaxRateCombobox
                 align="start"
                 selected={taxRate}
+                status={TaxRatesListStatus.active}
                 onSelect={async (value) => {
                   form.setValue("tax_rate_id", value?.id || null);
                 }}

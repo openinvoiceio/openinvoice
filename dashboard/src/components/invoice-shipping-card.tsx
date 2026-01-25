@@ -5,7 +5,11 @@ import {
   useUpdateInvoice,
 } from "@/api/endpoints/invoices/invoices";
 import { useShippingRatesRetrieve } from "@/api/endpoints/shipping-rates/shipping-rates";
-import type { Invoice } from "@/api/models";
+import {
+  ShippingRatesListStatus,
+  TaxRatesListStatus,
+  type Invoice,
+} from "@/api/models";
 import { ShippingRateCombobox } from "@/components/shipping-rate-combobox";
 import { TaxRateCombobox } from "@/components/tax-rate-combobox";
 import { Button } from "@/components/ui/button";
@@ -85,6 +89,7 @@ export function InvoiceShippingCard({ invoice }: { invoice: Invoice }) {
                 <ShippingRateCombobox
                   selected={shippingRate}
                   align="start"
+                  status={ShippingRatesListStatus.active}
                   onSelect={async (selected) => {
                     if (!selected) return;
                     await updateInvoice.mutateAsync({
@@ -159,6 +164,7 @@ export function InvoiceShippingCard({ invoice }: { invoice: Invoice }) {
                     <span tabIndex={limitReached ? 0 : undefined}>
                       <TaxRateCombobox
                         align="start"
+                        status={TaxRatesListStatus.active}
                         onSelect={async (selected) => {
                           if (!selected || !shippingRateId) return;
                           await updateInvoice.mutateAsync({
@@ -232,6 +238,7 @@ export function InvoiceShippingCard({ invoice }: { invoice: Invoice }) {
           <FormCardFooter>
             <ShippingRateCombobox
               align="start"
+              status={ShippingRatesListStatus.active}
               onSelect={async (selected) => {
                 if (!selected) return;
                 await updateInvoice.mutateAsync({

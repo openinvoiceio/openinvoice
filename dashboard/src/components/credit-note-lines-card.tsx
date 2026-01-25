@@ -11,11 +11,12 @@ import {
   getPreviewCreditNoteQueryKey,
 } from "@/api/endpoints/credit-notes/credit-notes.ts";
 import { useInvoicesRetrieve } from "@/api/endpoints/invoices/invoices";
-import type {
-  CreditNote,
-  CreditNoteLine,
-  Invoice,
-  InvoiceLine,
+import {
+  TaxRatesListStatus,
+  type CreditNote,
+  type CreditNoteLine,
+  type Invoice,
+  type InvoiceLine,
 } from "@/api/models";
 import { TaxRateCombobox } from "@/components/tax-rate-combobox.tsx";
 import {
@@ -289,6 +290,7 @@ function CreditNoteLineForm({
               <span tabIndex={taxesLimitReached ? 0 : undefined}>
                 <TaxRateCombobox
                   align="start"
+                  status={TaxRatesListStatus.active}
                   onSelect={async (selected) => {
                     if (!selected) return;
                     await applyCreditNoteLineTax.mutateAsync({

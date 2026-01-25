@@ -9,7 +9,13 @@ import {
   getPreviewInvoiceQueryKey,
 } from "@/api/endpoints/invoices/invoices";
 import { usePricesRetrieve } from "@/api/endpoints/prices/prices";
-import type { Invoice, InvoiceLine } from "@/api/models";
+import {
+  CouponsListStatus,
+  PricesListStatus,
+  TaxRatesListStatus,
+  type Invoice,
+  type InvoiceLine,
+} from "@/api/models";
 import { CouponCombobox } from "@/components/coupon-combobox.tsx";
 import { PriceCombobox } from "@/components/price-combobox.tsx";
 import { TaxRateCombobox } from "@/components/tax-rate-combobox.tsx";
@@ -185,6 +191,7 @@ function InvoiceLineForm({
                         await submit();
                       }}
                       currency={invoice.currency}
+                      status={PricesListStatus.active}
                     >
                       <ComboboxButton>
                         {price ? (
@@ -346,6 +353,7 @@ function InvoiceLineForm({
                 <CouponCombobox
                   align="start"
                   currency={invoice.currency}
+                  status={CouponsListStatus.active}
                   onSelect={async (selected) => {
                     if (!selected) return;
                     await updateInvoiceLine.mutateAsync({
@@ -386,6 +394,7 @@ function InvoiceLineForm({
               <span tabIndex={taxesLimitReached ? 0 : undefined}>
                 <TaxRateCombobox
                   align="start"
+                  status={TaxRatesListStatus.active}
                   onSelect={async (selected) => {
                     if (!selected) return;
                     await updateInvoiceLine.mutateAsync({
@@ -557,6 +566,7 @@ export function InvoiceLinesCard({ invoice }: { invoice: Invoice }) {
             });
           }}
           currency={invoice.currency}
+          status={PricesListStatus.active}
           actions={[
             {
               name: "Add one-time price",

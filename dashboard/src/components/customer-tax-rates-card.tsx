@@ -4,7 +4,7 @@ import {
   useAssignCustomerTaxRate,
   useRemoveCustomerTaxRate,
 } from "@/api/endpoints/customers/customers";
-import type { Customer } from "@/api/models";
+import { TaxRatesListStatus, type Customer } from "@/api/models";
 import { TaxRateCombobox } from "@/components/tax-rate-combobox.tsx";
 import { Button } from "@/components/ui/button";
 import {
@@ -153,6 +153,7 @@ export function CustomerTaxRatesCard({
             <span>
               <TaxRateCombobox
                 align="end"
+                status={TaxRatesListStatus.active}
                 onSelect={async (taxRate) => {
                   if (!taxRate) return;
                   await assignCustomerTaxRate.mutateAsync({

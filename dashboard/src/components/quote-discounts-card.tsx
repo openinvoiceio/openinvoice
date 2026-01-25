@@ -5,7 +5,7 @@ import {
   useAddQuoteDiscount,
   useRemoveQuoteDiscount,
 } from "@/api/endpoints/quotes/quotes";
-import { type Quote } from "@/api/models";
+import { CouponsListStatus, type Quote } from "@/api/models";
 import { CouponCombobox } from "@/components/coupon-combobox.tsx";
 import { Button } from "@/components/ui/button";
 import {
@@ -134,6 +134,7 @@ export function QuoteDiscountsCard({ quote }: { quote: Quote }) {
               <CouponCombobox
                 align="start"
                 currency={quote.currency}
+                status={CouponsListStatus.active}
                 onSelect={async (selected) => {
                   if (!selected) return;
                   await addQuoteDiscount.mutateAsync({

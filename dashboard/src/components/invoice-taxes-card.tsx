@@ -4,7 +4,7 @@ import {
   getPreviewInvoiceQueryKey,
   useUpdateInvoice,
 } from "@/api/endpoints/invoices/invoices";
-import { type Invoice } from "@/api/models";
+import { TaxRatesListStatus, type Invoice } from "@/api/models";
 import { TaxRateCombobox } from "@/components/tax-rate-combobox.tsx";
 import { Button } from "@/components/ui/button";
 import {
@@ -111,6 +111,7 @@ export function InvoiceTaxesCard({ invoice }: { invoice: Invoice }) {
             <span tabIndex={limitReached ? 0 : undefined}>
               <TaxRateCombobox
                 align="start"
+                status={TaxRatesListStatus.active}
                 onSelect={async (selected) => {
                   if (!selected) return;
                   await updateInvoice.mutateAsync({
