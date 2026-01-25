@@ -138,7 +138,7 @@ function RouteComponent() {
               {customer.shipping && (
                 <DataList orientation="vertical" className="gap-4 text-sm">
                   <DataListItem>
-                    <DataListLabel>Shipping mame</DataListLabel>
+                    <DataListLabel>Shipping name</DataListLabel>
                     <DataListValue>
                       {customer.shipping.name || "-"}
                     </DataListValue>

@@ -3,10 +3,14 @@ import {
   useUpdatePortalCustomer,
 } from "@/api/endpoints/portal/portal";
 import { CountryEnum, type PortalCustomer } from "@/api/models";
-import { CountryCombobox } from "@/components/country-combobox.tsx";
+import { AddressCountryField } from "@/components/fields/address-country-field";
+import { AddressLine1Field } from "@/components/fields/address-line1-field";
+import { AddressLine2Field } from "@/components/fields/address-line2-field";
+import { AddressLocalityField } from "@/components/fields/address-locality-field";
+import { AddressPostalCodeField } from "@/components/fields/address-postal-code-field";
+import { AddressStateField } from "@/components/fields/address-state-field";
 import { popModal } from "@/components/push-modals";
 import { Button } from "@/components/ui/button";
-import { ComboboxButton } from "@/components/ui/combobox-button.tsx";
 import {
   Form,
   FormControl,
@@ -26,20 +30,11 @@ import {
   FormSheetTitle,
 } from "@/components/ui/form-sheet";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { getErrorSummary } from "@/lib/api/errors";
-import { formatCountry } from "@/lib/formatters";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { allCountries } from "country-region-data";
 import { useId } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -50,13 +45,25 @@ const schema = z.object({
   legal_name: z.string().optional(),
   legal_number: z.string().optional(),
   email: z.email("Invalid email address").optional(),
+  shipping: z.object({
+    name: z.string().optional(),
+    phone: z.string().optional(),
+    address: z.object({
+      line1: z.string().optional(),
+      line2: z.string().optional(),
+      locality: z.string().optional(),
+      state: z.string().optional(),
+      postalCode: z.string().optional(),
+      country: z.enum(CountryEnum).optional(),
+    }),
+  }),
   address: z.object({
     line1: z.string().optional(),
     line2: z.string().optional(),
     locality: z.string().optional(),
     state: z.string().optional(),
     postalCode: z.string().optional(),
-    country: z.enum(CountryEnum),
+    country: z.enum(CountryEnum).optional(),
   }),
 });
 
@@ -88,13 +95,20 @@ export function CustomerPortalEditSheet({
         postalCode: customer.address?.postal_code || "",
         country: customer.address?.country || undefined,
       },
+      shipping: {
+        name: customer.shipping?.name || "",
+        phone: customer.shipping?.phone || "",
+        address: {
+          line1: customer.shipping?.address?.line1 || "",
+          line2: customer.shipping?.address?.line2 || "",
+          locality: customer.shipping?.address?.locality || "",
+          state: customer.shipping?.address?.state || "",
+          postalCode: customer.shipping?.address?.postal_code || "",
+          country: customer.shipping?.address?.country || undefined,
+        },
+      },
     },
   });
-  const country = form.watch("address.country");
-  const countryData = allCountries.find(
-    ([, countrySlug]) => countrySlug === country,
-  );
-  const regions = countryData ? countryData[2] : [];
   const { mutateAsync, isPending } = useUpdatePortalCustomer({
     request: {
       headers: { Authorization: `Bearer ${token}` },
@@ -131,6 +145,18 @@ export function CustomerPortalEditSheet({
           postal_code: values.address.postalCode || null,
           country: values.address.country || null,
         },
+        shipping: {
+          name: values.shipping.name || null,
+          phone: values.shipping.phone || null,
+          address: {
+            line1: values.shipping.address.line1 || null,
+            line2: values.shipping.address.line2 || null,
+            locality: values.shipping.address.locality || null,
+            state: values.shipping.address.state || null,
+            postal_code: values.shipping.address.postalCode || null,
+            country: values.shipping.address.country || null,
+          },
+        },
       },
     });
   }
@@ -140,8 +166,8 @@ export function CustomerPortalEditSheet({
       <FormSheetHeader>
         <FormSheetTitle>Update information</FormSheetTitle>
         <FormSheetDescription>
-          Update your billing information. This information will be used for
-          invoicing.
+          Update your billing and shipping information. This information will be
+          used for invoicing.
         </FormSheetDescription>
       </FormSheetHeader>
       <Form {...form}>
@@ -217,115 +243,60 @@ export function CustomerPortalEditSheet({
           <Separator />
           <FormSheetGroup>
             <FormSheetGroupTitle>Billing address</FormSheetGroupTitle>
-            <FormField
-              control={form.control}
-              name="address.line1"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Line 1</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter line 1" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>Main street address</FormDescription>
-                </FormItem>
-              )}
+            <AddressLine1Field name="address.line1" />
+            <AddressLine2Field name="address.line2" />
+            <AddressLocalityField name="address.locality" />
+            <AddressPostalCodeField name="address.postalCode" />
+            <AddressCountryField name="address.country" />
+            <AddressStateField
+              name="address.state"
+              countryName="address.country"
             />
+          </FormSheetGroup>
+          <Separator />
+          <FormSheetGroup>
+            <FormSheetGroupTitle>Shipping</FormSheetGroupTitle>
             <FormField
               control={form.control}
-              name="address.line2"
+              name="shipping.name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Line 2</FormLabel>
+                  <FormLabel>Shipping name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter line 2" {...field} />
+                    <Input placeholder="Recipient name" {...field} />
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
-                    Apartment, suite, unit, building, floor, etc.
+                    Recipient name for shipping deliveries.
                   </FormDescription>
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="address.locality"
+              name="shipping.phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Locality</FormLabel>
+                  <FormLabel>Shipping phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter locality" {...field} />
+                    <Input placeholder="+1234567890" {...field} />
                   </FormControl>
                   <FormMessage />
-                  <FormDescription>City or town name</FormDescription>
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="address.postalCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Postal code</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter postal code" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>ZIP or postal code</FormDescription>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="address.country"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Country</FormLabel>
-                  <CountryCombobox
-                    selected={field.value}
-                    onSelect={async (value) => field.onChange(value ?? "")}
-                  >
-                    <ComboboxButton>
-                      {field.value ? (
-                        <span>{formatCountry(field.value)}</span>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          Select country
-                        </span>
-                      )}
-                    </ComboboxButton>
-                  </CountryCombobox>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="address.state"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>State</FormLabel>
-                  <Select
-                    defaultValue={field.value}
-                    onValueChange={field.onChange}
-                    disabled={regions.length === 0}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select state" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {regions.map(([region]) => (
-                        <SelectItem key={region} value={region}>
-                          {region}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+          </FormSheetGroup>
+          <Separator />
+          <FormSheetGroup>
+            <FormSheetGroupTitle>Shipping address</FormSheetGroupTitle>
+            <AddressLine1Field name="shipping.address.line1" />
+            <AddressLine2Field name="shipping.address.line2" />
+            <AddressLocalityField name="shipping.address.locality" />
+            <AddressPostalCodeField name="shipping.address.postalCode" />
+            <AddressCountryField name="shipping.address.country" />
+            <AddressStateField
+              name="shipping.address.state"
+              countryName="shipping.address.country"
             />
           </FormSheetGroup>
         </form>

@@ -340,7 +340,7 @@ function RouteComponent() {
                           <span>{invoice.shipping.name}</span>
                         )}
                         {invoice.shipping?.phone && (
-                          <span className="text-muted-foreground">
+                          <span>
                             {invoice.shipping.phone}
                           </span>
                         )}

@@ -7,7 +7,7 @@ import {
 import { CustomerBillingAddressCard } from "@/components/customer-billing-address-card";
 import { CustomerGeneralCard } from "@/components/customer-general-card";
 import { CustomerInvoicingCard } from "@/components/customer-invoicing-card";
-import { CustomerShippingAddressCard } from "@/components/customer-shipping-address-card";
+import { CustomerShippingCard } from "@/components/customer-shipping-card";
 import { CustomerTaxIdsCard } from "@/components/customer-tax-ids-card";
 import { CustomerTaxRatesCard } from "@/components/customer-tax-rates-card";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
@@ -72,7 +72,7 @@ function RouteComponent() {
             <CustomerTaxRatesCard customer={customer} />
             <CustomerTaxIdsCard customer={customer} />
             <CustomerBillingAddressCard customer={customer} />
-            <CustomerShippingAddressCard customer={customer} />
+            <CustomerShippingCard customer={customer} />
           </Section>
         </SectionGroup>
       </main>

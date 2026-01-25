@@ -12,7 +12,14 @@ import { AddressLocalityField } from "@/components/fields/address-locality-field
 import { AddressPostalCodeField } from "@/components/fields/address-postal-code-field";
 import { AddressStateField } from "@/components/fields/address-state-field";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   FormCard,
   FormCardContent,
@@ -22,6 +29,7 @@ import {
   FormCardSeparator,
   FormCardTitle,
 } from "@/components/ui/form-card";
+import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { getErrorSummary } from "@/lib/api/errors";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,31 +39,35 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 const schema = z.object({
-  line1: z.string().optional(),
-  line2: z.string().optional(),
-  locality: z.string().optional(),
-  state: z.string().optional(),
-  postalCode: z.string().optional(),
-  country: z.enum(CountryEnum).optional(),
+  name: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.object({
+    line1: z.string().optional(),
+    line2: z.string().optional(),
+    locality: z.string().optional(),
+    state: z.string().optional(),
+    postalCode: z.string().optional(),
+    country: z.enum(CountryEnum).optional(),
+  }),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-export function CustomerBillingAddressCard({
-  customer,
-}: {
-  customer: Customer;
-}) {
+export function CustomerShippingCard({ customer }: { customer: Customer }) {
   const queryClient = useQueryClient();
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      line1: customer.address.line1 || "",
-      line2: customer.address.line2 || "",
-      locality: customer.address.locality || "",
-      state: customer.address.state || "",
-      postalCode: customer.address.postal_code || "",
-      country: customer.address.country || undefined,
+      name: customer.shipping?.name || "",
+      phone: customer.shipping?.phone || "",
+      address: {
+        line1: customer.shipping?.address?.line1 || "",
+        line2: customer.shipping?.address?.line2 || "",
+        locality: customer.shipping?.address?.locality || "",
+        state: customer.shipping?.address?.state || "",
+        postalCode: customer.shipping?.address?.postal_code || "",
+        country: customer.shipping?.address?.country || undefined,
+      },
     },
   });
   const { mutateAsync, isPending } = useUpdateCustomer({
@@ -83,13 +95,17 @@ export function CustomerBillingAddressCard({
     await mutateAsync({
       id: customer.id,
       data: {
-        address: {
-          line1: values.line1 || null,
-          line2: values.line2 || null,
-          locality: values.locality || null,
-          state: values.state || null,
-          postal_code: values.postalCode || null,
-          country: values.country || null,
+        shipping: {
+          name: values.name || null,
+          phone: values.phone || null,
+          address: {
+            line1: values.address.line1 || null,
+            line2: values.address.line2 || null,
+            locality: values.address.locality || null,
+            state: values.address.state || null,
+            postal_code: values.address.postalCode || null,
+            country: values.address.country || null,
+          },
         },
       },
     });
@@ -100,24 +116,56 @@ export function CustomerBillingAddressCard({
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <FormCard>
           <FormCardHeader>
-            <FormCardTitle>Billing Address</FormCardTitle>
+            <FormCardTitle>Shipping</FormCardTitle>
             <FormCardDescription>
-              Manage your billing address.
+              Manage shipping contact details and address.
             </FormCardDescription>
           </FormCardHeader>
           <FormCardContent>
-            <AddressLine1Field />
-            <AddressLine2Field />
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Recipient name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+1234567890" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </FormCardContent>
+          <FormCardSeparator />
+          <FormCardContent>
+            <AddressLine1Field name="address.line1" />
+            <AddressLine2Field name="address.line2" />
           </FormCardContent>
           <FormCardSeparator />
           <FormCardContent className="grid-cols-2">
-            <AddressLocalityField />
-            <AddressPostalCodeField />
+            <AddressLocalityField name="address.locality" />
+            <AddressPostalCodeField name="address.postalCode" />
           </FormCardContent>
           <FormCardSeparator />
           <FormCardContent className="grid-cols-2">
-            <AddressCountryField />
-            <AddressStateField />
+            <AddressCountryField name="address.country" />
+            <AddressStateField
+              name="address.state"
+              countryName="address.country"
+            />
           </FormCardContent>
           <FormCardFooter>
             <Button type="submit" disabled={isPending}>
