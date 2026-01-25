@@ -49,7 +49,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("api/v1/", include("apps.shipping_rates.urls")),
     path("api/v1/", include("apps.users.urls")),
     re_path(
-        r"^(?!api/|admin/|health/|accounts/|static/|media/).*$",
+        r"^(?!api/|admin/|health/|accounts/|static/|media/|silk/).*$",
         TemplateView.as_view(template_name="index.html"),
     ),
 ]
@@ -58,5 +58,6 @@ if settings.DEBUG:
     urlpatterns += [
         path("api/v1/schema/", SpectacularAPIView.as_view()),
         path("api/v1/docs/", SpectacularSwaggerView.as_view(url_name="schema")),
+        path("silk/", include("silk.urls", namespace="silk")),
     ]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
