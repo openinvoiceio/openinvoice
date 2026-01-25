@@ -9,7 +9,12 @@ import { InvoiceBadge } from "@/components/invoice-badge";
 import { InvoiceDropdown } from "@/components/invoice-dropdown";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { formatAmount, formatDate, formatDatetime } from "@/lib/formatters";
+import {
+  formatAmount,
+  formatDate,
+  formatDatetime,
+  formatEnum,
+} from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -240,6 +245,18 @@ export const columns: ColumnDef<Invoice>[] = [
     },
     enableSorting: false,
     enableColumnFilter: true,
+  },
+  {
+    id: "tax_behavior",
+    header: "Tax behavior",
+    accessorKey: "tax_behavior",
+    cell: ({ row }) => {
+      return <div>{formatEnum(row.getValue("tax_behavior"))}</div>;
+    },
+    meta: {
+      label: "Tax behavior",
+    },
+    enableSorting: false,
   },
   {
     id: "subtotal_amount",

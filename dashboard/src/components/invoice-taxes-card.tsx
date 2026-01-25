@@ -4,7 +4,11 @@ import {
   getPreviewInvoiceQueryKey,
   useUpdateInvoice,
 } from "@/api/endpoints/invoices/invoices";
-import { TaxRatesListStatus, type Invoice } from "@/api/models";
+import {
+  TaxBehaviorEnum,
+  TaxRatesListStatus,
+  type Invoice,
+} from "@/api/models";
 import { TaxRateCombobox } from "@/components/tax-rate-combobox.tsx";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,14 +23,22 @@ import {
   FormCardDescription,
   FormCardFooter,
   FormCardHeader,
+  FormCardSeparator,
   FormCardTitle,
 } from "@/components/ui/form-card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip.tsx";
 import { MAX_TAXES } from "@/config/invoices";
 import { getErrorSummary } from "@/lib/api/errors";
-import { formatPercentage } from "@/lib/formatters.ts";
+import { formatEnum, formatPercentage } from "@/lib/formatters.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { PlusIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -63,6 +75,32 @@ export function InvoiceTaxesCard({ invoice }: { invoice: Invoice }) {
           Manage the taxes applied to this invoice.
         </FormCardDescription>
       </FormCardHeader>
+      <FormCardContent className="md:grid-cols-2">
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">Tax behavior</div>
+          <Select
+            value={invoice.tax_behavior}
+            onValueChange={(value) =>
+              updateInvoice.mutate({
+                id: invoice.id,
+                data: { tax_behavior: value as TaxBehaviorEnum },
+              })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select behavior" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(TaxBehaviorEnum).map((behavior) => (
+                <SelectItem key={behavior} value={behavior}>
+                  {formatEnum(behavior)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </FormCardContent>
+      <FormCardSeparator />
       <FormCardContent className="gap-2">
         {invoice.tax_rates.map((tax_rate) => (
           <div key={tax_rate.id} className="flex gap-2 text-sm">

@@ -340,9 +340,7 @@ function RouteComponent() {
                           <span>{invoice.shipping.name}</span>
                         )}
                         {invoice.shipping?.phone && (
-                          <span>
-                            {invoice.shipping.phone}
-                          </span>
+                          <span>{invoice.shipping.phone}</span>
                         )}
                         <AddressView
                           address={invoice.shipping?.address || undefined}
@@ -360,6 +358,12 @@ function RouteComponent() {
                 <DataListItem>
                   <DataListLabel>Currency</DataListLabel>
                   <DataListValue>{invoice.currency}</DataListValue>
+                </DataListItem>
+                <DataListItem>
+                  <DataListLabel>Tax behavior</DataListLabel>
+                  <DataListValue>
+                    {formatEnum(invoice.tax_behavior)}
+                  </DataListValue>
                 </DataListItem>
                 <DataListItem>
                   <DataListLabel>Due date</DataListLabel>
