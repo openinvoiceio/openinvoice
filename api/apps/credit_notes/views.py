@@ -440,7 +440,4 @@ class CreditNotePreviewAPIView(generics.GenericAPIView):
             case CreditNotePreviewFormat.EMAIL:
                 template_name = "credit_notes/email/credit_note_email_message.html"
 
-        return Response(
-            {"credit_note": credit_note, "include_fonts": True},
-            template_name=template_name,
-        )
+        return Response({"credit_note": credit_note}, template_name=template_name)

@@ -8,11 +8,9 @@ from typing import Any
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.fields import ArrayField
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models
 from django.db.models import DecimalField, F, IntegerField, Q, Sum, Value
 from django.db.models.functions import Coalesce
-from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.functional import cached_property
 from djmoney import settings as djmoney_settings
@@ -23,8 +21,6 @@ from apps.addresses.models import Address
 from apps.coupons.models import Coupon
 from apps.credit_notes.choices import CreditNoteStatus
 from apps.customers.models import Customer
-from apps.files.choices import FilePurpose
-from apps.files.models import File
 from apps.integrations.choices import PaymentProvider
 from apps.numbering_systems.models import NumberingSystem
 from apps.payments.models import Payment
@@ -32,7 +28,6 @@ from apps.prices.models import Price
 from apps.shipping_rates.models import ShippingRate
 from apps.tax_rates.models import TaxRate
 from common.calculations import allocate_proportionally, clamp_money, zero
-from common.pdf import generate_pdf
 
 from .choices import (
     InvoiceDeliveryMethod,
@@ -510,28 +505,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
         return shipping
 
-    def generate_pdf(self) -> File:
-        filename = f"{self.id}.pdf"
-        html = render_to_string("invoices/pdf/classic.html", {"invoice": self})
-        pdf_content = generate_pdf(html)
-
-        pdf_file = File.objects.upload_for_account(
-            account=self.account,
-            purpose=FilePurpose.INVOICE_PDF,
-            filename=filename,
-            data=SimpleUploadedFile(
-                name=filename,
-                content=pdf_content,
-                content_type="application/pdf",
-            ),
-            content_type="application/pdf",
-        )
-
-        self.pdf = pdf_file
-        self.save(update_fields=["pdf"])
-
-        return pdf_file
-
     def finalize(self) -> None:
         self.status = InvoiceStatus.OPEN
         self.opened_at = timezone.now()
@@ -549,14 +522,13 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         if self.number is None and self.numbering_system is not None:
             self.number = self.generate_number()
 
+        self.save()
+
         if self.previous_revision and self.previous_revision.status == InvoiceStatus.OPEN:
             self.previous_revision.void()
 
         self.head.current = self
         self.head.save()
-
-        self.generate_pdf()
-        self.save()
 
         if not (self.lines.exists() and self.outstanding_amount.amount > 0):
             self.mark_paid()

@@ -19,9 +19,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # Copy the project into the intermediate image
 ADD . /app
 
-# Copy fonts
-COPY ./static/fonts/* /usr/local/share/fonts/
-
 # Sync the project
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-editable

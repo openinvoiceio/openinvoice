@@ -256,7 +256,7 @@ class QuotePreviewAPIView(generics.GenericAPIView):
         if data["format"] == QuotePreviewFormat.EMAIL:
             template_name = "quotes/email/quote_email_message.html"
 
-        return Response({"quote": quote, "include_fonts": True}, template_name=template_name)
+        return Response({"quote": quote}, template_name=template_name)
 
 
 class QuoteLineCreateAPIView(generics.GenericAPIView):

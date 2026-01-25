@@ -61,7 +61,7 @@ def test_invoice_pdf_template():
 
     body = render_to_string(
         "invoices/pdf/classic.html",
-        {"invoice": invoice, "language": "en", "include_fonts": False},
+        {"invoice": invoice, "language": "en"},
     )
     assert invoice.effective_number in body
     assert "Line item" in body
@@ -96,13 +96,7 @@ def test_invoice_pdf_template_with_discounts_and_taxes():
     invoice.set_tax_rates([tax_rate])
     invoice.recalculate()
 
-    body = render_to_string(
-        "invoices/pdf/classic.html",
-        {
-            "invoice": invoice,
-            "include_fonts": False,
-        },
-    )
+    body = render_to_string("invoices/pdf/classic.html", {"invoice": invoice})
 
     assert "Tax" in body
     assert coupon.name in body
@@ -119,6 +113,6 @@ def test_invoice_pdf_template_without_line_tax_column():
 
     body = render_to_string(
         "invoices/pdf/classic.html",
-        {"invoice": invoice, "language": "en", "include_fonts": False},
+        {"invoice": invoice, "language": "en"},
     )
     assert '<th style="width:15%; text-align: end">Tax</th>' not in body

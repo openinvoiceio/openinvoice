@@ -16,6 +16,7 @@ from .choices import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
 from .filtersets import InvoiceFilterSet
 from .mail import send_invoice
 from .models import Invoice, InvoiceLine
+from .pdf import generate_invoice_pdf
 from .permissions import MaxInvoicesLimit
 from .serializers import (
     InvoiceCreateSerializer,
@@ -350,6 +351,8 @@ class InvoiceFinalizeAPIView(generics.GenericAPIView):
             raise ValidationError("Invoice number or numbering system is missing")
 
         invoice.finalize()
+        invoice.pdf = generate_invoice_pdf(invoice)
+        invoice.save()
 
         if invoice.delivery_method == InvoiceDeliveryMethod.AUTOMATIC and len(invoice.recipients) > 0:
             send_invoice(invoice=invoice)
@@ -388,10 +391,7 @@ class InvoicePreviewAPIView(generics.GenericAPIView):
             case InvoicePreviewFormat.EMAIL:
                 template_name = "invoices/email/invoice_email_message.html"
 
-        return Response(
-            {"invoice": invoice, "include_fonts": True},
-            template_name=template_name,
-        )
+        return Response({"invoice": invoice}, template_name=template_name)
 
 
 class InvoiceLineCreateAPIView(generics.GenericAPIView):

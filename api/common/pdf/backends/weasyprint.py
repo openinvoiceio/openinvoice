@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.conf import settings
 from weasyprint import HTML
 
 from common.pdf.exceptions import PdfError
@@ -12,6 +13,6 @@ class WeasyPrintBackend(PdfBackend):
 
     def generate(self, html: str) -> bytes:
         try:
-            return HTML(string=html).write_pdf(pdf_variant="pdf/a-2b", zoom=1.28)
+            return HTML(string=html, base_url=settings.BASE_URL).write_pdf(pdf_variant="pdf/a-2b", zoom=1.28)
         except Exception as e:
             raise PdfError from e
