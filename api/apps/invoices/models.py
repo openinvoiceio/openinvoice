@@ -297,8 +297,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         # Calculate base
 
         for line in lines:
-            line.unit_amount = clamp_money(line.calculate_unit_amount())
-            line.amount = clamp_money(line.unit_amount * line.quantity)
+            amount = line.price.calculate_amount(line.quantity) if line.price else line.unit_amount * line.quantity
+            line.amount = clamp_money(amount)
             line.total_discount_amount = zero(self.currency)
             line.total_tax_amount = zero(self.currency)
 
@@ -319,15 +319,14 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
                 # Calculate discounts for line-level coupons
                 for coupon in coupons:
                     discount_amount = coupon.calculate_amount(line.subtotal_amount)
-                    applicable_discount_amount = min(discount_amount, line.subtotal_amount)
 
-                    if applicable_discount_amount.amount <= 0:
+                    if discount_amount.amount <= 0:
                         continue
 
-                    line.subtotal_amount -= applicable_discount_amount
-                    line.total_discountable_amount -= applicable_discount_amount
-                    line.total_discount_amount += applicable_discount_amount
-                    line.add_discount_allocation(applicable_discount_amount, coupon, InvoiceDiscountSource.LINE)
+                    line.subtotal_amount -= discount_amount
+                    line.total_discountable_amount -= discount_amount
+                    line.total_discount_amount += discount_amount
+                    line.add_discount_allocation(discount_amount, coupon, InvoiceDiscountSource.LINE)
             else:
                 # Accumulate invoice-level discountable lines for later discount calculation
                 discountable_lines.append(line)
@@ -669,11 +668,6 @@ class InvoiceLine(models.Model):
 
     class Meta:
         ordering = ["created_at"]
-
-    def calculate_unit_amount(self) -> Money:
-        if self.price:
-            return self.price.calculate_unit_amount(self.quantity)
-        return self.unit_amount
 
     @property
     def tax_multiplier(self) -> Decimal:

@@ -113,7 +113,7 @@ def test_credit_note_line_from_graduated_invoice_line():
         currency=invoice.currency,
         model=PriceModel.GRADUATED,
     )
-    price.add_tier(unit_amount=Money("10", invoice.currency), from_value=1, to_value=10)
+    price.add_tier(unit_amount=Money("10", invoice.currency), from_value=0, to_value=10)
     price.add_tier(unit_amount=Money("8", invoice.currency), from_value=11, to_value=None)
 
     invoice_line = invoice.lines.create_line(
@@ -128,5 +128,5 @@ def test_credit_note_line_from_graduated_invoice_line():
     credit_note_line = credit_note.lines.from_invoice_line(credit_note, invoice_line)
     credit_note_line.refresh_from_db()
 
-    assert credit_note_line.amount.amount == Decimal("140.00")
-    assert credit_note_line.unit_amount.amount == invoice_line.unit_amount.amount
+    assert credit_note_line.unit_amount.amount == Decimal("9.47")
+    assert credit_note_line.amount.amount == Decimal("142.00")
