@@ -281,6 +281,26 @@ export const columns: ColumnDef<Invoice>[] = [
     enableSorting: false,
   },
   {
+    id: "shipping_amount",
+    header: "Shipping",
+    accessorKey: "shipping_amount",
+    cell: ({ row }) => {
+      return (
+        <div>
+          {formatAmount(row.getValue("shipping_amount"), row.original.currency)}
+        </div>
+      );
+    },
+    meta: {
+      label: "Shipping",
+      variant: "range",
+      icon: HashIcon,
+      range: [0, 10000],
+    },
+    enableSorting: false,
+    enableColumnFilter: true,
+  },
+  {
     id: "total_amount_excluding_tax",
     header: "Total excluding tax",
     accessorKey: "total_amount_excluding_tax",

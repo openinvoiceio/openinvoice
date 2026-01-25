@@ -21,6 +21,7 @@ import { InvoiceLinesCard } from "@/components/invoice-lines-card.tsx";
 import { InvoiceNumberingCard } from "@/components/invoice-numbering-card.tsx";
 import { InvoicePaymentCollectionCard } from "@/components/invoice-payment-collection-card.tsx";
 import { InvoicePreview } from "@/components/invoice-preview";
+import { InvoiceShippingCard } from "@/components/invoice-shipping-card";
 import { InvoiceTaxesCard } from "@/components/invoice-taxes-card.tsx";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { pushModal } from "@/components/push-modals";
@@ -155,6 +156,7 @@ function RouteComponent() {
               <InvoiceCurrencyCard invoice={invoice} />
               <InvoiceLinesCard invoice={invoice} />
               <InvoiceDiscountsCard invoice={invoice} />
+              <InvoiceShippingCard invoice={invoice} />
               <InvoiceTaxesCard invoice={invoice} />
               <InvoicePaymentCollectionCard invoice={invoice} />
               <InvoiceDeliveryCard invoice={invoice} />

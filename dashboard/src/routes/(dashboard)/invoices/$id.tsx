@@ -299,7 +299,7 @@ function RouteComponent() {
             <div className="grid grid-cols-2 gap-4">
               <DataList orientation="vertical" size="sm" className="gap-4">
                 <DataListItem>
-                  <DataListLabel>Billed to</DataListLabel>
+                  <DataListLabel>Bill to</DataListLabel>
                   <DataListValue className="flex items-center gap-2">
                     <Avatar className="size-8 rounded-md">
                       <AvatarImage src={logo?.url} />
@@ -331,6 +331,26 @@ function RouteComponent() {
                     <AddressView address={invoice.customer.address} />
                   </DataListValue>
                 </DataListItem>
+                {invoice?.shipping && (
+                  <DataListItem>
+                    <DataListLabel>Ship to</DataListLabel>
+                    <DataListValue>
+                      <div className="flex flex-col gap-1">
+                        {invoice.shipping?.name && (
+                          <span>{invoice.shipping.name}</span>
+                        )}
+                        {invoice.shipping?.phone && (
+                          <span className="text-muted-foreground">
+                            {invoice.shipping.phone}
+                          </span>
+                        )}
+                        <AddressView
+                          address={invoice.shipping?.address || undefined}
+                        />
+                      </div>
+                    </DataListValue>
+                  </DataListItem>
+                )}
               </DataList>
               <DataList orientation="vertical" size="sm" className="gap-4">
                 <DataListItem>
@@ -470,6 +490,20 @@ function RouteComponent() {
                     <TableCell className="p-0" />
                   </TableRow>
                 ))}
+                {invoice?.shipping && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={summaryColSpan}
+                      className="text-right font-medium"
+                    >
+                      <span>Shipping fee</span>
+                    </TableCell>
+                    <TableCell className="font-medium" align="right">
+                      {formatAmount(invoice.shipping_amount, invoice.currency)}
+                    </TableCell>
+                    <TableCell className="p-0" />
+                  </TableRow>
+                )}
                 <TableRow>
                   <TableCell
                     colSpan={summaryColSpan}
