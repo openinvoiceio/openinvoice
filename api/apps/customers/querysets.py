@@ -11,3 +11,8 @@ if TYPE_CHECKING:
 class CustomerQuerySet(models.QuerySet):
     def for_account(self, account: Account):
         return self.filter(account=account)
+
+    def eager_load(self):
+        return self.select_related("address", "shipping", "shipping__address", "logo").prefetch_related(
+            "tax_rates", "tax_ids"
+        )

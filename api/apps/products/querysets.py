@@ -12,9 +12,8 @@ class ProductQuerySet(models.QuerySet):
     def for_account(self, account: Account):
         return self.filter(account=account)
 
-    def with_prices(self):
-        return (
-            self.prefetch_related("prices")
-            .select_related("default_price")
-            .annotate(prices_count=models.Count("prices"))
-        )
+    def eager_load(self):
+        return self.select_related("default_price").prefetch_related("default_price__tiers")
+
+    def annotate_prices(self):
+        return self.annotate(prices_count=models.Count("prices"))

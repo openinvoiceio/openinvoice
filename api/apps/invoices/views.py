@@ -48,17 +48,7 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember, MaxInvoicesLimit]
 
     def get_queryset(self):
-        return (
-            Invoice.objects.for_account(self.request.account)
-            .select_related("previous_revision")
-            .prefetch_related(
-                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
-                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
-                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
-                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
-                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
-            )
-        )
+        return Invoice.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="create_invoice",
@@ -124,17 +114,7 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return (
-            Invoice.objects.for_account(self.request.account)
-            .select_related("previous_revision")
-            .prefetch_related(
-                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
-                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
-                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
-                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
-                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
-            )
-        )
+        return Invoice.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="update_invoice",
@@ -235,17 +215,7 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember, MaxInvoicesLimit]
 
     def get_queryset(self):
-        return (
-            Invoice.objects.for_account(self.request.account)
-            .select_related("previous_revision")
-            .prefetch_related(
-                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
-                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
-                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
-                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
-                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
-            )
-        )
+        return Invoice.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="list_invoice_revisions",
@@ -335,17 +305,7 @@ class InvoiceVoidAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return (
-            Invoice.objects.for_account(self.request.account)
-            .select_related("previous_revision")
-            .prefetch_related(
-                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
-                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
-                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
-                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
-                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
-            )
-        )
+        return Invoice.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="void_invoice",
@@ -373,17 +333,7 @@ class InvoiceFinalizeAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return (
-            Invoice.objects.for_account(self.request.account)
-            .select_related("previous_revision")
-            .prefetch_related(
-                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
-                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
-                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
-                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
-                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
-            )
-        )
+        return Invoice.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="finalize_invoice",
@@ -422,17 +372,7 @@ class InvoicePreviewAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return (
-            Invoice.objects.for_account(self.request.account)
-            .select_related("previous_revision")
-            .prefetch_related(
-                Prefetch("lines", queryset=InvoiceLine.objects.order_by("created_at")),
-                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
-                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
-                Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
-                Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
-            )
-        )
+        return Invoice.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="preview_invoice",

@@ -34,7 +34,7 @@ class AccountListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, MaxAccountsLimit]
 
     def get_queryset(self):
-        return self.request.accounts
+        return self.request.accounts.eager_load()
 
     @extend_schema(
         operation_id="create_account",
@@ -73,7 +73,7 @@ class AccountRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return self.request.accounts
+        return self.request.accounts.eager_load()
 
     @extend_schema(
         operation_id="update_account",

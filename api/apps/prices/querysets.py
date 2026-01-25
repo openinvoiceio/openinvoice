@@ -11,3 +11,6 @@ if TYPE_CHECKING:
 class PriceQuerySet(models.QuerySet):
     def for_account(self, account: Account):
         return self.filter(account=account)
+
+    def eager_load(self):
+        return self.select_related("product").prefetch_related("tiers")

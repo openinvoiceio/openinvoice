@@ -24,7 +24,7 @@ class ProductListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember, MaxProductsLimit]
 
     def get_queryset(self):
-        return Product.objects.for_account(self.request.account).with_prices().order_by("-created_at")
+        return Product.objects.for_account(self.request.account).annotate_prices().eager_load().order_by("-created_at")
 
     @extend_schema(
         operation_id="create_product",
@@ -69,7 +69,7 @@ class ProductRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Product.objects.for_account(self.request.account).with_prices()
+        return Product.objects.for_account(self.request.account).annotate_prices().eager_load()
 
     @extend_schema(
         operation_id="update_product",
@@ -119,7 +119,7 @@ class ProductArchiveAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Product.objects.for_account(self.request.account).with_prices()
+        return Product.objects.for_account(self.request.account).annotate_prices().eager_load()
 
     @extend_schema(
         operation_id="archive_product",
@@ -141,7 +141,7 @@ class ProductRestoreAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Product.objects.for_account(self.request.account).with_prices()
+        return Product.objects.for_account(self.request.account).annotate_prices().eager_load()
 
     @extend_schema(
         operation_id="restore_product",

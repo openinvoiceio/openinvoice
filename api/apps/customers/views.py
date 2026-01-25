@@ -35,7 +35,7 @@ class CustomerListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember, MaxCustomersLimit]
 
     def get_queryset(self):
-        return Customer.objects.for_account(self.request.account)
+        return Customer.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="create_customer",
@@ -90,7 +90,7 @@ class CustomerRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Customer.objects.for_account(self.request.account)
+        return Customer.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="update_customer",
@@ -168,7 +168,7 @@ class CustomerTaxRateAssignAPIView(generics.GenericAPIView):
     serializer_class = CustomerTaxRateAssignSerializer
 
     def get_queryset(self):
-        return Customer.objects.for_account(self.request.account)
+        return Customer.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="assign_customer_tax_rate",
@@ -206,7 +206,7 @@ class CustomerTaxRateDestroyAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Customer.objects.for_account(self.request.account)
+        return Customer.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="remove_customer_tax_rate",
@@ -234,7 +234,7 @@ class CustomerTaxIdCreateAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Customer.objects.for_account(self.request.account)
+        return Customer.objects.for_account(self.request.account).eager_load()
 
     def get_customer(self):
         try:

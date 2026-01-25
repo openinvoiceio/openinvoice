@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from django.apps import apps
 from django.db import models
-from django.db.models import F, IntegerField, Value
+from django.db.models import F, IntegerField, Prefetch, Value
 from django_cte import CTE, with_cte
 
 from apps.invoices.choices import InvoiceDiscountSource, InvoiceTaxSource
@@ -16,6 +17,34 @@ if TYPE_CHECKING:
 class InvoiceQuerySet(models.QuerySet):
     def for_account(self, account: Account):
         return self.filter(account=account)
+
+    def eager_load(self):
+        InvoiceLine = apps.get_model("invoices.InvoiceLine")  # noqa: N806
+        Coupon = apps.get_model("coupons.Coupon")  # noqa: N806
+        TaxRate = apps.get_model("tax_rates.TaxRate")  # noqa: N806
+
+        return self.select_related(
+            "account",
+            "account__address",
+            "account_on_invoice",
+            "account_on_invoice__address",
+            "customer",
+            "customer__address",
+            "customer_on_invoice",
+            "customer_on_invoice__address",
+            "numbering_system",
+            "previous_revision",
+            "shipping",
+            "shipping__address",
+            "shipping__shipping_rate",
+        ).prefetch_related(
+            Prefetch("lines", queryset=InvoiceLine.objects.select_related("price").order_by("created_at")),
+            Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
+            Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_tax_rates__position")),
+            Prefetch("lines__coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
+            Prefetch("lines__tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
+            Prefetch("shipping__tax_rates", queryset=TaxRate.objects.order_by("invoice_shipping_tax_rates__position")),
+        )
 
     def revisions(self, head_id: UUID):
         def make_cte(cte):
