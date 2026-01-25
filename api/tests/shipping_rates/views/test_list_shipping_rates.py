@@ -29,7 +29,6 @@ def test_list_shipping_rates(api_client, user, account):
                 "code": rate.code,
                 "currency": rate.currency,
                 "amount": str(rate.amount.amount),
-                "tax_policy": rate.tax_policy,
                 "status": rate.status,
                 "metadata": rate.metadata,
                 "created_at": ANY,

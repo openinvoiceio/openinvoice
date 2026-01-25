@@ -25,7 +25,7 @@ from apps.portal.crypto import sign_portal_token
 from apps.prices.choices import PriceModel, PriceStatus
 from apps.products.choices import ProductStatus
 from apps.quotes.choices import QuoteDeliveryMethod, QuoteStatus
-from apps.shipping_rates.choices import ShippingRateStatus, ShippingRateTaxPolicy
+from apps.shipping_rates.choices import ShippingRateStatus
 from apps.tax_ids.choices import TaxIdType
 from apps.tax_rates.choices import TaxRateStatus
 
@@ -195,7 +195,6 @@ class ShippingRateFactory(DjangoModelFactory):
     code = None
     currency = "PLN"
     amount = Decimal("20.00")
-    tax_policy = ShippingRateTaxPolicy.MATCH_GOODS
     status = ShippingRateStatus.ACTIVE
     metadata = {}
 

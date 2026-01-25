@@ -386,7 +386,13 @@ export function InvoiceDropdown({
       data={invoice}
       actions={actions}
       sections={[
-        { items: [useEditInvoiceAction(), useCopyIdAction(), useCloneInvoiceAction()] },
+        {
+          items: [
+            useEditInvoiceAction(),
+            useCopyIdAction(),
+            useCloneInvoiceAction(),
+          ],
+        },
         {
           items: [
             useFinalizeInvoiceAction(),

@@ -7,7 +7,6 @@
  */
 import type { CurrencyEnum } from "./currencyEnum";
 import type { ProductCatalogStatusEnum } from "./productCatalogStatusEnum";
-import type { ShippingRateTaxPolicyEnum } from "./shippingRateTaxPolicyEnum";
 
 export interface ShippingRate {
   id: string;
@@ -22,7 +21,6 @@ export interface ShippingRate {
   currency: CurrencyEnum;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   amount: string;
-  tax_policy: ShippingRateTaxPolicyEnum;
   status: ProductCatalogStatusEnum;
   metadata: unknown;
   created_at: string;

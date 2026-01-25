@@ -7,7 +7,6 @@
  */
 import type { CurrencyEnum } from "./currencyEnum";
 import type { ShippingRateCreateMetadata } from "./shippingRateCreateMetadata";
-import type { ShippingRateTaxPolicyEnum } from "./shippingRateTaxPolicyEnum";
 
 export interface ShippingRateCreate {
   /** @maxLength 255 */
@@ -20,7 +19,6 @@ export interface ShippingRateCreate {
   currency?: CurrencyEnum;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   amount?: string;
-  tax_policy?: ShippingRateTaxPolicyEnum;
   /** @nullable */
   metadata?: ShippingRateCreateMetadata;
 }

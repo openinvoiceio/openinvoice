@@ -4,7 +4,7 @@ import { ShippingRateDropdown } from "@/components/shipping-rate-dropdown.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { formatAmount, formatDatetime, formatEnum } from "@/lib/formatters";
+import { formatAmount, formatDatetime } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import type { ColumnDef } from "@tanstack/react-table";
 import { CalendarIcon, MoreHorizontalIcon, SearchIcon } from "lucide-react";
@@ -65,16 +65,6 @@ export const columns: ColumnDef<ShippingRate>[] = [
     meta: {
       label: "Amount",
     },
-    enableSorting: false,
-  },
-  {
-    header: "Tax policy",
-    accessorKey: "tax_policy",
-    cell: ({ row }) => {
-      const value: string = row.getValue("tax_policy");
-      return <div>{formatEnum(value)}</div>;
-    },
-    meta: { label: "Tax policy" },
     enableSorting: false,
   },
   {

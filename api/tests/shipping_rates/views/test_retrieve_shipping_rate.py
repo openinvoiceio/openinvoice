@@ -23,7 +23,6 @@ def test_retrieve_shipping_rate(api_client, user, account):
         "code": shipping_rate.code,
         "currency": shipping_rate.currency,
         "amount": str(shipping_rate.amount.amount),
-        "tax_policy": shipping_rate.tax_policy,
         "status": shipping_rate.status,
         "metadata": shipping_rate.metadata,
         "created_at": ANY,

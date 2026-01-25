@@ -6,7 +6,7 @@ from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from .choices import ShippingRateStatus, ShippingRateTaxPolicy
+from .choices import ShippingRateStatus
 from .managers import ShippingRateManager
 from .querysets import ShippingRateQuerySet
 
@@ -17,7 +17,6 @@ class ShippingRate(models.Model):
     code = models.CharField(max_length=255, null=True)
     currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
-    tax_policy = models.CharField(max_length=16, choices=ShippingRateTaxPolicy.choices)
     status = models.CharField(
         max_length=20,
         choices=ShippingRateStatus.choices,
@@ -40,14 +39,12 @@ class ShippingRate(models.Model):
         code: str | None,
         currency: str,
         amount: Money,
-        tax_policy: ShippingRateTaxPolicy,
         metadata: dict,
     ) -> None:
         self.name = name
         self.code = code
         self.currency = currency
         self.amount = amount
-        self.tax_policy = tax_policy
         self.metadata = metadata
         self.save()
 

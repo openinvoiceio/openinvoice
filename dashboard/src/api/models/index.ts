@@ -353,7 +353,6 @@ export * from "./setupTOTPBody";
 export * from "./shippingRate";
 export * from "./shippingRateCreate";
 export * from "./shippingRateCreateMetadata";
-export * from "./shippingRateTaxPolicyEnum";
 export * from "./shippingRateUpdate";
 export * from "./shippingRatesListParams";
 export * from "./shippingRatesListStatus";

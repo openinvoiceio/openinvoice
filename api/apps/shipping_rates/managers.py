@@ -3,7 +3,7 @@ from djmoney.money import Money
 
 from apps.accounts.models import Account
 
-from .choices import ShippingRateStatus, ShippingRateTaxPolicy
+from .choices import ShippingRateStatus
 
 
 class ShippingRateManager(models.Manager):
@@ -14,7 +14,6 @@ class ShippingRateManager(models.Manager):
         code: str | None,
         currency: str | None,
         amount: Money | None,
-        tax_policy: ShippingRateTaxPolicy | None,
         metadata: dict | None = None,
     ):
         currency = currency or account.default_currency
@@ -24,7 +23,6 @@ class ShippingRateManager(models.Manager):
             code=code,
             currency=currency,
             amount=amount or Money(0, currency),
-            tax_policy=tax_policy or ShippingRateTaxPolicy.MATCH_GOODS,
             status=ShippingRateStatus.ACTIVE,
             metadata=metadata or {},
         )

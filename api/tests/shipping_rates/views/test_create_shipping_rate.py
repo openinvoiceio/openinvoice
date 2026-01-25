@@ -18,7 +18,6 @@ def test_create_shipping_rate(api_client, user, account):
             "code": "STD",
             "currency": "USD",
             "amount": "5.00",
-            "tax_policy": "match_goods",
             "metadata": {"key": "value"},
         },
     )
@@ -31,7 +30,6 @@ def test_create_shipping_rate(api_client, user, account):
         "code": "STD",
         "currency": "USD",
         "amount": "5.00",
-        "tax_policy": "match_goods",
         "status": "active",
         "metadata": {"key": "value"},
         "created_at": ANY,
@@ -48,7 +46,6 @@ def test_create_shipping_rate_requires_authentication(api_client):
             "code": "STD",
             "currency": "USD",
             "amount": "5.00",
-            "tax_policy": "match_goods",
             "metadata": {"key": "value"},
         },
     )
@@ -75,7 +72,6 @@ def test_create_shipping_rate_requires_account(api_client, user):
             "code": "STD",
             "currency": "USD",
             "amount": "5.00",
-            "tax_policy": "match_goods",
             "metadata": {"key": "value"},
         },
     )

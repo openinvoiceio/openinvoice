@@ -24,7 +24,6 @@ def test_archive_shipping_rate(api_client, user, account):
         "code": shipping_rate.code,
         "currency": shipping_rate.currency,
         "amount": str(shipping_rate.amount.amount),
-        "tax_policy": shipping_rate.tax_policy,
         "status": "archived",
         "metadata": shipping_rate.metadata,
         "archived_at": response.data["archived_at"],

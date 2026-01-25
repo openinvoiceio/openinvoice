@@ -328,7 +328,6 @@ SPECTACULAR_SETTINGS = {
         "CreditNoteReasonEnum": "apps.credit_notes.choices.CreditNoteReason.choices",
         "NumberingSystemAppliesToEnum": "apps.numbering_systems.choices.NumberingSystemAppliesTo.choices",
         "QuoteStatusEnum": "apps.quotes.choices.QuoteStatus.choices",
-        "ShippingRateTaxPolicyEnum": "apps.shipping_rates.choices.ShippingRateTaxPolicy.choices",
         # According to https://drf-spectacular.readthedocs.io/en/latest/faq.html#i-get-warnings-regarding-my-enum-or-my-enum-names-have-a-weird-suffix
         # we can't set separate names for e.g. PriceStatusEnum and TaxRateStatusEnum
         # because they use the same set of choices, so we use ProductCatalogStatusEnum

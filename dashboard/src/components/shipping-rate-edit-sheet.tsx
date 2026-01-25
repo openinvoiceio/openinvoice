@@ -3,11 +3,7 @@ import {
   getShippingRatesRetrieveQueryKey,
   useUpdateShippingRate,
 } from "@/api/endpoints/shipping-rates/shipping-rates.ts";
-import {
-  CurrencyEnum,
-  ShippingRateTaxPolicyEnum,
-  type ShippingRate,
-} from "@/api/models";
+import { CurrencyEnum, type ShippingRate } from "@/api/models";
 import { CurrencyCombobox } from "@/components/currency-combobox.tsx";
 import { popModal } from "@/components/push-modals.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -30,20 +26,12 @@ import {
   FormMessage,
 } from "@/components/ui/form.tsx";
 import { Input, inputClassName } from "@/components/ui/input.tsx";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import { getErrorSummary } from "@/lib/api/errors.ts";
 import {
   isZeroDecimalCurrency,
   sanitizeCurrencyAmount,
 } from "@/lib/currency.ts";
-import { formatEnum } from "@/lib/formatters.ts";
 import { cn } from "@/lib/utils.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
@@ -58,7 +46,6 @@ const schema = z.object({
   code: z.string().optional(),
   currency: z.enum(CurrencyEnum),
   amount: z.string(),
-  tax_policy: z.enum(ShippingRateTaxPolicyEnum),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -77,7 +64,6 @@ export function ShippingRateEditSheet({
       code: shippingRate.code || "",
       currency: shippingRate.currency,
       amount: shippingRate.amount,
-      tax_policy: shippingRate.tax_policy,
     },
   });
   const currency = form.watch("currency");
@@ -110,7 +96,6 @@ export function ShippingRateEditSheet({
         code: values.code || null,
         currency: values.currency,
         amount: values.amount,
-        tax_policy: values.tax_policy,
       },
     });
   }
@@ -201,40 +186,6 @@ export function ShippingRateEditSheet({
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="tax_policy"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tax policy</FormLabel>
-                  <FormControl>
-                    <Select
-                      value={field.value}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                      }}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select tax policy" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(ShippingRateTaxPolicyEnum).map(
-                          (value) => (
-                            <SelectItem key={value} value={value}>
-                              {formatEnum(value)}
-                            </SelectItem>
-                          ),
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    Specify how taxes are calculated on this shipping rate.
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="code"

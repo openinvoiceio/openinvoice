@@ -16,7 +16,6 @@ def test_update_shipping_rate(api_client, user, account):
         code="STD",
         currency="USD",
         amount="10.00",
-        tax_policy="match_goods",
         metadata={"key": "value"},
     )
 
@@ -29,7 +28,6 @@ def test_update_shipping_rate(api_client, user, account):
             "code": "EXP",
             "currency": "USD",
             "amount": "15.00",
-            "tax_policy": "exempt",
             "metadata": {"updated_key": "updated_value"},
         },
     )
@@ -42,7 +40,6 @@ def test_update_shipping_rate(api_client, user, account):
         "code": "EXP",
         "currency": "USD",
         "amount": "15.00",
-        "tax_policy": "exempt",
         "status": "active",
         "metadata": {"updated_key": "updated_value"},
         "created_at": ANY,

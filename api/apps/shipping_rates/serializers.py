@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from common.fields import CurrencyField, MetadataField
 
-from .choices import ShippingRateStatus, ShippingRateTaxPolicy
+from .choices import ShippingRateStatus
 
 
 class ShippingRateSerializer(serializers.Serializer):
@@ -13,7 +13,6 @@ class ShippingRateSerializer(serializers.Serializer):
     code = serializers.CharField(allow_null=True, max_length=255)
     currency = CurrencyField()
     amount = MoneyField(max_digits=19, decimal_places=2)
-    tax_policy = serializers.ChoiceField(choices=ShippingRateTaxPolicy.choices)
     status = serializers.ChoiceField(choices=ShippingRateStatus.choices)
     metadata = MetadataField()
     created_at = serializers.DateTimeField()
@@ -26,7 +25,6 @@ class ShippingRateCreateSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=255, allow_null=True, required=False)
     currency = CurrencyField(required=False)
     amount = MoneyField(max_digits=19, decimal_places=2, required=False)
-    tax_policy = serializers.ChoiceField(choices=ShippingRateTaxPolicy.choices, required=False)
     metadata = MetadataField(allow_null=True, required=False)
 
 
@@ -35,5 +33,4 @@ class ShippingRateUpdateSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=255, allow_null=True, required=False)
     currency = CurrencyField(required=False)
     amount = MoneyField(max_digits=19, decimal_places=2, required=False)
-    tax_policy = serializers.ChoiceField(choices=ShippingRateTaxPolicy.choices, required=False)
     metadata = MetadataField(required=False)

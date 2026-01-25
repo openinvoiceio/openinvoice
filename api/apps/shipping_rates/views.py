@@ -41,7 +41,6 @@ class ShippingRateListCreateAPIView(generics.ListAPIView):
             code=data.get("code"),
             currency=data.get("currency"),
             amount=data.get("amount"),
-            tax_policy=data.get("tax_policy"),
             metadata=data.get("metadata"),
         )
 
@@ -79,7 +78,6 @@ class ShippingRateRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             code=data.get("code", shipping_rate.code),
             currency=data.get("currency", shipping_rate.currency),
             amount=data.get("amount", shipping_rate.amount),
-            tax_policy=data.get("tax_policy", shipping_rate.tax_policy),
             metadata=data.get("metadata", shipping_rate.metadata),
         )
 
