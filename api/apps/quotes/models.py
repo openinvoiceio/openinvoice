@@ -23,7 +23,7 @@ from apps.invoices.models import Invoice
 from apps.numbering_systems.models import NumberingSystem
 from apps.prices.models import Price
 from apps.tax_rates.models import TaxRate
-from common.calculations import calculate_percentage_amount, clamp_money, zero
+from common.calculations import calculate_percentage_amount, zero
 from common.pdf import generate_pdf
 
 from .choices import QuoteDeliveryMethod, QuoteStatus
@@ -217,15 +217,9 @@ class Quote(models.Model):
             if line.taxes.all():
                 taxed_line_amount_excluding_tax += line.total_amount_excluding_tax
 
-        subtotal = clamp_money(subtotal)
-        total_line_discount_amount = clamp_money(total_line_discount_amount)
-        total_line_amount_excluding_tax = clamp_money(total_line_amount_excluding_tax)
-        taxed_line_amount_excluding_tax = clamp_money(taxed_line_amount_excluding_tax)
-
         quote_discount_amount, total_amount_excluding_tax = self.discounts.for_quote().recalculate(
             total_line_amount_excluding_tax
         )
-        total_amount_excluding_tax = clamp_money(total_amount_excluding_tax)
 
         taxed_line_amount_excluding_tax_after_discounts = self._distribute_discount_to_taxed_lines(
             total_line_amount_excluding_tax,
@@ -233,18 +227,16 @@ class Quote(models.Model):
             quote_discount_amount,
         )
 
-        quote_taxable_amount = clamp_money(
-            max(
-                total_amount_excluding_tax - taxed_line_amount_excluding_tax_after_discounts,
-                zero(self.currency),
-            )
+        quote_taxable_amount = max(
+            total_amount_excluding_tax - taxed_line_amount_excluding_tax_after_discounts,
+            zero(self.currency),
         )
 
         quote_tax_amount, _ = self.taxes.for_quote().recalculate(quote_taxable_amount)
 
-        total_discount_amount = clamp_money(total_line_discount_amount + quote_discount_amount)
-        total_tax_amount = clamp_money(total_line_tax_amount + quote_tax_amount)
-        total_amount = clamp_money(total_amount_excluding_tax + total_tax_amount)
+        total_discount_amount = total_line_discount_amount + quote_discount_amount
+        total_tax_amount = total_line_tax_amount + quote_tax_amount
+        total_amount = total_amount_excluding_tax + total_tax_amount
 
         self.subtotal_amount = subtotal
         self.total_discount_amount = total_discount_amount
@@ -276,7 +268,7 @@ class Quote(models.Model):
             return zero(self.currency)
 
         ratio = taxed_line_amount_excluding_tax / total_line_amount_excluding_tax
-        return clamp_money(discount_amount * ratio)
+        return discount_amount * ratio
 
     def add_tax(self, tax_rate: TaxRate):
         tax = self.taxes.create(
@@ -367,8 +359,6 @@ class Quote(models.Model):
 
         invoice.set_coupons([discount.coupon for discount in self.discounts.for_quote()])
         invoice.set_tax_rates([tax.tax_rate for tax in self.taxes.for_quote().filter(tax_rate__isnull=False).all()])
-        invoice.recalculate()
-
         self.invoice = invoice
         self.status = QuoteStatus.ACCEPTED
         self.accepted_at = timezone.now()
@@ -480,7 +470,7 @@ class QuoteLine(models.Model):
             amount = self.price.calculate_amount(self.quantity)
             self.unit_amount = self.price.calculate_unit_amount(self.quantity)
         else:
-            amount = clamp_money(self.unit_amount * self.quantity)
+            amount = self.unit_amount * self.quantity
 
         total_discount_amount, total_amount_excluding_tax = (
             self.discounts.select_related("coupon").for_lines().recalculate(amount)
@@ -489,11 +479,11 @@ class QuoteLine(models.Model):
         total_tax_amount, total_tax_rate = self.taxes.for_lines().recalculate(total_amount_excluding_tax)
 
         self.amount = amount
-        self.total_discount_amount = clamp_money(total_discount_amount)
-        self.total_amount_excluding_tax = clamp_money(total_amount_excluding_tax)
-        self.total_tax_amount = clamp_money(total_tax_amount)
+        self.total_discount_amount = total_discount_amount
+        self.total_amount_excluding_tax = total_amount_excluding_tax
+        self.total_tax_amount = total_tax_amount
         self.total_tax_rate = total_tax_rate
-        self.total_amount = clamp_money(total_amount_excluding_tax + total_tax_amount)
+        self.total_amount = total_amount_excluding_tax + total_tax_amount
         self.save(
             update_fields=[
                 "unit_amount",
@@ -588,11 +578,11 @@ class QuoteDiscount(models.Model):
         if coupon.amount is not None:
             if coupon.amount <= zero(base.currency):
                 return zero(base.currency)
-            return clamp_money(min(coupon.amount, base))
+            return min(coupon.amount, base)
 
         if coupon.percentage is not None:
             percentage_amount = calculate_percentage_amount(base, coupon.percentage)
-            return clamp_money(min(percentage_amount, base))
+            return min(percentage_amount, base)
 
         return zero(base.currency)
 
@@ -637,4 +627,4 @@ class QuoteTax(models.Model):
         if percentage <= 0:
             return zero(base.currency)
 
-        return clamp_money(calculate_percentage_amount(base, percentage))
+        return calculate_percentage_amount(base, percentage)

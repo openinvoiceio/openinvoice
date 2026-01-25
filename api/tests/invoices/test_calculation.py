@@ -1,10 +1,10 @@
 from decimal import Decimal
 
 import pytest
+from django.db import DataError
 from djmoney.money import Money
 
 from apps.invoices.choices import InvoiceTaxBehavior, InvoiceTaxSource
-from common.calculations import MAX_AMOUNT
 from tests.factories import (
     CouponFactory,
     InvoiceFactory,
@@ -499,19 +499,14 @@ def test_recalculate_invoice_line_multiple_percentage_discounts():
     assert invoice.total_amount == Money("72.00", line.currency)
 
 
-def test_recalculate_invoice_line_clamps_large_amount():
+def test_recalculate_invoice_line_raises_on_large_amount():
     invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
-    line = InvoiceLineFactory(
+    InvoiceLineFactory(
         invoice=invoice, unit_amount=Decimal("10000000000000000"), quantity=1000000000000, amount=Decimal("0")
     )
 
-    invoice.recalculate()
-
-    line.refresh_from_db()
-    assert line.amount == Money(MAX_AMOUNT, line.currency)
-
-    invoice.refresh_from_db()
-    assert invoice.total_amount == Money(MAX_AMOUNT, line.currency)
+    with pytest.raises(DataError):
+        invoice.recalculate()
 
 
 def test_apply_line_discounts_exceeding_base():
@@ -1151,24 +1146,16 @@ def test_recalculate_invoice_with_no_lines():
     assert invoice.outstanding_amount == Money("0.00", invoice.currency)
 
 
-def test_recalculate_invoice_clamps_total_amount_with_tax():
+def test_recalculate_invoice_raises_on_total_amount_with_tax():
     invoice = InvoiceFactory(tax_behavior=InvoiceTaxBehavior.EXCLUSIVE)
-    line = InvoiceLineFactory(
+    InvoiceLineFactory(
         invoice=invoice, unit_amount=Decimal("10000000000000000"), quantity=1000000000000, amount=Decimal("0")
     )
     tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("100"))
 
     invoice.set_tax_rates([tax_rate])
-    invoice.recalculate()
-
-    line.refresh_from_db()
-    assert line.amount == Money(MAX_AMOUNT, line.currency)
-    assert line.total_tax_amount == Money(MAX_AMOUNT, line.currency)
-
-    invoice.refresh_from_db()
-    assert invoice.total_excluding_tax_amount == Money(MAX_AMOUNT, invoice.currency)
-    assert invoice.total_tax_amount == Money(MAX_AMOUNT, invoice.currency)
-    assert invoice.total_amount == Money(MAX_AMOUNT, invoice.currency)
+    with pytest.raises(DataError):
+        invoice.recalculate()
 
 
 def test_invoice_level_coupon_does_not_apply_to_line_with_line_coupon():

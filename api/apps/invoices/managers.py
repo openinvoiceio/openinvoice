@@ -230,7 +230,6 @@ class InvoiceManager(models.Manager):
 
         invoice.set_coupons(previous_revision.coupons.active())
         invoice.set_tax_rates(previous_revision.tax_rates.active())
-        invoice.recalculate()
 
         return invoice
 
@@ -271,7 +270,5 @@ class InvoiceLineManager(models.Manager):
 
         if price:
             price.mark_as_used()
-
-        invoice.recalculate()
 
         return invoice_line

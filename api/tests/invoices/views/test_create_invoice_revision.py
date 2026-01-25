@@ -5,6 +5,7 @@ from unittest.mock import ANY
 
 import pytest
 from django.utils import timezone
+from drf_standardized_errors.types import ErrorType
 
 from apps.coupons.choices import CouponStatus
 from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
@@ -203,6 +204,31 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
     assert revision_line.tax_rates.count() == 1
     assert revision_line.discount_allocations.count() == 1
     assert revision_line.tax_allocations.count() == 1
+
+
+def test_create_invoice_revision_overflow_returns_validation_error(api_client, user, account):
+    invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
+    InvoiceLineFactory(
+        invoice=invoice,
+        quantity=2,
+        unit_amount=Decimal("50000000000000000.00"),
+    )
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.post(f"/api/v1/invoices/{invoice.id}/revisions")
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "invalid",
+                "detail": "Amount exceeds the maximum allowed value",
+            }
+        ],
+    }
 
 
 def test_create_invoice_revision_skips_archived_coupons(api_client, user, account):

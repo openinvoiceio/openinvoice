@@ -337,6 +337,37 @@ def test_create_invoice_with_foreign_shipping_tax_rate(api_client, user, account
     }
 
 
+def test_create_invoice_overflow_returns_validation_error(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    shipping_rate = ShippingRateFactory(account=account, amount=Decimal("50000000000000000.00"))
+    tax_rate = TaxRateFactory(account=account, percentage=Decimal("100"))
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.post(
+        "/api/v1/invoices",
+        {
+            "customer_id": str(customer.id),
+            "shipping": {
+                "shipping_rate_id": str(shipping_rate.id),
+                "tax_rates": [str(tax_rate.id)],
+            },
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "invalid",
+                "detail": "Amount exceeds the maximum allowed value",
+            }
+        ],
+    }
+
+
 def test_create_invoice_with_duplicate_shipping_tax_rates(api_client, user, account):
     customer = CustomerFactory(account=account)
     shipping_rate = ShippingRateFactory(account=account)

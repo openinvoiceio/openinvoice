@@ -139,6 +139,38 @@ def test_update_invoice_line_from_price(api_client, user, account):
     assert invoice.total_amount.amount == Decimal("40.00")
 
 
+def test_update_invoice_line_overflow_returns_validation_error(api_client, user, account):
+    invoice = InvoiceFactory(account=account)
+    line = InvoiceLineFactory(
+        invoice=invoice,
+        quantity=1,
+        unit_amount=Decimal("10"),
+        amount=Decimal("10"),
+    )
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoice-lines/{line.id}",
+        {
+            "quantity": 2,
+            "unit_amount": "50000000000000000.00",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "invalid",
+                "detail": "Amount exceeds the maximum allowed value",
+            }
+        ],
+    }
+
+
 def test_update_invoice_line_not_found(api_client, user, account):
     api_client.force_login(user)
     api_client.force_account(account)

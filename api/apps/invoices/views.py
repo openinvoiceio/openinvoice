@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from apps.accounts.permissions import IsAccountMember
 from apps.coupons.models import Coupon
 from apps.tax_rates.models import TaxRate
+from common.utils import numeric_overflow
 
 from .choices import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
 from .filtersets import InvoiceFilterSet
@@ -95,7 +96,8 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
                 tax_rates=shipping.get("tax_rates", []),
             )
 
-        invoice.recalculate()
+        with numeric_overflow():
+            invoice.recalculate()
 
         logger.info(
             "Invoice created",
@@ -163,7 +165,6 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             if invoice.shipping is not None:
                 invoice.shipping.delete()
                 invoice.refresh_from_db()
-                invoice.recalculate()
 
             if shipping is not None:
                 invoice.add_shipping(
@@ -171,7 +172,8 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
                     tax_rates=shipping.get("tax_rates", []),
                 )
 
-        invoice.recalculate()
+        with numeric_overflow():
+            invoice.recalculate()
 
         logger.info("Invoice updated", invoice_id=invoice.id, customer_id=invoice.customer_id)
 
@@ -282,12 +284,14 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
             if invoice.shipping is not None:
                 invoice.shipping.delete()
                 invoice.refresh_from_db()
-                invoice.recalculate()
 
             invoice.add_shipping(
                 shipping_rate=shipping["shipping_rate"],
                 tax_rates=shipping.get("tax_rates", []),
             )
+
+        with numeric_overflow():
+            invoice.recalculate()
 
         logger.info(
             "Invoice revision created",
@@ -418,8 +422,9 @@ class InvoiceLineCreateAPIView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
+        invoice = data["invoice"]
         invoice_line = InvoiceLine.objects.create_line(
-            invoice=data["invoice"],
+            invoice=invoice,
             description=data["description"],
             quantity=data["quantity"],
             unit_amount=data.get("unit_amount"),
@@ -432,13 +437,15 @@ class InvoiceLineCreateAPIView(generics.GenericAPIView):
         if "tax_rates" in data:
             invoice_line.set_tax_rates(data["tax_rates"])
 
-        invoice_line.invoice.recalculate()
+        with numeric_overflow():
+            invoice.recalculate()
+
         invoice_line.refresh_from_db()
 
         logger.info(
             "Invoice line created",
             invoice_line_id=invoice_line.id,
-            invoice_id=invoice_line.invoice_id,
+            invoice_id=invoice.id,
         )
 
         invoice_line = self.get_queryset().get(id=invoice_line.id)
@@ -468,6 +475,7 @@ class InvoiceLineUpdateDestroyAPIView(generics.GenericAPIView):
     )
     def put(self, request, **_):
         invoice_line = self.get_object()
+        invoice = invoice_line.invoice
         serializer = InvoiceLineUpdateSerializer(invoice_line, data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -488,12 +496,13 @@ class InvoiceLineUpdateDestroyAPIView(generics.GenericAPIView):
         if "tax_rates" in data:
             invoice_line.set_tax_rates(data["tax_rates"])
 
-        invoice_line.invoice.recalculate()
+        with numeric_overflow():
+            invoice.recalculate()
 
         logger.info(
             "Invoice line updated",
             invoice_line_id=invoice_line.id,
-            invoice_id=invoice_line.invoice_id,
+            invoice_id=invoice.id,
         )
         invoice_line = self.get_object()
         serializer = InvoiceLineSerializer(invoice_line)
@@ -512,7 +521,9 @@ class InvoiceLineUpdateDestroyAPIView(generics.GenericAPIView):
             raise ValidationError("Only draft invoices can be modified")
 
         invoice_line.delete()
-        invoice.recalculate()
+
+        with numeric_overflow():
+            invoice.recalculate()
 
         logger.info("Invoice line deleted", invoice_line_id=pk, invoice_id=invoice.id)
         return Response(status=status.HTTP_204_NO_CONTENT)

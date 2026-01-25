@@ -122,6 +122,7 @@ def test_credit_note_line_from_graduated_invoice_line():
         quantity=15,
         price=price,
     )
+    invoice.recalculate()
     invoice_line.refresh_from_db()
 
     credit_note = CreditNoteFactory(invoice=invoice, account=invoice.account, customer=invoice.customer)

@@ -7,8 +7,6 @@ from django.db import models
 from django.db.models import Sum
 from djmoney.money import Money
 
-from common.calculations import clamp_money
-
 from .choices import CreditNoteStatus
 
 if TYPE_CHECKING:
@@ -25,7 +23,7 @@ class CreditNoteQuerySet(models.QuerySet):
     def total_amount(self, *, currency: str) -> Money:
         total = self.aggregate(total=Sum("total_amount")).get("total")
         if isinstance(total, Money):
-            return clamp_money(total)
+            return total
 
         return Money(total or Decimal("0"), currency)
 

@@ -5,7 +5,6 @@ from decimal import ROUND_HALF_UP, Decimal
 from djmoney.money import Money
 from moneyed import Currency
 
-MAX_AMOUNT = Decimal("999999999.99")
 CENT = Decimal("0.01")
 
 
@@ -13,12 +12,6 @@ def zero(currency: str | Currency) -> Money:
     """Return a zero-valued :class:`Money` in ``currency``."""
 
     return Money(0, currency)
-
-
-def clamp_money(amount: Money) -> Money:
-    """Round ``amount`` and clamp it to the database limit."""
-
-    return min(amount, Money(MAX_AMOUNT, amount.currency))
 
 
 def calculate_percentage_amount(base: Money, percentage: Decimal) -> Money:

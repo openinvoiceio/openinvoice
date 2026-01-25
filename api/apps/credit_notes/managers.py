@@ -10,7 +10,7 @@ from djmoney.money import Money
 from apps.accounts.models import Account
 from apps.invoices.models import Invoice
 from apps.numbering_systems.models import NumberingSystem
-from common.calculations import clamp_money, zero
+from common.calculations import zero
 
 from .calculations import calculate_credit_note_line_amounts
 from .choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
@@ -185,7 +185,6 @@ class CreditNoteLineManager(models.Manager):
     ) -> CreditNoteLine:
         quantity = quantity or 1
         unit_amount_value = unit_amount or zero(credit_note.currency)
-        amount = clamp_money(unit_amount_value * quantity)
 
         credit_note_line = self.create(
             credit_note=credit_note,
@@ -193,12 +192,13 @@ class CreditNoteLineManager(models.Manager):
             quantity=quantity,
             currency=credit_note.currency,
             unit_amount=unit_amount_value,
-            amount=amount,
-            total_amount_excluding_tax=amount,
+            amount=unit_amount_value * quantity,
+            total_amount_excluding_tax=zero(credit_note.currency),
             total_tax_amount=zero(credit_note.currency),
-            total_amount=amount,
+            total_amount=zero(credit_note.currency),
         )
 
+        credit_note_line.recalculate()
         credit_note.recalculate()
         credit_note_line.refresh_from_db()
         return credit_note_line

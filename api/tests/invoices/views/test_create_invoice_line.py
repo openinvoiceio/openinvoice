@@ -223,6 +223,34 @@ def test_create_invoice_line_with_required_only_fields(api_client, user, account
     assert invoice.total_amount.amount == Decimal("0.00")
 
 
+def test_create_invoice_line_overflow_returns_validation_error(api_client, user, account):
+    invoice = InvoiceFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.post(
+        "/api/v1/invoice-lines",
+        {
+            "invoice_id": str(invoice.id),
+            "description": "Huge",
+            "unit_amount": "50000000000000000.00",
+            "quantity": 2,
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "invalid",
+                "detail": "Amount exceeds the maximum allowed value",
+            }
+        ],
+    }
+
+
 def test_create_invoice_line_invoice_not_found(api_client, user, account):
     invoice_id = uuid.uuid4()
 

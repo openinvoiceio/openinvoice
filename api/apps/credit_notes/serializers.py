@@ -13,7 +13,6 @@ from apps.numbering_systems.fields import NumberingSystemRelatedField
 from apps.tax_ids.serializers import TaxIdSerializer
 from apps.tax_rates.fields import TaxRateRelatedField
 from common.access import has_feature
-from common.calculations import clamp_money
 from common.choices import FeatureCode
 from common.fields import CurrencyField, MetadataField
 
@@ -215,7 +214,7 @@ class CreditNoteLineCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError({"unit_amount": "Unit amount is required for custom credit note lines"})
 
         quantity = data.get("quantity") or 1
-        total_amount = clamp_money(unit_amount * quantity)
+        total_amount = unit_amount * quantity
 
         if not credit_note.can_apply_total(new_total=total_amount):
             raise serializers.ValidationError("Credit note amount exceeds the invoice balance")
@@ -293,7 +292,7 @@ class CreditNoteLineUpdateSerializer(serializers.Serializer):
     def _validate_custom_line(self, line, data):
         quantity = data.get("quantity") or line.quantity
         unit_amount = data.get("unit_amount") or line.unit_amount
-        total_amount = clamp_money(unit_amount * quantity)
+        total_amount = unit_amount * quantity
 
         if not line.credit_note.can_apply_total(new_total=total_amount, exclude_line=line):
             raise serializers.ValidationError("Credit note amount exceeds the invoice balance")

@@ -27,7 +27,7 @@ from apps.payments.models import Payment
 from apps.prices.models import Price
 from apps.shipping_rates.models import ShippingRate
 from apps.tax_rates.models import TaxRate
-from common.calculations import allocate_proportionally, clamp_money, zero
+from common.calculations import allocate_proportionally, zero
 
 from .choices import (
     InvoiceDeliveryMethod,
@@ -292,8 +292,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         # Calculate base
 
         for line in lines:
-            amount = line.price.calculate_amount(line.quantity) if line.price else line.unit_amount * line.quantity
-            line.amount = clamp_money(amount)
+            line.amount = line.price.calculate_amount(line.quantity) if line.price else line.unit_amount * line.quantity
             line_tax_rates = list(line.tax_rates.order_by("invoice_line_tax_rates__position"))
             tax_rates = line_tax_rates if line_tax_rates else invoice_tax_rates
             line.total_tax_rate = sum((tax_rate.percentage for tax_rate in tax_rates), Decimal(0))
@@ -414,12 +413,12 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             total_tax_amount += self.shipping.total_tax_amount
             total_amount += self.shipping.total_amount
 
-        self.subtotal_amount = clamp_money(subtotal_amount)
-        self.total_discount_amount = clamp_money(total_discount_amount)
-        self.total_excluding_tax_amount = clamp_money(total_excluding_tax_amount)
-        self.shipping_amount = clamp_money(shipping_amount)
-        self.total_tax_amount = clamp_money(total_tax_amount)
-        self.total_amount = clamp_money(total_amount)
+        self.subtotal_amount = subtotal_amount
+        self.total_discount_amount = total_discount_amount
+        self.total_excluding_tax_amount = total_excluding_tax_amount
+        self.shipping_amount = shipping_amount
+        self.total_tax_amount = total_tax_amount
+        self.total_amount = total_amount
         self.outstanding_amount = self.calculate_outstanding_amount()
         self.save(
             update_fields=[
@@ -460,7 +459,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             )
 
         total_credit_amount = self.credit_notes.issued().total_amount(currency=self.currency)
-        self.total_credit_amount = clamp_money(total_credit_amount)
+        self.total_credit_amount = total_credit_amount
         self.outstanding_amount = self.calculate_outstanding_amount()
         self.save(update_fields=["total_credit_amount", "outstanding_amount", "updated_at"])
 

@@ -23,7 +23,7 @@ from apps.invoices.choices import InvoiceStatus
 from apps.invoices.models import InvoiceLine
 from apps.numbering_systems.models import NumberingSystem
 from apps.tax_rates.models import TaxRate
-from common.calculations import clamp_money, zero
+from common.calculations import zero
 from common.pdf import generate_pdf
 
 from .calculations import calculate_credit_note_line_amounts
@@ -137,7 +137,7 @@ class CreditNote(models.Model):
         if exclude_line is not None:
             current_total -= exclude_line.total_amount
 
-        projected_total = clamp_money(max(current_total, zero(self.currency)) + new_total)
+        projected_total = max(current_total, zero(self.currency)) + new_total
         available = self.invoice.outstanding_amount
         if exclude_line is not None:
             available += exclude_line.total_amount
@@ -151,9 +151,7 @@ class CreditNote(models.Model):
         )
         subtotal = Money(aggregates["subtotal"] or 0, self.currency)
         total_tax = Money(aggregates["total_tax"] or 0, self.currency)
-        subtotal = clamp_money(subtotal)
-        total_tax = clamp_money(total_tax)
-        total_amount = clamp_money(subtotal + total_tax)
+        total_amount = subtotal + total_tax
 
         self.subtotal_amount = subtotal
         self.total_amount_excluding_tax = subtotal
@@ -278,10 +276,10 @@ class CreditNoteLine(models.Model):
 
     def recalculate(self) -> None:
         total_tax = self.taxes.aggregate(total=Sum("amount")).get("total")
-        total_tax_amount = Money(total_tax or 0, self.currency)
-        self.total_tax_amount = clamp_money(total_tax_amount)
-        self.total_amount = clamp_money(self.total_amount_excluding_tax + self.total_tax_amount)
-        self.save(update_fields=["total_tax_amount", "total_amount"])
+        self.total_amount_excluding_tax = self.amount
+        self.total_tax_amount = Money(total_tax or 0, self.currency)
+        self.total_amount = self.total_amount_excluding_tax + self.total_tax_amount
+        self.save(update_fields=["total_amount_excluding_tax", "total_tax_amount", "total_amount"])
 
     def update(
         self,
@@ -315,7 +313,7 @@ class CreditNoteLine(models.Model):
                 quantity = None
         else:
             unit_amount_value = unit_amount or self.unit_amount
-            amount_value = clamp_money(unit_amount_value * quantity)
+            amount_value = unit_amount_value * quantity
             total_excluding_tax = amount_value
             total_tax_amount = zero(self.currency)
             total_amount = amount_value
@@ -345,7 +343,7 @@ class CreditNoteLine(models.Model):
                 )
         else:
             for tax in self.taxes.all():
-                tax.amount = clamp_money(self.total_amount_excluding_tax * (Decimal(tax.rate) / Decimal(100)))
+                tax.amount = self.total_amount_excluding_tax * (Decimal(tax.rate) / Decimal(100))
                 tax.currency = self.currency
                 tax.save(update_fields=["amount", "currency"])
 
@@ -353,7 +351,7 @@ class CreditNoteLine(models.Model):
         self.credit_note.recalculate()
 
     def add_tax(self, tax_rate: TaxRate) -> CreditNoteTax:
-        tax_amount = clamp_money(self.total_amount_excluding_tax * (Decimal(tax_rate.percentage) / Decimal(100)))
+        tax_amount = self.total_amount_excluding_tax * (Decimal(tax_rate.percentage) / Decimal(100))
         tax = CreditNoteTax.objects.create(
             credit_note=self.credit_note,
             credit_note_line=self,

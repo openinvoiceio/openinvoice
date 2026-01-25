@@ -224,6 +224,36 @@ def test_update_invoice_add_shipping(api_client, user, account):
     assert response.data["total_amount"] == "20.00"
 
 
+def test_update_invoice_overflow_returns_validation_error(api_client, user, account):
+    invoice = InvoiceFactory(account=account, currency="USD")
+    shipping_rate = ShippingRateFactory(account=account, amount=Decimal("50000000000000000.00"))
+    tax_rate = TaxRateFactory(account=account, percentage=Decimal("100"))
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/invoices/{invoice.id}",
+        {
+            "shipping": {
+                "shipping_rate_id": str(shipping_rate.id),
+                "tax_rates": [str(tax_rate.id)],
+            }
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": ErrorType.VALIDATION_ERROR,
+        "errors": [
+            {
+                "attr": None,
+                "code": "invalid",
+                "detail": "Amount exceeds the maximum allowed value",
+            }
+        ],
+    }
+
+
 def test_update_invoice_existing_shipping(api_client, user, account):
     shipping_rate = ShippingRateFactory(account=account, amount=Decimal(20))
     tax_rate = TaxRateFactory(account=account, percentage=Decimal(10))

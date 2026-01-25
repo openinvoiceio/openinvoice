@@ -5,7 +5,6 @@ from decimal import Decimal
 from djmoney.money import Money
 
 from apps.invoices.models import InvoiceLine
-from common.calculations import clamp_money
 
 
 def calculate_credit_note_line_amounts(
@@ -49,9 +48,9 @@ def calculate_credit_note_line_amounts(
             quantity_ratio = Decimal(outstanding_quantity) / Decimal(invoice_line.quantity)
             ratio = min(ratio, max(Decimal(0), quantity_ratio))
 
-    amount_value = clamp_money(invoice_line.amount * ratio)
-    total_amount = clamp_money(invoice_line.total_amount * ratio)
-    total_amount_excluding_tax = clamp_money(invoice_line.total_excluding_tax_amount * ratio)
-    total_tax_amount = clamp_money(invoice_line.total_tax_amount * ratio)
+    amount_value = invoice_line.amount * ratio
+    total_amount = invoice_line.total_amount * ratio
+    total_amount_excluding_tax = invoice_line.total_excluding_tax_amount * ratio
+    total_tax_amount = invoice_line.total_tax_amount * ratio
 
     return amount_value, total_amount_excluding_tax, total_tax_amount, total_amount, ratio

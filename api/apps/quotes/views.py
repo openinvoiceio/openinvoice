@@ -9,6 +9,7 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
+from common.utils import numeric_overflow
 
 from .choices import QuoteDeliveryMethod, QuotePreviewFormat, QuoteStatus
 from .filtersets import QuoteFilterSet
@@ -194,6 +195,8 @@ class QuoteAcceptAPIView(generics.GenericAPIView):
             raise ValidationError("Only open quotes can be accepted")
 
         invoice = quote.accept()
+        with numeric_overflow():
+            invoice.recalculate()
 
         logger.info("Quote converted to invoice", quote_id=quote.id, invoice_id=invoice.id)
         serializer = QuoteSerializer(quote)
