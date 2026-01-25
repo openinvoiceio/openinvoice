@@ -19,7 +19,7 @@ from apps.coupons.models import Coupon
 from apps.customers.models import Customer
 from apps.files.choices import FilePurpose
 from apps.files.models import File
-from apps.invoices.models import Invoice
+from apps.invoices.models import Invoice, InvoiceLine
 from apps.numbering_systems.models import NumberingSystem
 from apps.prices.models import Price
 from apps.tax_rates.models import TaxRate
@@ -332,28 +332,13 @@ class Quote(models.Model):
         )
 
         for line in self.lines.all():
-            # TODO: use InvoiceLine.create_line?
-            new_line = invoice.lines.create(
+            new_line = InvoiceLine.objects.create_line(
+                invoice=invoice,
                 description=line.description,
                 quantity=line.quantity,
-                currency=invoice.currency,
                 unit_amount=line.unit_amount,
-                unit_excluding_tax_amount=zero(self.currency),
                 price=line.price,
-                total_tax_rate=line.total_tax_rate,
-                amount=zero(invoice.currency),
-                subtotal_amount=zero(invoice.currency),
-                total_discount_amount=zero(invoice.currency),
-                total_taxable_amount=zero(invoice.currency),
-                total_excluding_tax_amount=zero(invoice.currency),
-                total_tax_amount=zero(invoice.currency),
-                total_amount=zero(invoice.currency),
-                total_credit_amount=zero(invoice.currency),
-                credit_quantity=0,
-                outstanding_amount=zero(invoice.currency),
-                outstanding_quantity=line.quantity,
             )
-            # TODO: change it later
             new_line.set_coupons([discount.coupon for discount in line.discounts.all()])
             new_line.set_tax_rates([tax.tax_rate for tax in line.taxes.filter(tax_rate__isnull=False).all()])
 

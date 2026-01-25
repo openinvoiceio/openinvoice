@@ -153,6 +153,7 @@ class InvoiceManager(models.Manager):
         recipients: Iterable[str] | None = None,
         tax_behavior: InvoiceTaxBehavior | None = None,
     ) -> Invoice:
+        InvoiceLine = apps.get_model("invoices", "InvoiceLine")
         currency = currency or previous_revision.currency
 
         resolved_numbering_system = None
@@ -198,26 +199,12 @@ class InvoiceManager(models.Manager):
         )
 
         for line in previous_revision.lines.filter(currency=currency):
-            new_line = invoice.lines.create(
+            new_line = InvoiceLine.objects.create_line(
                 invoice=invoice,
                 description=line.description,
                 quantity=line.quantity,
-                currency=currency,
                 unit_amount=line.unit_amount,
-                unit_excluding_tax_amount=line.unit_excluding_tax_amount,
                 price=line.price,
-                total_tax_rate=line.total_tax_rate,
-                amount=zero(line.currency),
-                subtotal_amount=zero(line.currency),
-                total_discount_amount=zero(line.currency),
-                total_taxable_amount=zero(line.currency),
-                total_excluding_tax_amount=zero(line.currency),
-                total_tax_amount=zero(line.currency),
-                total_amount=zero(line.currency),
-                total_credit_amount=zero(line.currency),
-                credit_quantity=0,
-                outstanding_amount=zero(line.currency),
-                outstanding_quantity=line.quantity,
             )
             new_line.set_coupons(line.coupons.active())
             new_line.set_tax_rates(line.tax_rates.active())
