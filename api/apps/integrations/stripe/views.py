@@ -1,5 +1,3 @@
-from datetime import UTC, datetime
-
 import stripe
 import structlog
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -17,6 +15,12 @@ from .serializers import (
     StripeConnectionCreateSerializer,
     StripeConnectionSerializer,
     StripeConnectionUpdateSerializer,
+)
+from .tasks import (
+    handle_checkout_async_payment_failed_event,
+    handle_checkout_async_payment_succeeded_event,
+    handle_checkout_session_completed_event,
+    handle_checkout_session_expired_event,
 )
 
 logger = structlog.get_logger(__name__)
@@ -117,41 +121,19 @@ class StripeWebhookAPIView(APIView):
         except stripe.SignatureVerificationError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        entity = event["data"]["object"]
-        created_at = datetime.fromtimestamp(entity["created"], tz=UTC)
-        match event.get("type"):
-            case "checkout.session.completed" | "checkout.session.async_payment_succeeded":
-                try:
-                    payment = Payment.objects.get(id=entity.get("client_reference_id"))
-                except Payment.DoesNotExist:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-
-                payment.complete(extra_data=event, received_at=created_at)
-                logger.info("Stripe payment succeeded", payment_id=str(payment.id))
-
-            case "checkout.session.async_payment_failed":
-                try:
-                    payment = Payment.objects.get(id=entity.get("client_reference_id"))
-                except Payment.DoesNotExist:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-
-                message = (
-                    entity.get("last_payment_error", {}).get("message") or entity.get("status") or "payment_failed"
-                )
-                payment.fail(message=message, extra_data=event, received_at=created_at)
-                logger.info("Stripe payment failed", payment_id=str(payment.id))
-
-            case "checkout.session.expired":
-                try:
-                    payment = Payment.objects.get(id=entity.get("client_reference_id"))
-                except Payment.DoesNotExist:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-
-                message = entity.get("message", "Checkout session expired")
-                payment.reject(message=message, extra_data=event, received_at=created_at)
-                logger.info("Stripe payment expired", payment_id=str(payment.id))
-
-            case _:
-                logger.info("Stripe event ignored", event_type=event.get("type"))
+        try:
+            match event.get("type"):
+                case "checkout.session.completed":
+                    handle_checkout_session_completed_event(event)
+                case "checkout.session.async_payment_succeeded":
+                    handle_checkout_async_payment_succeeded_event(event)
+                case "checkout.session.async_payment_failed":
+                    handle_checkout_async_payment_failed_event(event)
+                case "checkout.session.expired":
+                    handle_checkout_session_expired_event(event)
+                case _:
+                    logger.info("Stripe event ignored", event_type=event.get("type"))
+        except Payment.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)

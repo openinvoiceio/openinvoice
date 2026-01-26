@@ -10,11 +10,16 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAccountMember
 
-from .models import StripeCustomer, StripeSubscription
+from .models import StripeCustomer
 from .serializers import (
     StripeBillingPortalSerializer,
     StripeCheckoutSerializer,
     StripeCheckoutSessionSerializer,
+)
+from .tasks import (
+    handle_subscription_created_event,
+    handle_subscription_deleted_event,
+    handle_subscription_updated_event,
 )
 
 logger = structlog.get_logger(__name__)
@@ -42,11 +47,13 @@ class StripeWebhookAPIView(GenericAPIView):
         try:
             match event["type"]:
                 case "customer.subscription.created":
-                    subscription = StripeSubscription.objects.record_created_event(event)
-                    logger.info("Subscription created", data=event, subscription=subscription)
-                case "customer.subscription.updated" | "customer.subscription.deleted":
-                    subscription = StripeSubscription.objects.record_updated_event(event)
-                    logger.info("Subscription updated", data=event, subscription=subscription)
+                    handle_subscription_created_event(event)
+                case "customer.subscription.updated":
+                    handle_subscription_updated_event(event)
+                case "customer.subscription.deleted":
+                    handle_subscription_deleted_event(event)
+                case _:
+                    logger.info("Stripe event ignored", event_type=event.get("type"))
         except Exception as e:
             logger.error("Failed to handle Stripe webhook event", data=event, error=str(e))
             raise APIException("Failed to handle Stripe webhook event") from e
