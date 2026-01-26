@@ -1,6 +1,6 @@
 import pytest
 
-from apps.tax_rates.choices import TaxRateStatus
+from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import TaxRateFactory
 
 pytestmark = pytest.mark.django_db

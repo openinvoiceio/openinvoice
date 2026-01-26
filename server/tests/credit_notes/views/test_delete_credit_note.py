@@ -2,8 +2,8 @@ import uuid
 
 import pytest
 
-from apps.credit_notes.choices import CreditNoteStatus
-from apps.credit_notes.models import CreditNote
+from openinvoice.credit_notes.choices import CreditNoteStatus
+from openinvoice.credit_notes.models import CreditNote
 from tests.factories import CreditNoteFactory, InvoiceFactory
 
 pytestmark = pytest.mark.django_db

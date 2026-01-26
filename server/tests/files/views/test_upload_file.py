@@ -3,7 +3,7 @@ from unittest.mock import ANY
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from apps.files.choices import FilePurpose
+from openinvoice.files.choices import FilePurpose
 
 pytestmark = pytest.mark.django_db
 

@@ -1,8 +1,8 @@
 import pytest
 from factory.django import FileField
 
-from apps.files.choices import FilePurpose
 from common.pdf import get_generator
+from openinvoice.files.choices import FilePurpose
 from tests.factories import (
     AccountFactory,
     FileFactory,

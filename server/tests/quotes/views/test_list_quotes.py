@@ -5,9 +5,9 @@ import pytest
 from django.utils import timezone
 from freezegun import freeze_time
 
-from apps.numbering_systems.choices import NumberingSystemAppliesTo
-from apps.quotes.choices import QuoteStatus
-from apps.quotes.models import Quote
+from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
+from openinvoice.quotes.choices import QuoteStatus
+from openinvoice.quotes.models import Quote
 from tests.factories import CustomerFactory, NumberingSystemFactory, PriceFactory, QuoteFactory, QuoteLineFactory
 
 pytestmark = pytest.mark.django_db

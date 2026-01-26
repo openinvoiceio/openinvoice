@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from apps.numbering_systems.choices import NumberingSystemStatus
+from openinvoice.numbering_systems.choices import NumberingSystemStatus
 from tests.factories import NumberingSystemFactory
 
 pytestmark = pytest.mark.django_db

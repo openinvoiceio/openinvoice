@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.coupons.choices import CouponStatus
+from openinvoice.coupons.choices import CouponStatus
 from tests.factories import CouponFactory
 
 pytestmark = pytest.mark.django_db

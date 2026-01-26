@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from apps.prices.choices import PriceModel, PriceStatus
+from openinvoice.prices.choices import PriceModel, PriceStatus
 from tests.factories import PriceFactory
 
 pytestmark = pytest.mark.django_db

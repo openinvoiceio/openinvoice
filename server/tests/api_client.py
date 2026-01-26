@@ -1,6 +1,6 @@
 from rest_framework.test import APIClient as DRFAPIClient
 
-from apps.accounts.session import ACTIVE_ACCOUNT_SESSION_KEY
+from openinvoice.accounts.session import ACTIVE_ACCOUNT_SESSION_KEY
 
 
 class APIClient(DRFAPIClient):

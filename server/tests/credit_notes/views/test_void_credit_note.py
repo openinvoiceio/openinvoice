@@ -4,8 +4,8 @@ from decimal import Decimal
 import pytest
 from djmoney.money import Money
 
-from apps.credit_notes.choices import CreditNoteStatus
-from apps.invoices.choices import InvoiceStatus
+from openinvoice.credit_notes.choices import CreditNoteStatus
+from openinvoice.invoices.choices import InvoiceStatus
 from tests.factories import (
     CreditNoteFactory,
     CreditNoteLineFactory,

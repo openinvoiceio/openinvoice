@@ -1,6 +1,6 @@
 import pytest
 
-from apps.accounts.session import ACTIVE_ACCOUNT_SESSION_KEY
+from openinvoice.accounts.session import ACTIVE_ACCOUNT_SESSION_KEY
 from tests.factories import AccountFactory, MemberFactory
 
 pytestmark = pytest.mark.django_db

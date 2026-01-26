@@ -1,0 +1,153 @@
+import structlog
+from django.db.models.deletion import ProtectedError
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from openinvoice.accounts.permissions import IsAccountMember
+
+from .choices import TaxRateStatus
+from .filtersets import TaxRateFilterSet
+from .models import TaxRate
+from .permissions import MaxTaxRatesLimit
+from .serializers import TaxRateCreateSerializer, TaxRateSerializer, TaxRateUpdateSerializer
+
+logger = structlog.get_logger(__name__)
+
+
+@extend_schema_view(list=extend_schema(operation_id="list_tax_rates"))
+class TaxRateListCreateAPIView(generics.ListAPIView):
+    queryset = TaxRate.objects.none()
+    serializer_class = TaxRateSerializer
+    filterset_class = TaxRateFilterSet
+    search_fields = ["name", "description"]
+    ordering_fields = ["created_at"]
+    permission_classes = [IsAuthenticated, IsAccountMember, MaxTaxRatesLimit]
+
+    def get_queryset(self):
+        return TaxRate.objects.for_account(self.request.account)
+
+    @extend_schema(operation_id="create_tax_rate", request=TaxRateCreateSerializer, responses={201: TaxRateSerializer})
+    def post(self, request):
+        serializer = TaxRateCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        tax_rate = TaxRate.objects.create_tax_rate(
+            account=request.account,
+            name=data["name"],
+            description=data.get("description"),
+            percentage=data["percentage"],
+            country=data.get("country"),
+        )
+
+        logger.info(
+            "Tax rate created",
+            account_id=request.account.id,
+            tax_rate_id=tax_rate.id,
+        )
+
+        serializer = TaxRateSerializer(tax_rate)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@extend_schema_view(retrieve=extend_schema(operation_id="retrieve_tax_rate"))
+class TaxRateRetrieveUpdateAPIView(generics.RetrieveAPIView):
+    queryset = TaxRate.objects.none()
+    serializer_class = TaxRateSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        return TaxRate.objects.for_account(self.request.account)
+
+    @extend_schema(operation_id="update_tax_rate", request=TaxRateUpdateSerializer, responses={200: TaxRateSerializer})
+    def put(self, request, **_):
+        tax_rate = self.get_object()
+        serializer = TaxRateUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        if tax_rate.status == TaxRateStatus.ARCHIVED:
+            raise ValidationError("Cannot update once archived.")
+
+        tax_rate.update(
+            name=data.get("name", tax_rate.name),
+            description=data.get("description", tax_rate.description),
+            country=data.get("country", tax_rate.country),
+        )
+
+        logger.info(
+            "Tax rate updated",
+            account_id=request.account.id,
+            tax_rate_id=tax_rate.id,
+        )
+
+        serializer = TaxRateSerializer(tax_rate)
+        return Response(serializer.data)
+
+    @extend_schema(operation_id="delete_tax_rate", request=None, responses={204: None})
+    def delete(self, request, **__):
+        tax_rate = self.get_object()
+
+        try:
+            tax_rate.delete()
+        except ProtectedError as e:
+            raise ValidationError("This object cannot be deleted because it has related data.") from e
+
+        logger.info(
+            "Tax rate deleted",
+            account_id=request.account.id,
+            tax_rate_id=tax_rate.id,
+        )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TaxRateArchiveAPIView(generics.GenericAPIView):
+    queryset = TaxRate.objects.none()
+    serializer_class = TaxRateSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        return TaxRate.objects.for_account(self.request.account)
+
+    @extend_schema(operation_id="archive_tax_rate", request=None, responses={200: TaxRateSerializer})
+    def post(self, request, *_, **__):
+        tax_rate = self.get_object()
+
+        tax_rate.archive()
+
+        logger.info(
+            "Tax rate archived",
+            account_id=request.account.id,
+            tax_rate_id=tax_rate.id,
+        )
+
+        serializer = TaxRateSerializer(tax_rate)
+        return Response(serializer.data)
+
+
+class TaxRateRestoreAPIView(generics.GenericAPIView):
+    queryset = TaxRate.objects.none()
+    serializer_class = TaxRateSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        return TaxRate.objects.for_account(self.request.account)
+
+    @extend_schema(operation_id="restore_tax_rate", request=None, responses={200: TaxRateSerializer})
+    def post(self, request, *_, **__):
+        tax_rate = self.get_object()
+
+        tax_rate.restore()
+
+        logger.info(
+            "Tax rate restored",
+            account_id=request.account.id,
+            tax_rate_id=tax_rate.id,
+        )
+
+        serializer = TaxRateSerializer(tax_rate)
+        return Response(serializer.data)

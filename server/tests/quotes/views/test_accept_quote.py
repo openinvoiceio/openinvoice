@@ -6,7 +6,7 @@ from unittest.mock import ANY
 import pytest
 from freezegun import freeze_time
 
-from apps.quotes.choices import QuoteDeliveryMethod, QuoteStatus
+from openinvoice.quotes.choices import QuoteDeliveryMethod, QuoteStatus
 from tests.factories import (
     CustomerFactory,
     PriceFactory,

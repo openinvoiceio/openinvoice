@@ -4,7 +4,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.invoices.choices import InvoiceDeliveryMethod
+from openinvoice.invoices.choices import InvoiceDeliveryMethod
 from tests.factories import (
     AccountFactory,
     AddressFactory,

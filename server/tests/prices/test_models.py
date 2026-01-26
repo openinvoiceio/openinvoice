@@ -1,8 +1,8 @@
 import pytest
 from djmoney.money import Money
 
-from apps.prices.choices import PriceModel
-from apps.prices.models import Price
+from openinvoice.prices.choices import PriceModel
+from openinvoice.prices.models import Price
 from tests.factories import ProductFactory
 
 pytestmark = pytest.mark.django_db

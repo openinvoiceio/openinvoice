@@ -4,8 +4,8 @@ from decimal import Decimal
 import pytest
 from django.utils import timezone
 
-from apps.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteStatus
-from apps.invoices.choices import InvoiceStatus
+from openinvoice.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteStatus
+from openinvoice.invoices.choices import InvoiceStatus
 from tests.factories import (
     CreditNoteFactory,
     CreditNoteLineFactory,

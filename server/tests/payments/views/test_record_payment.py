@@ -4,9 +4,9 @@ from uuid import uuid4
 
 import pytest
 
-from apps.invoices.choices import InvoiceStatus
-from apps.payments.choices import PaymentStatus
-from apps.payments.models import Payment
+from openinvoice.invoices.choices import InvoiceStatus
+from openinvoice.payments.choices import PaymentStatus
+from openinvoice.payments.models import Payment
 from tests.factories import InvoiceFactory
 
 pytestmark = pytest.mark.django_db

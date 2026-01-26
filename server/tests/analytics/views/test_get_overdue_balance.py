@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from freezegun import freeze_time
 
-from apps.invoices.choices import InvoiceStatus
+from openinvoice.invoices.choices import InvoiceStatus
 from tests.factories import CustomerFactory, InvoiceFactory
 
 pytestmark = pytest.mark.django_db

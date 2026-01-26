@@ -4,7 +4,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.invoices.models import InvoiceAccount, InvoiceCustomer
+from openinvoice.invoices.models import InvoiceAccount, InvoiceCustomer
 from tests.factories import (
     AddressFactory,
     CreditNoteFactory,

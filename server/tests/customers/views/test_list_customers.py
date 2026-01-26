@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from apps.customers.models import Customer
+from openinvoice.customers.models import Customer
 from tests.factories import CustomerFactory
 
 pytestmark = pytest.mark.django_db

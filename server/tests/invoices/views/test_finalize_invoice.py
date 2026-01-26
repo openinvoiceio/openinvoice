@@ -6,10 +6,10 @@ from unittest.mock import ANY, patch
 import pytest
 from django.utils import timezone
 
-from apps.integrations.choices import PaymentProvider
-from apps.integrations.exceptions import IntegrationError
-from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
-from apps.payments.choices import PaymentStatus
+from openinvoice.integrations.choices import PaymentProvider
+from openinvoice.integrations.exceptions import IntegrationError
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from openinvoice.payments.choices import PaymentStatus
 from tests.factories import (
     AddressFactory,
     CustomerFactory,
@@ -26,7 +26,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def stripe_checkout_mock():
-    with patch("apps.integrations.stripe.integration.StripeIntegration.checkout") as mock:
+    with patch("openinvoice.integrations.stripe.integration.StripeIntegration.checkout") as mock:
         yield mock
 
 

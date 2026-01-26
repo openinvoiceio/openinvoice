@@ -2,8 +2,8 @@ import uuid
 
 import pytest
 
-from apps.quotes.choices import QuoteStatus
-from apps.quotes.models import Quote, QuoteLine
+from openinvoice.quotes.choices import QuoteStatus
+from openinvoice.quotes.models import Quote, QuoteLine
 from tests.factories import QuoteFactory, QuoteLineFactory
 
 pytestmark = pytest.mark.django_db

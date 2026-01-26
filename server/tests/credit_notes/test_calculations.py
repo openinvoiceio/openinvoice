@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 from djmoney.money import Money
 
-from apps.credit_notes.calculations import calculate_credit_note_line_amounts
+from openinvoice.credit_notes.calculations import calculate_credit_note_line_amounts
 from tests.factories import (
     CreditNoteFactory,
     CreditNoteLineFactory,

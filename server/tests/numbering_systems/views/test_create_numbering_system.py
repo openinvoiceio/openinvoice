@@ -2,12 +2,12 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.numbering_systems.choices import (
+from common.choices import FeatureCode
+from openinvoice.numbering_systems.choices import (
     NumberingSystemAppliesTo,
     NumberingSystemResetInterval,
     NumberingSystemStatus,
 )
-from common.choices import FeatureCode
 
 pytestmark = pytest.mark.django_db
 

@@ -2,7 +2,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.accounts.choices import InvitationStatus
+from openinvoice.accounts.choices import InvitationStatus
 
 pytestmark = pytest.mark.django_db
 

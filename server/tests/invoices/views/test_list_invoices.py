@@ -4,8 +4,8 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
-from apps.invoices.models import Invoice
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from openinvoice.invoices.models import Invoice
 from tests.factories import CustomerFactory, InvoiceFactory, InvoiceLineFactory
 
 pytestmark = pytest.mark.django_db

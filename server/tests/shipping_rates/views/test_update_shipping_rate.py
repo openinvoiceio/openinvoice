@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.shipping_rates.choices import ShippingRateStatus
+from openinvoice.shipping_rates.choices import ShippingRateStatus
 from tests.factories import ShippingRateFactory
 
 pytestmark = pytest.mark.django_db

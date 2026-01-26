@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from apps.numbering_systems.choices import NumberingSystemResetInterval
+from openinvoice.numbering_systems.choices import NumberingSystemResetInterval
 from tests.factories import NumberingSystemFactory
 
 pytestmark = pytest.mark.django_db

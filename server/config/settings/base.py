@@ -23,7 +23,7 @@ from common.choices import FeatureCode, LimitCode
 env = environ.Env()
 
 BASE_DIR = environ.Path(__file__) - 3
-APPS_DIR = BASE_DIR.path("apps")
+APPS_DIR = BASE_DIR.path("openinvoice")
 
 env.read_env(Path(BASE_DIR, ".env"))
 
@@ -32,28 +32,28 @@ DEBUG = env.bool("DJANGO_DEBUG", default=True)
 # Application definition
 
 LOCAL_APPS = [
-    "apps.accounts.apps.AccountsConfig",
-    "apps.addresses.apps.AddressesConfig",
-    "apps.analytics.apps.AnalyticsConfig",
-    "apps.coupons.apps.CouponsConfig",
-    "apps.customers.apps.CustomersConfig",
-    "apps.files.apps.FilesConfig",
-    "apps.invoices.apps.InvoicesConfig",
-    "apps.credit_notes.apps.CreditNotesConfig",
-    "apps.integrations.apps.IntegrationsConfig",
-    "apps.integrations.stripe.apps.StripeIntegrationsConfig",
-    "apps.numbering_systems.apps.NumberingSystemsConfig",
-    "apps.payments.apps.PaymentsConfig",
-    "apps.portal.apps.PortalConfig",
-    "apps.quotes.apps.QuotesConfig",
-    "apps.prices.apps.PricesConfig",
-    "apps.products.apps.ProductsConfig",
-    "apps.search.apps.SearchConfig",
-    "apps.shipping_rates.apps.ShippingRatesConfig",
-    "apps.stripe.apps.StripeConfig",
-    "apps.tax_ids.apps.TaxIdsConfig",
-    "apps.tax_rates.apps.TaxRatesConfig",
-    "apps.users.apps.UsersConfig",
+    "openinvoice.accounts.apps.AccountsConfig",
+    "openinvoice.addresses.apps.AddressesConfig",
+    "openinvoice.analytics.apps.AnalyticsConfig",
+    "openinvoice.coupons.apps.CouponsConfig",
+    "openinvoice.customers.apps.CustomersConfig",
+    "openinvoice.files.apps.FilesConfig",
+    "openinvoice.invoices.apps.InvoicesConfig",
+    "openinvoice.credit_notes.apps.CreditNotesConfig",
+    "openinvoice.integrations.apps.IntegrationsConfig",
+    "openinvoice.integrations.stripe.apps.StripeIntegrationsConfig",
+    "openinvoice.numbering_systems.apps.NumberingSystemsConfig",
+    "openinvoice.payments.apps.PaymentsConfig",
+    "openinvoice.portal.apps.PortalConfig",
+    "openinvoice.quotes.apps.QuotesConfig",
+    "openinvoice.prices.apps.PricesConfig",
+    "openinvoice.products.apps.ProductsConfig",
+    "openinvoice.search.apps.SearchConfig",
+    "openinvoice.shipping_rates.apps.ShippingRatesConfig",
+    "openinvoice.stripe.apps.StripeConfig",
+    "openinvoice.tax_ids.apps.TaxIdsConfig",
+    "openinvoice.tax_rates.apps.TaxRatesConfig",
+    "openinvoice.users.apps.UsersConfig",
 ]
 
 THIRD_PARTY_APPS = [
@@ -104,7 +104,7 @@ MIDDLEWARE = [
     # Third Party
     "allauth.account.middleware.AccountMiddleware",
     "allauth.usersessions.middleware.UserSessionsMiddleware",
-    "apps.accounts.middlewares.AccountMiddleware",
+    "openinvoice.accounts.middlewares.AccountMiddleware",
     "django_structlog.middlewares.RequestMiddleware",
 ]
 
@@ -227,7 +227,7 @@ ACCOUNT_EMAIL_SUBJECT_PREFIX = ""
 USERSESSIONS_TRACK_ACTIVITY = False
 
 HEADLESS_ONLY = True
-HEADLESS_ADAPTER = "apps.users.adapters.HeadlessAdapter"
+HEADLESS_ADAPTER = "openinvoice.users.adapters.HeadlessAdapter"
 HEADLESS_FRONTEND_URLS = {
     "account_reset_password": BASE_URL + "/recovery",
     "account_reset_password_from_key": BASE_URL + "/recovery/{key}",
@@ -300,7 +300,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "POSTPROCESSING_HOOKS": [
         "drf_standardized_errors.openapi_hooks.postprocess_schema_enums",
-        "apps.users.schema.allauth_postprocessing_hook",
+        "openinvoice.users.schema.allauth_postprocessing_hook",
     ],
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
@@ -315,24 +315,24 @@ SPECTACULAR_SETTINGS = {
     },
     "ENUM_ADD_EXPLICIT_BLANK_NULL_CHOICE": False,  # Do not add nullEnum schemas to openapi, without it orval fails
     "ENUM_NAME_OVERRIDES": {
-        "FilePurposeEnum": "apps.files.choices.FilePurpose.choices",
-        "MemberRoleEnum": "apps.accounts.choices.MemberRole.choices",
-        "InvoiceStatusEnum": "apps.invoices.choices.InvoiceStatus.choices",
-        "NumberingSystemResetIntervalEnum": "apps.numbering_systems.choices.NumberingSystemResetInterval.choices",
-        "TaxIdTypeEnum": "apps.tax_ids.choices.TaxIdType.choices",
+        "FilePurposeEnum": "openinvoice.files.choices.FilePurpose.choices",
+        "MemberRoleEnum": "openinvoice.accounts.choices.MemberRole.choices",
+        "InvoiceStatusEnum": "openinvoice.invoices.choices.InvoiceStatus.choices",
+        "NumberingSystemResetIntervalEnum": "openinvoice.numbering_systems.choices.NumberingSystemResetInterval.choices",
+        "TaxIdTypeEnum": "openinvoice.tax_ids.choices.TaxIdType.choices",
         "CurrencyEnum": "djmoney.settings.CURRENCY_CHOICES",
-        "PaymentStatusEnum": "apps.payments.choices.PaymentStatus.choices",
-        "PaymentProviderEnum": "apps.integrations.choices.PaymentProvider.choices",
-        "PriceModelEnum": "apps.prices.choices.PriceModel.choices",
-        "CreditNoteStatusEnum": "apps.credit_notes.choices.CreditNoteStatus.choices",
-        "CreditNoteReasonEnum": "apps.credit_notes.choices.CreditNoteReason.choices",
-        "NumberingSystemAppliesToEnum": "apps.numbering_systems.choices.NumberingSystemAppliesTo.choices",
-        "QuoteStatusEnum": "apps.quotes.choices.QuoteStatus.choices",
+        "PaymentStatusEnum": "openinvoice.payments.choices.PaymentStatus.choices",
+        "PaymentProviderEnum": "openinvoice.integrations.choices.PaymentProvider.choices",
+        "PriceModelEnum": "openinvoice.prices.choices.PriceModel.choices",
+        "CreditNoteStatusEnum": "openinvoice.credit_notes.choices.CreditNoteStatus.choices",
+        "CreditNoteReasonEnum": "openinvoice.credit_notes.choices.CreditNoteReason.choices",
+        "NumberingSystemAppliesToEnum": "openinvoice.numbering_systems.choices.NumberingSystemAppliesTo.choices",
+        "QuoteStatusEnum": "openinvoice.quotes.choices.QuoteStatus.choices",
         # According to https://drf-spectacular.readthedocs.io/en/latest/faq.html#i-get-warnings-regarding-my-enum-or-my-enum-names-have-a-weird-suffix
         # we can't set separate names for e.g. PriceStatusEnum and TaxRateStatusEnum
         # because they use the same set of choices, so we use ProductCatalogStatusEnum
         # for all product catalog related status enums
-        "ProductCatalogStatusEnum": "apps.products.choices.ProductStatus.choices",
+        "ProductCatalogStatusEnum": "openinvoice.products.choices.ProductStatus.choices",
     },
 }
 
@@ -598,5 +598,5 @@ PORTAL_TOKEN_MAX_AGE = env.int("DJANGO_PORTAL_TOKEN_MAX_AGE", 60 * 60 * 12)  # 1
 # Integrations
 
 INTEGRATIONS = {
-    "stripe": "apps.integrations.stripe.integration.StripeIntegration",
+    "stripe": "openinvoice.integrations.stripe.integration.StripeIntegration",
 }

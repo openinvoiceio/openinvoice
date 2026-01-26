@@ -1,7 +1,7 @@
 import pytest
 
-from apps.accounts.choices import MemberRole
-from apps.accounts.models import Member
+from openinvoice.accounts.choices import MemberRole
+from openinvoice.accounts.models import Member
 from tests.factories import AccountFactory, MemberFactory, UserFactory
 
 pytestmark = pytest.mark.django_db

@@ -15,32 +15,32 @@ def session_id():
 
 @pytest.fixture
 def mock_list_prices():
-    with patch("apps.stripe.models.stripe.Price.list") as mock:
+    with patch("openinvoice.stripe.models.stripe.Price.list") as mock:
         mock.return_value = MagicMock(data=[])
         yield mock
 
 
 @pytest.fixture
 def mock_checkout_session():
-    with patch("apps.stripe.models.stripe.checkout.Session.create") as mock:
+    with patch("openinvoice.stripe.models.stripe.checkout.Session.create") as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_billing_configuration_list():
-    with patch("apps.stripe.models.stripe.billing_portal.Configuration.list") as mock:
+    with patch("openinvoice.stripe.models.stripe.billing_portal.Configuration.list") as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_billing_session_create():
-    with patch("apps.stripe.models.stripe.billing_portal.Session.create") as mock:
+    with patch("openinvoice.stripe.models.stripe.billing_portal.Session.create") as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_construct_event():
-    with patch("apps.stripe.views.stripe.Webhook.construct_event") as mock:
+    with patch("openinvoice.stripe.views.stripe.Webhook.construct_event") as mock:
         yield mock
 
 

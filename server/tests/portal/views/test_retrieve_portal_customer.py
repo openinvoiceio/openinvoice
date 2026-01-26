@@ -1,7 +1,7 @@
 import pytest
 from freezegun import freeze_time
 
-from apps.portal.crypto import sign_portal_token
+from openinvoice.portal.crypto import sign_portal_token
 from tests.factories import CustomerFactory, CustomerShippingFactory, PortalTokenFactory
 
 pytestmark = pytest.mark.django_db

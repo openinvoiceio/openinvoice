@@ -4,8 +4,8 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.invoices.choices import InvoiceStatus
-from apps.payments.choices import PaymentStatus
+from openinvoice.invoices.choices import InvoiceStatus
+from openinvoice.payments.choices import PaymentStatus
 from tests.factories import InvoiceFactory, PaymentFactory
 
 pytestmark = pytest.mark.django_db

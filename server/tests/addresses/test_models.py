@@ -1,6 +1,6 @@
 import pytest
 
-from apps.addresses.models import Address
+from openinvoice.addresses.models import Address
 from tests.factories import AddressFactory
 
 pytestmark = pytest.mark.django_db

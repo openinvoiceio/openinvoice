@@ -4,9 +4,9 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
-from apps.invoices.models import InvoiceAccount, InvoiceCustomer
 from common.choices import FeatureCode
+from openinvoice.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
+from openinvoice.invoices.models import InvoiceAccount, InvoiceCustomer
 from tests.factories import (
     AddressFactory,
     CreditNoteFactory,

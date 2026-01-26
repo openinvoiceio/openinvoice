@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.numbering_systems.choices import NumberingSystemResetInterval, NumberingSystemStatus
+from openinvoice.numbering_systems.choices import NumberingSystemResetInterval, NumberingSystemStatus
 from tests.factories import (
     InvoiceFactory,
     NumberingSystemFactory,

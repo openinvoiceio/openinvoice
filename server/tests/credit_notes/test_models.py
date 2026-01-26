@@ -3,9 +3,9 @@ from decimal import Decimal
 import pytest
 from djmoney.money import Money
 
-from apps.invoices.choices import InvoiceStatus
-from apps.prices.choices import PriceModel
-from apps.prices.models import Price
+from openinvoice.invoices.choices import InvoiceStatus
+from openinvoice.prices.choices import PriceModel
+from openinvoice.prices.models import Price
 from tests.factories import CreditNoteFactory, CreditNoteLineFactory, InvoiceFactory, InvoiceLineFactory, ProductFactory
 
 pytestmark = pytest.mark.django_db

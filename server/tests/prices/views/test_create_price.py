@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.prices.choices import PriceModel
+from openinvoice.prices.choices import PriceModel
 from tests.factories import ProductFactory
 
 pytestmark = pytest.mark.django_db

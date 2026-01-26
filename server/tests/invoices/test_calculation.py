@@ -4,7 +4,7 @@ import pytest
 from django.db import DataError
 from djmoney.money import Money
 
-from apps.invoices.choices import InvoiceTaxBehavior, InvoiceTaxSource
+from openinvoice.invoices.choices import InvoiceTaxBehavior, InvoiceTaxSource
 from tests.factories import (
     CouponFactory,
     InvoiceFactory,

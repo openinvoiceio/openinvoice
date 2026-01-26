@@ -4,7 +4,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.accounts.permissions import IsAccountMember
+from openinvoice.accounts.permissions import IsAccountMember
 
 from .access import resolve_plan
 from .serializers import ConfigSerializer

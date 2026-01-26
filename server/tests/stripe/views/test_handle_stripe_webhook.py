@@ -1,7 +1,7 @@
 import pytest
 import stripe
 
-from apps.stripe.models import StripeSubscription
+from openinvoice.stripe.models import StripeSubscription
 from tests.factories import StripeCustomerFactory, StripeSubscriptionFactory
 
 pytestmark = pytest.mark.django_db

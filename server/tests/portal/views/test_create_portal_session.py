@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from apps.portal.crypto import sign_portal_token
+from openinvoice.portal.crypto import sign_portal_token
 from tests.factories import CustomerFactory
 
 pytestmark = pytest.mark.django_db

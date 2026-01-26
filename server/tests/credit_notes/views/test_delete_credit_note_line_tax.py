@@ -3,8 +3,8 @@ from decimal import Decimal
 
 import pytest
 
-from apps.credit_notes.choices import CreditNoteStatus
-from apps.credit_notes.models import CreditNoteTax
+from openinvoice.credit_notes.choices import CreditNoteStatus
+from openinvoice.credit_notes.models import CreditNoteTax
 from tests.factories import (
     CreditNoteFactory,
     CreditNoteLineFactory,

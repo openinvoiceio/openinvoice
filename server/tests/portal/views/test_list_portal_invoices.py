@@ -1,7 +1,7 @@
 import pytest
 
-from apps.files.choices import FilePurpose
-from apps.invoices.choices import InvoiceStatus
+from openinvoice.files.choices import FilePurpose
+from openinvoice.invoices.choices import InvoiceStatus
 from tests.factories import (
     CustomerFactory,
     FileFactory,

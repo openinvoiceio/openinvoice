@@ -4,7 +4,7 @@ from datetime import date
 import pytest
 from freezegun import freeze_time
 
-from apps.quotes.choices import QuoteStatus
+from openinvoice.quotes.choices import QuoteStatus
 from tests.factories import CustomerFactory, QuoteFactory
 
 pytestmark = pytest.mark.django_db

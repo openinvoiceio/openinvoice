@@ -2,8 +2,8 @@ import uuid
 
 import pytest
 
-from apps.invoices.choices import InvoiceStatus
-from apps.invoices.models import Invoice, InvoiceHead
+from openinvoice.invoices.choices import InvoiceStatus
+from openinvoice.invoices.models import Invoice, InvoiceHead
 from tests.factories import (
     InvoiceFactory,
 )

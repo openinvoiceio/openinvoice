@@ -12,22 +12,22 @@ from factory import (
 )
 from factory.django import DjangoModelFactory, FileField, Password
 
-from apps.accounts.choices import InvitationStatus, MemberRole
-from apps.coupons.choices import CouponStatus
-from apps.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteStatus
-from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus, InvoiceTaxBehavior
-from apps.numbering_systems.choices import (
+from openinvoice.accounts.choices import InvitationStatus, MemberRole
+from openinvoice.coupons.choices import CouponStatus
+from openinvoice.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus, InvoiceTaxBehavior
+from openinvoice.numbering_systems.choices import (
     NumberingSystemAppliesTo,
     NumberingSystemResetInterval,
     NumberingSystemStatus,
 )
-from apps.portal.crypto import sign_portal_token
-from apps.prices.choices import PriceModel, PriceStatus
-from apps.products.choices import ProductStatus
-from apps.quotes.choices import QuoteDeliveryMethod, QuoteStatus
-from apps.shipping_rates.choices import ShippingRateStatus
-from apps.tax_ids.choices import TaxIdType
-from apps.tax_rates.choices import TaxRateStatus
+from openinvoice.portal.crypto import sign_portal_token
+from openinvoice.prices.choices import PriceModel, PriceStatus
+from openinvoice.products.choices import ProductStatus
+from openinvoice.quotes.choices import QuoteDeliveryMethod, QuoteStatus
+from openinvoice.shipping_rates.choices import ShippingRateStatus
+from openinvoice.tax_ids.choices import TaxIdType
+from openinvoice.tax_rates.choices import TaxRateStatus
 
 
 class UserFactory(DjangoModelFactory):

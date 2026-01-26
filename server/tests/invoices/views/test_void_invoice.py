@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from tests.factories import InvoiceFactory
 
 pytestmark = pytest.mark.django_db

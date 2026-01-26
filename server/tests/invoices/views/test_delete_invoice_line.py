@@ -3,8 +3,8 @@ from decimal import Decimal
 
 import pytest
 
-from apps.invoices.choices import InvoiceStatus
-from apps.invoices.models import InvoiceLine
+from openinvoice.invoices.choices import InvoiceStatus
+from openinvoice.invoices.models import InvoiceLine
 from tests.factories import InvoiceFactory, InvoiceLineFactory
 
 pytestmark = pytest.mark.django_db

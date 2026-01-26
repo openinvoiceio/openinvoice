@@ -2,8 +2,8 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.accounts.choices import InvitationStatus, MemberRole
-from apps.accounts.models import Member
+from openinvoice.accounts.choices import InvitationStatus, MemberRole
+from openinvoice.accounts.models import Member
 from tests.factories import InvitationFactory, UserFactory
 
 pytestmark = pytest.mark.django_db
@@ -126,7 +126,7 @@ def test_accept_invitation_expired(api_client, account, monkeypatch):
 
     # Patch the is_expired property to return True
     monkeypatch.setattr(
-        "apps.accounts.models.Invitation.is_expired",
+        "openinvoice.accounts.models.Invitation.is_expired",
         True,
     )
 

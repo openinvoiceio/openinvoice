@@ -3,8 +3,8 @@ from decimal import Decimal
 
 import pytest
 
-from apps.invoices.choices import InvoiceStatus
-from apps.invoices.models import InvoiceLineCoupon, InvoiceLineTaxRate
+from openinvoice.invoices.choices import InvoiceStatus
+from openinvoice.invoices.models import InvoiceLineCoupon, InvoiceLineTaxRate
 from tests.factories import (
     CouponFactory,
     InvoiceFactory,

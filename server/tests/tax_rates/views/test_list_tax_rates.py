@@ -3,8 +3,8 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-from apps.tax_rates.choices import TaxRateStatus
-from apps.tax_rates.models import TaxRate
+from openinvoice.tax_rates.choices import TaxRateStatus
+from openinvoice.tax_rates.models import TaxRate
 from tests.factories import TaxRateFactory
 
 pytestmark = pytest.mark.django_db

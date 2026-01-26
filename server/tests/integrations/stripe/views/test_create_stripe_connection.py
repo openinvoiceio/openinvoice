@@ -2,15 +2,15 @@ from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 
-from apps.integrations.stripe.models import StripeConnection
 from common.choices import FeatureCode
+from openinvoice.integrations.stripe.models import StripeConnection
 
 pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture
 def webhook_endpoint_mock():
-    with patch("apps.integrations.stripe.managers.StripeClient") as mock:
+    with patch("openinvoice.integrations.stripe.managers.StripeClient") as mock:
         yield mock.return_value.webhook_endpoints.create
 
 

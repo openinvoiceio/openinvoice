@@ -5,7 +5,7 @@ import pytest
 from djmoney.money import Money
 from freezegun import freeze_time
 
-from apps.quotes.choices import QuoteStatus
+from openinvoice.quotes.choices import QuoteStatus
 from tests.factories import CouponFactory, QuoteFactory
 
 pytestmark = pytest.mark.django_db

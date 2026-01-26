@@ -4,9 +4,9 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from apps.prices.choices import PriceStatus
-from apps.products.choices import ProductStatus
-from apps.products.models import Product
+from openinvoice.prices.choices import PriceStatus
+from openinvoice.products.choices import ProductStatus
+from openinvoice.products.models import Product
 from tests.factories import PriceFactory, ProductFactory
 
 pytestmark = pytest.mark.django_db

@@ -2,8 +2,8 @@ import uuid
 
 import pytest
 
-from apps.integrations.stripe.models import StripeConnection
 from common.choices import FeatureCode
+from openinvoice.integrations.stripe.models import StripeConnection
 from tests.factories import StripeConnectionFactory
 
 pytestmark = pytest.mark.django_db

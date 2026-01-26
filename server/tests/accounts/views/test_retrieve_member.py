@@ -2,7 +2,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.accounts.models import Member
+from openinvoice.accounts.models import Member
 from tests.factories import AccountFactory, MemberFactory, UserFactory
 
 pytestmark = pytest.mark.django_db

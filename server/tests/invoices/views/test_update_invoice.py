@@ -5,10 +5,10 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from apps.integrations.choices import PaymentProvider
-from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
-from apps.invoices.models import InvoiceCoupon, InvoiceTaxRate
 from common.choices import FeatureCode
+from openinvoice.integrations.choices import PaymentProvider
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from openinvoice.invoices.models import InvoiceCoupon, InvoiceTaxRate
 from tests.factories import (
     CouponFactory,
     CustomerFactory,

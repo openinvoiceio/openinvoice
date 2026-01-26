@@ -96,10 +96,13 @@ ignore = [
 "tests/invoices/views/test_finalize_invoice.py" = [
     "ARG001", # Unused argument
 ]
+"config/settings/base.py" = [
+    "E501", # line too long
+]
 
 [tool.mypy]
 python_version = "3.12"
-packages = ["apps", "config", "common"]
+packages = ["openinvoice", "config", "common"]
 plugins = ["mypy_django_plugin.main"]
 
 [[tool.mypy.overrides]]
@@ -121,4 +124,3 @@ django_settings_module = "config.settings.development"
 addopts = "-v --reuse-db"
 testpaths = ["tests"]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
-

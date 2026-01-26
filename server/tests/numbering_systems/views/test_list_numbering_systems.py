@@ -2,7 +2,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.numbering_systems.choices import NumberingSystemAppliesTo
+from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
 from tests.factories import (
     NumberingSystemFactory,
 )

@@ -4,8 +4,8 @@ from unittest.mock import ANY
 import pytest
 from djmoney.money import Money
 
-from apps.prices.choices import PriceModel
-from apps.quotes.choices import QuoteStatus
+from openinvoice.prices.choices import PriceModel
+from openinvoice.quotes.choices import QuoteStatus
 from tests.factories import CustomerFactory, PriceFactory, QuoteFactory
 
 pytestmark = pytest.mark.django_db

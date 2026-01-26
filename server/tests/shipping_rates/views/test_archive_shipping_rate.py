@@ -3,7 +3,7 @@ import uuid
 import pytest
 from django.utils import timezone
 
-from apps.shipping_rates.choices import ShippingRateStatus
+from openinvoice.shipping_rates.choices import ShippingRateStatus
 from tests.factories import ShippingRateFactory
 
 pytestmark = pytest.mark.django_db

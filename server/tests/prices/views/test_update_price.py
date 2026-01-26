@@ -5,7 +5,7 @@ import pytest
 from django.utils import timezone
 from djmoney.money import Money
 
-from apps.prices.choices import PriceModel, PriceStatus
+from openinvoice.prices.choices import PriceModel, PriceStatus
 from tests.factories import PriceFactory, ProductFactory
 
 pytestmark = pytest.mark.django_db

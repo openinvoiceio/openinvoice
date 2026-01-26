@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from apps.invoices.choices import InvoiceStatus
+from openinvoice.invoices.choices import InvoiceStatus
 from tests.factories import InvoiceFactory
 
 pytestmark = pytest.mark.django_db

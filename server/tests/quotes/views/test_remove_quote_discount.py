@@ -3,8 +3,8 @@ from decimal import Decimal
 
 import pytest
 
-from apps.quotes.choices import QuoteStatus
-from apps.quotes.models import QuoteDiscount
+from openinvoice.quotes.choices import QuoteStatus
+from openinvoice.quotes.models import QuoteDiscount
 from tests.factories import CouponFactory, QuoteFactory
 
 pytestmark = pytest.mark.django_db

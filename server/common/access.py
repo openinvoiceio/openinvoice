@@ -1,8 +1,8 @@
 from django.conf import settings
 
-from apps.accounts.models import Account
-from apps.stripe.models import StripeSubscription
 from common.choices import FeatureCode, LimitCode
+from openinvoice.accounts.models import Account
+from openinvoice.stripe.models import StripeSubscription
 
 
 def resolve_plan(account: Account) -> str:

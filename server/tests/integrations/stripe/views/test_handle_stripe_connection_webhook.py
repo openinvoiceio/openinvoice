@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 import pytest
 
-from apps.integrations.choices import PaymentProvider
-from apps.invoices.choices import InvoiceStatus
-from apps.payments.choices import PaymentStatus
+from openinvoice.integrations.choices import PaymentProvider
+from openinvoice.invoices.choices import InvoiceStatus
+from openinvoice.payments.choices import PaymentStatus
 from tests.factories import (
     InvoiceFactory,
     PaymentFactory,
@@ -20,7 +20,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def construct_event_mock():
-    with patch("apps.integrations.stripe.views.stripe.Webhook.construct_event") as mock:
+    with patch("openinvoice.integrations.stripe.views.stripe.Webhook.construct_event") as mock:
         yield mock
 
 

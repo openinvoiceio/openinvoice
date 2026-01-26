@@ -1,6 +1,6 @@
 import pytest
 
-from apps.invoices.choices import InvoiceTaxBehavior
+from openinvoice.invoices.choices import InvoiceTaxBehavior
 from tests.factories import InvoiceFactory
 
 pytestmark = pytest.mark.django_db

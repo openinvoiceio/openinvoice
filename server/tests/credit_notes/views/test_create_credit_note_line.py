@@ -4,7 +4,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.credit_notes.choices import CreditNoteStatus
+from openinvoice.credit_notes.choices import CreditNoteStatus
 from tests.factories import CreditNoteFactory, InvoiceFactory, InvoiceLineFactory
 
 pytestmark = pytest.mark.django_db

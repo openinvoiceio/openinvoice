@@ -2,7 +2,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.files.choices import FilePurpose
+from openinvoice.files.choices import FilePurpose
 from tests.factories import FileFactory, UserFactory
 
 pytestmark = pytest.mark.django_db

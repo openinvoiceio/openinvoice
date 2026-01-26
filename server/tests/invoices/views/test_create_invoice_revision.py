@@ -6,11 +6,11 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from apps.coupons.choices import CouponStatus
-from apps.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
-from apps.invoices.models import Invoice
-from apps.tax_rates.choices import TaxRateStatus
 from common.choices import LimitCode
+from openinvoice.coupons.choices import CouponStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from openinvoice.invoices.models import Invoice
+from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
     CouponFactory,
     CustomerFactory,

@@ -4,9 +4,9 @@ from unittest.mock import ANY
 
 import pytest
 
-from apps.invoices.choices import InvoiceStatus
-from apps.numbering_systems.choices import NumberingSystemAppliesTo
 from common.choices import FeatureCode, LimitCode
+from openinvoice.invoices.choices import InvoiceStatus
+from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
 from tests.factories import (
     AccountFactory,
     CreditNoteFactory,

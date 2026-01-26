@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from apps.accounts.permissions import IsAccountMember
+from openinvoice.accounts.permissions import IsAccountMember
 
 
 @pytest.mark.django_db

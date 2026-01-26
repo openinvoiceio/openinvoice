@@ -5,10 +5,10 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from apps.credit_notes.choices import CreditNoteStatus
-from apps.credit_notes.models import CreditNote
-from apps.invoices.models import InvoiceAccount, InvoiceCustomer
-from apps.numbering_systems.choices import NumberingSystemAppliesTo
+from openinvoice.credit_notes.choices import CreditNoteStatus
+from openinvoice.credit_notes.models import CreditNote
+from openinvoice.invoices.models import InvoiceAccount, InvoiceCustomer
+from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
 from tests.factories import (
     AddressFactory,
     CreditNoteFactory,

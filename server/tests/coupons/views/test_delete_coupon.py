@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from apps.coupons.models import Coupon
+from openinvoice.coupons.models import Coupon
 from tests.factories import CouponFactory, InvoiceCouponFactory, InvoiceFactory
 
 pytestmark = pytest.mark.django_db
