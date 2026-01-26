@@ -9,7 +9,7 @@ export default defineConfig({
   base: "/static/",
   build: {
     manifest: "manifest.json",
-    outDir: resolve("../api/staticfiles/dashboard"),
+    outDir: resolve("../server/staticfiles/dashboard"),
     rollupOptions: {
       input: "/src/main.tsx",
     },

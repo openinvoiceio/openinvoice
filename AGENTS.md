@@ -6,7 +6,7 @@
 - If instructions conflict, follow user prompts first.
 
 ## Repo Layout
-- `api/`: Django + DRF backend.
+- `server/`: Django + DRF backend.
 - `dashboard/`: Vite + React + TanStack UI.
 - Root `README.md` is minimal; per-project docs live in subdirs.
 
@@ -23,28 +23,28 @@
 
 ## Local Services (Docker Compose)
 - Compose file: `docker-compose.yml`.
-- Services: `postgresql` (5432), `mailpit` (8025/1025), `api` (8000), `dashboard` (5173).
+- Services: `postgresql` (5432), `mailpit` (8025/1025), `server` (8000), `dashboard` (5173).
 - API container runs `migrate`, `collectstatic`, then `runserver` on start.
 - Local DB credentials default to `postgres/postgres` with DB `postgres`.
 
-## Backend (api/) Commands
-- Install: `cd api && make install` (runs `uv install`).
-- Lint: `cd api && make lint` (ruff check).
-- Format: `cd api && make format` (ruff format + fix).
-- Typecheck: `cd api && make typecheck` (mypy).
-- Test: `cd api && make test` (pytest).
-- All: `cd api && make all` (lint + format + typecheck + test).
-- OpenAPI: `cd api && make openapi`.
-- Migrations: `cd api && make migrations`.
+## Backend (server/) Commands
+- Install: `cd server && make install` (runs `uv install`).
+- Lint: `cd server && make lint` (ruff check).
+- Format: `cd server && make format` (ruff format + fix).
+- Typecheck: `cd server && make typecheck` (mypy).
+- Test: `cd server && make test` (pytest).
+- All: `cd server && make all` (lint + format + typecheck + test).
+- OpenAPI: `cd server && make openapi`.
+- Migrations: `cd server && make migrations`.
 
 ## Backend Single-Test Examples
-- File: `cd api && uv run pytest tests/path/test_file.py`.
-- Test: `cd api && uv run pytest tests/path/test_file.py::test_name`.
-- Keyword: `cd api && uv run pytest -k "keyword"`.
+- File: `cd server && uv run pytest tests/path/test_file.py`.
+- Test: `cd server && uv run pytest tests/path/test_file.py::test_name`.
+- Keyword: `cd server && uv run pytest -k "keyword"`.
 - With settings: uses `DJANGO_SETTINGS_MODULE=config.settings.test` via pytest config.
 
 ## OpenAPI + Orval Workflow
-- Generate OpenAPI: `cd api && make openapi` (writes `dashboard/openapi.yaml`).
+- Generate OpenAPI: `cd server && make openapi` (writes `dashboard/openapi.yaml`).
 - Generate TS types/clients: `cd dashboard && pnpm orval` (uses `orval.config.ts`).
 - Orval outputs: `dashboard/src/api/endpoints` (React Query hooks) and `dashboard/src/api/models` (schemas).
 - Orval mutator: `dashboard/src/lib/api/client.ts` (`axiosInstance`).
@@ -67,7 +67,7 @@
 - Playwright title: `cd dashboard && pnpm test -- -g "test name"`.
 - Focus locally with `test.only` in Playwright when needed.
 
-## Python Code Style (api/)
+## Python Code Style (server/)
 - Format with Ruff; line length is 120 (`pyproject.toml`).
 - Use Ruff lint rules for naming, imports, and error handling.
 - Avoid bare `except` blocks (ruff BLE).
@@ -100,7 +100,7 @@
 
 ## Backend Testing
 - Pytest config adds `-v --reuse-db`.
-- Tests live under `api/tests`.
+- Tests live under `server/tests`.
 - Use factories (factory-boy) where available.
 - Prefer deterministic tests; `pytest-randomly` is enabled.
 
@@ -160,5 +160,5 @@
 - Prefer small, reversible changes.
 
 ## Contact Points
-- Backend: `api/README.md`.
+- Backend: `server/README.md`.
 - Frontend: `dashboard/README.md`.

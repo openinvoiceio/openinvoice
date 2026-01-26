@@ -24,10 +24,10 @@ services:
       - "8025:8025"
       - "1025:1025"
 
-  api:
-    container_name: api
+  server:
+    container_name: server
     build:
-      context: ./api
+      context: ./server
     command: bash -c "uv run manage.py migrate && uv run manage.py collectstatic --no-input && uv run manage.py runserver 0.0.0.0:8000"
     restart: on-failure
     environment:
@@ -42,7 +42,7 @@ services:
       - postgresql
       - mailpit
     volumes:
-      - ./api:/app
+      - ./server:/app
       - /app/.venv
 
   dashboard:
@@ -51,7 +51,7 @@ services:
     container_name: dashboard
     restart: unless-stopped
     depends_on:
-      - api
+      - server
     volumes:
       - ./dashboard:/app
     ports:
