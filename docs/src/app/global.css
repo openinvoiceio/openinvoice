@@ -7,11 +7,11 @@
 
 @layer utilities {
   .bordered-div-padding {
-    @apply px-6 py-12 md:px-10 md:py-16 lg:px-14 lg:py-20;
+    @apply px-6 py-10 md:px-10 md:py-10 lg:px-10 lg:py-10;
   }
 
   .container {
-    @apply mx-auto w-full max-w-[120rem] px-4;
+    @apply mx-auto w-full max-w-[var(--page-width)] px-4;
   }
 
   .font-weight-display {
@@ -43,6 +43,23 @@
 
   .animate-marquee {
     animation: marquee var(--duration, 40s) linear infinite;
+  }
+
+  .section-lines {
+    --line-color: rgba(0, 0, 0, 0.08);
+    position: relative;
+  }
+
+  .section-lines::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    height: 1px;
+    background: var(--line-color);
+    pointer-events: none;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
   }
 }
 
@@ -97,6 +114,7 @@
 }
 
 :root {
+  --page-width: 85.5rem;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -163,6 +181,10 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+.dark .section-lines {
+  --line-color: rgba(255, 255, 255, 0.08);
 }
 
 @layer base {

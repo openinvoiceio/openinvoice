@@ -1,34 +1,44 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 
 const marqueeItems = [
-  "Northwind",
-  "Lumen",
-  "Orbit",
-  "Monarch",
-  "Sable",
-  "Aster",
+  "Invoices",
+  "Quotes",
+  "Credit Notes",
+  "Customers",
+  "Products",
+  "Payments",
+  "Taxes",
 ];
 
-const compatibilityTabs = [
+const invoiceFlowSteps = [
   {
-    value: "api",
-    label: "API",
-    code: `// lib/openinvoice.ts\n\nimport { createClient } from "@openinvoice/sdk";\n\nexport const api = createClient({\n  baseUrl: process.env.NEXT_PUBLIC_API_URL,\n  apiKey: process.env.OPENINVOICE_API_KEY,\n});\n`,
+    step: "01",
+    title: "Set up customers",
+    description: "Capture billing profiles, contacts, and tax details once.",
   },
   {
-    value: "webhooks",
-    label: "Webhooks",
-    code: `// webhooks/invoices.ts\n\nexport async function handler(event) {\n  if (event.type === "invoice.paid") {\n    await notifyFinance(event.data);\n  }\n}\n`,
+    step: "02",
+    title: "Build your catalog",
+    description: "Keep items, pricing, and tax rules ready to reuse.",
   },
   {
-    value: "integrations",
-    label: "Integrations",
-    code: `// integrations/stripe.ts\n\nexport const stripe = createStripe({\n  apiKey: process.env.STRIPE_KEY,\n});\n`,
+    step: "03",
+    title: "Draft quotes",
+    description: "Create proposals that convert directly into invoices.",
+  },
+  {
+    step: "04",
+    title: "Issue invoices",
+    description: "Send invoices that stay consistent and easy to update.",
+  },
+  {
+    step: "05",
+    title: "Track payments",
+    description: "Follow balances, due dates, and payment status in one view.",
   },
 ];
 
@@ -37,8 +47,8 @@ export default function HomePage() {
     <div className="overflow-hidden">
       <section>
         <div className="container">
-          <div className="bordered-div-padding border-x text-center">
-            <div className="mx-auto max-w-4xl space-y-6 md:space-y-8">
+          <div className="bordered-div-padding border-x text-center flex min-h-[70vh] flex-col items-center justify-center pt-16 pb-16 md:min-h-[80vh] md:pt-20 md:pb-20 lg:pt-24 lg:pb-24">
+            <div className="mx-auto max-w-4xl space-y-6 md:space-y-8 -translate-y-6 md:-translate-y-8">
               <Badge variant="outline" className="rounded-sm border-none bg-card px-4 py-1.5 text-xs">
                 OpenInvoice preview is live
               </Badge>
@@ -54,184 +64,213 @@ export default function HomePage() {
               <Button className="font-weight-display h-10 rounded-full px-6 md:h-12 md:px-7" asChild>
                 <Link href="/docs">Start Free Trial</Link>
               </Button>
-              <Button
-                variant="secondary"
-                className="font-weight-display h-10 rounded-full px-6 md:h-12 md:px-7"
-                asChild
-              >
-                <Link href="/docs">Community</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className="container">
+          <div className="border border-b-0 section-lines">
+          <div className="grid grid-cols-1 divide-y md:grid-cols-2 md:divide-x md:divide-y-0">
+            <div className="bordered-div-padding space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
+                  <span className="inline-flex size-2 rounded-full bg-foreground/20" />
+                  Invoicing
+                </h2>
+                <h3 className="font-weight-display text-lg md:text-xl">Move from draft to paid faster.</h3>
+              </div>
+              <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
+                Create, send, and update invoices while keeping every detail consistent.
+              </p>
+            </div>
+            <div className="bordered-div-padding space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
+                  <span className="inline-flex size-2 rounded-full bg-foreground/20" />
+                  Quotes & Credits
+                </h2>
+                <h3 className="font-weight-display text-lg md:text-xl">Quote, revise, and credit with ease.</h3>
+              </div>
+              <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
+                Turn proposals into invoices and issue credit notes without rework.
+              </p>
+            </div>
+            <div className="bordered-div-padding space-y-6 md:border-t">
+              <div className="space-y-4">
+                <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
+                  <span className="inline-flex size-2 rounded-full bg-foreground/20" />
+                  Customers
+                </h2>
+                <h3 className="font-weight-display text-lg md:text-xl">Keep customer records ready.</h3>
+              </div>
+              <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
+                Store addresses, contacts, and tax details where they are easy to reuse.
+              </p>
+            </div>
+            <div className="bordered-div-padding space-y-6 md:border-t">
+              <div className="space-y-4">
+                <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
+                  <span className="inline-flex size-2 rounded-full bg-foreground/20" />
+                  Product Catalog
+                </h2>
+                <h3 className="font-weight-display text-lg md:text-xl">Build a catalog once.</h3>
+              </div>
+              <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
+                Reuse items, pricing, and tax rules across every invoice and quote.
+              </p>
+            </div>
+          </div>
+          <div className="bordered-div-padding space-y-6 border-t">
+            <div className="space-y-4">
+              <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
+                <span className="inline-flex size-2 rounded-full bg-foreground/20" />
+                Payments
+              </h2>
+              <h3 className="font-weight-display text-lg md:text-xl">Track every payment and balance.</h3>
+            </div>
+            <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
+              See what is paid, overdue, or coming up without stitching together spreadsheets.
+            </p>
+          </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className="container">
+          <div className="border border-b-0 border-t-0 section-lines">
+            <div className="grid gap-10 bordered-div-padding md:grid-cols-[minmax(0,360px)_minmax(0,1fr)] md:gap-14">
+              <div className="space-y-6">
+                <h3 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
+                  <span className="inline-flex size-2 rounded-full bg-foreground/20" />
+                  From draft to paid
+                </h3>
+                <h2 className="font-weight-display text-xl leading-snug md:text-2xl">
+                  A clear invoice flow your team can follow.
+                </h2>
+                <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
+                  Build your workflow once and keep customers, catalog, and payments aligned.
+                </p>
+              </div>
+              <div className="divide-y border-t md:border-t-0">
+                {invoiceFlowSteps.map((step) => (
+                  <div
+                    key={step.step}
+                    className="group flex gap-6 py-6 transition-colors hover:bg-muted/40 md:px-6"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-muted text-xs font-semibold text-muted-foreground">
+                      {step.step}
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-weight-display text-base md:text-lg">{step.title}</h4>
+                      <p className="text-muted-foreground text-sm md:text-base">{step.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className="container">
+          <div className="bordered-div-padding border border-t-0 section-lines">
+            <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
+              <span className="inline-flex size-2 rounded-full bg-foreground/20" />
+              Core workflows
+            </h2>
+            <div className="group mt-6 flex overflow-hidden p-2 [--duration:40s] [--gap:6rem]">
+              <div className="animate-marquee flex shrink-0 items-center gap-[var(--gap)]">
+                {marqueeItems.map((item) => (
+                  <span
+                    key={item}
+                    className="text-muted-foreground text-sm font-medium uppercase tracking-[0.2em]"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+              <div className="animate-marquee flex shrink-0 items-center gap-[var(--gap)]">
+                {marqueeItems.map((item) => (
+                  <span
+                    key={`${item}-dup`}
+                    className="text-muted-foreground text-sm font-medium uppercase tracking-[0.2em]"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <blockquote className="bordered-div-padding border border-b-0 border-t-0">
+            <div className="space-y-3">
+              <p className="font-weight-display text-2xl leading-snug tracking-tighter md:text-3xl">
+                OpenInvoice keeps invoicing clear, auditable, and easy to share.
+              </p>
+              <p className="text-muted-foreground text-sm md:text-base">
+                Everything stays connected from the first quote to the final payment reminder.
+              </p>
+            </div>
+          </blockquote>
+        </div>
+      </section>
+
+      <section>
+        <div className="container">
+          <div className="border-x bordered-div-padding section-lines">
+            <h2 className="font-weight-display text-xl md:text-3xl lg:text-4xl">Choose how you run OpenInvoice.</h2>
+          </div>
+          <div className="grid divide-y border md:grid-cols-2 md:divide-x md:divide-y-0">
+            <div className="bordered-div-padding flex flex-col gap-6">
+              <div>
+                <h3 className="font-weight-display text-lg md:text-2xl">Open Source</h3>
+                <p className="font-weight-display mt-6 text-base md:text-xl">$0 / forever</p>
+              </div>
+              <ul className="space-y-4 text-sm text-muted-foreground">
+                {[
+                  "Self-host on your own infrastructure",
+                  "Full access to the OpenInvoice core",
+                  "GitHub community support",
+                  "Ideal for internal workflows",
+                ].map((feature) => (
+                  <li key={feature} className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 size-4 text-foreground/70" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button className="mt-auto w-fit rounded-full bg-border text-foreground" asChild>
+                <Link href="/docs">View documentation</Link>
               </Button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="container">
-        <div className="grid grid-cols-1 border border-t-0 md:grid-cols-2">
-          <div className="bordered-div-padding space-y-8 border-b md:border-e !pb-0">
-            <div className="space-y-4">
-              <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-                <span className="inline-flex size-2 rounded-full bg-foreground/20" />
-                Invoice Builder
-              </h2>
-              <h3 className="font-weight-display text-lg md:text-xl">Design invoices your way.</h3>
+            <div className="bordered-div-padding relative flex flex-col gap-6">
+              <div className="absolute right-0 top-0 bg-secondary px-3 py-2 text-xs font-medium">
+                Most popular
+              </div>
+              <div>
+                <h3 className="font-weight-display text-lg md:text-2xl">Cloud</h3>
+                <p className="font-weight-display mt-6 text-base md:text-xl">From $29 / month</p>
+              </div>
+              <ul className="space-y-4 text-sm text-muted-foreground">
+                {[
+                  "Fully managed infrastructure",
+                  "Team permissions and audit trails",
+                  "Integrated analytics and alerts",
+                  "Priority support and monitoring",
+                ].map((feature) => (
+                  <li key={feature} className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 size-4 text-foreground/70" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button className="mt-auto w-fit rounded-full" asChild>
+                <Link href="/docs">Start Free Trial</Link>
+              </Button>
             </div>
-            <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
-              Build line items, discounts, taxes, and shipping rates while keeping totals accurate and compliant.
-            </p>
-          </div>
-          <div className="bordered-div-padding space-y-8 border-b md:border-b-0 !pb-0">
-            <div className="space-y-4">
-              <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-                <span className="inline-flex size-2 rounded-full bg-foreground/20" />
-                Collaboration
-              </h2>
-              <h3 className="font-weight-display text-lg md:text-xl">Built for finance teams.</h3>
-            </div>
-            <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
-              Draft, review, and publish invoices with role-based permissions and a shared customer portal.
-            </p>
-          </div>
-          <div className="bordered-div-padding space-y-6">
-            <div className="space-y-4">
-              <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-                <span className="inline-flex size-2 rounded-full bg-foreground/20" />
-                Asset Management
-              </h2>
-              <h3 className="font-weight-display text-lg md:text-xl">Keep documents organized.</h3>
-            </div>
-            <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
-              Upload logos, documents, and attachments that follow every invoice and quote.
-            </p>
-          </div>
-          <div className="bordered-div-padding space-y-6 border-t md:border-s">
-            <div className="space-y-4">
-              <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-                <span className="inline-flex size-2 rounded-full bg-foreground/20" />
-                Permissions
-              </h2>
-              <h3 className="font-weight-display text-lg md:text-xl">Control who does what.</h3>
-            </div>
-            <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
-              Create roles for administrators, finance teams, and guests with precision.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="container">
-        <div className="bordered-div-padding border border-t-0">
-          <div className="space-y-4">
-            <h3 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-              <span className="inline-flex size-2 rounded-full bg-foreground/20" />
-              Compatibility
-            </h3>
-            <h2 className="font-weight-display text-lg md:text-xl">Works out of the box with:</h2>
-          </div>
-          <Tabs defaultValue={compatibilityTabs[0].value} className="mt-6">
-            <TabsList className="w-fit">
-              {compatibilityTabs.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value}>
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            {compatibilityTabs.map((tab) => (
-              <TabsContent key={tab.value} value={tab.value} className="mt-4">
-                <Card className="rounded-sm">
-                  <CardContent className="p-0">
-                    <pre className="h-64 overflow-auto bg-transparent p-4 text-sm text-foreground">
-                      <code>{tab.code}</code>
-                    </pre>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </div>
-      </section>
-
-      <section className="container">
-        <div className="bordered-div-padding border border-t-0">
-          <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-            <span className="inline-flex size-2 rounded-full bg-foreground/20" />
-            Trusted by Fast-Moving Teams
-          </h2>
-          <div className="group mt-6 flex overflow-hidden p-2 [--duration:40s] [--gap:6rem]">
-            <div className="animate-marquee flex shrink-0 items-center gap-[var(--gap)]">
-              {marqueeItems.map((item) => (
-                <span
-                  key={item}
-                  className="text-muted-foreground text-sm font-medium uppercase tracking-[0.2em]"
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-            <div className="animate-marquee flex shrink-0 items-center gap-[var(--gap)]">
-              {marqueeItems.map((item) => (
-                <span
-                  key={`${item}-dup`}
-                  className="text-muted-foreground text-sm font-medium uppercase tracking-[0.2em]"
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-        <blockquote className="bordered-div-padding flex flex-col gap-8 border border-t-0 md:flex-row">
-          <p className="font-weight-display flex-1 text-2xl leading-snug tracking-tighter md:text-3xl">
-            OpenInvoice changed how we track billing. Everything stays connected, visible, and simple.
-          </p>
-          <footer className="flex-1 self-end">
-            <div className="flex items-center gap-4">
-              <div className="size-10 rounded-full bg-muted" />
-              <cite className="text-sm font-medium not-italic md:text-lg">
-                Jamie Parker, Finance Lead at Ardent
-              </cite>
-            </div>
-          </footer>
-        </blockquote>
-      </section>
-
-      <section className="container">
-        <div className="border-x bordered-div-padding">
-          <h2 className="font-weight-display text-xl md:text-3xl lg:text-4xl">Start free. Scale confidently.</h2>
-        </div>
-        <div className="grid divide-y border md:grid-cols-2 md:divide-x md:divide-y-0">
-          <div className="bordered-div-padding flex flex-col gap-6">
-            <div>
-              <h3 className="font-weight-display text-lg md:text-2xl">Open Source</h3>
-              <p className="font-weight-display mt-6 text-base md:text-xl">$0 / forever</p>
-            </div>
-            <ul className="space-y-4 text-sm text-muted-foreground">
-              <li>Self-host on your own infrastructure</li>
-              <li>Full access to the OpenInvoice core</li>
-              <li>GitHub community support</li>
-              <li>Ideal for internal tools</li>
-            </ul>
-            <Button className="mt-auto w-fit rounded-full bg-border text-foreground" asChild>
-              <Link href="/docs">View documentation</Link>
-            </Button>
-          </div>
-          <div className="bordered-div-padding relative flex flex-col gap-6">
-            <div className="absolute right-0 top-0 bg-secondary px-3 py-2 text-xs font-medium">
-              Most popular
-            </div>
-            <div>
-              <h3 className="font-weight-display text-lg md:text-2xl">Cloud</h3>
-              <p className="font-weight-display mt-6 text-base md:text-xl">From $29 / month</p>
-            </div>
-            <ul className="space-y-4 text-sm text-muted-foreground">
-              <li>Fully managed infrastructure</li>
-              <li>Team permissions and audit trails</li>
-              <li>Integrated analytics and alerts</li>
-              <li>Priority support and monitoring</li>
-            </ul>
-            <Button className="mt-auto w-fit rounded-full" asChild>
-              <Link href="/docs">Start Free Trial</Link>
-            </Button>
           </div>
         </div>
       </section>
