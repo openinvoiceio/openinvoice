@@ -22,7 +22,8 @@ import {
 import { CreditNoteBadge } from "@/components/credit-note-badge";
 import { CreditNoteDropdown } from "@/components/credit-note-dropdown.tsx";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { NotesSection } from "@/components/notes-section";
+import { NotesForm } from "@/components/notes-form";
+import { NotesList } from "@/components/notes-list";
 import { NumberingSystemView } from "@/components/numbering-system-view.tsx";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -478,20 +479,29 @@ function RouteComponent() {
             </Table>
           </Section>
 
-          <NotesSection
-            notes={notes.data?.results ?? []}
-            isLoading={notes.isLoading}
-            isPending={createNote.isPending}
-            onCreate={(data) =>
-              createNote.mutateAsync({ creditNoteId: creditNote.id, data })
-            }
-            onDelete={(noteId) =>
-              deleteNote.mutateAsync({
-                creditNoteId: creditNote.id,
-                id: noteId,
-              })
-            }
-          />
+          <Section>
+            <SectionHeader>
+              <SectionTitle>Notes</SectionTitle>
+            </SectionHeader>
+            <div className="space-y-4">
+              <NotesForm
+                isCreating={createNote.isPending}
+                onCreate={(data) =>
+                  createNote.mutateAsync({ creditNoteId: creditNote.id, data })
+                }
+              />
+              <NotesList
+                notes={notes.data?.results ?? []}
+                isLoading={notes.isLoading}
+                onDelete={(noteId) =>
+                  deleteNote.mutateAsync({
+                    creditNoteId: creditNote.id,
+                    id: noteId,
+                  })
+                }
+              />
+            </div>
+          </Section>
         </SectionGroup>
         <DataSidebar defaultValue="overview">
           <DataSidebarList>

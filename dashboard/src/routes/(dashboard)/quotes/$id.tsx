@@ -1,9 +1,9 @@
 import {
+  getQuotesNotesListQueryKey,
   useCreateQuoteNote,
   useDeleteQuoteNote,
-  useQuotesRetrieve,
   useQuotesNotesList,
-  getQuotesNotesListQueryKey,
+  useQuotesRetrieve,
 } from "@/api/endpoints/quotes/quotes";
 import { QuoteStatusEnum } from "@/api/models";
 import {
@@ -12,7 +12,8 @@ import {
   AppHeaderContent,
 } from "@/components/app-header";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { NotesSection } from "@/components/notes-section";
+import { NotesForm } from "@/components/notes-form";
+import { NotesList } from "@/components/notes-list";
 import { QuoteBadge } from "@/components/quote-badge";
 import { QuoteDropdown } from "@/components/quote-dropdown";
 import { SearchCommand } from "@/components/search-command";
@@ -129,17 +130,26 @@ function RouteComponent() {
               </SectionDescription>
             </SectionHeader>
           </Section>
-          <NotesSection
-            notes={notes.data?.results ?? []}
-            isLoading={notes.isLoading}
-            isPending={createNote.isPending}
-            onCreate={(data) =>
-              createNote.mutateAsync({ quoteId: quote.id, data })
-            }
-            onDelete={(noteId) =>
-              deleteNote.mutateAsync({ quoteId: quote.id, id: noteId })
-            }
-          />
+          <Section>
+            <SectionHeader>
+              <SectionTitle>Notes</SectionTitle>
+            </SectionHeader>
+            <div className="space-y-4">
+              <NotesForm
+                isCreating={createNote.isPending}
+                onCreate={(data) =>
+                  createNote.mutateAsync({ quoteId: quote.id, data })
+                }
+              />
+              <NotesList
+                notes={notes.data?.results ?? []}
+                isLoading={notes.isLoading}
+                onDelete={(noteId) =>
+                  deleteNote.mutateAsync({ quoteId: quote.id, id: noteId })
+                }
+              />
+            </div>
+          </Section>
         </SectionGroup>
       </main>
     </div>

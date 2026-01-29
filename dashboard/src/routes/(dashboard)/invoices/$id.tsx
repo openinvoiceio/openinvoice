@@ -30,7 +30,8 @@ import { InvoiceBadge } from "@/components/invoice-badge";
 import { InvoiceDropdown } from "@/components/invoice-dropdown";
 import { InvoiceLineDropdown } from "@/components/invoice-line-dropdown";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { NotesSection } from "@/components/notes-section";
+import { NotesForm } from "@/components/notes-form";
+import { NotesList } from "@/components/notes-list";
 import { NumberingSystemView } from "@/components/numbering-system-view";
 import { PaymentBadge } from "@/components/payment-badge";
 import { pushModal } from "@/components/push-modals";
@@ -696,17 +697,26 @@ function RouteComponent() {
               </DataTable>
             </DataTableContainer>
           </Section>
-          <NotesSection
-            notes={notes.data?.results ?? []}
-            isLoading={notes.isLoading}
-            isPending={createNote.isPending}
-            onCreate={(data) =>
-              createNote.mutateAsync({ invoiceId: invoice.id, data })
-            }
-            onDelete={(noteId) =>
-              deleteNote.mutateAsync({ invoiceId: invoice.id, id: noteId })
-            }
-          />
+          <Section>
+            <SectionHeader>
+              <SectionTitle>Notes</SectionTitle>
+            </SectionHeader>
+            <div className="space-y-4">
+              <NotesForm
+                isCreating={createNote.isPending}
+                onCreate={(data) =>
+                  createNote.mutateAsync({ invoiceId: invoice.id, data })
+                }
+              />
+              <NotesList
+                notes={notes.data?.results ?? []}
+                isLoading={notes.isLoading}
+                onDelete={(noteId) =>
+                  deleteNote.mutateAsync({ invoiceId: invoice.id, id: noteId })
+                }
+              />
+            </div>
+          </Section>
         </SectionGroup>
         <DataSidebar defaultValue="overview">
           <DataSidebarList>
