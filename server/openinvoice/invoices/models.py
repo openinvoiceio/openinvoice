@@ -17,7 +17,7 @@ from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from common.calculations import allocate_proportionally, zero
+from common.calculations import aggregate_allocations, allocate_proportionally, zero
 from openinvoice.addresses.models import Address
 from openinvoice.coupons.models import Coupon
 from openinvoice.credit_notes.choices import CreditNoteStatus
@@ -42,7 +42,12 @@ from .managers import (
     InvoiceLineManager,
     InvoiceManager,
 )
-from .querysets import InvoiceDiscountAllocationQuerySet, InvoiceQuerySet, InvoiceTaxAllocationQuerySet
+from .querysets import (
+    InvoiceDiscountAllocationQuerySet,
+    InvoiceLineQuerySet,
+    InvoiceQuerySet,
+    InvoiceTaxAllocationQuerySet,
+)
 
 
 class InvoiceCustomer(models.Model):
@@ -274,6 +279,83 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             return self.due_date
 
         return timezone.now().date() + relativedelta(days=self.net_payment_term)
+
+    @property
+    def discounts(self) -> list[dict[str, Any]]:
+        allocations = [
+            allocation
+            for allocation in self.discount_allocations.all()
+            if allocation.source == InvoiceDiscountSource.INVOICE
+        ]
+        return aggregate_allocations(
+            allocations,
+            key=lambda allocation: allocation.coupon_id,
+            build=lambda allocation: {
+                "coupon_id": allocation.coupon_id,
+                "name": allocation.coupon.name,
+                "amount": allocation.amount,
+            },
+            order=lambda allocation: (getattr(allocation, "position", 0)),
+        )
+
+    @property
+    def total_discounts(self) -> list[dict[str, Any]]:
+        allocations = list(self.discount_allocations.all())
+        source_order = {
+            InvoiceDiscountSource.LINE: 0,
+            InvoiceDiscountSource.INVOICE: 1,
+        }
+        return aggregate_allocations(
+            allocations,
+            key=lambda allocation: allocation.coupon_id,
+            build=lambda allocation: {
+                "coupon_id": allocation.coupon_id,
+                "name": allocation.coupon.name,
+                "amount": allocation.amount,
+            },
+            order=lambda allocation: (source_order[allocation.source], getattr(allocation, "position", 0)),
+        )
+
+    @property
+    def taxes(self) -> list[dict[str, Any]]:
+        allocations = [
+            allocation for allocation in self.tax_allocations.all() if allocation.source == InvoiceTaxSource.INVOICE
+        ]
+        return aggregate_allocations(
+            allocations,
+            key=lambda allocation: allocation.tax_rate_id,
+            build=lambda allocation: {
+                "tax_rate_id": allocation.tax_rate_id,
+                "name": allocation.tax_rate.name,
+                "percentage": allocation.tax_rate.percentage,
+                "amount": allocation.amount,
+            },
+            order=lambda allocation: (getattr(allocation, "position", 0)),
+        )
+
+    @property
+    def total_taxes(self) -> list[dict[str, Any]]:
+        allocations = list(self.tax_allocations.all())
+        source_order = {
+            InvoiceTaxSource.LINE: 0,
+            InvoiceTaxSource.SHIPPING: 1,
+            InvoiceTaxSource.INVOICE: 2,
+        }
+        return aggregate_allocations(
+            allocations,
+            key=lambda allocation: allocation.tax_rate_id,
+            build=lambda allocation: {
+                "tax_rate_id": allocation.tax_rate_id,
+                "name": allocation.tax_rate.name,
+                "percentage": allocation.tax_rate.percentage,
+                "amount": allocation.amount,
+            },
+            order=lambda allocation: (source_order[allocation.source], getattr(allocation, "position", 0)),
+        )
+
+    @property
+    def has_line_taxes(self) -> bool:
+        return any(allocation.source == InvoiceTaxSource.LINE for allocation in self.tax_allocations.all())
 
     def calculate_outstanding_amount(self) -> Money:
         return max(
@@ -623,7 +705,7 @@ class InvoiceLine(models.Model):
     price = models.ForeignKey("prices.Price", on_delete=models.PROTECT, related_name="invoice_lines", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = InvoiceLineManager()
+    objects = InvoiceLineManager.from_queryset(InvoiceLineQuerySet)()
 
     class Meta:
         ordering = ["created_at"]
@@ -667,6 +749,82 @@ class InvoiceLine(models.Model):
             source=source,
             currency=self.currency,
             amount=amount,
+        )
+
+    @property
+    def discounts(self) -> list[dict[str, Any]]:
+        allocations = [
+            allocation
+            for allocation in self.discount_allocations.all()
+            if allocation.source == InvoiceDiscountSource.LINE
+        ]
+        return aggregate_allocations(
+            allocations,
+            key=lambda allocation: allocation.coupon_id,
+            build=lambda allocation: {
+                "coupon_id": allocation.coupon_id,
+                "name": allocation.coupon.name,
+                "amount": allocation.amount,
+            },
+            order=lambda allocation: (getattr(allocation, "position", 0)),
+        )
+
+    @property
+    def total_discounts(self) -> list[dict[str, Any]]:
+        allocations = list(self.discount_allocations.all())
+        source_order = {
+            InvoiceDiscountSource.LINE: 0,
+            InvoiceDiscountSource.INVOICE: 1,
+        }
+        return aggregate_allocations(
+            allocations,
+            key=lambda allocation: allocation.coupon_id,
+            build=lambda allocation: {
+                "coupon_id": allocation.coupon_id,
+                "name": allocation.coupon.name,
+                "amount": allocation.amount,
+            },
+            order=lambda allocation: (source_order[allocation.source], getattr(allocation, "position", 0)),
+        )
+
+    @property
+    def taxes(self) -> list[dict[str, Any]]:
+        allocations = [
+            allocation for allocation in self.tax_allocations.all() if allocation.source == InvoiceTaxSource.LINE
+        ]
+        return aggregate_allocations(
+            allocations,
+            key=lambda allocation: allocation.tax_rate_id,
+            build=lambda allocation: {
+                "tax_rate_id": allocation.tax_rate_id,
+                "name": allocation.tax_rate.name,
+                "percentage": allocation.tax_rate.percentage,
+                "amount": allocation.amount,
+            },
+            order=lambda allocation: (getattr(allocation, "position", 0)),
+        )
+
+    @property
+    def total_taxes(self) -> list[dict[str, Any]]:
+        allocations = list(self.tax_allocations.all())
+        source_order = {
+            InvoiceTaxSource.LINE: 0,
+            InvoiceTaxSource.INVOICE: 1,
+        }
+        return aggregate_allocations(
+            allocations,
+            key=lambda allocation: allocation.tax_rate_id,
+            build=lambda allocation: {
+                "tax_rate_id": allocation.tax_rate_id,
+                "name": allocation.tax_rate.name,
+                "percentage": allocation.tax_rate.percentage,
+                "amount": allocation.amount,
+            },
+            order=lambda allocation: (
+                source_order[allocation.source],
+                getattr(allocation, "position", 0),
+                allocation.tax_rate_id,
+            ),
         )
 
     def apply_credit(self, amount: Money, quantity: int) -> None:
@@ -734,6 +892,23 @@ class InvoiceShipping(models.Model):
         if self.invoice.effective_tax_behavior == InvoiceTaxBehavior.INCLUSIVE and self.total_tax_rate > 0:
             return Decimal(1) + (self.total_tax_rate / Decimal(100))
         return Decimal(1)
+
+    @property
+    def total_taxes(self) -> list[dict[str, Any]]:
+        allocations = [
+            allocation for allocation in self.tax_allocations.all() if allocation.source == InvoiceTaxSource.SHIPPING
+        ]
+        return aggregate_allocations(
+            allocations,
+            key=lambda allocation: allocation.tax_rate_id,
+            build=lambda allocation: {
+                "tax_rate_id": allocation.tax_rate_id,
+                "name": allocation.tax_rate.name,
+                "percentage": allocation.tax_rate.percentage,
+                "amount": allocation.amount,
+            },
+            order=lambda allocation: (getattr(allocation, "position", 0)),
+        )
 
     def set_tax_rates(self, tax_rates: Iterable[TaxRate]) -> None:
         self.tax_rates.clear()

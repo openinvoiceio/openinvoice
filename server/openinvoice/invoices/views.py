@@ -1,6 +1,5 @@
 import structlog
 from django.conf import settings
-from django.db.models import Prefetch
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
@@ -10,8 +9,6 @@ from rest_framework.response import Response
 
 from common.utils import numeric_overflow
 from openinvoice.accounts.permissions import IsAccountMember
-from openinvoice.coupons.models import Coupon
-from openinvoice.tax_rates.models import TaxRate
 
 from .choices import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
 from .filtersets import InvoiceFilterSet
@@ -433,14 +430,7 @@ class InvoiceLineCreateAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return (
-            InvoiceLine.objects.filter(invoice__account_id=self.request.account.id)
-            .select_related("invoice")
-            .prefetch_related(
-                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
-                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
-            )
-        )
+        return InvoiceLine.objects.filter(invoice__account_id=self.request.account.id).eager_load()
 
     @extend_schema(
         operation_id="create_invoice_line",
@@ -489,14 +479,7 @@ class InvoiceLineUpdateDestroyAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return (
-            InvoiceLine.objects.filter(invoice__account_id=self.request.account.id)
-            .select_related("invoice")
-            .prefetch_related(
-                Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_line_coupons__position")),
-                Prefetch("tax_rates", queryset=TaxRate.objects.order_by("invoice_line_tax_rates__position")),
-            )
-        )
+        return InvoiceLine.objects.filter(invoice__account_id=self.request.account.id).eager_load()
 
     @extend_schema(
         operation_id="update_invoice_line",

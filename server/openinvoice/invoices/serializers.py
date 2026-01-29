@@ -1,6 +1,5 @@
 from djmoney.contrib.django_rest_framework.fields import MoneyField
 from djmoney.money import Money
-from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from common.fields import CurrencyField, MetadataField
@@ -76,11 +75,7 @@ class InvoiceShippingSerializer(serializers.Serializer):
     total_amount = MoneyField(max_digits=19, decimal_places=2)
     shipping_rate_id = serializers.UUIDField(allow_null=True)
     tax_rates = TaxRateSerializer(many=True)
-    total_taxes = serializers.SerializerMethodField()
-
-    @extend_schema_field(InvoiceTaxSerializer(many=True))
-    def get_total_taxes(self, obj):
-        return InvoiceTaxSerializer(obj.tax_allocations.aggregate_tax_rate(), many=True).data
+    total_taxes = InvoiceTaxSerializer(many=True)
 
 
 class InvoiceLineSerializer(serializers.Serializer):
@@ -102,27 +97,11 @@ class InvoiceLineSerializer(serializers.Serializer):
     outstanding_amount = MoneyField(max_digits=19, decimal_places=2, read_only=True)
     outstanding_quantity = serializers.IntegerField(read_only=True)
     coupons = CouponSerializer(many=True)
-    discounts = serializers.SerializerMethodField()
-    total_discounts = serializers.SerializerMethodField()
+    discounts = InvoiceDiscountSerializer(many=True)
+    total_discounts = InvoiceDiscountSerializer(many=True)
     tax_rates = TaxRateSerializer(many=True)
-    taxes = serializers.SerializerMethodField()
-    total_taxes = serializers.SerializerMethodField()
-
-    @extend_schema_field(InvoiceDiscountSerializer(many=True))
-    def get_discounts(self, obj):
-        return InvoiceDiscountSerializer(obj.discount_allocations.from_line().aggregate_coupon(), many=True).data
-
-    @extend_schema_field(InvoiceDiscountSerializer(many=True))
-    def get_total_discounts(self, obj):
-        return InvoiceDiscountSerializer(obj.discount_allocations.aggregate_coupon(), many=True).data
-
-    @extend_schema_field(InvoiceTaxSerializer(many=True))
-    def get_taxes(self, obj):
-        return InvoiceTaxSerializer(obj.tax_allocations.from_line().aggregate_tax_rate(), many=True).data
-
-    @extend_schema_field(InvoiceTaxSerializer(many=True))
-    def get_total_taxes(self, obj):
-        return InvoiceTaxSerializer(obj.tax_allocations.aggregate_tax_rate(), many=True).data
+    taxes = InvoiceTaxSerializer(many=True)
+    total_taxes = InvoiceTaxSerializer(many=True)
 
 
 class InvoiceSerializer(serializers.Serializer):
@@ -165,27 +144,11 @@ class InvoiceSerializer(serializers.Serializer):
     lines = InvoiceLineSerializer(many=True)
     shipping = InvoiceShippingSerializer()
     coupons = CouponSerializer(many=True)
-    discounts = serializers.SerializerMethodField()
-    total_discounts = serializers.SerializerMethodField()
+    discounts = InvoiceDiscountSerializer(many=True)
+    total_discounts = InvoiceDiscountSerializer(many=True)
     tax_rates = TaxRateSerializer(many=True)
-    taxes = serializers.SerializerMethodField()
-    total_taxes = serializers.SerializerMethodField()
-
-    @extend_schema_field(InvoiceDiscountSerializer(many=True))
-    def get_discounts(self, obj):
-        return InvoiceDiscountSerializer(obj.discount_allocations.from_invoice().aggregate_coupon(), many=True).data
-
-    @extend_schema_field(InvoiceDiscountSerializer(many=True))
-    def get_total_discounts(self, obj):
-        return InvoiceDiscountSerializer(obj.discount_allocations.aggregate_coupon(), many=True).data
-
-    @extend_schema_field(InvoiceTaxSerializer(many=True))
-    def get_taxes(self, obj):
-        return InvoiceTaxSerializer(obj.tax_allocations.from_invoice().aggregate_tax_rate(), many=True).data
-
-    @extend_schema_field(InvoiceTaxSerializer(many=True))
-    def get_total_taxes(self, obj):
-        return InvoiceTaxSerializer(obj.tax_allocations.aggregate_tax_rate(), many=True).data
+    taxes = InvoiceTaxSerializer(many=True)
+    total_taxes = InvoiceTaxSerializer(many=True)
 
 
 class InvoiceShippingAddSerializer(serializers.Serializer):

@@ -1,11 +1,21 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable
 from decimal import ROUND_HALF_UP, Decimal
+from typing import Any, Protocol, TypeVar
 
 from djmoney.money import Money
 from moneyed import Currency
 
 CENT = Decimal("0.01")
+
+T = TypeVar("T")
+K = TypeVar("K")
+R = TypeVar("R", bound=dict[str, Any])
+
+
+class SupportsOrdering(Protocol):
+    def __lt__(self, other: Any, /) -> bool: ...
 
 
 def zero(currency: str | Currency) -> Money:
@@ -59,3 +69,23 @@ def allocate_proportionally(money: Money, bases: list[Money]) -> list[Money]:
             rounded_amounts[idx] += step
 
     return [Money(amount, money.currency) for amount in rounded_amounts]
+
+
+def aggregate_allocations(
+    items: Iterable[T],
+    key: Callable[[T], K],
+    build: Callable[[T], R],
+    order: Callable[[T], SupportsOrdering] | None = None,
+) -> list[R]:
+    if order is not None:
+        items = sorted(items, key=order)
+
+    aggregated: dict[K, R] = {}
+    for item in items:
+        item_key = key(item)
+        if item_key in aggregated:
+            aggregated[item_key]["amount"] += item.amount
+        else:
+            aggregated[item_key] = build(item)
+
+    return list(aggregated.values())

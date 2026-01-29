@@ -163,13 +163,13 @@
             <tr>
                 <th style="width:40%; text-align: start">Description</th>
                 <th style="width:10%; text-align: end">Quantity</th>
-                <th style="width:{% if invoice.tax_allocations.from_line.exists %}20%{% else %}25%{% endif %};text-align: end">
+                <th style="width:{% if invoice.has_line_taxes %}20%{% else %}25%{% endif %};text-align: end">
                     Price
                 </th>
-                {% if invoice.tax_allocations.from_line.exists %}
+                {% if invoice.has_line_taxes %}
                     <th style="width:15%; text-align: end">Tax</th>
                 {% endif %}
-                <th style="width:{% if invoice.tax_allocations.from_line.exists %}15%{% else %}25%{% endif %}; text-align: end;">
+                <th style="width:{% if invoice.has_line_taxes %}15%{% else %}25%{% endif %}; text-align: end;">
                     Amount
                 </th>
             </tr>
@@ -191,7 +191,7 @@
                         {% money_localize line.amount %}
                     </td>
                 </tr>
-                {% for discount in line.discount_allocations.from_line.aggregate_coupon %}
+                {% for discount in line.discounts %}
                     <tr>
                         <td class="line-description" style="padding-left:20px;">{{ discount.name }}</td>
                         <td></td>
@@ -200,7 +200,7 @@
                             <td></td>
                         {% endif %}
                         <td class="line-total line-discount" style="text-align: end">
-                            -{% money_localize discount.amount line.currency %}
+                            -{% money_localize discount.amount %}
                         </td>
                     </tr>
                 {% endfor %}
@@ -215,10 +215,10 @@
                 <dt class="sum-label">Subtotal</dt>
                 <dd class="sum-value">{% money_localize invoice.subtotal_amount %}</dd>
             </div>
-            {% for discount in invoice.discount_allocations.from_invoice.aggregate_coupon %}
+            {% for discount in invoice.discounts %}
                 <div class="sum-row">
                     <dt class="sum-label">{{ discount.name }}</dt>
-                    <dd class="sum-value sum-discount">-{% money_localize discount.amount invoice.currency %}</dd>
+                    <dd class="sum-value sum-discount">-{% money_localize discount.amount %}</dd>
                 </div>
             {% endfor %}
             {% if invoice.shipping %}
@@ -231,10 +231,10 @@
                 <dt class="sum-label">Total excluding tax</dt>
                 <dd class="sum-value">{% money_localize invoice.total_excluding_tax_amount %}</dd>
             </div>
-            {% for tax in invoice.tax_allocations.aggregate_tax_rate %}
+            {% for tax in invoice.total_taxes %}
                 <div class="sum-row">
                     <dt class="sum-label">{{ tax.name }} {{ tax.percentage|floatformat:"-2" }}%</dt>
-                    <dd class="sum-value">{% money_localize tax.amount invoice.currency %}</dd>
+                    <dd class="sum-value">{% money_localize tax.amount %}</dd>
                 </div>
             {% endfor %}
             <div class="sum-row">
