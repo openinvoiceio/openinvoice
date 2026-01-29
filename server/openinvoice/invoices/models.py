@@ -117,7 +117,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     status = models.CharField(max_length=50, choices=InvoiceStatus.choices)
     issue_date = models.DateField(null=True)
-    sell_date = models.DateField(null=True)
     due_date = models.DateField(null=True)
     net_payment_term = models.PositiveIntegerField(default=7)
     invoice_customer = models.OneToOneField(
@@ -640,7 +639,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         number: str | None = None,
         numbering_system: NumberingSystem | None = None,
         issue_date: date | None = None,
-        sell_date: date | None = None,
         due_date: date | None = None,
         metadata: Mapping[str, Any] | None = None,
         custom_fields: Mapping[str, Any] | None = None,
@@ -664,7 +662,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.numbering_system = resolved_numbering_system
         self.currency = currency
         self.issue_date = issue_date
-        self.sell_date = sell_date
         self.due_date = due_date
         self.net_payment_term = net_payment_term
         self.metadata = dict(metadata or self.metadata)

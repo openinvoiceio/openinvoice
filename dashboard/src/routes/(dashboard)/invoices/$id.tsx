@@ -716,12 +716,6 @@ function RouteComponent() {
                   </DataListValue>
                 </DataListItem>
               )}
-              {invoice.sell_date && (
-                <DataListItem>
-                  <DataListLabel>Sell date</DataListLabel>
-                  <DataListValue>{formatDate(invoice.sell_date)}</DataListValue>
-                </DataListItem>
-              )}
               <DataListItem>
                 <DataListLabel>Created</DataListLabel>
                 <DataListValue>

@@ -34,7 +34,6 @@ def test_list_invoices(api_client, user, account):
                 "currency": invoice.currency,
                 "tax_behavior": invoice.tax_behavior,
                 "issue_date": None,
-                "sell_date": None,
                 "due_date": invoice.due_date.isoformat(),
                 "net_payment_term": invoice.net_payment_term,
                 "customer": {

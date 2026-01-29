@@ -8081,10 +8081,6 @@ components:
           type: string
           format: date
           nullable: true
-        sell_date:
-          type: string
-          format: date
-          nullable: true
         due_date:
           type: string
           format: date
@@ -8243,7 +8239,6 @@ components:
       - pdf_id
       - previous_revision_id
       - recipients
-      - sell_date
       - shipping
       - shipping_amount
       - status
@@ -8317,10 +8312,6 @@ components:
         tax_behavior:
           $ref: '#/components/schemas/TaxBehaviorEnum'
         issue_date:
-          type: string
-          format: date
-          nullable: true
-        sell_date:
           type: string
           format: date
           nullable: true
@@ -8629,10 +8620,6 @@ components:
           type: string
           format: date
           nullable: true
-        sell_date:
-          type: string
-          format: date
-          nullable: true
         due_date:
           type: string
           format: date
@@ -8804,10 +8791,6 @@ components:
         tax_behavior:
           $ref: '#/components/schemas/TaxBehaviorEnum'
         issue_date:
-          type: string
-          format: date
-          nullable: true
-        sell_date:
           type: string
           format: date
           nullable: true

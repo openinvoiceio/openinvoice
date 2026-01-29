@@ -28,8 +28,6 @@ export interface InvoiceCreate {
   /** @nullable */
   issue_date?: string | null;
   /** @nullable */
-  sell_date?: string | null;
-  /** @nullable */
   due_date?: string | null;
   /**
    * @minimum 0

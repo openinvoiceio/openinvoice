@@ -39,7 +39,6 @@ def test_clone_invoice(api_client, user, account):
         customer=customer,
         status=InvoiceStatus.OPEN,
         issue_date=date(2024, 1, 5),
-        sell_date=date(2024, 1, 6),
         due_date=date(2024, 1, 7),
         metadata={"note": "keep"},
         custom_fields={"po": "123"},
@@ -86,7 +85,6 @@ def test_clone_invoice(api_client, user, account):
         "currency": invoice.currency,
         "tax_behavior": invoice.tax_behavior,
         "issue_date": None,
-        "sell_date": None,
         "due_date": None,
         "net_payment_term": invoice.net_payment_term,
         "customer": {
@@ -329,7 +327,6 @@ def test_clone_invoice(api_client, user, account):
     assert new_invoice.status == InvoiceStatus.DRAFT
     assert new_invoice.number is None
     assert new_invoice.issue_date is None
-    assert new_invoice.sell_date is None
     assert new_invoice.due_date is None
     assert new_invoice.metadata == {}
     assert new_invoice.custom_fields == invoice.custom_fields

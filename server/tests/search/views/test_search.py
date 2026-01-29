@@ -102,7 +102,6 @@ def test_search_all(api_client, user, account):
                 "currency": invoice_alpha.currency,
                 "tax_behavior": invoice_alpha.tax_behavior,
                 "issue_date": None,
-                "sell_date": None,
                 "due_date": ANY,
                 "net_payment_term": invoice_alpha.net_payment_term,
                 "customer": {

@@ -322,7 +322,6 @@ class Quote(models.Model):
             numbering_system=self.numbering_system,
             currency=self.currency,
             issue_date=self.issue_date or timezone.now().date(),  # TODO: verify this
-            sell_date=None,
             due_date=None,
             net_payment_term=None,
             custom_fields=self.custom_fields,

@@ -48,7 +48,6 @@ def test_create_invoice_revision(api_client, user, account):
         "currency": customer.currency,
         "tax_behavior": "automatic",
         "issue_date": None,
-        "sell_date": None,
         "due_date": None,
         "net_payment_term": 7,
         "customer": {

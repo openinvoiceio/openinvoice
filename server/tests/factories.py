@@ -220,7 +220,6 @@ class InvoiceFactory(DjangoModelFactory):
     currency = LazyAttribute(lambda obj: obj.customer.currency or obj.account.default_currency)
     status = InvoiceStatus.DRAFT
     issue_date = None
-    sell_date = None
     due_date = LazyFunction(lambda: timezone.now().date())
     footer = None
     description = None

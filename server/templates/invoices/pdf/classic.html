@@ -57,12 +57,6 @@
             {% endif %}
         </div>
         <div>
-            {% if invoice.sell_date %}
-                <p>
-                    <span class="info-label">Sell date:</span>
-                    <span class="info-value">{{ invoice.sell_date|date:"j E, Y" }}</span>
-                </p>
-            {% endif %}
             {% for key, value in invoice.custom_fields.items %}
                 <p>
                     <span class="info-label">{{ key }}:</span>
