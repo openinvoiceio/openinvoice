@@ -1,8 +1,8 @@
 import { NoteVisibilityEnum } from "@/api/models";
 import type { Note } from "@/api/models";
+import { NoteDropdown } from "@/components/note-dropdown";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Empty,
   EmptyDescription,
@@ -12,7 +12,6 @@ import {
 import { Separator } from "@/components/ui/separator.tsx";
 import { Spinner } from "@/components/ui/spinner";
 import { formatRelativeDatetime } from "@/lib/formatters";
-import { Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
 type NotesListProps = {
@@ -84,20 +83,10 @@ export function NotesList({
                 )}
               </div>
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => handleDelete(note.id)}
-              disabled={deletingId === note.id}
-              className="size-8"
-            >
-              {deletingId === note.id ? (
-                <Spinner className="size-3.5" />
-              ) : (
-                <Trash2Icon className="size-3.5" />
-              )}
-            </Button>
+            <NoteDropdown
+              onDelete={() => handleDelete(note.id)}
+              isDeleting={deletingId === note.id}
+            />
           </div>
           <Separator />
           <div className="text-foreground px-3 py-3 text-sm whitespace-pre-wrap">
