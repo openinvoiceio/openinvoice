@@ -18,6 +18,7 @@ from tests.factories import (
     InvoiceLineFactory,
     ShippingRateFactory,
     StripeConnectionFactory,
+    TaxIdFactory,
     TaxRateFactory,
 )
 
@@ -148,6 +149,48 @@ def test_finalize_invoice(api_client, user, account):
     }
     assert invoice.status == InvoiceStatus.OPEN
     assert invoice.opened_at is not None
+
+
+def test_finalize_invoice_clones_customer_tax_ids(api_client, user, account):
+    invoice = InvoiceFactory(account=account)
+    customer_tax_id = TaxIdFactory()
+    invoice.customer.tax_ids.add(customer_tax_id)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.post(f"/api/v1/invoices/{invoice.id}/finalize")
+
+    assert response.status_code == 200
+    invoice.refresh_from_db()
+
+    customer_snapshot_tax_ids = list(invoice.customer_on_invoice.tax_ids.all())
+    assert len(customer_snapshot_tax_ids) == 1
+    customer_snapshot_tax_id = customer_snapshot_tax_ids[0]
+    assert customer_snapshot_tax_id.id != customer_tax_id.id
+    assert customer_snapshot_tax_id.type == customer_tax_id.type
+    assert customer_snapshot_tax_id.number == customer_tax_id.number
+    assert customer_snapshot_tax_id.country == customer_tax_id.country
+
+
+def test_finalize_invoice_clones_account_tax_ids(api_client, user, account):
+    invoice = InvoiceFactory(account=account)
+    account_tax_id = TaxIdFactory()
+    invoice.account.tax_ids.add(account_tax_id)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.post(f"/api/v1/invoices/{invoice.id}/finalize")
+
+    assert response.status_code == 200
+    invoice.refresh_from_db()
+
+    account_snapshot_tax_ids = list(invoice.account_on_invoice.tax_ids.all())
+    assert len(account_snapshot_tax_ids) == 1
+    account_snapshot_tax_id = account_snapshot_tax_ids[0]
+    assert account_snapshot_tax_id.id != account_tax_id.id
+    assert account_snapshot_tax_id.type == account_tax_id.type
+    assert account_snapshot_tax_id.number == account_tax_id.number
+    assert account_snapshot_tax_id.country == account_tax_id.country
 
 
 def test_finalize_invoice_with_shipping_uses_customer_shipping_snapshot(api_client, user, account):

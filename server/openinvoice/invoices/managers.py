@@ -17,7 +17,6 @@ from openinvoice.customers.models import Customer
 from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.numbering_systems.models import NumberingSystem
 from openinvoice.prices.models import Price
-from openinvoice.tax_ids.models import TaxId
 
 from .choices import InvoiceDeliveryMethod, InvoiceStatus, InvoiceTaxBehavior
 
@@ -37,7 +36,7 @@ class InvoiceCustomerManager(models.Manager):
             address=Address.objects.from_address(customer.address),
             logo=customer.logo.clone() if customer.logo else None,
         )
-        invoice_customer.tax_ids.set(TaxId.objects.from_customer(customer))
+        invoice_customer.tax_ids.set(customer.tax_ids.clone())
 
         return invoice_customer
 
@@ -53,7 +52,7 @@ class InvoiceAccountManager(models.Manager):
             address=Address.objects.from_address(account.address),
             logo=account.logo.clone() if account.logo else None,
         )
-        invoice_account.tax_ids.set(TaxId.objects.from_account(account))
+        invoice_account.tax_ids.set(account.tax_ids.clone())
 
         return invoice_account
 

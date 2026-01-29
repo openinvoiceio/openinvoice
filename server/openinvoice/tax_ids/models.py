@@ -4,6 +4,7 @@ from django.db import models
 
 from .choices import TaxIdType
 from .managers import TaxIdManager
+from .querysets import TaxIdQuerySet
 
 
 class TaxId(models.Model):
@@ -14,7 +15,7 @@ class TaxId(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = TaxIdManager()
+    objects = TaxIdManager.from_queryset(TaxIdQuerySet)()
 
     @property
     def display_name(self) -> str:
