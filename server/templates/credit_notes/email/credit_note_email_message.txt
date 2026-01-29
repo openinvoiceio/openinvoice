@@ -1,4 +1,4 @@
-{% with customer=credit_note.invoice.customer_on_invoice|default:credit_note.customer account=credit_note.invoice.account_on_invoice|default:credit_note.account %}
+{% with customer=credit_note.invoice.invoice_customer|default:credit_note.customer account=credit_note.invoice.invoice_account|default:credit_note.account %}
 Hi {{ customer.name }},
 
 {{ account.name }} has issued credit note {{ credit_note.effective_number }}.

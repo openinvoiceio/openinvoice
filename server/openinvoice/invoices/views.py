@@ -38,8 +38,8 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
         "number",
         "customer__name",
         "customer__email",
-        "customer_on_invoice__name",
-        "customer_on_invoice__email",
+        "invoice_customer__name",
+        "invoice_customer__email",
         "description",
         "lines__description",
     ]
@@ -430,7 +430,7 @@ class InvoiceLineCreateAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return InvoiceLine.objects.filter(invoice__account_id=self.request.account.id).eager_load()
+        return InvoiceLine.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="create_invoice_line",
@@ -479,7 +479,7 @@ class InvoiceLineUpdateDestroyAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return InvoiceLine.objects.filter(invoice__account_id=self.request.account.id).eager_load()
+        return InvoiceLine.objects.for_account(self.request.account).eager_load()
 
     @extend_schema(
         operation_id="update_invoice_line",

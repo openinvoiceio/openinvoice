@@ -120,13 +120,13 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     sell_date = models.DateField(null=True)
     due_date = models.DateField(null=True)
     net_payment_term = models.PositiveIntegerField(default=7)
-    customer_on_invoice = models.OneToOneField(
+    invoice_customer = models.OneToOneField(
         "InvoiceCustomer",
         on_delete=models.PROTECT,
         null=True,
         related_name="invoice",
     )
-    account_on_invoice = models.OneToOneField(
+    invoice_account = models.OneToOneField(
         "InvoiceAccount",
         on_delete=models.PROTECT,
         null=True,
@@ -221,11 +221,11 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 
     @property
     def effective_customer(self):
-        return self.customer_on_invoice or self.customer
+        return self.invoice_customer or self.customer
 
     @property
     def effective_account(self):
-        return self.account_on_invoice or self.account
+        return self.invoice_account or self.account
 
     @property
     def effective_tax_behavior(self) -> InvoiceTaxBehavior:
@@ -595,8 +595,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.opened_at = timezone.now()
         self.issue_date = self.issue_date or timezone.now().date()
         self.due_date = self.due_date or timezone.now().date() + relativedelta(days=self.net_payment_term)
-        self.customer_on_invoice = InvoiceCustomer.objects.from_customer(self.customer)
-        self.account_on_invoice = InvoiceAccount.objects.from_account(self.account)
+        self.invoice_customer = InvoiceCustomer.objects.from_customer(self.customer)
+        self.invoice_account = InvoiceAccount.objects.from_account(self.account)
 
         if self.shipping:
             self.shipping.name = self.customer.shipping_name

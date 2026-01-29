@@ -22,7 +22,7 @@ pytestmark = pytest.mark.django_db
 
 
 def _assign_invoice_snapshots(invoice):
-    invoice.customer_on_invoice = InvoiceCustomer.objects.create(
+    invoice.invoice_customer = InvoiceCustomer.objects.create(
         name=invoice.customer.name,
         legal_name=invoice.customer.legal_name,
         legal_number=invoice.customer.legal_number,
@@ -32,7 +32,7 @@ def _assign_invoice_snapshots(invoice):
         address=AddressFactory(),
         logo=None,
     )
-    invoice.account_on_invoice = InvoiceAccount.objects.create(
+    invoice.invoice_account = InvoiceAccount.objects.create(
         name=invoice.account.name,
         legal_name=invoice.account.legal_name,
         legal_number=invoice.account.legal_number,
@@ -41,7 +41,7 @@ def _assign_invoice_snapshots(invoice):
         address=AddressFactory(),
         logo=None,
     )
-    invoice.save(update_fields=["customer_on_invoice", "account_on_invoice"])
+    invoice.save(update_fields=["invoice_customer", "invoice_account"])
 
 
 def test_list_credit_notes(api_client, user, account):
@@ -73,8 +73,8 @@ def test_list_credit_notes(api_client, user, account):
 
     assert response.status_code == 200
     line.refresh_from_db()
-    customer_snapshot = invoice.customer_on_invoice
-    account_snapshot = invoice.account_on_invoice
+    customer_snapshot = invoice.invoice_customer
+    account_snapshot = invoice.invoice_account
     assert response.data == {
         "count": 1,
         "next": None,

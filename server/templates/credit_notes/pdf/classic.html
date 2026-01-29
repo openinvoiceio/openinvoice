@@ -52,7 +52,7 @@
         </section>
 
         <section class="parties">
-            {% with snapshot=credit_note.invoice.account_on_invoice account=snapshot|default:credit_note.account %}
+            {% with snapshot=credit_note.invoice.invoice_account account=snapshot|default:credit_note.account %}
                 <section class="party party-account">
                     <h2 class="party-title">From</h2>
                     <p class="party-detail">
@@ -79,7 +79,7 @@
                 </section>
             {% endwith %}
 
-            {% with snapshot=credit_note.invoice.customer_on_invoice customer=snapshot|default:credit_note.customer %}
+            {% with snapshot=credit_note.invoice.invoice_customer customer=snapshot|default:credit_note.customer %}
                 <section class="party party-customer">
                     <h2 class="party-title">Credit to</h2>
                     <p class="party-detail">

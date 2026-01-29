@@ -28,12 +28,12 @@ class InvoiceQuerySet(models.QuerySet):
         return self.select_related(
             "account",
             "account__address",
-            "account_on_invoice",
-            "account_on_invoice__address",
+            "invoice_account",
+            "invoice_account__address",
             "customer",
             "customer__address",
-            "customer_on_invoice",
-            "customer_on_invoice__address",
+            "invoice_customer",
+            "invoice_customer__address",
             "numbering_system",
             "previous_revision",
             "shipping",
@@ -75,6 +75,9 @@ class InvoiceQuerySet(models.QuerySet):
 
 
 class InvoiceLineQuerySet(models.QuerySet):
+    def for_account(self, account: Account):
+        return self.filter(invoice__account=account)
+
     def eager_load(self):
         Coupon = apps.get_model("coupons.Coupon")  # noqa: N806
         TaxRate = apps.get_model("tax_rates.TaxRate")  # noqa: N806
