@@ -17,7 +17,7 @@ from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from common.calculations import aggregate_allocations, allocate_proportionally, zero
+from common.calculations import aggregate_allocations, allocate_proportionally, calculate_tax_amounts, zero
 from openinvoice.addresses.models import Address
 from openinvoice.coupons.models import Coupon
 from openinvoice.credit_notes.choices import CreditNoteStatus
@@ -441,17 +441,21 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             tax_rates = line_tax_rates if line_tax_rates else invoice_tax_rates
             line.total_excluding_tax_amount = line.total_taxable_amount / line.tax_multiplier
 
-            for tax_rate in tax_rates:
-                tax_amount = tax_rate.calculate_amount(line.total_excluding_tax_amount)
+            source = InvoiceTaxSource.LINE if line_tax_rates else InvoiceTaxSource.INVOICE
+            tax_amounts = calculate_tax_amounts(
+                base_amount=line.total_excluding_tax_amount,
+                taxable_amount=line.total_taxable_amount,
+                tax_multiplier=line.tax_multiplier,
+                tax_rates=tax_rates,
+            )
+
+            line.total_tax_amount = zero(self.currency)
+            for tax_rate, tax_amount in zip(tax_rates, tax_amounts, strict=False):
                 if tax_amount.amount <= 0:
                     continue
 
                 line.total_tax_amount += tax_amount
-
-                if line_tax_rates:
-                    line.add_tax_allocations(tax_amount, tax_rate, InvoiceTaxSource.LINE)
-                else:
-                    line.add_tax_allocations(tax_amount, tax_rate, InvoiceTaxSource.INVOICE)
+                line.add_tax_allocations(tax_amount, tax_rate, source)
 
             line.total_amount = line.total_excluding_tax_amount + line.total_tax_amount
             line.outstanding_amount = line.total_amount
@@ -933,8 +937,17 @@ class InvoiceShipping(models.Model):
         self.total_excluding_tax_amount = self.amount / self.tax_multiplier
         self.total_tax_amount = zero(self.currency)
 
-        for tax_rate in tax_rates:
-            tax_amount = tax_rate.calculate_amount(self.total_excluding_tax_amount)
+        tax_amounts = calculate_tax_amounts(
+            base_amount=self.total_excluding_tax_amount,
+            taxable_amount=self.amount,
+            tax_multiplier=self.tax_multiplier,
+            tax_rates=tax_rates,
+        )
+
+        for tax_rate, tax_amount in zip(tax_rates, tax_amounts, strict=False):
+            if tax_amount.amount <= 0:
+                continue
+
             self.total_tax_amount += tax_amount
             self.add_tax_allocation(tax_amount, tax_rate)
 

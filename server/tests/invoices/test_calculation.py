@@ -1020,6 +1020,37 @@ def test_recalculate_invoice_inclusive_invoice_taxes():
     assert invoice.total_amount == Money("115.00", invoice.currency)
 
 
+def test_recalculate_invoice_inclusive_invoice_discounts_multiple_tax_rates_rounding():
+    invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
+    line = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("10"), quantity=20, amount=Decimal("0"))
+    percent_coupon = CouponFactory(
+        account=invoice.account, currency=invoice.currency, amount=None, percentage=Decimal("20")
+    )
+    amount_coupon = CouponFactory(
+        account=invoice.account, currency=invoice.currency, amount=Money(15, invoice.currency), percentage=None
+    )
+    tax_rate_1 = TaxRateFactory(account=invoice.account, percentage=Decimal("5"))
+    tax_rate_2 = TaxRateFactory(account=invoice.account, percentage=Decimal("23"))
+
+    invoice.set_coupons([percent_coupon, amount_coupon])
+    invoice.set_tax_rates([tax_rate_1, tax_rate_2])
+    invoice.recalculate()
+
+    line.refresh_from_db()
+    assert line.total_taxable_amount == Money("145.00", line.currency)
+    assert line.total_excluding_tax_amount == Money("113.28", line.currency)
+    assert line.tax_allocations.get(tax_rate=tax_rate_1).amount == Money("5.66", line.currency)
+    assert line.tax_allocations.get(tax_rate=tax_rate_2).amount == Money("26.06", line.currency)
+    assert line.total_tax_amount == Money("31.72", line.currency)
+    assert line.total_amount == Money("145.00", line.currency)
+
+    invoice.refresh_from_db()
+    assert invoice.total_discount_amount == Money("55.00", invoice.currency)
+    assert invoice.total_excluding_tax_amount == Money("113.28", invoice.currency)
+    assert invoice.total_tax_amount == Money("31.72", invoice.currency)
+    assert invoice.total_amount == Money("145.00", invoice.currency)
+
+
 def test_recalculate_invoice_inclusive_mixed_tax_sources():
     invoice = InvoiceFactory(currency="EUR", tax_behavior=InvoiceTaxBehavior.INCLUSIVE)
     line_with_tax = InvoiceLineFactory(invoice=invoice, unit_amount=Decimal("110"), quantity=1, amount=Decimal("0"))

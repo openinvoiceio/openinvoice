@@ -18,6 +18,10 @@ class SupportsOrdering(Protocol):
     def __lt__(self, other: Any, /) -> bool: ...
 
 
+class SupportsTaxRate(Protocol):
+    def calculate_amount(self, base_amount: Money) -> Money: ...
+
+
 def zero(currency: str | Currency) -> Money:
     """Return a zero-valued :class:`Money` in ``currency``."""
 
@@ -89,3 +93,29 @@ def aggregate_allocations(
             aggregated[item_key] = build(item)
 
     return list(aggregated.values())
+
+
+def calculate_tax_amounts(
+    base_amount: Money,
+    taxable_amount: Money,
+    tax_multiplier: Decimal,
+    tax_rates: Iterable[SupportsTaxRate],
+) -> list[Money]:
+    tax_rates = list(tax_rates)
+    if not tax_rates:
+        return []
+
+    tax_amounts = [
+        Money(
+            tax_rate.calculate_amount(base_amount).amount.quantize(CENT, rounding=ROUND_HALF_UP),
+            base_amount.currency,
+        )
+        for tax_rate in tax_rates
+    ]
+    if tax_multiplier > Decimal(1) and tax_amounts:
+        total_tax_amount = sum(tax_amounts, zero(base_amount.currency))
+        target_total_tax_amount = max(taxable_amount - base_amount, zero(base_amount.currency))
+        adjustment = target_total_tax_amount - total_tax_amount
+        tax_amounts[-1] = max(tax_amounts[-1] + adjustment, zero(base_amount.currency))
+
+    return tax_amounts
