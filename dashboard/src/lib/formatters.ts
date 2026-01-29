@@ -1,4 +1,4 @@
-import { format, fromUnixTime, parseISO } from "date-fns";
+import { format, formatDistanceToNow, fromUnixTime, parseISO } from "date-fns";
 import { enUS } from "date-fns/locale";
 import Decimal from "decimal.js";
 
@@ -32,6 +32,14 @@ export function formatDatetime(value?: number | Date | string): string {
         : parseISO(value);
 
   return format(date, "LLLL dd, y HH:mm:ss", { locale: enUS });
+}
+
+export function formatRelativeDatetime(value: string | Date) {
+  const date = typeof value === "string" ? parseISO(value) : value;
+
+  return formatDistanceToNow(date, {
+    addSuffix: true,
+  });
 }
 
 export function formatAmount(value: number | string, currency: string) {

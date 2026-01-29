@@ -702,17 +702,17 @@ function RouteComponent() {
               <SectionTitle>Notes</SectionTitle>
             </SectionHeader>
             <div className="space-y-4">
-              <NotesForm
-                isCreating={createNote.isPending}
-                onCreate={(data) =>
-                  createNote.mutateAsync({ invoiceId: invoice.id, data })
-                }
-              />
               <NotesList
                 notes={notes.data?.results ?? []}
                 isLoading={notes.isLoading}
                 onDelete={(noteId) =>
                   deleteNote.mutateAsync({ invoiceId: invoice.id, id: noteId })
+                }
+              />
+              <NotesForm
+                isCreating={createNote.isPending}
+                onCreate={(data) =>
+                  createNote.mutateAsync({ invoiceId: invoice.id, data })
                 }
               />
             </div>

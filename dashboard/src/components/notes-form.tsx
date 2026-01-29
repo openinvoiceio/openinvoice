@@ -1,4 +1,4 @@
-import { NoteVisibilityEnum } from "@/api/models";
+import { NoteVisibilityEnum, type Note } from "@/api/models";
 import type { NoteCreate } from "@/api/models";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +32,7 @@ export function NotesForm({
   onCreate,
 }: {
   isCreating?: boolean;
-  onCreate: (data: NoteCreate) => Promise<void> | void;
+  onCreate: (data: NoteCreate) => Promise<Note> | void;
 }) {
   const form = useForm<FormValues>({
     defaultValues: {
