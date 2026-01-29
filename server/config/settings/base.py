@@ -182,6 +182,23 @@ STATICFILES_DIRS = [str(BASE_DIR.path("static"))]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = str(BASE_DIR.path("mediafiles"))
 
+FILE_UPLOAD_ACCOUNT_LOGO_POLICY = {
+    "allowed_content_types": ["image/png", "image/jpeg", "image/svg+xml"],
+    "max_size": 512 * 1024,
+}
+FILE_UPLOAD_PRODUCT_IMAGE_POLICY = {
+    "allowed_content_types": ["image/png", "image/jpeg", "image/webp"],
+    "max_size": 2 * 1024 * 1024,
+}
+FILE_UPLOAD_PROFILE_AVATAR_POLICY = {
+    "allowed_content_types": ["image/png", "image/jpeg", "image/svg+xml"],
+    "max_size": 512 * 1024,
+}
+FILE_UPLOAD_CUSTOMER_LOGO_POLICY = {
+    "allowed_content_types": ["image/png", "image/jpeg", "image/svg+xml"],
+    "max_size": 512 * 1024,
+}
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

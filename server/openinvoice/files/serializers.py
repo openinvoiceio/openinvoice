@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .choices import FilePurpose
-from .validators import SUPPORTED_FILE_VALIDATORS
+from .validators import FileUploadPolicyValidator
 
 
 class FileSerializer(serializers.Serializer):
@@ -26,18 +26,5 @@ class FileUploadSerializer(serializers.Serializer):
         ]
     )
 
-    def validate(self, data):
-        file = data["file"]
-        purpose = data["purpose"]
-        validator = SUPPORTED_FILE_VALIDATORS[purpose]
-
-        if file.content_type is None:
-            raise serializers.ValidationError("Unknown file content type")
-
-        if file.content_type not in validator.allowed_content_types:
-            raise serializers.ValidationError("Invalid file type")
-
-        if file.size > validator.max_size:
-            raise serializers.ValidationError("File size exceeded")
-
-        return data
+    class Meta:
+        validators = [FileUploadPolicyValidator()]
