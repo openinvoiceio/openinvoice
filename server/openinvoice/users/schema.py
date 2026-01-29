@@ -100,7 +100,7 @@ def merge_allauth_components(spec, result) -> None:
                             result["components"][subcomponent_key][item_key] = item_val
 
 
-def allauth_postprocessing_hook(result, **_):
+def postprocess_allauth_schema(result, **_):
     spec = get_schema()
 
     # Merge external paths

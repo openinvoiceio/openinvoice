@@ -10719,10 +10719,10 @@ components:
     StripeCheckoutSession:
       type: object
       properties:
-        session_url:
+        url:
           type: string
       required:
-      - session_url
+      - url
     StripeConnection:
       type: object
       properties:

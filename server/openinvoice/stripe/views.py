@@ -91,7 +91,7 @@ class StripeCheckoutAPIView(GenericAPIView):
             logger.error("Failed to create checkout session", error=str(e))
             raise ValidationError("Failed to create checkout session") from e
 
-        serializer = StripeCheckoutSessionSerializer(data={"session_url": checkout_session.url})
+        serializer = StripeCheckoutSessionSerializer(data={"url": checkout_session.url})
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

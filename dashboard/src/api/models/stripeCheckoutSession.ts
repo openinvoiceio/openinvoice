@@ -7,5 +7,5 @@
  */
 
 export interface StripeCheckoutSession {
-  session_url: string;
+  url: string;
 }

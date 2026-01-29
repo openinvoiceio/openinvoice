@@ -6,7 +6,7 @@ class StripeCheckoutSerializer(serializers.Serializer):
 
 
 class StripeCheckoutSessionSerializer(serializers.Serializer):
-    session_url = serializers.CharField()
+    url = serializers.CharField()
 
 
 class StripeBillingPortalSerializer(serializers.Serializer):

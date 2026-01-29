@@ -18,7 +18,7 @@ def test_create_stripe_checkout(api_client, user, account, mock_checkout_session
     response = api_client.post("/api/v1/stripe/checkout", data={"price_id": price_id})
 
     assert response.status_code == 200
-    assert response.data == {"session_url": session.url}
+    assert response.data == {"url": session.url}
     mock_checkout_session.assert_called_once()
 
 
