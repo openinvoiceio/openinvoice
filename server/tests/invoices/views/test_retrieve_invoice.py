@@ -205,6 +205,82 @@ def test_retrieve_invoice_excludes_line_discounts_from_invoice_level(api_client,
     ]
 
 
+def test_retrieve_invoice_total_discounts_uses_distinct_allocations(api_client, user, account):
+    invoice = InvoiceFactory(account=account)
+    InvoiceLineFactory(invoice=invoice, quantity=1, unit_amount=Decimal("200"))
+    percentage_coupon = CouponFactory(
+        account=account,
+        currency=invoice.currency,
+        amount=None,
+        percentage=Decimal("20.00"),
+    )
+    fixed_coupon = CouponFactory(
+        account=account,
+        currency=invoice.currency,
+        amount=Decimal("10.00"),
+        percentage=None,
+    )
+    invoice.set_coupons([percentage_coupon, fixed_coupon])
+    invoice.recalculate()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get(f"/api/v1/invoices/{invoice.id}")
+
+    assert response.status_code == 200
+    expected_discounts = [
+        {
+            "coupon_id": str(percentage_coupon.id),
+            "name": percentage_coupon.name,
+            "amount": "40.00",
+        },
+        {
+            "coupon_id": str(fixed_coupon.id),
+            "name": fixed_coupon.name,
+            "amount": "10.00",
+        },
+    ]
+    assert response.data["discounts"] == expected_discounts
+    assert response.data["total_discounts"] == expected_discounts
+    line_data = response.data["lines"][0]
+    assert line_data["discounts"] == []
+    assert line_data["total_discounts"] == expected_discounts
+
+
+def test_retrieve_invoice_total_taxes_uses_distinct_allocations(api_client, user, account):
+    invoice = InvoiceFactory(account=account, currency="USD")
+    InvoiceLineFactory(invoice=invoice, quantity=1, unit_amount=Decimal("100"))
+    tax_rate = TaxRateFactory(account=account, percentage=Decimal("10"))
+    secondary_tax_rate = TaxRateFactory(account=account, percentage=Decimal("5"))
+    invoice.set_tax_rates([tax_rate, secondary_tax_rate])
+    invoice.recalculate()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get(f"/api/v1/invoices/{invoice.id}")
+
+    assert response.status_code == 200
+    expected_taxes = [
+        {
+            "tax_rate_id": str(tax_rate.id),
+            "name": tax_rate.name,
+            "percentage": "10.00",
+            "amount": "10.00",
+        },
+        {
+            "tax_rate_id": str(secondary_tax_rate.id),
+            "name": secondary_tax_rate.name,
+            "percentage": "5.00",
+            "amount": "5.00",
+        },
+    ]
+    assert response.data["taxes"] == expected_taxes
+    assert response.data["total_taxes"] == expected_taxes
+    line_data = response.data["lines"][0]
+    assert line_data["taxes"] == []
+    assert line_data["total_taxes"] == expected_taxes
+
+
 def test_retrieve_invoice_excludes_line_taxes_from_invoice_level(api_client, user, account):
     invoice = InvoiceFactory(account=account, currency="USD")
     line = InvoiceLineFactory(

@@ -5,7 +5,7 @@ from uuid import UUID
 
 from django.apps import apps
 from django.db import models
-from django.db.models import Case, F, IntegerField, Prefetch, Value, When
+from django.db.models import Case, F, IntegerField, OuterRef, Prefetch, Subquery, Value, When
 from django_cte import CTE, with_cte
 
 if TYPE_CHECKING:
@@ -93,10 +93,30 @@ class InvoiceLineQuerySet(models.QuerySet):
 
 class InvoiceDiscountAllocationQuerySet(models.QuerySet):
     def annotate_position(self):
+        InvoiceLineCoupon = apps.get_model("invoices.InvoiceLineCoupon")  # noqa: N806
+        InvoiceCoupon = apps.get_model("invoices.InvoiceCoupon")  # noqa: N806
+
+        line_position = Subquery(
+            InvoiceLineCoupon.objects.filter(
+                invoice_line_id=OuterRef("invoice_line_id"),
+                coupon_id=OuterRef("coupon_id"),
+            )
+            .values("position")
+            .order_by("position")[:1]
+        )
+        invoice_position = Subquery(
+            InvoiceCoupon.objects.filter(
+                invoice_id=OuterRef("invoice_id"),
+                coupon_id=OuterRef("coupon_id"),
+            )
+            .values("position")
+            .order_by("position")[:1]
+        )
+
         return self.select_related("coupon").annotate(
             position=Case(
-                When(source=InvoiceDiscountSource.LINE, then=F("coupon__invoice_line_coupons__position")),
-                default=F("invoice__invoice_coupons__position"),
+                When(source=InvoiceDiscountSource.LINE, then=line_position),
+                default=invoice_position,
                 output_field=IntegerField(),
             )
         )
@@ -104,11 +124,40 @@ class InvoiceDiscountAllocationQuerySet(models.QuerySet):
 
 class InvoiceTaxAllocationQuerySet(models.QuerySet):
     def annotate_position(self):
+        InvoiceLineTaxRate = apps.get_model("invoices.InvoiceLineTaxRate")  # noqa: N806
+        InvoiceTaxRate = apps.get_model("invoices.InvoiceTaxRate")  # noqa: N806
+        InvoiceShippingTaxRate = apps.get_model("invoices.InvoiceShippingTaxRate")  # noqa: N806
+
+        line_position = Subquery(
+            InvoiceLineTaxRate.objects.filter(
+                invoice_line_id=OuterRef("invoice_line_id"),
+                tax_rate_id=OuterRef("tax_rate_id"),
+            )
+            .values("position")
+            .order_by("position")[:1]
+        )
+        shipping_position = Subquery(
+            InvoiceShippingTaxRate.objects.filter(
+                invoice_shipping_id=OuterRef("invoice_shipping_id"),
+                tax_rate_id=OuterRef("tax_rate_id"),
+            )
+            .values("position")
+            .order_by("position")[:1]
+        )
+        invoice_position = Subquery(
+            InvoiceTaxRate.objects.filter(
+                invoice_id=OuterRef("invoice_id"),
+                tax_rate_id=OuterRef("tax_rate_id"),
+            )
+            .values("position")
+            .order_by("position")[:1]
+        )
+
         return self.select_related("tax_rate").annotate(
             position=Case(
-                When(source=InvoiceTaxSource.LINE, then=F("tax_rate__invoice_line_tax_rates__position")),
-                When(source=InvoiceTaxSource.SHIPPING, then=F("tax_rate__invoice_shipping_tax_rates__position")),
-                default=F("tax_rate__invoice_tax_rates__position"),
+                When(source=InvoiceTaxSource.LINE, then=line_position),
+                When(source=InvoiceTaxSource.SHIPPING, then=shipping_position),
+                default=invoice_position,
                 output_field=IntegerField(),
             )
         )
