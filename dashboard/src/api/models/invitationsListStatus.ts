@@ -13,5 +13,4 @@ export type InvitationsListStatus =
 export const InvitationsListStatus = {
   accepted: "accepted",
   pending: "pending",
-  rejected: "rejected",
 } as const;

@@ -75,7 +75,6 @@ class InvitationSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=InvitationStatus.choices)
     created_at = serializers.DateTimeField()
     accepted_at = serializers.DateTimeField(allow_null=True)
-    rejected_at = serializers.DateTimeField(allow_null=True)
 
 
 class InvitationCreateSerializer(serializers.Serializer):

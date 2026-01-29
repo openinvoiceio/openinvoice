@@ -9,4 +9,3 @@ class MemberRole(models.TextChoices):
 class InvitationStatus(models.TextChoices):
     PENDING = "pending"
     ACCEPTED = "accepted"
-    REJECTED = "rejected"

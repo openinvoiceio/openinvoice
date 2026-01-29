@@ -9,7 +9,6 @@
 /**
  * * `pending` - Pending
  * `accepted` - Accepted
- * `rejected` - Rejected
  */
 export type InvitationStatusEnum =
   (typeof InvitationStatusEnum)[keyof typeof InvitationStatusEnum];
@@ -18,5 +17,4 @@ export type InvitationStatusEnum =
 export const InvitationStatusEnum = {
   pending: "pending",
   accepted: "accepted",
-  rejected: "rejected",
 } as const;

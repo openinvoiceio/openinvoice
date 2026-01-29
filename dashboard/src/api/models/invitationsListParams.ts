@@ -27,7 +27,6 @@ export type InvitationsListParams = {
   /**
    * * `pending` - Pending
    * `accepted` - Accepted
-   * `rejected` - Rejected
    */
   status?: InvitationsListStatus;
 };

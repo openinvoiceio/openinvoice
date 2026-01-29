@@ -2724,11 +2724,9 @@ paths:
           enum:
           - accepted
           - pending
-          - rejected
         description: |-
           * `pending` - Pending
           * `accepted` - Accepted
-          * `rejected` - Rejected
       tags:
       - invitations
       security:
@@ -8028,16 +8026,11 @@ components:
           type: string
           format: date-time
           nullable: true
-        rejected_at:
-          type: string
-          format: date-time
-          nullable: true
       required:
       - accepted_at
       - created_at
       - email
       - id
-      - rejected_at
       - status
     InvitationAccept:
       type: object
@@ -8060,12 +8053,10 @@ components:
       enum:
       - pending
       - accepted
-      - rejected
       type: string
       description: |-
         * `pending` - Pending
         * `accepted` - Accepted
-        * `rejected` - Rejected
     Invoice:
       type: object
       properties:

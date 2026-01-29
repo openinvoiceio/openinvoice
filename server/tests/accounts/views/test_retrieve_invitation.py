@@ -22,7 +22,6 @@ def test_retrieve_invitation(api_client, user, account):
         "status": invitation.status,
         "created_at": ANY,
         "accepted_at": invitation.accepted_at,
-        "rejected_at": invitation.rejected_at,
     }
 
 

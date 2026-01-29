@@ -135,7 +135,6 @@ class Invitation(models.Model):
     invited_by = models.ForeignKey("users.User", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     accepted_at = models.DateTimeField(null=True)
-    rejected_at = models.DateTimeField(null=True)
 
     objects = models.Manager.from_queryset(InvitationQuerySet)()
 
@@ -155,8 +154,3 @@ class Invitation(models.Model):
         self.save(update_fields=["status", "accepted_at"])
 
         return member
-
-    def reject(self) -> None:
-        self.status = InvitationStatus.REJECTED
-        self.rejected_at = timezone.now()
-        self.save(update_fields=["status", "rejected_at"])

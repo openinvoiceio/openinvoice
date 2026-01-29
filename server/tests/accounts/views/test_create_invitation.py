@@ -25,7 +25,6 @@ def test_create_invitation(api_client, user, account, mailoutbox):
         "status": InvitationStatus.PENDING,
         "created_at": ANY,
         "accepted_at": None,
-        "rejected_at": None,
     }
     assert len(mailoutbox) == 1
 

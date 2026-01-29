@@ -14,6 +14,4 @@ export interface Invitation {
   created_at: string;
   /** @nullable */
   accepted_at: string | null;
-  /** @nullable */
-  rejected_at: string | null;
 }
