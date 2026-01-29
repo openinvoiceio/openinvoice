@@ -105,13 +105,7 @@ def calculate_tax_amounts(
     if not tax_rates:
         return []
 
-    tax_amounts = [
-        Money(
-            tax_rate.calculate_amount(base_amount).amount.quantize(CENT, rounding=ROUND_HALF_UP),
-            base_amount.currency,
-        )
-        for tax_rate in tax_rates
-    ]
+    tax_amounts = [tax_rate.calculate_amount(base_amount).round(2) for tax_rate in tax_rates]
     if tax_multiplier > Decimal(1) and tax_amounts:
         total_tax_amount = sum(tax_amounts, zero(base_amount.currency))
         target_total_tax_amount = max(taxable_amount - base_amount, zero(base_amount.currency))

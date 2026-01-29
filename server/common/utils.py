@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from decimal import InvalidOperation
 
 import moneyed
 from django.db import DataError
@@ -18,6 +19,8 @@ def country_to_currency(country_code: str) -> str:
 def numeric_overflow():
     try:
         yield
+    except InvalidOperation as e:
+        raise ValidationError("Amount exceeds the maximum allowed value") from e
     except DataError as e:
         if is_numeric_out_of_range_error(e):
             raise ValidationError("Amount exceeds the maximum allowed value") from e

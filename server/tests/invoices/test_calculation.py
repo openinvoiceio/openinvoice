@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 import pytest
 from django.db import DataError
@@ -1185,7 +1185,7 @@ def test_recalculate_invoice_raises_on_total_amount_with_tax():
     tax_rate = TaxRateFactory(account=invoice.account, percentage=Decimal("100"))
 
     invoice.set_tax_rates([tax_rate])
-    with pytest.raises(DataError):
+    with pytest.raises(InvalidOperation):
         invoice.recalculate()
 
 
