@@ -1,6 +1,5 @@
 from djmoney.contrib.django_rest_framework import MoneyField
 from djmoney.money import Money
-from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from common.fields import CurrencyField
@@ -9,6 +8,7 @@ from openinvoice.invoices.choices import InvoiceStatus
 from openinvoice.invoices.fields import InvoiceRelatedField
 
 from .choices import PaymentStatus
+from .models import Payment
 
 
 class PaymentSerializer(serializers.Serializer):
@@ -20,14 +20,13 @@ class PaymentSerializer(serializers.Serializer):
     transaction_id = serializers.CharField(allow_null=True)
     url = serializers.URLField(allow_null=True)
     message = serializers.CharField(allow_null=True)
-    invoice_ids = serializers.SerializerMethodField()
+    invoices = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True)
     received_at = serializers.DateTimeField()
     created_at = serializers.DateTimeField()
 
-    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
-    def get_invoice_ids(self, obj):
-        return list(obj.invoices.values_list("id", flat=True))
+    class Meta:
+        model = Payment
 
 
 class PaymentRecordSerializer(serializers.Serializer):

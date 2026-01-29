@@ -84,9 +84,9 @@ export interface Invoice {
   lines: InvoiceLine[];
   shipping: InvoiceShipping;
   coupons: Coupon[];
-  readonly discounts: readonly InvoiceDiscount[];
-  readonly total_discounts: readonly InvoiceDiscount[];
+  discounts: InvoiceDiscount[];
+  total_discounts: InvoiceDiscount[];
   tax_rates: TaxRate[];
-  readonly taxes: readonly InvoiceTax[];
-  readonly total_taxes: readonly InvoiceTax[];
+  taxes: InvoiceTax[];
+  total_taxes: InvoiceTax[];
 }

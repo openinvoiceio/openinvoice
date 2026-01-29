@@ -29,5 +29,5 @@ export interface InvoiceShipping {
   /** @nullable */
   shipping_rate_id: string | null;
   tax_rates: TaxRate[];
-  readonly total_taxes: readonly InvoiceTax[];
+  total_taxes: InvoiceTax[];
 }

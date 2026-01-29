@@ -8209,12 +8209,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceDiscount'
-          readOnly: true
         total_discounts:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceDiscount'
-          readOnly: true
         tax_rates:
           type: array
           items:
@@ -8223,12 +8221,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceTax'
-          readOnly: true
         total_taxes:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceTax'
-          readOnly: true
       required:
       - account
       - coupons
@@ -8524,12 +8520,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceDiscount'
-          readOnly: true
         total_discounts:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceDiscount'
-          readOnly: true
         tax_rates:
           type: array
           items:
@@ -8538,12 +8532,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceTax'
-          readOnly: true
         total_taxes:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceTax'
-          readOnly: true
       required:
       - amount
       - coupons
@@ -8744,7 +8736,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceTax'
-          readOnly: true
       required:
       - address
       - amount
@@ -9444,7 +9435,7 @@ components:
         message:
           type: string
           nullable: true
-        invoice_ids:
+        invoices:
           type: array
           items:
             type: string
@@ -9466,7 +9457,7 @@ components:
       - currency
       - description
       - id
-      - invoice_ids
+      - invoices
       - message
       - provider
       - received_at

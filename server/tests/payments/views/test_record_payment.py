@@ -43,7 +43,7 @@ def test_record_payment(api_client, user, account):
         "transaction_id": None,
         "url": None,
         "message": None,
-        "invoice_ids": [invoice.id],
+        "invoices": [invoice.id],
         "provider": None,
         "received_at": payment.received_at.isoformat().replace("+00:00", "Z"),
         "created_at": ANY,

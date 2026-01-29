@@ -33,7 +33,7 @@ def test_list_payments(api_client, user, account):
                 "transaction_id": payment.transaction_id,
                 "url": None,
                 "message": None,
-                "invoice_ids": [invoice.id],
+                "invoices": [invoice.id],
                 "provider": payment.provider,
                 "received_at": payment.received_at.isoformat().replace("+00:00", "Z"),
                 "created_at": ANY,

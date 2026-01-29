@@ -23,7 +23,7 @@ export interface Payment {
   url: string | null;
   /** @nullable */
   message: string | null;
-  readonly invoice_ids: readonly string[];
+  readonly invoices: readonly string[];
   /** @nullable */
   provider: PaymentProvider;
   received_at: string;

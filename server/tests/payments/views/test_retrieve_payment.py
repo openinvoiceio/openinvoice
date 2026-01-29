@@ -30,7 +30,7 @@ def test_retrieve_payment(api_client, user, account):
         "transaction_id": payment.transaction_id,
         "url": None,
         "message": None,
-        "invoice_ids": [invoice.id],
+        "invoices": [invoice.id],
         "provider": None,
         "received_at": payment.received_at.isoformat().replace("+00:00", "Z"),
         "created_at": ANY,
