@@ -100,7 +100,6 @@ class Quote(models.Model):
     account = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="quotes")
     customer = models.ForeignKey("customers.Customer", on_delete=models.PROTECT, related_name="quotes")
     footer = models.CharField(max_length=500, null=True, blank=True)
-    description = models.CharField(max_length=500, null=True, blank=True)
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_amount_excluding_tax = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
@@ -118,6 +117,7 @@ class Quote(models.Model):
         default=list,
         blank=True,
     )
+    notes = models.ManyToManyField("notes.Note", related_name="quotes")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
     opened_at = models.DateTimeField(null=True)
@@ -360,7 +360,6 @@ class Quote(models.Model):
         metadata: dict,
         custom_fields: dict,
         footer: str | None,
-        description: str | None,
         delivery_method: QuoteDeliveryMethod,
         recipients: list[str],
     ) -> None:
@@ -380,7 +379,6 @@ class Quote(models.Model):
         self.metadata = metadata
         self.custom_fields = custom_fields
         self.footer = footer
-        self.description = description
         self.delivery_method = delivery_method
         self.recipients = recipients
         self.save()

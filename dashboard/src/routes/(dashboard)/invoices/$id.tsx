@@ -2,9 +2,13 @@ import { useCreditNotesList } from "@/api/endpoints/credit-notes/credit-notes";
 import { useFilesRetrieve } from "@/api/endpoints/files/files";
 import {
   getInvoicesListQueryKey,
+  getInvoicesNotesListQueryKey,
   getInvoicesRetrieveQueryKey,
   getPreviewInvoiceQueryKey,
+  useCreateInvoiceNote,
+  useDeleteInvoiceNote,
   useFinalizeInvoice,
+  useInvoicesNotesList,
   useInvoicesRetrieve,
   useUpdateInvoice,
 } from "@/api/endpoints/invoices/invoices";
@@ -26,6 +30,7 @@ import { InvoiceBadge } from "@/components/invoice-badge";
 import { InvoiceDropdown } from "@/components/invoice-dropdown";
 import { InvoiceLineDropdown } from "@/components/invoice-line-dropdown";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
+import { NotesSection } from "@/components/notes-section";
 import { NumberingSystemView } from "@/components/numbering-system-view";
 import { PaymentBadge } from "@/components/payment-badge";
 import { pushModal } from "@/components/push-modals";
@@ -73,9 +78,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea.tsx";
 import { useDataTable } from "@/hooks/use-data-table.ts";
-import { useDebouncedCallback } from "@/hooks/use-debounced-callback.ts";
 import { getErrorSummary } from "@/lib/api/errors";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";
 import {
@@ -97,7 +100,7 @@ import {
   PencilIcon,
   UserIcon,
 } from "lucide-react";
-import { Fragment, useState, type ChangeEvent } from "react";
+import { Fragment } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/(dashboard)/invoices/$id")({
@@ -130,7 +133,6 @@ function RouteComponent() {
     });
   }
 
-  const [description, setDescription] = useState(invoice?.description);
   const updateInvoice = useUpdateInvoice({
     mutation: {
       onSuccess: async () => {
@@ -139,6 +141,36 @@ function RouteComponent() {
       onError: (error) => {
         const { message, description } = getErrorSummary(error);
         toast.error(message, { description: description });
+      },
+    },
+  });
+
+  const notes = useInvoicesNotesList(id, undefined, {
+    query: { enabled: !!id },
+  });
+  const createNote = useCreateInvoiceNote({
+    mutation: {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: getInvoicesNotesListQueryKey(id),
+        });
+      },
+      onError: (error) => {
+        const { message, description } = getErrorSummary(error);
+        toast.error(message, { description });
+      },
+    },
+  });
+  const deleteNote = useDeleteInvoiceNote({
+    mutation: {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: getInvoicesNotesListQueryKey(id),
+        });
+      },
+      onError: (error) => {
+        const { message, description } = getErrorSummary(error);
+        toast.error(message, { description });
       },
     },
   });
@@ -155,15 +187,6 @@ function RouteComponent() {
       },
     },
   });
-
-  const debouncedUpdate = useDebouncedCallback(
-    (e: ChangeEvent<HTMLTextAreaElement>) =>
-      updateInvoice.mutate({
-        id: id,
-        data: { description: e?.target?.value || null },
-      }),
-    2000,
-  );
 
   const { table: creditNotesTable } = useDataTable({
     data: creditNotes.data?.results ?? [],
@@ -271,24 +294,6 @@ function RouteComponent() {
                 <span>
                   {formatAmount(invoice.total_amount, invoice.currency)}
                 </span>
-              </SectionDescription>
-            </SectionHeader>
-          </Section>
-          <Section>
-            <SectionHeader>
-              <div className="flex items-center gap-2">
-                <SectionTitle>Description</SectionTitle>
-              </div>
-              <SectionDescription>
-                <Textarea
-                  className="text-foreground"
-                  value={description || undefined}
-                  defaultValue={invoice.description || undefined}
-                  onChange={(e) => {
-                    setDescription(e.target.value);
-                    debouncedUpdate(e);
-                  }}
-                />
               </SectionDescription>
             </SectionHeader>
           </Section>
@@ -691,6 +696,17 @@ function RouteComponent() {
               </DataTable>
             </DataTableContainer>
           </Section>
+          <NotesSection
+            notes={notes.data?.results ?? []}
+            isLoading={notes.isLoading}
+            isPending={createNote.isPending}
+            onCreate={(data) =>
+              createNote.mutateAsync({ invoiceId: invoice.id, data })
+            }
+            onDelete={(noteId) =>
+              deleteNote.mutateAsync({ invoiceId: invoice.id, id: noteId })
+            }
+          />
         </SectionGroup>
         <DataSidebar defaultValue="overview">
           <DataSidebarList>

@@ -33,7 +33,6 @@ def test_update_quote(api_client, user, account):
             "metadata": {"stage": "final"},
             "custom_fields": {"reference": "REF-2"},
             "footer": "Updated footer",
-            "description": "Finalized implementation",
         },
     )
 
@@ -83,7 +82,6 @@ def test_update_quote(api_client, user, account):
         "metadata": {"stage": "final"},
         "custom_fields": {"reference": "REF-2"},
         "footer": "Updated footer",
-        "description": "Finalized implementation",
         "delivery_method": QuoteDeliveryMethod.MANUAL,
         "recipients": [],
         "subtotal_amount": "0.00",

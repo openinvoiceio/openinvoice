@@ -44,12 +44,6 @@
                 </p>
             </div>
             <div>
-                {% if quote.description %}
-                    <p>
-                        <span class="info-label">Description:</span>
-                        <span class="info-value">{{ quote.description }}</span>
-                    </p>
-                {% endif %}
                 {% for key, value in quote.custom_fields.items %}
                     <p>
                         <span class="info-label">{{ key }}:</span>

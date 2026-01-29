@@ -26,7 +26,6 @@ def test_create_quote(api_client, user, account):
             "metadata": {"channel": "partner"},
             "custom_fields": {"po_number": "PO-9001"},
             "footer": "Thank you for your business",
-            "description": "Quarterly consulting retainer",
         },
     )
 
@@ -76,7 +75,6 @@ def test_create_quote(api_client, user, account):
         "metadata": {"channel": "partner"},
         "custom_fields": {"po_number": "PO-9001"},
         "footer": "Thank you for your business",
-        "description": "Quarterly consulting retainer",
         "delivery_method": QuoteDeliveryMethod.MANUAL,
         "recipients": [customer.email],
         "subtotal_amount": "0.00",

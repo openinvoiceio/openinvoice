@@ -32,11 +32,6 @@ export interface QuoteCreate {
    * @nullable
    */
   footer?: string | null;
-  /**
-   * @maxLength 600
-   * @nullable
-   */
-  description?: string | null;
   delivery_method?: DeliveryMethodEnum;
   recipients?: string[];
 }

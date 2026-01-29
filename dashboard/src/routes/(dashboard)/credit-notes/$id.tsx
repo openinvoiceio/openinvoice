@@ -1,7 +1,11 @@
 import {
   getCreditNotesListQueryKey,
+  getCreditNotesNotesListQueryKey,
   getCreditNotesRetrieveQueryKey,
+  useCreateCreditNoteNote,
+  useCreditNotesNotesList,
   useCreditNotesRetrieve,
+  useDeleteCreditNoteNote,
   useIssueCreditNote,
   useUpdateCreditNote,
 } from "@/api/endpoints/credit-notes/credit-notes";
@@ -18,6 +22,7 @@ import {
 import { CreditNoteBadge } from "@/components/credit-note-badge";
 import { CreditNoteDropdown } from "@/components/credit-note-dropdown.tsx";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
+import { NotesSection } from "@/components/notes-section";
 import { NumberingSystemView } from "@/components/numbering-system-view.tsx";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -60,8 +65,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea.tsx";
-import { useDebouncedCallback } from "@/hooks/use-debounced-callback.ts";
 import { getErrorSummary } from "@/lib/api/errors";
 import {
   formatAmount,
@@ -80,7 +83,6 @@ import {
   PencilIcon,
   UserIcon,
 } from "lucide-react";
-import { useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/(dashboard)/credit-notes/$id")({
@@ -101,7 +103,6 @@ function RouteComponent() {
   const { data: logo } = useFilesRetrieve(creditNote?.customer.logo_id || "", {
     query: { enabled: !!creditNote?.customer?.logo_id },
   });
-  const [description, setDescription] = useState(creditNote?.description);
 
   async function invalidate() {
     await queryClient.invalidateQueries({
@@ -111,6 +112,36 @@ function RouteComponent() {
       queryKey: getCreditNotesListQueryKey(),
     });
   }
+
+  const notes = useCreditNotesNotesList(id, undefined, {
+    query: { enabled: !!id },
+  });
+  const createNote = useCreateCreditNoteNote({
+    mutation: {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: getCreditNotesNotesListQueryKey(id),
+        });
+      },
+      onError: (error) => {
+        const { message, description } = getErrorSummary(error);
+        toast.error(message, { description });
+      },
+    },
+  });
+  const deleteNote = useDeleteCreditNoteNote({
+    mutation: {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: getCreditNotesNotesListQueryKey(id),
+        });
+      },
+      onError: (error) => {
+        const { message, description } = getErrorSummary(error);
+        toast.error(message, { description });
+      },
+    },
+  });
 
   const issueMutation = useIssueCreditNote({
     mutation: {
@@ -136,15 +167,6 @@ function RouteComponent() {
       },
     },
   });
-
-  const debouncedUpdate = useDebouncedCallback(
-    (e: ChangeEvent<HTMLTextAreaElement>) =>
-      updateCreditNote.mutate({
-        id: id,
-        data: { description: e?.target?.value || null },
-      }),
-    2000,
-  );
 
   if (!creditNote) return null;
 
@@ -230,25 +252,6 @@ function RouteComponent() {
                 <span>
                   {formatAmount(creditNote.total_amount, creditNote.currency)}
                 </span>
-              </SectionDescription>
-            </SectionHeader>
-          </Section>
-
-          <Section>
-            <SectionHeader>
-              <div className="flex items-center gap-2">
-                <SectionTitle>Description</SectionTitle>
-              </div>
-              <SectionDescription>
-                <Textarea
-                  className="text-foreground"
-                  value={description || undefined}
-                  defaultValue={creditNote.description || undefined}
-                  onChange={(e) => {
-                    setDescription(e.target.value);
-                    debouncedUpdate(e);
-                  }}
-                />
               </SectionDescription>
             </SectionHeader>
           </Section>
@@ -474,6 +477,21 @@ function RouteComponent() {
               </TableFooter>
             </Table>
           </Section>
+
+          <NotesSection
+            notes={notes.data?.results ?? []}
+            isLoading={notes.isLoading}
+            isPending={createNote.isPending}
+            onCreate={(data) =>
+              createNote.mutateAsync({ creditNoteId: creditNote.id, data })
+            }
+            onDelete={(noteId) =>
+              deleteNote.mutateAsync({
+                creditNoteId: creditNote.id,
+                id: noteId,
+              })
+            }
+          />
         </SectionGroup>
         <DataSidebar defaultValue="overview">
           <DataSidebarList>

@@ -42,11 +42,6 @@ export interface InvoiceRevisionCreate {
    * @nullable
    */
   footer?: string | null;
-  /**
-   * @maxLength 600
-   * @nullable
-   */
-  description?: string | null;
   /** @nullable */
   payment_provider?: InvoiceRevisionCreatePaymentProvider;
   /** @nullable */

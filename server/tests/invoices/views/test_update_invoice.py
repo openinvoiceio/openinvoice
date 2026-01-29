@@ -42,7 +42,6 @@ def test_update_invoice(api_client, user, account):
             "metadata": {},
             "custom_fields": {},
             "footer": None,
-            "description": None,
         },
     )
 
@@ -96,7 +95,6 @@ def test_update_invoice(api_client, user, account):
         "metadata": {},
         "custom_fields": {},
         "footer": None,
-        "description": None,
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
         "recipients": [],
         "subtotal_amount": f"{invoice.subtotal_amount.amount:.2f}",
@@ -147,7 +145,6 @@ def test_update_invoice_change_customer(api_client, user, account):
             "metadata": {},
             "custom_fields": {},
             "footer": None,
-            "description": None,
         },
     )
 
@@ -641,7 +638,6 @@ def test_update_invoice_revision_requires_same_customer(api_client, user, accoun
             "metadata": {},
             "custom_fields": {},
             "footer": revision.footer,
-            "description": revision.description,
         },
     )
 
@@ -676,7 +672,6 @@ def test_update_invoice_customer_not_found(api_client, user, account):
             "metadata": {},
             "custom_fields": {},
             "footer": None,
-            "description": None,
         },
     )
 
@@ -707,7 +702,6 @@ def test_update_invoice_requires_account(api_client, user):
             "metadata": {},
             "custom_fields": {},
             "footer": None,
-            "description": None,
         },
     )
 
@@ -741,7 +735,6 @@ def test_update_invoice_rejects_foreign_account(api_client, user, account):
             "metadata": {},
             "custom_fields": {},
             "footer": None,
-            "description": None,
         },
     )
 
@@ -783,7 +776,6 @@ def test_update_invoice_non_draft(api_client, user, account, status):
             "metadata": {},
             "custom_fields": {},
             "footer": None,
-            "description": None,
         },
     )
 
@@ -818,7 +810,6 @@ def test_update_invoice_numbering_system_not_found(api_client, user, account):
             "metadata": {},
             "custom_fields": {},
             "footer": None,
-            "description": None,
         },
     )
 
@@ -853,7 +844,6 @@ def test_update_invoice_assign_numbering_system(api_client, user, account):
             "metadata": {},
             "custom_fields": {},
             "footer": None,
-            "description": None,
         },
     )
 
@@ -891,7 +881,6 @@ def test_update_invoice_assign_numbering_system_existing_invoices(api_client, us
             "metadata": {},
             "custom_fields": {},
             "footer": None,
-            "description": None,
         },
     )
 
@@ -922,7 +911,6 @@ def test_update_invoice_switch_to_manual_number(api_client, user, account):
             "metadata": {},
             "custom_fields": {},
             "footer": None,
-            "description": None,
         },
     )
 

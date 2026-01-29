@@ -121,7 +121,6 @@ class InvoiceSerializer(serializers.Serializer):
     metadata = MetadataField()
     custom_fields = MetadataField()
     footer = serializers.CharField(allow_null=True)
-    description = serializers.CharField(allow_null=True)
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2)
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2)
     total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2)
@@ -169,7 +168,6 @@ class InvoiceCreateSerializer(serializers.Serializer):
     metadata = MetadataField(allow_null=True, required=False)
     custom_fields = MetadataField(allow_null=True, required=False)
     footer = serializers.CharField(allow_null=True, required=False, max_length=600)
-    description = serializers.CharField(allow_null=True, required=False, max_length=600)
     payment_provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True, required=False)
     payment_connection_id = IntegrationConnectionField(
         source="payment_connection", type_field="payment_provider", allow_null=True, required=False
@@ -214,7 +212,6 @@ class InvoiceRevisionCreateSerializer(serializers.Serializer):
     metadata = MetadataField(allow_null=True, required=False)
     custom_fields = MetadataField(allow_null=True, required=False)
     footer = serializers.CharField(allow_null=True, required=False, max_length=600)
-    description = serializers.CharField(allow_null=True, required=False, max_length=600)
     payment_provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True, required=False)
     payment_connection_id = IntegrationConnectionField(
         source="payment_connection", type_field="payment_provider", allow_null=True, required=False
@@ -257,7 +254,6 @@ class InvoiceUpdateSerializer(serializers.Serializer):
     metadata = MetadataField(required=False)
     custom_fields = MetadataField(required=False)
     footer = serializers.CharField(max_length=600, allow_null=True, required=False)
-    description = serializers.CharField(max_length=600, allow_null=True, required=False)
     payment_provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True, required=False)
     payment_connection_id = IntegrationConnectionField(
         source="payment_connection", type_field="payment_provider", allow_null=True, required=False

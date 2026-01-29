@@ -453,25 +453,6 @@ export const columns: ColumnDef<Invoice>[] = [
     enableSorting: false,
   },
   {
-    id: "description",
-    header: "Description",
-    accessorKey: "description",
-    cell: ({ row }) => {
-      const value: string | null = row.getValue("description");
-      return (
-        <div
-          className={cn("max-w-96 truncate", !value && "text-muted-foreground")}
-        >
-          {value || "-"}
-        </div>
-      );
-    },
-    meta: {
-      label: "Description",
-    },
-    enableSorting: false,
-  },
-  {
     id: "lines",
     header: "Lines",
     accessorKey: "lines",

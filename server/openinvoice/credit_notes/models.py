@@ -48,7 +48,6 @@ class CreditNote(models.Model):
     invoice = models.ForeignKey("invoices.Invoice", on_delete=models.CASCADE, related_name="credit_notes")
     customer = models.ForeignKey("customers.Customer", on_delete=models.CASCADE, related_name="credit_notes")
     account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, related_name="credit_notes")
-    description = models.CharField(max_length=500, null=True, blank=True)
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_amount_excluding_tax = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
@@ -66,6 +65,7 @@ class CreditNote(models.Model):
         default=list,
         blank=True,
     )
+    notes = models.ManyToManyField("notes.Note", related_name="credit_notes")
     updated_at = models.DateTimeField(auto_now=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     issued_at = models.DateTimeField(null=True)
@@ -173,7 +173,6 @@ class CreditNote(models.Model):
         numbering_system: NumberingSystem | None,
         reason: CreditNoteReason,
         metadata: Mapping[str, object] | None,
-        description: str | None,
         delivery_method: CreditNoteDeliveryMethod,
         recipients: list[str],
     ) -> None:
@@ -189,7 +188,6 @@ class CreditNote(models.Model):
         self.numbering_system = resolved_numbering_system
         self.reason = reason
         self.metadata = metadata or self.metadata
-        self.description = description
         self.delivery_method = delivery_method
         self.recipients = recipients
         self.save()

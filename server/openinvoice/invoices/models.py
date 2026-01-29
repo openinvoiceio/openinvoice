@@ -134,7 +134,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     customer = models.ForeignKey("customers.Customer", on_delete=models.PROTECT, related_name="invoices")
     account = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="invoices")
     footer = models.CharField(max_length=500, null=True, blank=True)
-    description = models.CharField(max_length=500, null=True, blank=True)
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_excluding_tax_amount = MoneyField(
@@ -173,6 +172,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         default=list,
         blank=True,
     )
+    notes = models.ManyToManyField("notes.Note", related_name="invoices")
     coupons = models.ManyToManyField("coupons.Coupon", through="InvoiceCoupon", related_name="+")
     tax_rates = models.ManyToManyField("tax_rates.TaxRate", through="InvoiceTaxRate", related_name="+")
     shipping = models.OneToOneField(
@@ -643,7 +643,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         metadata: Mapping[str, Any] | None = None,
         custom_fields: Mapping[str, Any] | None = None,
         footer: str | None = None,
-        description: str | None = None,
         payment_provider: PaymentProvider | None = None,
         payment_connection_id: uuid.UUID | None = None,
         delivery_method: InvoiceDeliveryMethod | None = None,
@@ -667,7 +666,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.metadata = dict(metadata or self.metadata)
         self.custom_fields = dict(custom_fields or self.custom_fields)
         self.footer = footer
-        self.description = description
         self.payment_provider = payment_provider
         self.payment_connection_id = payment_connection_id
         self.customer = customer

@@ -88,7 +88,6 @@ def test_create_invoice_revision(api_client, user, account):
         "metadata": {},
         "custom_fields": {},
         "footer": account.invoice_footer,
-        "description": None,
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
         "recipients": [customer.email],
         "subtotal_amount": "0.00",
@@ -144,7 +143,6 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
         metadata={"note": "keep"},
         custom_fields={"po": "123"},
         footer="Original footer",
-        description="Original description",
         shipping=shipping,
     )
 
@@ -183,7 +181,6 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
     assert revision.metadata == {}
     assert revision.custom_fields == invoice.custom_fields
     assert revision.footer == invoice.footer
-    assert revision.description == invoice.description
     assert revision.subtotal_amount == invoice.subtotal_amount
     assert revision.total_discount_amount == invoice.total_discount_amount
     assert revision.total_excluding_tax_amount == invoice.total_excluding_tax_amount

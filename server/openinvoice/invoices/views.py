@@ -3,12 +3,15 @@ from django.conf import settings
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 
 from common.utils import numeric_overflow
 from openinvoice.accounts.permissions import IsAccountMember
+from openinvoice.notes.models import Note
+from openinvoice.notes.serializers import NoteCreateSerializer, NoteSerializer
 
 from .choices import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
 from .filtersets import InvoiceFilterSet
@@ -40,7 +43,6 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
         "customer__email",
         "invoice_customer__name",
         "invoice_customer__email",
-        "description",
         "lines__description",
     ]
     ordering_fields = ["created_at", "issue_date", "due_date"]
@@ -71,7 +73,6 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
             metadata=data.get("metadata"),
             custom_fields=data.get("custom_fields"),
             footer=data.get("footer"),
-            description=data.get("description"),
             payment_provider=data.get("payment_provider"),
             payment_connection_id=getattr(data.get("payment_connection"), "id", None),
             delivery_method=data.get("delivery_method"),
@@ -140,7 +141,6 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             metadata=data.get("metadata", invoice.metadata),
             custom_fields=data.get("custom_fields", invoice.custom_fields),
             footer=data.get("footer", invoice.footer),
-            description=data.get("description", invoice.description),
             payment_provider=data.get("payment_provider", invoice.payment_provider),
             payment_connection_id=getattr(data.get("payment_connection"), "id", invoice.payment_connection_id),
             delivery_method=data.get("delivery_method", invoice.delivery_method),
@@ -259,7 +259,6 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
             metadata=data.get("metadata"),
             custom_fields=data.get("custom_fields"),
             footer=data.get("footer"),
-            description=data.get("description"),
             payment_provider=data.get("payment_provider"),
             payment_connection_id=getattr(data.get("payment_connection"), "id", None),
             delivery_method=data.get("delivery_method"),
@@ -420,6 +419,61 @@ class InvoicePreviewAPIView(generics.GenericAPIView):
                 template_name = "invoices/email/invoice_email_message.html"
 
         return Response({"invoice": invoice}, template_name=template_name)
+
+
+@extend_schema_view(list=extend_schema(operation_id="list_invoice_notes"))
+class InvoiceNotesListCreateAPIView(generics.ListAPIView):
+    queryset = Note.objects.none()
+    serializer_class = NoteSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        return (
+            Note.objects.filter(
+                invoices__id=self.kwargs["invoice_id"],
+                invoices__account=self.request.account,
+            )
+            .select_related("author", "author__avatar")
+            .order_by("-created_at")
+        )
+
+    @extend_schema(
+        operation_id="create_invoice_note",
+        request=NoteCreateSerializer,
+        responses={201: NoteSerializer},
+    )
+    def post(self, request, *_, **__):
+        serializer = NoteCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        invoice = get_object_or_404(Invoice.objects.for_account(self.request.account), id=self.kwargs["invoice_id"])
+
+        note = invoice.notes.create_note(
+            author=request.user,
+            content=serializer.data["content"],
+            visibility=serializer.data["visibility"],
+        )
+        logger.info("Invoice note created", note_id=note.id, invoice_id=invoice.id)
+
+        serializer = self.get_serializer(note)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class InvoiceNoteDestroyAPIView(generics.DestroyAPIView):
+    queryset = Note.objects.none()
+    serializer_class = NoteSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        return Note.objects.filter(invoices__id=self.kwargs["invoice_id"], invoices__account=self.request.account)
+
+    @extend_schema(operation_id="delete_invoice_note", request=None, responses={204: None})
+    def delete(self, *_, **__):
+        note = self.get_object()
+
+        note.delete()
+        logger.info("Invoice note deleted", note_id=note.id, invoice_id=self.kwargs["invoice_id"])
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class InvoiceLineCreateAPIView(generics.GenericAPIView):

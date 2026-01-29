@@ -72,7 +72,6 @@ def test_cancel_quote(api_client, user, account):
         "metadata": {},
         "custom_fields": {},
         "footer": None,
-        "description": None,
         "delivery_method": QuoteDeliveryMethod.MANUAL,
         "recipients": [],
         "subtotal_amount": "0.00",

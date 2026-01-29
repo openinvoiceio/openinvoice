@@ -142,7 +142,6 @@ def test_search_all(api_client, user, account):
                 "metadata": invoice_alpha.metadata,
                 "custom_fields": invoice_alpha.custom_fields,
                 "footer": invoice_alpha.footer,
-                "description": invoice_alpha.description,
                 "delivery_method": invoice_alpha.delivery_method,
                 "recipients": invoice_alpha.recipients,
                 "subtotal_amount": f"{invoice_alpha.subtotal_amount.amount:.2f}",

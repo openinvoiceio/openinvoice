@@ -18,11 +18,6 @@ export interface CreditNoteUpdate {
   numbering_system_id?: string | null;
   reason?: CreditNoteReasonEnum;
   metadata?: unknown;
-  /**
-   * @maxLength 500
-   * @nullable
-   */
-  description?: string | null;
   delivery_method?: DeliveryMethodEnum;
   recipients?: string[];
 }

@@ -27,7 +27,6 @@ def test_list_quotes(api_client, user, account):
         metadata={"channel": "direct"},
         custom_fields={"po_number": "PO-456"},
         footer="Warm regards",
-        description="February retainer",
     )
     QuoteFactory()  # other account
 
@@ -86,7 +85,6 @@ def test_list_quotes(api_client, user, account):
                 "metadata": quote.metadata,
                 "custom_fields": quote.custom_fields,
                 "footer": quote.footer,
-                "description": quote.description,
                 "delivery_method": quote.delivery_method,
                 "recipients": quote.recipients,
                 "subtotal_amount": "0.00",

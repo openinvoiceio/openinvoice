@@ -222,7 +222,6 @@ class InvoiceFactory(DjangoModelFactory):
     issue_date = None
     due_date = LazyFunction(lambda: timezone.now().date())
     footer = None
-    description = None
     subtotal_amount = SelfAttribute("total_amount")
     total_discount_amount = Decimal("0")
     total_excluding_tax_amount = Decimal("0")
@@ -411,7 +410,6 @@ class QuoteFactory(DjangoModelFactory):
     metadata = {}
     custom_fields = {}
     footer = None
-    description = None
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):

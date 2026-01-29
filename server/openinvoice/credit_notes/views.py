@@ -1,3 +1,4 @@
+import structlog
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
@@ -9,6 +10,8 @@ from rest_framework.response import Response
 
 from openinvoice.accounts.permissions import IsAccountMember
 from openinvoice.invoices.choices import InvoiceStatus
+from openinvoice.notes.models import Note
+from openinvoice.notes.serializers import NoteCreateSerializer, NoteSerializer
 
 from .choices import CreditNoteDeliveryMethod, CreditNotePreviewFormat, CreditNoteStatus
 from .filtersets import CreditNoteFilterSet
@@ -26,6 +29,8 @@ from .serializers import (
     CreditNoteUpdateSerializer,
     CreditNoteVoidSerializer,
 )
+
+logger = structlog.get_logger(__name__)
 
 
 @extend_schema_view(list=extend_schema(operation_id="list_credit_notes"))
@@ -87,7 +92,6 @@ class CreditNoteListCreateAPIView(generics.ListAPIView):
             numbering_system=data.get("numbering_system"),
             reason=data.get("reason"),
             metadata=data.get("metadata"),
-            description=data.get("description"),
             delivery_method=data.get("delivery_method"),
             recipients=data.get("recipients"),
         )
@@ -153,7 +157,6 @@ class CreditNoteRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             numbering_system=data.get("numbering_system", credit_note.numbering_system),
             reason=data.get("reason", credit_note.reason),
             metadata=data.get("metadata", credit_note.metadata),
-            description=data.get("description", credit_note.description),
             delivery_method=data.get("delivery_method", credit_note.delivery_method),
             recipients=data.get("recipients", credit_note.recipients),
         )
@@ -169,6 +172,67 @@ class CreditNoteRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             raise ValidationError("Only draft credit notes can be deleted")
 
         credit_note.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema_view(list=extend_schema(operation_id="list_credit_note_notes"))
+class CreditNoteNotesListCreateAPIView(generics.ListAPIView):
+    queryset = Note.objects.none()
+    serializer_class = NoteSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        return (
+            Note.objects.filter(
+                credit_notes__id=self.kwargs["credit_note_id"],
+                credit_notes__account=self.request.account,
+            )
+            .select_related("author", "author__avatar")
+            .order_by("-created_at")
+        )
+
+    @extend_schema(
+        operation_id="create_credit_note_note",
+        request=NoteCreateSerializer,
+        responses={201: NoteSerializer},
+    )
+    def post(self, request, *_, **__):
+        serializer = NoteCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        credit_note = get_object_or_404(
+            CreditNote.objects.for_account(self.request.account),
+            id=self.kwargs["credit_note_id"],
+        )
+
+        note = credit_note.notes.create_note(
+            author=request.user,
+            content=serializer.validated_data["content"],
+            visibility=serializer.validated_data["visibility"],
+        )
+        logger.info("Credit note note created", note_id=note.id, credit_note_id=credit_note.id)
+
+        serializer = self.get_serializer(note)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class CreditNoteNoteDestroyAPIView(generics.DestroyAPIView):
+    queryset = Note.objects.none()
+    serializer_class = NoteSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        return Note.objects.filter(
+            credit_notes__id=self.kwargs["credit_note_id"],
+            credit_notes__account=self.request.account,
+        )
+
+    @extend_schema(operation_id="delete_credit_note_note", request=None, responses={204: None})
+    def delete(self, *_, **__):
+        note = self.get_object()
+
+        note.delete()
+        logger.info("Credit note note deleted", note_id=note.id, credit_note_id=self.kwargs["credit_note_id"])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

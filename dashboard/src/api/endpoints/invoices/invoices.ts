@@ -29,9 +29,13 @@ import type {
   InvoiceCreate,
   InvoiceRevisionCreate,
   InvoicesListParams,
+  InvoicesNotesListParams,
   InvoiceUpdate,
   ListInvoiceRevisionsParams,
+  Note,
+  NoteCreate,
   PaginatedInvoiceList,
+  PaginatedNoteList,
   PreviewInvoiceParams,
 } from "../../models";
 
@@ -382,6 +386,493 @@ export const useCreateInvoice = <
   TContext
 > => {
   const mutationOptions = getCreateInvoiceMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const invoicesNotesList = (
+  invoiceId: string,
+  params?: InvoicesNotesListParams,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<PaginatedNoteList>(
+    {
+      url: `/api/v1/invoices/${invoiceId}/notes`,
+      method: "GET",
+      params,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getInvoicesNotesListQueryKey = (
+  invoiceId?: string,
+  params?: InvoicesNotesListParams,
+) => {
+  return [
+    `/api/v1/invoices/${invoiceId}/notes`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getInvoicesNotesListQueryOptions = <
+  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  invoiceId: string,
+  params?: InvoicesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof invoicesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getInvoicesNotesListQueryKey(invoiceId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof invoicesNotesList>>
+  > = ({ signal }) =>
+    invoicesNotesList(invoiceId, params, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!invoiceId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof invoicesNotesList>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type InvoicesNotesListQueryResult = NonNullable<
+  Awaited<ReturnType<typeof invoicesNotesList>>
+>;
+export type InvoicesNotesListQueryError = ErrorType<unknown>;
+
+export function useInvoicesNotesList<
+  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  invoiceId: string,
+  params: undefined | InvoicesNotesListParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof invoicesNotesList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof invoicesNotesList>>,
+          TError,
+          Awaited<ReturnType<typeof invoicesNotesList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useInvoicesNotesList<
+  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  invoiceId: string,
+  params?: InvoicesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof invoicesNotesList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof invoicesNotesList>>,
+          TError,
+          Awaited<ReturnType<typeof invoicesNotesList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useInvoicesNotesList<
+  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  invoiceId: string,
+  params?: InvoicesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof invoicesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useInvoicesNotesList<
+  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  invoiceId: string,
+  params?: InvoicesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof invoicesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getInvoicesNotesListQueryOptions(
+    invoiceId,
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getInvoicesNotesListSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  invoiceId: string,
+  params?: InvoicesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof invoicesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getInvoicesNotesListQueryKey(invoiceId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof invoicesNotesList>>
+  > = ({ signal }) =>
+    invoicesNotesList(invoiceId, params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof invoicesNotesList>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type InvoicesNotesListSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof invoicesNotesList>>
+>;
+export type InvoicesNotesListSuspenseQueryError = ErrorType<unknown>;
+
+export function useInvoicesNotesListSuspense<
+  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  invoiceId: string,
+  params: undefined | InvoicesNotesListParams,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof invoicesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useInvoicesNotesListSuspense<
+  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  invoiceId: string,
+  params?: InvoicesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof invoicesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useInvoicesNotesListSuspense<
+  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  invoiceId: string,
+  params?: InvoicesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof invoicesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useInvoicesNotesListSuspense<
+  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  invoiceId: string,
+  params?: InvoicesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof invoicesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getInvoicesNotesListSuspenseQueryOptions(
+    invoiceId,
+    params,
+    options,
+  );
+
+  const query = useSuspenseQuery(
+    queryOptions,
+    queryClient,
+  ) as UseSuspenseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const createInvoiceNote = (
+  invoiceId: string,
+  noteCreate: NoteCreate,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<Note>(
+    {
+      url: `/api/v1/invoices/${invoiceId}/notes`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: noteCreate,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getCreateInvoiceNoteMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createInvoiceNote>>,
+    TError,
+    { invoiceId: string; data: NoteCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createInvoiceNote>>,
+  TError,
+  { invoiceId: string; data: NoteCreate },
+  TContext
+> => {
+  const mutationKey = ["createInvoiceNote"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createInvoiceNote>>,
+    { invoiceId: string; data: NoteCreate }
+  > = (props) => {
+    const { invoiceId, data } = props ?? {};
+
+    return createInvoiceNote(invoiceId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateInvoiceNoteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createInvoiceNote>>
+>;
+export type CreateInvoiceNoteMutationBody = NoteCreate;
+export type CreateInvoiceNoteMutationError = ErrorType<unknown>;
+
+export const useCreateInvoiceNote = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createInvoiceNote>>,
+      TError,
+      { invoiceId: string; data: NoteCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createInvoiceNote>>,
+  TError,
+  { invoiceId: string; data: NoteCreate },
+  TContext
+> => {
+  const mutationOptions = getCreateInvoiceNoteMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const deleteInvoiceNote = (
+  invoiceId: string,
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+) => {
+  return axiosInstance<void>(
+    { url: `/api/v1/invoices/${invoiceId}/notes/${id}`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getDeleteInvoiceNoteMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteInvoiceNote>>,
+    TError,
+    { invoiceId: string; id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteInvoiceNote>>,
+  TError,
+  { invoiceId: string; id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteInvoiceNote"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteInvoiceNote>>,
+    { invoiceId: string; id: string }
+  > = (props) => {
+    const { invoiceId, id } = props ?? {};
+
+    return deleteInvoiceNote(invoiceId, id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteInvoiceNoteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteInvoiceNote>>
+>;
+
+export type DeleteInvoiceNoteMutationError = ErrorType<unknown>;
+
+export const useDeleteInvoiceNote = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteInvoiceNote>>,
+      TError,
+      { invoiceId: string; id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteInvoiceNote>>,
+  TError,
+  { invoiceId: string; id: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteInvoiceNoteMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

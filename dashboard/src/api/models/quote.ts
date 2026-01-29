@@ -30,8 +30,6 @@ export interface Quote {
   custom_fields: unknown;
   /** @nullable */
   footer: string | null;
-  /** @nullable */
-  description: string | null;
   delivery_method: DeliveryMethodEnum;
   recipients: string[];
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */

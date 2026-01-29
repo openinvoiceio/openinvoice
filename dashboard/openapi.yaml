@@ -2061,6 +2061,103 @@ paths:
               schema:
                 $ref: '#/components/schemas/CreditNote'
           description: ''
+  /api/v1/credit-notes/{credit_note_id}/notes:
+    get:
+      operationId: credit_notes_notes_list
+      parameters:
+      - in: path
+        name: credit_note_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - credit-notes
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNoteList'
+          description: ''
+    post:
+      operationId: create_credit_note_note
+      parameters:
+      - in: path
+        name: credit_note_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - credit-notes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          description: ''
+  /api/v1/credit-notes/{credit_note_id}/notes/{id}:
+    delete:
+      operationId: delete_credit_note_note
+      parameters:
+      - in: path
+        name: credit_note_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - credit-notes
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/credit-notes/{id}:
     get:
       operationId: credit_notes_retrieve
@@ -3049,6 +3146,103 @@ paths:
               schema:
                 $ref: '#/components/schemas/Invoice'
           description: ''
+  /api/v1/invoices/{invoice_id}/notes:
+    get:
+      operationId: invoices_notes_list
+      parameters:
+      - in: path
+        name: invoice_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNoteList'
+          description: ''
+    post:
+      operationId: create_invoice_note
+      parameters:
+      - in: path
+        name: invoice_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - invoices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          description: ''
+  /api/v1/invoices/{invoice_id}/notes/{id}:
+    delete:
+      operationId: delete_invoice_note
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: invoice_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/invoices/{id}:
     get:
       operationId: invoices_retrieve
@@ -4567,6 +4761,103 @@ paths:
               schema:
                 $ref: '#/components/schemas/Quote'
           description: ''
+  /api/v1/quotes/{quote_id}/notes:
+    get:
+      operationId: quotes_notes_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: quote_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - quotes
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNoteList'
+          description: ''
+    post:
+      operationId: create_quote_note
+      parameters:
+      - in: path
+        name: quote_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - quotes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          description: ''
+  /api/v1/quotes/{quote_id}/notes/{id}:
+    delete:
+      operationId: delete_quote_note
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: quote_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - quotes
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/quotes/{quote_id}/preview:
     get:
       operationId: preview_quote
@@ -6542,9 +6833,6 @@ components:
           format: date
           nullable: true
         metadata: {}
-        description:
-          type: string
-          nullable: true
         delivery_method:
           $ref: '#/components/schemas/DeliveryMethodEnum'
         recipients:
@@ -6624,7 +6912,6 @@ components:
       - currency
       - customer
       - delivery_method
-      - description
       - id
       - invoice_id
       - issue_date
@@ -6706,10 +6993,6 @@ components:
           $ref: '#/components/schemas/CreditNoteReasonEnum'
         metadata:
           nullable: true
-        description:
-          type: string
-          nullable: true
-          maxLength: 500
         delivery_method:
           $ref: '#/components/schemas/DeliveryMethodEnum'
         recipients:
@@ -6995,10 +7278,6 @@ components:
         reason:
           $ref: '#/components/schemas/CreditNoteReasonEnum'
         metadata: {}
-        description:
-          type: string
-          nullable: true
-          maxLength: 500
         delivery_method:
           $ref: '#/components/schemas/DeliveryMethodEnum'
         recipients:
@@ -8108,9 +8387,6 @@ components:
         footer:
           type: string
           nullable: true
-        description:
-          type: string
-          nullable: true
         subtotal_amount:
           type: string
           format: decimal
@@ -8220,7 +8496,6 @@ components:
       - custom_fields
       - customer
       - delivery_method
-      - description
       - discounts
       - due_date
       - footer
@@ -8328,10 +8603,6 @@ components:
         custom_fields:
           nullable: true
         footer:
-          type: string
-          nullable: true
-          maxLength: 600
-        description:
           type: string
           nullable: true
           maxLength: 600
@@ -8636,10 +8907,6 @@ components:
           type: string
           nullable: true
           maxLength: 600
-        description:
-          type: string
-          nullable: true
-          maxLength: 600
         payment_provider:
           allOf:
           - $ref: '#/components/schemas/PaymentProviderEnum'
@@ -8807,10 +9074,6 @@ components:
           type: string
           nullable: true
           maxLength: 600
-        description:
-          type: string
-          nullable: true
-          maxLength: 600
         payment_provider:
           allOf:
           - $ref: '#/components/schemas/PaymentProviderEnum'
@@ -8869,6 +9132,63 @@ components:
       description: |-
         * `member` - Member
         * `owner` - Owner
+    Note:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        content:
+          type: string
+          maxLength: 2048
+        visibility:
+          $ref: '#/components/schemas/NoteVisibilityEnum'
+        created_at:
+          type: string
+          format: date-time
+        author:
+          $ref: '#/components/schemas/NoteAuthor'
+      required:
+      - author
+      - content
+      - created_at
+      - id
+      - visibility
+    NoteAuthor:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          readOnly: true
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - avatar_url
+      - id
+      - name
+    NoteCreate:
+      type: object
+      properties:
+        content:
+          type: string
+          maxLength: 2048
+        visibility:
+          $ref: '#/components/schemas/NoteVisibilityEnum'
+      required:
+      - content
+      - visibility
+    NoteVisibilityEnum:
+      enum:
+      - internal
+      - public
+      type: string
+      description: |-
+        * `internal` - Internal
+        * `public` - Public
     NumberingSystem:
       type: object
       properties:
@@ -9175,6 +9495,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Member'
+    PaginatedNoteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Note'
     PaginatedNumberingSystemList:
       type: object
       required:
@@ -10058,9 +10401,6 @@ components:
         footer:
           type: string
           nullable: true
-        description:
-          type: string
-          nullable: true
         delivery_method:
           $ref: '#/components/schemas/DeliveryMethodEnum'
         recipients:
@@ -10138,7 +10478,6 @@ components:
       - custom_fields
       - customer
       - delivery_method
-      - description
       - discounts
       - footer
       - id
@@ -10221,10 +10560,6 @@ components:
         custom_fields:
           nullable: true
         footer:
-          type: string
-          nullable: true
-          maxLength: 600
-        description:
           type: string
           nullable: true
           maxLength: 600
@@ -10554,10 +10889,6 @@ components:
         custom_fields:
           nullable: true
         footer:
-          type: string
-          nullable: true
-          maxLength: 600
-        description:
           type: string
           nullable: true
           maxLength: 600

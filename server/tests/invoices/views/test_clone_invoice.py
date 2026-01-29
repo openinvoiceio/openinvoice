@@ -43,7 +43,6 @@ def test_clone_invoice(api_client, user, account):
         metadata={"note": "keep"},
         custom_fields={"po": "123"},
         footer="Original footer",
-        description="Original description",
         numbering_system=numbering_system,
         net_payment_term=10,
         delivery_method=InvoiceDeliveryMethod.MANUAL,
@@ -125,7 +124,6 @@ def test_clone_invoice(api_client, user, account):
         "metadata": {},
         "custom_fields": invoice.custom_fields,
         "footer": invoice.footer,
-        "description": invoice.description,
         "delivery_method": invoice.delivery_method,
         "recipients": invoice.recipients,
         "subtotal_amount": "190.00",
@@ -331,7 +329,6 @@ def test_clone_invoice(api_client, user, account):
     assert new_invoice.metadata == {}
     assert new_invoice.custom_fields == invoice.custom_fields
     assert new_invoice.footer == invoice.footer
-    assert new_invoice.description == invoice.description
     assert new_invoice.numbering_system_id == invoice.numbering_system_id
     assert new_invoice.net_payment_term == invoice.net_payment_term
     assert new_invoice.delivery_method == invoice.delivery_method

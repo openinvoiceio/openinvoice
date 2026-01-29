@@ -66,7 +66,6 @@ def test_void_invoice(api_client, user, account):
         "metadata": invoice.metadata,
         "custom_fields": invoice.custom_fields,
         "footer": invoice.footer,
-        "description": invoice.description,
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
         "recipients": [],
         "subtotal_amount": "0.00",

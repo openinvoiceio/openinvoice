@@ -76,7 +76,6 @@ def test_retrieve_invoice(api_client, user, account):
         "metadata": {},
         "custom_fields": {},
         "footer": None,
-        "description": None,
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
         "recipients": [],
         "subtotal_amount": "0.00",

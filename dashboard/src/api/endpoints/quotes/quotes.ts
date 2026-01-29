@@ -25,6 +25,9 @@ import type {
 import { axiosInstance } from "../../../lib/api/client";
 import type { ErrorType } from "../../../lib/api/client";
 import type {
+  Note,
+  NoteCreate,
+  PaginatedNoteList,
   PaginatedQuoteList,
   PreviewQuoteParams,
   Quote,
@@ -32,6 +35,7 @@ import type {
   QuoteDiscount,
   QuoteDiscountCreate,
   QuotesListParams,
+  QuotesNotesListParams,
   QuoteTax,
   QuoteTaxCreate,
   QuoteUpdate,
@@ -1204,6 +1208,482 @@ export const useFinalizeQuote = <
   TContext
 > => {
   const mutationOptions = getFinalizeQuoteMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const quotesNotesList = (
+  quoteId: string,
+  params?: QuotesNotesListParams,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<PaginatedNoteList>(
+    { url: `/api/v1/quotes/${quoteId}/notes`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getQuotesNotesListQueryKey = (
+  quoteId?: string,
+  params?: QuotesNotesListParams,
+) => {
+  return [
+    `/api/v1/quotes/${quoteId}/notes`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getQuotesNotesListQueryOptions = <
+  TData = Awaited<ReturnType<typeof quotesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  quoteId: string,
+  params?: QuotesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof quotesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getQuotesNotesListQueryKey(quoteId, params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof quotesNotesList>>> = ({
+    signal,
+  }) => quotesNotesList(quoteId, params, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!quoteId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof quotesNotesList>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type QuotesNotesListQueryResult = NonNullable<
+  Awaited<ReturnType<typeof quotesNotesList>>
+>;
+export type QuotesNotesListQueryError = ErrorType<unknown>;
+
+export function useQuotesNotesList<
+  TData = Awaited<ReturnType<typeof quotesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  quoteId: string,
+  params: undefined | QuotesNotesListParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof quotesNotesList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof quotesNotesList>>,
+          TError,
+          Awaited<ReturnType<typeof quotesNotesList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useQuotesNotesList<
+  TData = Awaited<ReturnType<typeof quotesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  quoteId: string,
+  params?: QuotesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof quotesNotesList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof quotesNotesList>>,
+          TError,
+          Awaited<ReturnType<typeof quotesNotesList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useQuotesNotesList<
+  TData = Awaited<ReturnType<typeof quotesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  quoteId: string,
+  params?: QuotesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof quotesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useQuotesNotesList<
+  TData = Awaited<ReturnType<typeof quotesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  quoteId: string,
+  params?: QuotesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof quotesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getQuotesNotesListQueryOptions(quoteId, params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getQuotesNotesListSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof quotesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  quoteId: string,
+  params?: QuotesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof quotesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getQuotesNotesListQueryKey(quoteId, params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof quotesNotesList>>> = ({
+    signal,
+  }) => quotesNotesList(quoteId, params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof quotesNotesList>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type QuotesNotesListSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof quotesNotesList>>
+>;
+export type QuotesNotesListSuspenseQueryError = ErrorType<unknown>;
+
+export function useQuotesNotesListSuspense<
+  TData = Awaited<ReturnType<typeof quotesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  quoteId: string,
+  params: undefined | QuotesNotesListParams,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof quotesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useQuotesNotesListSuspense<
+  TData = Awaited<ReturnType<typeof quotesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  quoteId: string,
+  params?: QuotesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof quotesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useQuotesNotesListSuspense<
+  TData = Awaited<ReturnType<typeof quotesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  quoteId: string,
+  params?: QuotesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof quotesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useQuotesNotesListSuspense<
+  TData = Awaited<ReturnType<typeof quotesNotesList>>,
+  TError = ErrorType<unknown>,
+>(
+  quoteId: string,
+  params?: QuotesNotesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof quotesNotesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getQuotesNotesListSuspenseQueryOptions(
+    quoteId,
+    params,
+    options,
+  );
+
+  const query = useSuspenseQuery(
+    queryOptions,
+    queryClient,
+  ) as UseSuspenseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const createQuoteNote = (
+  quoteId: string,
+  noteCreate: NoteCreate,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<Note>(
+    {
+      url: `/api/v1/quotes/${quoteId}/notes`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: noteCreate,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getCreateQuoteNoteMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createQuoteNote>>,
+    TError,
+    { quoteId: string; data: NoteCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createQuoteNote>>,
+  TError,
+  { quoteId: string; data: NoteCreate },
+  TContext
+> => {
+  const mutationKey = ["createQuoteNote"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createQuoteNote>>,
+    { quoteId: string; data: NoteCreate }
+  > = (props) => {
+    const { quoteId, data } = props ?? {};
+
+    return createQuoteNote(quoteId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateQuoteNoteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createQuoteNote>>
+>;
+export type CreateQuoteNoteMutationBody = NoteCreate;
+export type CreateQuoteNoteMutationError = ErrorType<unknown>;
+
+export const useCreateQuoteNote = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createQuoteNote>>,
+      TError,
+      { quoteId: string; data: NoteCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createQuoteNote>>,
+  TError,
+  { quoteId: string; data: NoteCreate },
+  TContext
+> => {
+  const mutationOptions = getCreateQuoteNoteMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const deleteQuoteNote = (
+  quoteId: string,
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+) => {
+  return axiosInstance<void>(
+    { url: `/api/v1/quotes/${quoteId}/notes/${id}`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getDeleteQuoteNoteMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteQuoteNote>>,
+    TError,
+    { quoteId: string; id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteQuoteNote>>,
+  TError,
+  { quoteId: string; id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteQuoteNote"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteQuoteNote>>,
+    { quoteId: string; id: string }
+  > = (props) => {
+    const { quoteId, id } = props ?? {};
+
+    return deleteQuoteNote(quoteId, id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteQuoteNoteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteQuoteNote>>
+>;
+
+export type DeleteQuoteNoteMutationError = ErrorType<unknown>;
+
+export const useDeleteQuoteNote = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteQuoteNote>>,
+      TError,
+      { quoteId: string; id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteQuoteNote>>,
+  TError,
+  { quoteId: string; id: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteQuoteNoteMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

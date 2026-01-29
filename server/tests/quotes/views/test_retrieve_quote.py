@@ -71,7 +71,6 @@ def test_retrieve_quote(api_client, user, account):
         "metadata": {},
         "custom_fields": {},
         "footer": None,
-        "description": None,
         "delivery_method": quote.delivery_method,
         "recipients": quote.recipients,
         "subtotal_amount": "0.00",

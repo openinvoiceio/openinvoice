@@ -93,7 +93,6 @@ class CreditNoteSerializer(serializers.Serializer):
     currency = CurrencyField()
     issue_date = serializers.DateField(allow_null=True)
     metadata = MetadataField()
-    description = serializers.CharField(allow_null=True)
     delivery_method = serializers.ChoiceField(choices=CreditNoteDeliveryMethod.choices)
     recipients = serializers.ListField(child=serializers.EmailField(), allow_empty=True)
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2)
@@ -125,7 +124,6 @@ class CreditNoteCreateSerializer(serializers.Serializer):
     )
     reason = serializers.ChoiceField(choices=CreditNoteReason.choices, required=False)
     metadata = MetadataField(allow_null=True, required=False)
-    description = serializers.CharField(allow_null=True, required=False, max_length=500)
     delivery_method = serializers.ChoiceField(choices=CreditNoteDeliveryMethod.choices, required=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
 
@@ -162,7 +160,6 @@ class CreditNoteUpdateSerializer(serializers.Serializer):
     )
     reason = serializers.ChoiceField(choices=CreditNoteReason.choices, required=False)
     metadata = MetadataField(required=False)
-    description = serializers.CharField(allow_null=True, required=False, max_length=500)
     delivery_method = serializers.ChoiceField(choices=CreditNoteDeliveryMethod.choices, required=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
 

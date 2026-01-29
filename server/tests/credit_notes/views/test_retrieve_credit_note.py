@@ -79,7 +79,6 @@ def test_retrieve_credit_note(api_client, user, account):
         "currency": credit_note.currency,
         "issue_date": None,
         "metadata": credit_note.metadata,
-        "description": credit_note.description,
         "delivery_method": credit_note.delivery_method,
         "recipients": [],
         "subtotal_amount": f"{credit_note.subtotal_amount.amount:.2f}",

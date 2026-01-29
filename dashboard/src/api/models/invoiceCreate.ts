@@ -43,11 +43,6 @@ export interface InvoiceCreate {
    * @nullable
    */
   footer?: string | null;
-  /**
-   * @maxLength 600
-   * @nullable
-   */
-  description?: string | null;
   /** @nullable */
   payment_provider?: InvoiceCreatePaymentProvider;
   /** @nullable */

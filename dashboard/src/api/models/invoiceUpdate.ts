@@ -35,11 +35,6 @@ export interface InvoiceUpdate {
    * @nullable
    */
   footer?: string | null;
-  /**
-   * @maxLength 600
-   * @nullable
-   */
-  description?: string | null;
   /** @nullable */
   payment_provider?: InvoiceUpdatePaymentProvider;
   /** @nullable */

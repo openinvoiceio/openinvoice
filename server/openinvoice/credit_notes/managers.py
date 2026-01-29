@@ -37,7 +37,6 @@ class CreditNoteManager(models.Manager):
         numbering_system: NumberingSystem | None = None,
         reason: CreditNoteReason | None = None,
         metadata: Mapping[str, Any] | None = None,
-        description: str | None = None,
         delivery_method: CreditNoteDeliveryMethod | None = None,
         recipients: Iterable[str] | None = None,
     ) -> CreditNote:
@@ -61,7 +60,6 @@ class CreditNoteManager(models.Manager):
             status=CreditNoteStatus.DRAFT,
             reason=reason or CreditNoteReason.OTHER,
             metadata=dict(metadata or {}),
-            description=description,
             subtotal_amount=zero(invoice.currency),
             total_amount_excluding_tax=zero(invoice.currency),
             total_tax_amount=zero(invoice.currency),

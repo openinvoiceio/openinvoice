@@ -28,7 +28,6 @@ class QuoteManager(models.Manager):
         metadata: dict | None = None,
         custom_fields: dict | None = None,
         footer: str | None = None,
-        description: str | None = None,
         delivery_method: QuoteDeliveryMethod | None = None,
         recipients: list[str] | None = None,
     ):
@@ -55,7 +54,6 @@ class QuoteManager(models.Manager):
             metadata=metadata or {},
             custom_fields=custom_fields or {},
             footer=footer or account.invoice_footer,
-            description=description,
             subtotal_amount=zero(currency),
             total_discount_amount=zero(currency),
             total_amount_excluding_tax=zero(currency),

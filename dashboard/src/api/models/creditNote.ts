@@ -29,8 +29,6 @@ export interface CreditNote {
   /** @nullable */
   issue_date: string | null;
   metadata: unknown;
-  /** @nullable */
-  description: string | null;
   delivery_method: DeliveryMethodEnum;
   recipients: string[];
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */

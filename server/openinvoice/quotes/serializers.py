@@ -102,7 +102,6 @@ class QuoteSerializer(serializers.Serializer):
     metadata = MetadataField()
     custom_fields = MetadataField()
     footer = serializers.CharField(allow_null=True)
-    description = serializers.CharField(allow_null=True)
     delivery_method = serializers.ChoiceField(choices=QuoteDeliveryMethod.choices)
     recipients = serializers.ListField(child=serializers.EmailField(), allow_empty=True)
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2)
@@ -133,7 +132,6 @@ class QuoteCreateSerializer(serializers.Serializer):
     metadata = MetadataField(allow_null=True, required=False)
     custom_fields = MetadataField(allow_null=True, required=False)
     footer = serializers.CharField(allow_null=True, required=False, max_length=600)
-    description = serializers.CharField(allow_null=True, required=False, max_length=600)
     delivery_method = serializers.ChoiceField(choices=QuoteDeliveryMethod.choices, required=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
 
@@ -157,7 +155,6 @@ class QuoteUpdateSerializer(serializers.Serializer):
     metadata = MetadataField(allow_null=True, required=False)
     custom_fields = MetadataField(allow_null=True, required=False)
     footer = serializers.CharField(allow_null=True, required=False, max_length=600)
-    description = serializers.CharField(allow_null=True, required=False, max_length=600)
     delivery_method = serializers.ChoiceField(choices=QuoteDeliveryMethod.choices, required=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False, allow_empty=True)
 

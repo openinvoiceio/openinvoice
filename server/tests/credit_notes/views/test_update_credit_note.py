@@ -60,7 +60,6 @@ def test_update_credit_note(api_client, user, account):
             "numbering_system_id": None,
             "reason": CreditNoteReason.ORDER_CHANGE,
             "metadata": {"source": "support"},
-            "description": "Updated description",
         },
     )
 
@@ -69,7 +68,6 @@ def test_update_credit_note(api_client, user, account):
     assert credit_note.number == "CN-10"
     assert credit_note.reason == CreditNoteReason.ORDER_CHANGE
     assert credit_note.metadata == {"source": "support"}
-    assert credit_note.description == "Updated description"
     customer_snapshot = invoice.invoice_customer
     account_snapshot = invoice.invoice_account
     assert response.data == {
@@ -82,7 +80,6 @@ def test_update_credit_note(api_client, user, account):
         "currency": credit_note.currency,
         "issue_date": None,
         "metadata": {"source": "support"},
-        "description": "Updated description",
         "delivery_method": CreditNoteDeliveryMethod.MANUAL,
         "recipients": [],
         "subtotal_amount": f"{credit_note.subtotal_amount.amount:.2f}",
@@ -207,7 +204,6 @@ def test_update_credit_note_numbering_system_mismatch(api_client, user, account)
             "numbering_system_id": str(numbering_system.id),
             "reason": credit_note.reason,
             "metadata": {},
-            "description": credit_note.description,
         },
     )
 
@@ -240,7 +236,6 @@ def test_update_credit_note_cannot_modify_issued(api_client, user, account):
             "numbering_system_id": None,
             "reason": credit_note.reason,
             "metadata": {},
-            "description": credit_note.description,
         },
     )
 
@@ -267,7 +262,6 @@ def test_update_credit_note_requires_authentication(api_client, account):
             "numbering_system_id": None,
             "reason": credit_note.reason,
             "metadata": {},
-            "description": credit_note.description,
         },
     )
 
@@ -293,7 +287,6 @@ def test_update_credit_note_requires_account(api_client, user):
             "numbering_system_id": None,
             "reason": CreditNoteReason.OTHER,
             "metadata": {},
-            "description": None,
         },
     )
 

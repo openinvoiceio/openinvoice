@@ -79,7 +79,6 @@ def test_create_invoice(api_client, user, account):
         "metadata": {},
         "custom_fields": {},
         "footer": account.invoice_footer,
-        "description": None,
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
         "recipients": [customer.email],
         "subtotal_amount": "0.00",

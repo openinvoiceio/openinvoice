@@ -21,11 +21,6 @@ export interface CreditNoteCreate {
   reason?: CreditNoteReasonEnum;
   /** @nullable */
   metadata?: CreditNoteCreateMetadata;
-  /**
-   * @maxLength 500
-   * @nullable
-   */
-  description?: string | null;
   delivery_method?: DeliveryMethodEnum;
   recipients?: string[];
 }
