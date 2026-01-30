@@ -8,7 +8,7 @@ from openinvoice.files.models import File
 from .models import Invoice, InvoiceDocument
 
 
-def generate_invoice_documents_pdf(invoice: Invoice) -> None:
+def render_invoice_documents(invoice: Invoice) -> None:
     documents = list(invoice.documents.all())
     content_type = "application/pdf"
 

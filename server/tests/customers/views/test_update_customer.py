@@ -61,6 +61,7 @@ def test_update_customer(api_client, user, account):
         "email": "new@example.com",
         "phone": "999",
         "currency": "EUR",
+        "language": None,
         "net_payment_term": 30,
         "invoice_numbering_system_id": None,
         "credit_note_numbering_system_id": None,

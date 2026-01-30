@@ -31,6 +31,7 @@ def test_list_customers(api_client, user, account):
             "email": customer.email,
             "phone": customer.phone,
             "currency": customer.currency,
+            "language": customer.language,
             "net_payment_term": customer.net_payment_term,
             "invoice_numbering_system_id": None,
             "credit_note_numbering_system_id": None,

@@ -645,8 +645,6 @@ def test_update_invoice_revision_requires_same_customer(api_client, user, accoun
             "issue_date": None,
             "due_date": revision.due_date.isoformat(),
             "metadata": {},
-            "custom_fields": {},
-            "footer": revision.footer,
         },
     )
 

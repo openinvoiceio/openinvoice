@@ -49,9 +49,7 @@ def test_list_invoices_with_pdf(api_client, account):
     customer = CustomerFactory(account=account)
     pdf = FileFactory(account=account, purpose=FilePurpose.INVOICE_PDF)
     invoice = InvoiceFactory(account=account, customer=customer, status=InvoiceStatus.PAID)
-    document = invoice.documents.get(role=InvoiceDocumentRole.PRIMARY)
-    document.file = pdf
-    document.save(update_fields=["file"])
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY, file=pdf)
     token = PortalTokenFactory(customer=customer)["token"]
 
     response = api_client.get("/api/v1/portal/invoices", HTTP_AUTHORIZATION=f"Bearer {token}")

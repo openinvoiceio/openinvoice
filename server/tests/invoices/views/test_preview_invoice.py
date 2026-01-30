@@ -2,14 +2,15 @@ import uuid
 
 import pytest
 
-from openinvoice.invoices.choices import InvoiceStatus
-from tests.factories import InvoiceFactory
+from openinvoice.invoices.choices import InvoiceDocumentRole, InvoiceStatus
+from tests.factories import InvoiceDocumentFactory, InvoiceFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def test_preview_invoice(api_client, user, account):
     invoice = InvoiceFactory(account=account)
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -22,6 +23,7 @@ def test_preview_invoice(api_client, user, account):
 
 def test_preview_invoice_rejects_foreign_account(api_client, user, account):
     other_invoice = InvoiceFactory()
+    InvoiceDocumentFactory(invoice=other_invoice, role=InvoiceDocumentRole.PRIMARY)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -39,6 +41,7 @@ def test_preview_invoice_requires_account(api_client, user):
 
 def test_preview_invoice_format_email(api_client, user, account):
     invoice = InvoiceFactory(account=account)
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -51,6 +54,7 @@ def test_preview_invoice_format_email(api_client, user, account):
 
 def test_preview_invoice_format_pdf(api_client, user, account):
     invoice = InvoiceFactory(account=account)
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -81,6 +85,8 @@ def test_preview_invoice_requires_authentication(api_client):
 def test_preview_revision_highlights_correction(api_client, user, account):
     invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
     revision = InvoiceFactory(account=account, previous_revision=invoice, head=invoice.head)
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
+    InvoiceDocumentFactory(invoice=revision, role=InvoiceDocumentRole.PRIMARY)
 
     api_client.force_login(user)
     api_client.force_account(account)

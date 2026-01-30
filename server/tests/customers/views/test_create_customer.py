@@ -45,6 +45,7 @@ def test_create_customer(api_client, user, account):
         "email": "customer1@example.com",
         "phone": "123456789",
         "currency": "USD",
+        "language": None,
         "net_payment_term": 15,
         "invoice_numbering_system_id": None,
         "credit_note_numbering_system_id": None,

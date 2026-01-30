@@ -75,6 +75,7 @@ def test_search_all(api_client, user, account):
                 "email": customer_alpha.email,
                 "phone": customer_alpha.phone,
                 "currency": customer_alpha.currency,
+                "language": customer_alpha.language,
                 "net_payment_term": customer_alpha.net_payment_term,
                 "invoice_numbering_system_id": None,
                 "credit_note_numbering_system_id": None,

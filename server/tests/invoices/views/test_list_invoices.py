@@ -95,7 +95,7 @@ def test_list_invoices(api_client, user, account):
                 "previous_revision_id": None,
                 "documents": [
                     {
-                        "id": document.id,
+                        "id": str(document.id),
                         "role": document.role,
                         "language": document.language,
                         "footer": document.footer,

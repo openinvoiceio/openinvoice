@@ -324,8 +324,6 @@ class Quote(models.Model):
             issue_date=self.issue_date or timezone.now().date(),  # TODO: verify this
             due_date=None,
             net_payment_term=None,
-            custom_fields=self.custom_fields,
-            footer=self.footer,
             # TODO: verify this, we probably want to differ quote and invoice copy descriptions
             # description=self.description,
         )
