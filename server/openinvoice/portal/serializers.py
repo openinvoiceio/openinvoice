@@ -16,7 +16,7 @@ class PortalInvoiceSerializer(serializers.Serializer):
     issue_date = serializers.DateField(allow_null=True)
     due_date = serializers.DateField()
     total_amount = MoneyField(max_digits=19, decimal_places=2)
-    pdf_url = serializers.URLField(source="pdf.data.url", allow_null=True)
+    pdf_url = serializers.URLField(source="primary_document.file.data.url", allow_null=True)
 
 
 class PortalSessionCreateSerializer(serializers.Serializer):

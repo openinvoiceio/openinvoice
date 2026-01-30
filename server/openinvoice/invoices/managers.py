@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from django.apps import apps
+from django.conf import settings
 from django.db import models
 from djmoney.money import Money
 
@@ -18,7 +19,7 @@ from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.numbering_systems.models import NumberingSystem
 from openinvoice.prices.models import Price
 
-from .choices import InvoiceDeliveryMethod, InvoiceStatus, InvoiceTaxBehavior
+from .choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus, InvoiceTaxBehavior
 
 if TYPE_CHECKING:
     from .models import Invoice, InvoiceAccount, InvoiceCustomer
@@ -57,6 +58,26 @@ class InvoiceAccountManager(models.Manager):
         return invoice_account
 
 
+class InvoiceDocumentManager(models.Manager):
+    def create_document(
+        self,
+        invoice: Invoice,
+        language: str,
+        role: InvoiceDocumentRole | None = None,
+        footer: str | None = None,
+        memo: str | None = None,
+        custom_fields: Mapping[str, Any] | None = None,
+    ):
+        return self.create(
+            invoice=invoice,
+            role=role or InvoiceDocumentRole.SECONDARY,
+            language=language,
+            footer=footer,
+            memo=memo,
+            custom_fields=custom_fields or {},
+        )
+
+
 class InvoiceManager(models.Manager):
     def create_draft(
         self,
@@ -69,8 +90,6 @@ class InvoiceManager(models.Manager):
         due_date: date | None = None,
         net_payment_term: int | None = None,
         metadata: Mapping[str, Any] | None = None,
-        custom_fields: Mapping[str, Any] | None = None,
-        footer: str | None = None,
         payment_provider: PaymentProvider | None = None,
         payment_connection_id: UUID | None = None,
         delivery_method: InvoiceDeliveryMethod | None = None,
@@ -88,8 +107,9 @@ class InvoiceManager(models.Manager):
 
         net_payment_term = net_payment_term or customer.net_payment_term or account.net_payment_term
         default_recipients = [customer.email] if customer.email else []
-        head = InvoiceHead.objects.create(root=None)
+        language = customer.language or account.language or settings.LANGUAGE_CODE
 
+        head = InvoiceHead.objects.create(root=None)
         invoice = self.create(
             head=head,
             account=account,
@@ -102,8 +122,6 @@ class InvoiceManager(models.Manager):
             due_date=due_date,
             net_payment_term=net_payment_term,
             metadata=metadata or {},
-            custom_fields=custom_fields or {},
-            footer=footer or account.invoice_footer,
             payment_provider=payment_provider,
             payment_connection_id=payment_connection_id,
             subtotal_amount=zero(currency),
@@ -125,6 +143,13 @@ class InvoiceManager(models.Manager):
 
         invoice.set_tax_rates(customer.tax_rates.active())
 
+        invoice.documents.create_document(
+            invoice=invoice,
+            role=InvoiceDocumentRole.PRIMARY,
+            language=language,
+            footer=account.invoice_footer,
+        )
+
         return invoice
 
     def create_revision(
@@ -138,8 +163,6 @@ class InvoiceManager(models.Manager):
         due_date: date | None = None,
         net_payment_term: int | None = None,
         metadata: Mapping[str, Any] | None = None,
-        custom_fields: Mapping[str, Any] | None = None,
-        footer: str | None = None,
         payment_provider: PaymentProvider | None = None,
         payment_connection_id: UUID | None = None,
         delivery_method: InvoiceDeliveryMethod | None = None,
@@ -169,8 +192,6 @@ class InvoiceManager(models.Manager):
             due_date=due_date,
             net_payment_term=net_payment_term or previous_revision.net_payment_term,
             metadata=metadata or {},
-            custom_fields=custom_fields or previous_revision.custom_fields,
-            footer=footer or previous_revision.footer,
             payment_provider=payment_provider or previous_revision.payment_provider,
             payment_connection_id=payment_connection_id or previous_revision.payment_connection_id,
             previous_revision=previous_revision,
@@ -209,6 +230,16 @@ class InvoiceManager(models.Manager):
         invoice.set_coupons(previous_revision.coupons.active())
         invoice.set_tax_rates(previous_revision.tax_rates.active())
 
+        for document in previous_revision.documents.all():
+            invoice.documents.create_document(
+                invoice=invoice,
+                role=document.role,
+                language=document.language,
+                footer=document.footer,
+                memo=document.memo,
+                custom_fields=document.custom_fields,
+            )
+
         return invoice
 
     def clone_invoice(self, invoice: Invoice) -> Invoice:
@@ -227,8 +258,6 @@ class InvoiceManager(models.Manager):
             due_date=None,
             net_payment_term=invoice.net_payment_term,
             metadata={},
-            custom_fields=invoice.custom_fields,
-            footer=invoice.footer,
             payment_provider=invoice.payment_provider,
             payment_connection_id=invoice.payment_connection_id,
             subtotal_amount=zero(invoice.currency),
@@ -281,6 +310,16 @@ class InvoiceManager(models.Manager):
 
         new_invoice.set_coupons(invoice.coupons.active())
         new_invoice.set_tax_rates(invoice.tax_rates.active())
+
+        for document in invoice.documents.all():
+            new_invoice.documents.create_document(
+                invoice=new_invoice,
+                role=document.role,
+                language=document.language,
+                footer=document.footer,
+                memo=document.memo,
+                custom_fields=document.custom_fields,
+            )
 
         return new_invoice
 

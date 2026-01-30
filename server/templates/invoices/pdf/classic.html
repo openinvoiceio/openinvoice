@@ -57,7 +57,7 @@
             {% endif %}
         </div>
         <div>
-            {% for key, value in invoice.custom_fields.items %}
+            {% for key, value in document.custom_fields.items %}
                 <p>
                     <span class="info-label">{{ key }}:</span>
                     <span class="info-value">{{ value }}</span>
@@ -241,9 +241,9 @@
 
 <footer>
     <hr class="divider"/>
-    {% if invoice.footer %}
+    {% if document.footer %}
         <div>
-            {{ invoice.footer | linebreaks }}
+            {{ document.footer | linebreaks }}
         </div>
     {% endif %}
 </footer>

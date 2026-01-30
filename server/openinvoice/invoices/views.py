@@ -13,14 +13,17 @@ from openinvoice.accounts.permissions import IsAccountMember
 from openinvoice.comments.models import Comment
 from openinvoice.comments.serializers import CommentCreateSerializer, CommentSerializer
 
-from .choices import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
+from .choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoicePreviewFormat, InvoiceStatus
 from .filtersets import InvoiceFilterSet
 from .mail import send_invoice
-from .models import Invoice, InvoiceLine
-from .pdf import generate_invoice_pdf
+from .models import Invoice, InvoiceDocument, InvoiceLine
+from .pdf import generate_invoice_documents_pdf
 from .permissions import MaxInvoicesLimit
 from .serializers import (
     InvoiceCreateSerializer,
+    InvoiceDocumentCreateSerializer,
+    InvoiceDocumentSerializer,
+    InvoiceDocumentUpdateSerializer,
     InvoiceLineCreateSerializer,
     InvoiceLineSerializer,
     InvoiceLineUpdateSerializer,
@@ -71,8 +74,6 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
             due_date=data.get("due_date"),
             net_payment_term=data.get("net_payment_term"),
             metadata=data.get("metadata"),
-            custom_fields=data.get("custom_fields"),
-            footer=data.get("footer"),
             payment_provider=data.get("payment_provider"),
             payment_connection_id=getattr(data.get("payment_connection"), "id", None),
             delivery_method=data.get("delivery_method"),
@@ -139,8 +140,6 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             due_date=data.get("due_date", invoice.due_date),
             net_payment_term=data.get("net_payment_term", invoice.net_payment_term),
             metadata=data.get("metadata", invoice.metadata),
-            custom_fields=data.get("custom_fields", invoice.custom_fields),
-            footer=data.get("footer", invoice.footer),
             payment_provider=data.get("payment_provider", invoice.payment_provider),
             payment_connection_id=getattr(data.get("payment_connection"), "id", invoice.payment_connection_id),
             delivery_method=data.get("delivery_method", invoice.delivery_method),
@@ -257,8 +256,6 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
             due_date=data.get("due_date"),
             net_payment_term=data.get("net_payment_term"),
             metadata=data.get("metadata"),
-            custom_fields=data.get("custom_fields"),
-            footer=data.get("footer"),
             payment_provider=data.get("payment_provider"),
             payment_connection_id=getattr(data.get("payment_connection"), "id", None),
             delivery_method=data.get("delivery_method"),
@@ -378,8 +375,7 @@ class InvoiceFinalizeAPIView(generics.GenericAPIView):
             raise ValidationError("Invoice number or numbering system is missing")
 
         invoice.finalize()
-        invoice.pdf = generate_invoice_pdf(invoice)
-        invoice.save()
+        generate_invoice_documents_pdf(invoice)
 
         if invoice.delivery_method == InvoiceDeliveryMethod.AUTOMATIC and len(invoice.recipients) > 0:
             send_invoice(invoice=invoice)
@@ -389,7 +385,7 @@ class InvoiceFinalizeAPIView(generics.GenericAPIView):
                 recipients=invoice.recipients,
             )
 
-        logger.info("Invoice finalized", invoice_id=invoice.id, pdf_id=invoice.pdf_id)
+        logger.info("Invoice finalized", invoice_id=invoice.id)
         invoice = self.get_object()
         serializer = InvoiceSerializer(invoice)
         return Response(serializer.data)
@@ -411,6 +407,12 @@ class InvoicePreviewAPIView(generics.GenericAPIView):
     )
     def get(self, request, **_):
         invoice = self.get_object()
+        language = request.query_params.get("language")
+        if language:
+            document = invoice.documents.filter(language=language).first()
+            document = document or invoice.primary_document
+        else:
+            document = invoice.primary_document
         invoice_format = request.query_params.get("format", InvoicePreviewFormat.PDF)
         template_name = "invoices/pdf/classic.html"
 
@@ -418,7 +420,121 @@ class InvoicePreviewAPIView(generics.GenericAPIView):
             case InvoicePreviewFormat.EMAIL:
                 template_name = "invoices/email/invoice_email_message.html"
 
-        return Response({"invoice": invoice}, template_name=template_name)
+        return Response(
+            {
+                "invoice": invoice,
+                "document": document,
+                "language": document.language,
+            },
+            template_name=template_name,
+        )
+
+
+@extend_schema_view(list=extend_schema(operation_id="list_invoice_documents"))
+class InvoiceDocumentListCreateAPIView(generics.ListAPIView):
+    queryset = InvoiceDocument.objects.none()
+    serializer_class = InvoiceDocumentSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        invoice = get_object_or_404(Invoice.objects.for_account(self.request.account), id=self.kwargs["invoice_id"])
+        return InvoiceDocument.objects.filter(invoice=invoice).order_by("created_at")
+
+    @extend_schema(
+        operation_id="create_invoice_document",
+        request=InvoiceDocumentCreateSerializer,
+        responses={201: InvoiceDocumentSerializer},
+    )
+    def post(self, request, **_):
+        invoice = get_object_or_404(Invoice.objects.for_account(self.request.account), id=self.kwargs["invoice_id"])
+
+        if invoice.status != InvoiceStatus.DRAFT:
+            raise ValidationError("Only draft invoices can be modified")
+
+        serializer = InvoiceDocumentCreateSerializer(data=request.data, context=self.get_serializer_context())
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        document = InvoiceDocument.objects.create_document(
+            invoice=invoice,
+            role=InvoiceDocumentRole.SECONDARY,
+            language=data["language"],
+            footer=data.get("footer"),
+            memo=data.get("memo"),
+            custom_fields=data.get("custom_fields"),
+        )
+
+        logger.info(
+            "Invoice document created",
+            invoice_id=invoice.id,
+            document_id=document.id,
+        )
+
+        serializer = self.get_serializer(document)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class InvoiceDocumentRetrieveUpdateDestroyAPIView(generics.GenericAPIView):
+    queryset = InvoiceDocument.objects.none()
+    serializer_class = InvoiceDocumentSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        invoice = get_object_or_404(Invoice.objects.for_account(self.request.account), id=self.kwargs["invoice_id"])
+        return InvoiceDocument.objects.filter(invoice=invoice)
+
+    @extend_schema(
+        operation_id="update_invoice_document",
+        request=InvoiceDocumentUpdateSerializer,
+        responses={200: InvoiceDocumentSerializer},
+    )
+    def put(self, request, **_):
+        document = self.get_object()
+
+        if document.invoice.status != InvoiceStatus.DRAFT:
+            raise ValidationError("Only draft invoices can be modified")
+
+        serializer = InvoiceDocumentUpdateSerializer(document, data=request.data, context=self.get_serializer_context())
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        if "role" in data:
+            document.change_role(data["role"])
+
+        document.update(
+            language=data.get("language", document.language),
+            footer=data.get("footer", document.footer),
+            memo=data.get("memo", document.memo),
+            custom_fields=data.get("custom_fields", document.custom_fields),
+        )
+
+        logger.info(
+            "Invoice document updated",
+            invoice_id=document.invoice_id,
+            document_id=document.id,
+        )
+
+        serializer = self.get_serializer(document)
+        return Response(serializer.data)
+
+    @extend_schema(operation_id="delete_invoice_document", request=None, responses={204: None})
+    def delete(self, *_, **__):
+        document = self.get_object()
+        invoice = document.invoice
+
+        if invoice.status != InvoiceStatus.DRAFT:
+            raise ValidationError("Only draft invoices can be modified")
+
+        if document.role == InvoiceDocumentRole.PRIMARY:
+            raise ValidationError("Primary document cannot be deleted")
+
+        if invoice.documents.count() <= 1:
+            raise ValidationError("Invoice must have at least one document")
+
+        document.delete()
+        logger.info("Invoice document deleted", invoice_id=invoice.id, document_id=document.id)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @extend_schema_view(list=extend_schema(operation_id="list_invoice_comments"))

@@ -3,14 +3,15 @@ from unittest.mock import ANY
 
 import pytest
 
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
-from tests.factories import InvoiceFactory
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus
+from tests.factories import InvoiceDocumentFactory, InvoiceFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def test_void_invoice(api_client, user, account):
     invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
+    document = InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -18,6 +19,7 @@ def test_void_invoice(api_client, user, account):
 
     assert response.status_code == 200
     invoice.refresh_from_db()
+    document.refresh_from_db()
     assert response.data == {
         "id": str(invoice.id),
         "status": invoice.status,
@@ -64,8 +66,6 @@ def test_void_invoice(api_client, user, account):
             "logo_id": None,
         },
         "metadata": invoice.metadata,
-        "custom_fields": invoice.custom_fields,
-        "footer": invoice.footer,
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
         "recipients": [],
         "subtotal_amount": "0.00",
@@ -84,8 +84,20 @@ def test_void_invoice(api_client, user, account):
         "opened_at": None,
         "paid_at": None,
         "voided_at": invoice.voided_at.isoformat().replace("+00:00", "Z"),
-        "pdf_id": None,
         "previous_revision_id": None,
+        "documents": [
+            {
+                "id": str(document.id),
+                "role": document.role,
+                "language": document.language,
+                "footer": document.footer,
+                "memo": document.memo,
+                "custom_fields": document.custom_fields,
+                "file_id": None,
+                "created_at": ANY,
+                "updated_at": ANY,
+            }
+        ],
         "lines": [],
         "coupons": [],
         "discounts": [],

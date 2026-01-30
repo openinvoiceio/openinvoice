@@ -8,12 +8,13 @@ import pytest
 from common.choices import LimitCode
 from openinvoice.coupons.choices import CouponStatus
 from openinvoice.integrations.choices import PaymentProvider
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus
 from openinvoice.invoices.models import Invoice
 from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
     CouponFactory,
     CustomerFactory,
+    InvoiceDocumentFactory,
     InvoiceFactory,
     InvoiceLineFactory,
     InvoiceShippingFactory,
@@ -41,8 +42,6 @@ def test_clone_invoice(api_client, user, account):
         issue_date=date(2024, 1, 5),
         due_date=date(2024, 1, 7),
         metadata={"note": "keep"},
-        custom_fields={"po": "123"},
-        footer="Original footer",
         numbering_system=numbering_system,
         net_payment_term=10,
         delivery_method=InvoiceDeliveryMethod.MANUAL,
@@ -50,6 +49,12 @@ def test_clone_invoice(api_client, user, account):
         payment_provider=PaymentProvider.STRIPE,
         payment_connection_id=payment_connection_id,
         shipping=shipping,
+    )
+    InvoiceDocumentFactory(
+        invoice=invoice,
+        role=InvoiceDocumentRole.PRIMARY,
+        footer="Original footer",
+        custom_fields={"po": "123"},
     )
 
     line = InvoiceLineFactory(
@@ -122,8 +127,6 @@ def test_clone_invoice(api_client, user, account):
             "logo_id": None,
         },
         "metadata": {},
-        "custom_fields": invoice.custom_fields,
-        "footer": invoice.footer,
         "delivery_method": invoice.delivery_method,
         "recipients": invoice.recipients,
         "subtotal_amount": "190.00",
@@ -142,8 +145,20 @@ def test_clone_invoice(api_client, user, account):
         "opened_at": None,
         "paid_at": None,
         "voided_at": None,
-        "pdf_id": None,
         "previous_revision_id": None,
+        "documents": [
+            {
+                "id": ANY,
+                "role": InvoiceDocumentRole.PRIMARY,
+                "language": response.data["documents"][0]["language"],
+                "footer": response.data["documents"][0]["footer"],
+                "memo": response.data["documents"][0]["memo"],
+                "custom_fields": response.data["documents"][0]["custom_fields"],
+                "file_id": None,
+                "created_at": ANY,
+                "updated_at": ANY,
+            }
+        ],
         "lines": [
             {
                 "id": response.data["lines"][0]["id"],
@@ -327,8 +342,10 @@ def test_clone_invoice(api_client, user, account):
     assert new_invoice.issue_date is None
     assert new_invoice.due_date is None
     assert new_invoice.metadata == {}
-    assert new_invoice.custom_fields == invoice.custom_fields
-    assert new_invoice.footer == invoice.footer
+    new_document = new_invoice.documents.get(role=InvoiceDocumentRole.PRIMARY)
+    invoice_document = invoice.documents.get(role=InvoiceDocumentRole.PRIMARY)
+    assert new_document.custom_fields == invoice_document.custom_fields
+    assert new_document.footer == invoice_document.footer
     assert new_invoice.numbering_system_id == invoice.numbering_system_id
     assert new_invoice.net_payment_term == invoice.net_payment_term
     assert new_invoice.delivery_method == invoice.delivery_method

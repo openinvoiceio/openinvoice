@@ -31,6 +31,7 @@ class AccountManager(models.Manager):
             email=email,
             country=country,
             default_currency=country_to_currency(country),
+            language="en-us",
             is_active=is_active,
             created_by=created_by,
             address=address,

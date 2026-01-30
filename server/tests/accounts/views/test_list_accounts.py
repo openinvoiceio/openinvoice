@@ -37,6 +37,7 @@ def test_list_accounts(api_client, user):
             },
             "country": str(account.country),
             "default_currency": account.default_currency,
+            "language": account.language,
             "invoice_footer": account.invoice_footer,
             "invoice_numbering_system_id": None,
             "credit_note_numbering_system_id": None,

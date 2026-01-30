@@ -4,9 +4,9 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus
 from openinvoice.invoices.models import Invoice
-from tests.factories import CustomerFactory, InvoiceFactory, InvoiceLineFactory
+from tests.factories import CustomerFactory, InvoiceDocumentFactory, InvoiceFactory, InvoiceLineFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -14,6 +14,8 @@ pytestmark = pytest.mark.django_db
 def test_list_invoices(api_client, user, account):
     first_invoice = InvoiceFactory(account=account)
     second_invoice = InvoiceFactory(account=account)
+    first_document = InvoiceDocumentFactory(invoice=first_invoice, role=InvoiceDocumentRole.PRIMARY)
+    second_document = InvoiceDocumentFactory(invoice=second_invoice, role=InvoiceDocumentRole.PRIMARY)
     InvoiceFactory()  # other account
 
     api_client.force_login(user)
@@ -72,8 +74,6 @@ def test_list_invoices(api_client, user, account):
                     "logo_id": None,
                 },
                 "metadata": {},
-                "custom_fields": {},
-                "footer": None,
                 "delivery_method": InvoiceDeliveryMethod.MANUAL,
                 "recipients": [],
                 "subtotal_amount": "0.00",
@@ -92,8 +92,20 @@ def test_list_invoices(api_client, user, account):
                 "opened_at": None,
                 "paid_at": None,
                 "voided_at": None,
-                "pdf_id": None,
                 "previous_revision_id": None,
+                "documents": [
+                    {
+                        "id": document.id,
+                        "role": document.role,
+                        "language": document.language,
+                        "footer": document.footer,
+                        "memo": document.memo,
+                        "custom_fields": document.custom_fields,
+                        "file_id": None,
+                        "created_at": ANY,
+                        "updated_at": ANY,
+                    }
+                ],
                 "lines": [],
                 "coupons": [],
                 "discounts": [],
@@ -103,7 +115,11 @@ def test_list_invoices(api_client, user, account):
                 "total_taxes": [],
                 "shipping": None,
             }
-            for invoice in [second_invoice, first_invoice]
+            for invoice, document in zip(
+                [second_invoice, first_invoice],
+                [second_document, first_document],
+                strict=False,
+            )
         ],
     }
 

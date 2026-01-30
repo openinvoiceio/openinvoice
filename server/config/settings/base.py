@@ -16,6 +16,7 @@ from pathlib import Path
 import environ
 import structlog
 from corsheaders.defaults import default_headers
+from django.utils.translation import gettext_noop
 from drf_standardized_errors.openapi_serializers import ClientErrorEnum, ServerErrorEnum, ValidationErrorEnum
 
 from common.choices import FeatureCode, LimitCode
@@ -165,11 +166,28 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
+LANGUAGES = [
+    ("en-us", gettext_noop("English")),
+    ("en-gb", gettext_noop("British English")),
+    ("en-au", gettext_noop("Australian English")),
+]
+
+COUNTRY_TO_LANUAGE = {
+    "US": "en-us",
+    "GB": "en-gb",
+    "AU": "en-au",
+}
+
 TIME_ZONE = "UTC"
 
 USE_I18N = True
 
 USE_TZ = True
+
+# Localization
+
+USE_L10N = True
+LOCALE_PATHS = [str(BASE_DIR.path("locale"))]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/

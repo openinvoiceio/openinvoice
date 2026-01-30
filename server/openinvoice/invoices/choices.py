@@ -33,3 +33,9 @@ class InvoiceTaxBehavior(models.TextChoices):
     INCLUSIVE = "inclusive", "Inclusive"
     EXCLUSIVE = "exclusive", "Exclusive"
     AUTOMATIC = "automatic", "Automatic"
+
+
+class InvoiceDocumentRole(models.TextChoices):
+    PRIMARY = "primary", "Primary"
+    LEGAL = "legal", "Legal"
+    SECONDARY = "secondary", "Secondary"

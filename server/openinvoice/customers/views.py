@@ -57,6 +57,7 @@ class CustomerListCreateAPIView(generics.ListAPIView):
             phone=data.get("phone"),
             description=data.get("description"),
             currency=data.get("currency"),
+            language=data.get("language"),
             net_payment_term=data.get("net_payment_term"),
             invoice_numbering_system=data.get("invoice_numbering_system"),
             credit_note_numbering_system=data.get("credit_note_numbering_system"),
@@ -111,6 +112,7 @@ class CustomerRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             phone=data.get("phone", customer.phone),
             description=data.get("description", customer.description),
             currency=data.get("currency", customer.currency),
+            language=data.get("language", customer.language),
             net_payment_term=data.get("net_payment_term", customer.net_payment_term),
             invoice_numbering_system=data.get("invoice_numbering_system", customer.invoice_numbering_system),
             credit_note_numbering_system=data.get(

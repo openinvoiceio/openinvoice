@@ -8,12 +8,13 @@ from django.utils import timezone
 
 from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.integrations.exceptions import IntegrationError
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus
 from openinvoice.payments.choices import PaymentStatus
 from tests.factories import (
     AddressFactory,
     CustomerFactory,
     CustomerShippingFactory,
+    InvoiceDocumentFactory,
     InvoiceFactory,
     InvoiceLineFactory,
     ShippingRateFactory,
@@ -33,6 +34,7 @@ def stripe_checkout_mock():
 
 def test_finalize_invoice(api_client, user, account):
     invoice = InvoiceFactory(account=account, total_amount=Decimal("10.00"))
+    document = InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
     line = InvoiceLineFactory(invoice=invoice, description="Test line", quantity=1, unit_amount=Decimal("10.00"))
     invoice.recalculate()
 
@@ -42,6 +44,7 @@ def test_finalize_invoice(api_client, user, account):
 
     assert response.status_code == 200
     invoice.refresh_from_db()
+    document.refresh_from_db()
     assert response.data == {
         "id": str(invoice.id),
         "status": invoice.status,
@@ -90,8 +93,6 @@ def test_finalize_invoice(api_client, user, account):
             "logo_id": None,
         },
         "metadata": {},
-        "custom_fields": {},
-        "footer": None,
         "subtotal_amount": "10.00",
         "total_discount_amount": "0.00",
         "total_excluding_tax_amount": "10.00",
@@ -108,8 +109,20 @@ def test_finalize_invoice(api_client, user, account):
         "opened_at": ANY,
         "paid_at": ANY,
         "voided_at": None,
-        "pdf_id": str(invoice.pdf_id),
         "previous_revision_id": None,
+        "documents": [
+            {
+                "id": str(document.id),
+                "role": document.role,
+                "language": document.language,
+                "footer": document.footer,
+                "memo": document.memo,
+                "custom_fields": document.custom_fields,
+                "file_id": str(document.file_id),
+                "created_at": ANY,
+                "updated_at": ANY,
+            }
+        ],
         "lines": [
             {
                 "id": str(line.id),
@@ -151,6 +164,7 @@ def test_finalize_invoice(api_client, user, account):
 
 def test_finalize_invoice_clones_customer_tax_ids(api_client, user, account):
     invoice = InvoiceFactory(account=account)
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
     customer_tax_id = TaxIdFactory()
     invoice.customer.tax_ids.add(customer_tax_id)
 
@@ -172,6 +186,7 @@ def test_finalize_invoice_clones_customer_tax_ids(api_client, user, account):
 
 def test_finalize_invoice_clones_account_tax_ids(api_client, user, account):
     invoice = InvoiceFactory(account=account)
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
     account_tax_id = TaxIdFactory()
     invoice.account.tax_ids.add(account_tax_id)
 
@@ -196,6 +211,7 @@ def test_finalize_invoice_with_shipping_uses_customer_shipping_snapshot(api_clie
     customer_shipping = CustomerShippingFactory(name="Ship to", phone="555", address=shipping_address)
     customer = CustomerFactory(account=account, name="Bill to", phone="111", shipping=customer_shipping)
     invoice = InvoiceFactory(account=account, customer=customer, total_amount=Decimal("0.00"))
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
     shipping_rate = ShippingRateFactory(account=account, amount=Decimal("12.00"))
     tax_rate = TaxRateFactory(account=account, percentage=Decimal("10.00"))
     invoice.add_shipping(shipping_rate=shipping_rate, tax_rates=[tax_rate])
@@ -215,6 +231,7 @@ def test_finalize_invoice_with_shipping_uses_customer_shipping_snapshot(api_clie
 def test_finalize_invoice_with_shipping_uses_customer_fallback(api_client, user, account):
     customer = CustomerFactory(account=account, name="Bill to", phone="111", shipping=None)
     invoice = InvoiceFactory(account=account, customer=customer, total_amount=Decimal("0.00"))
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
     shipping_rate = ShippingRateFactory(account=account, amount=Decimal("8.00"))
     tax_rate = TaxRateFactory(account=account, percentage=Decimal("5.00"))
     invoice.add_shipping(shipping_rate=shipping_rate, tax_rates=[tax_rate])
@@ -233,6 +250,7 @@ def test_finalize_invoice_with_shipping_uses_customer_fallback(api_client, user,
 
 def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account):
     invoice = InvoiceFactory(account=account)
+    document = InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -240,6 +258,7 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
 
     assert response.status_code == 200
     invoice.refresh_from_db()
+    document.refresh_from_db()
     assert response.data == {
         "id": str(invoice.id),
         "status": invoice.status,
@@ -288,8 +307,6 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
             "logo_id": None,
         },
         "metadata": {},
-        "custom_fields": {},
-        "footer": None,
         "subtotal_amount": "0.00",
         "total_discount_amount": "0.00",
         "total_excluding_tax_amount": "0.00",
@@ -306,8 +323,20 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
         "opened_at": ANY,
         "paid_at": ANY,
         "voided_at": None,
-        "pdf_id": str(invoice.pdf_id),
         "previous_revision_id": None,
+        "documents": [
+            {
+                "id": str(document.id),
+                "role": document.role,
+                "language": document.language,
+                "footer": document.footer,
+                "memo": document.memo,
+                "custom_fields": document.custom_fields,
+                "file_id": str(document.file_id),
+                "created_at": ANY,
+                "updated_at": ANY,
+            }
+        ],
         "lines": [],
         "coupons": [],
         "discounts": [],
@@ -328,7 +357,9 @@ def test_finalize_invoice_revision_voids_original(api_client, user, account):
         status=InvoiceStatus.OPEN,
         issue_date=original_issue_date,
     )
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
     revision = InvoiceFactory(account=account, customer=invoice.customer, previous_revision=invoice, head=invoice.head)
+    InvoiceDocumentFactory(invoice=revision, role=InvoiceDocumentRole.PRIMARY)
     InvoiceLineFactory(
         invoice=revision,
         quantity=1,
@@ -364,6 +395,7 @@ def test_finalize_invoice_with_payment_provider(api_client, user, account, strip
         total_amount=Decimal("10.00"),
         outstanding_amount=Decimal("10.00"),
     )
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
     InvoiceLineFactory(invoice=invoice, description="Test line", quantity=1, unit_amount=Decimal("10.00"))
     stripe_checkout_mock.return_value = ("cs_123", "https://stripe.example/checkout")
 
@@ -416,6 +448,7 @@ def test_finalize_invoice_without_due_date(api_client, user, account):
     invoice = InvoiceFactory(
         account=account, due_date=None, net_payment_term=net_payment_term, total_amount=Decimal("10.00")
     )
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
     InvoiceLineFactory(invoice=invoice, description="Test line", quantity=1, unit_amount=Decimal("10.00"))
 
     api_client.force_login(user)
@@ -436,6 +469,7 @@ def test_finalize_invoice_with_automatic_delivery_method(api_client, user, accou
         recipients=["test@example.com"],
         total_amount=Decimal("10.00"),
     )
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
     InvoiceLineFactory(invoice=invoice, description="Test line", quantity=1, unit_amount=Decimal("10.00"))
 
     api_client.force_login(user)
@@ -453,6 +487,7 @@ def test_finalize_invoice_with_automatic_delivery_method_no_recipients(api_clien
     invoice = InvoiceFactory(
         account=account, delivery_method=InvoiceDeliveryMethod.AUTOMATIC, recipients=[], total_amount=Decimal("10.00")
     )
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
     InvoiceLineFactory(invoice=invoice, description="Test line", quantity=1, unit_amount=Decimal("10.00"))
 
     api_client.force_login(user)
@@ -466,6 +501,7 @@ def test_finalize_invoice_with_automatic_delivery_method_no_recipients(api_clien
 @pytest.mark.parametrize("status", [InvoiceStatus.PAID, InvoiceStatus.VOIDED, InvoiceStatus.OPEN])
 def test_finalize_invoice_non_draft(api_client, user, account, status):
     invoice = InvoiceFactory(account=account, status=status)
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
 
     api_client.force_login(user)
     api_client.force_account(account)

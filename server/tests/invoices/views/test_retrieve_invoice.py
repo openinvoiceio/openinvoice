@@ -4,13 +4,14 @@ from unittest.mock import ANY
 
 import pytest
 
-from openinvoice.invoices.choices import InvoiceDeliveryMethod
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole
 from tests.factories import (
     AccountFactory,
     AddressFactory,
     CouponFactory,
     CustomerFactory,
     CustomerShippingFactory,
+    InvoiceDocumentFactory,
     InvoiceFactory,
     InvoiceLineFactory,
     ShippingRateFactory,
@@ -22,6 +23,7 @@ pytestmark = pytest.mark.django_db
 
 def test_retrieve_invoice(api_client, user, account):
     invoice = InvoiceFactory(account=account)
+    document = InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -74,8 +76,6 @@ def test_retrieve_invoice(api_client, user, account):
             "logo_id": None,
         },
         "metadata": {},
-        "custom_fields": {},
-        "footer": None,
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
         "recipients": [],
         "subtotal_amount": "0.00",
@@ -94,8 +94,20 @@ def test_retrieve_invoice(api_client, user, account):
         "opened_at": None,
         "paid_at": None,
         "voided_at": None,
-        "pdf_id": None,
         "previous_revision_id": None,
+        "documents": [
+            {
+                "id": str(document.id),
+                "role": document.role,
+                "language": document.language,
+                "footer": document.footer,
+                "memo": document.memo,
+                "custom_fields": document.custom_fields,
+                "file_id": None,
+                "created_at": ANY,
+                "updated_at": ANY,
+            }
+        ],
         "lines": [],
         "coupons": [],
         "discounts": [],
@@ -109,6 +121,7 @@ def test_retrieve_invoice(api_client, user, account):
 
 def test_retrieve_invoice_with_line(api_client, user, account):
     invoice = InvoiceFactory(account=account)
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
     line = InvoiceLineFactory(
         invoice=invoice,
         quantity=1,

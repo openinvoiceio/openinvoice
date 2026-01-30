@@ -41,6 +41,7 @@ def test_create_account(api_client, user, settings):
         },
         "country": "PL",
         "default_currency": "PLN",
+        "language": "en-us",
         "invoice_footer": None,
         "invoice_numbering_system_id": ANY,
         "credit_note_numbering_system_id": ANY,

@@ -1,3 +1,4 @@
+from django.conf import settings
 from djmoney import settings as djmoney_settings
 from rest_framework import serializers
 
@@ -25,6 +26,12 @@ class CurrencyField(serializers.ChoiceField):
 
     def __init__(self, **kwargs):
         kwargs.setdefault("choices", djmoney_settings.CURRENCY_CHOICES)
+        super().__init__(**kwargs)
+
+
+class LanguageField(serializers.ChoiceField):
+    def __init__(self, **kwargs):
+        kwargs.setdefault("choices", settings.LANGUAGES)
         super().__init__(**kwargs)
 
 

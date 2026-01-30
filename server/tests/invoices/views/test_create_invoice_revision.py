@@ -8,12 +8,13 @@ from django.utils import timezone
 
 from common.choices import LimitCode
 from openinvoice.coupons.choices import CouponStatus
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus
 from openinvoice.invoices.models import Invoice
 from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
     CouponFactory,
     CustomerFactory,
+    InvoiceDocumentFactory,
     InvoiceFactory,
     InvoiceLineFactory,
     InvoiceShippingFactory,
@@ -34,12 +35,15 @@ def test_create_invoice_revision(api_client, user, account):
         issue_date=original_issue_date,
         recipients=[customer.email],
     )
+    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.post(f"/api/v1/invoices/{invoice.id}/revisions")
 
     assert response.status_code == 201
+    revision = Invoice.objects.get(id=response.data["id"])
+    document = revision.documents.get(role=InvoiceDocumentRole.PRIMARY)
     assert response.data == {
         "id": response.data["id"],
         "status": InvoiceStatus.DRAFT,
@@ -86,8 +90,6 @@ def test_create_invoice_revision(api_client, user, account):
             "logo_id": None,
         },
         "metadata": {},
-        "custom_fields": {},
-        "footer": account.invoice_footer,
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
         "recipients": [customer.email],
         "subtotal_amount": "0.00",
@@ -106,8 +108,20 @@ def test_create_invoice_revision(api_client, user, account):
         "opened_at": None,
         "paid_at": None,
         "voided_at": None,
-        "pdf_id": None,
         "previous_revision_id": str(invoice.id),
+        "documents": [
+            {
+                "id": str(document.id),
+                "role": document.role,
+                "language": document.language,
+                "footer": document.footer,
+                "memo": document.memo,
+                "custom_fields": document.custom_fields,
+                "file_id": None,
+                "created_at": ANY,
+                "updated_at": ANY,
+            }
+        ],
         "lines": [],
         "coupons": [],
         "discounts": [],
@@ -141,9 +155,13 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
         total_tax_amount=Decimal("10"),
         total_amount=Decimal("110"),
         metadata={"note": "keep"},
-        custom_fields={"po": "123"},
-        footer="Original footer",
         shipping=shipping,
+    )
+    InvoiceDocumentFactory(
+        invoice=invoice,
+        role=InvoiceDocumentRole.PRIMARY,
+        footer="Original footer",
+        custom_fields={"po": "123"},
     )
 
     line = InvoiceLineFactory(
@@ -179,8 +197,10 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
     revision = Invoice.objects.get(id=response.data["id"])
     assert revision.previous_revision_id == invoice.id
     assert revision.metadata == {}
-    assert revision.custom_fields == invoice.custom_fields
-    assert revision.footer == invoice.footer
+    revision_document = revision.documents.get(role=InvoiceDocumentRole.PRIMARY)
+    invoice_document = invoice.documents.get(role=InvoiceDocumentRole.PRIMARY)
+    assert revision_document.custom_fields == invoice_document.custom_fields
+    assert revision_document.footer == invoice_document.footer
     assert revision.subtotal_amount == invoice.subtotal_amount
     assert revision.total_discount_amount == invoice.total_discount_amount
     assert revision.total_excluding_tax_amount == invoice.total_excluding_tax_amount

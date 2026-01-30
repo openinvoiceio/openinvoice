@@ -1,10 +1,11 @@
 import pytest
 
 from openinvoice.files.choices import FilePurpose
-from openinvoice.invoices.choices import InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDocumentRole, InvoiceStatus
 from tests.factories import (
     CustomerFactory,
     FileFactory,
+    InvoiceDocumentFactory,
     InvoiceFactory,
     PortalTokenFactory,
 )
@@ -16,6 +17,8 @@ def test_list_invoices_via_portal(api_client, account):
     customer = CustomerFactory(account=account)
     invoice1 = InvoiceFactory(account=account, customer=customer, status=InvoiceStatus.OPEN)
     invoice2 = InvoiceFactory(account=account, customer=customer, status=InvoiceStatus.PAID)
+    InvoiceDocumentFactory(invoice=invoice1, role=InvoiceDocumentRole.PRIMARY)
+    InvoiceDocumentFactory(invoice=invoice2, role=InvoiceDocumentRole.PRIMARY)
     InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
     token = PortalTokenFactory(customer=customer)["token"]
 
@@ -45,7 +48,10 @@ def test_list_invoices_via_portal(api_client, account):
 def test_list_invoices_with_pdf(api_client, account):
     customer = CustomerFactory(account=account)
     pdf = FileFactory(account=account, purpose=FilePurpose.INVOICE_PDF)
-    invoice = InvoiceFactory(account=account, customer=customer, pdf=pdf, status=InvoiceStatus.PAID)
+    invoice = InvoiceFactory(account=account, customer=customer, status=InvoiceStatus.PAID)
+    document = invoice.documents.get(role=InvoiceDocumentRole.PRIMARY)
+    document.file = pdf
+    document.save(update_fields=["file"])
     token = PortalTokenFactory(customer=customer)["token"]
 
     response = api_client.get("/api/v1/portal/invoices", HTTP_AUTHORIZATION=f"Bearer {token}")
@@ -64,7 +70,7 @@ def test_list_invoices_with_pdf(api_client, account):
                 "issue_date": invoice.issue_date.isoformat() if invoice.issue_date else None,
                 "due_date": invoice.due_date.isoformat(),
                 "total_amount": f"{invoice.total_amount.amount:.2f}",
-                "pdf_url": invoice.pdf.data.url,
+                "pdf_url": pdf.data.url,
             }
         ],
     }

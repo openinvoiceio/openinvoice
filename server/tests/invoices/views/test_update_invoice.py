@@ -40,8 +40,6 @@ def test_update_invoice(api_client, user, account):
             "issue_date": None,
             "due_date": invoice.due_date.isoformat(),
             "metadata": {},
-            "custom_fields": {},
-            "footer": None,
         },
     )
 
@@ -93,8 +91,6 @@ def test_update_invoice(api_client, user, account):
             "logo_id": None,
         },
         "metadata": {},
-        "custom_fields": {},
-        "footer": None,
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
         "recipients": [],
         "subtotal_amount": f"{invoice.subtotal_amount.amount:.2f}",
@@ -113,8 +109,21 @@ def test_update_invoice(api_client, user, account):
         "opened_at": None,
         "paid_at": None,
         "voided_at": None,
-        "pdf_id": None,
         "previous_revision_id": None,
+        "documents": [
+            {
+                "id": str(document.id),
+                "role": document.role,
+                "language": document.language,
+                "footer": document.footer,
+                "memo": document.memo,
+                "custom_fields": document.custom_fields,
+                "file_id": None,
+                "created_at": ANY,
+                "updated_at": ANY,
+            }
+            for document in invoice.documents.all()
+        ],
         "lines": [],
         "coupons": [],
         "discounts": [],

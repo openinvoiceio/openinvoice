@@ -24,6 +24,7 @@ class InvoiceQuerySet(models.QuerySet):
         TaxRate = apps.get_model("tax_rates.TaxRate")  # noqa: N806
         InvoiceDiscountAllocation = apps.get_model("invoices.InvoiceDiscountAllocation")  # noqa: N806
         InvoiceTaxAllocation = apps.get_model("invoices.InvoiceTaxAllocation")  # noqa: N806
+        InvoiceDocument = apps.get_model("invoices.InvoiceDocument")  # noqa: N806
 
         return self.select_related(
             "account",
@@ -51,6 +52,7 @@ class InvoiceQuerySet(models.QuerySet):
             Prefetch("tax_allocations", queryset=InvoiceTaxAllocation.objects.annotate_position()),
             Prefetch("lines__tax_allocations", queryset=InvoiceTaxAllocation.objects.annotate_position()),
             Prefetch("shipping__tax_allocations", queryset=InvoiceTaxAllocation.objects.annotate_position()),
+            Prefetch("documents", queryset=InvoiceDocument.objects.order_by("created_at")),
         )
 
     def revisions(self, head_id: UUID):

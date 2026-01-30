@@ -4,6 +4,8 @@ from .views import (
     InvoiceCloneAPIView,
     InvoiceCommentDestroyAPIView,
     InvoiceCommentsListCreateAPIView,
+    InvoiceDocumentListCreateAPIView,
+    InvoiceDocumentRetrieveUpdateDestroyAPIView,
     InvoiceFinalizeAPIView,
     InvoiceLineCreateAPIView,
     InvoiceLineUpdateDestroyAPIView,
@@ -23,6 +25,11 @@ urlpatterns = [
     path("invoices/<uuid:pk>/void", InvoiceVoidAPIView.as_view()),
     path("invoices/<uuid:pk>/preview", InvoicePreviewAPIView.as_view()),
     path("invoices/<uuid:pk>/clone", InvoiceCloneAPIView.as_view()),
+    path("invoices/<uuid:invoice_id>/documents", InvoiceDocumentListCreateAPIView.as_view()),
+    path(
+        "invoices/<uuid:invoice_id>/documents/<uuid:pk>",
+        InvoiceDocumentRetrieveUpdateDestroyAPIView.as_view(),
+    ),
     path("invoices/<uuid:invoice_id>/comments", InvoiceCommentsListCreateAPIView.as_view()),
     path("invoices/<uuid:invoice_id>/comments/<uuid:pk>", InvoiceCommentDestroyAPIView.as_view()),
     # Lines

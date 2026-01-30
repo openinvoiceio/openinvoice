@@ -6,7 +6,7 @@ import pytest
 
 from common.choices import FeatureCode, LimitCode
 from openinvoice.integrations.choices import PaymentProvider
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus
 from openinvoice.invoices.models import Invoice
 from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
@@ -31,6 +31,8 @@ def test_create_invoice(api_client, user, account):
     )
 
     assert response.status_code == 201
+    invoice = Invoice.objects.get(id=response.data["id"])
+    document = invoice.documents.get(role=InvoiceDocumentRole.PRIMARY)
     assert response.data == {
         "id": response.data["id"],
         "status": InvoiceStatus.DRAFT,
@@ -77,8 +79,6 @@ def test_create_invoice(api_client, user, account):
             "logo_id": None,
         },
         "metadata": {},
-        "custom_fields": {},
-        "footer": account.invoice_footer,
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
         "recipients": [customer.email],
         "subtotal_amount": "0.00",
@@ -97,8 +97,20 @@ def test_create_invoice(api_client, user, account):
         "opened_at": None,
         "paid_at": None,
         "voided_at": None,
-        "pdf_id": None,
         "previous_revision_id": None,
+        "documents": [
+            {
+                "id": str(document.id),
+                "role": document.role,
+                "language": document.language,
+                "footer": document.footer,
+                "memo": document.memo,
+                "custom_fields": document.custom_fields,
+                "file_id": None,
+                "created_at": ANY,
+                "updated_at": ANY,
+            }
+        ],
         "lines": [],
         "coupons": [],
         "discounts": [],
@@ -109,7 +121,6 @@ def test_create_invoice(api_client, user, account):
         "shipping": None,
     }
 
-    invoice = Invoice.objects.get(id=response.data["id"])
     assert invoice.customer_id == customer.id
     assert invoice.head is not None
     assert invoice.head.root_id == invoice.id

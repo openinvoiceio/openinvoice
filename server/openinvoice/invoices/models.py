@@ -7,7 +7,9 @@ from decimal import Decimal
 from typing import Any
 
 from dateutil.relativedelta import relativedelta
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import DecimalField, F, IntegerField, Q, Sum, Value
 from django.db.models.functions import Coalesce
@@ -32,6 +34,7 @@ from openinvoice.tax_rates.models import TaxRate
 from .choices import (
     InvoiceDeliveryMethod,
     InvoiceDiscountSource,
+    InvoiceDocumentRole,
     InvoiceStatus,
     InvoiceTaxBehavior,
     InvoiceTaxSource,
@@ -39,6 +42,7 @@ from .choices import (
 from .managers import (
     InvoiceAccountManager,
     InvoiceCustomerManager,
+    InvoiceDocumentManager,
     InvoiceLineManager,
     InvoiceManager,
 )
@@ -133,7 +137,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     )
     customer = models.ForeignKey("customers.Customer", on_delete=models.PROTECT, related_name="invoices")
     account = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="invoices")
-    footer = models.CharField(max_length=500, null=True, blank=True)
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_excluding_tax_amount = MoneyField(
@@ -152,9 +155,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     opened_at = models.DateTimeField(null=True)
     paid_at = models.DateTimeField(null=True)
     voided_at = models.DateTimeField(null=True)
-    pdf = models.OneToOneField("files.File", on_delete=models.SET_NULL, null=True, related_name="invoices_pdf")
     metadata = models.JSONField(default=dict)
-    custom_fields = models.JSONField(default=dict)
     payment_provider = models.CharField(max_length=50, choices=PaymentProvider.choices, null=True)
     payment_connection_id = models.UUIDField(null=True)
     delivery_method = models.CharField(
@@ -225,6 +226,13 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     @property
     def effective_account(self):
         return self.invoice_account or self.account
+
+    @cached_property
+    def primary_document(self) -> InvoiceDocument:
+        for document in self.documents.all():
+            if document.role == InvoiceDocumentRole.PRIMARY:
+                return document
+        raise ValueError("Invoice is missing a primary document")
 
     @property
     def effective_tax_behavior(self) -> InvoiceTaxBehavior:
@@ -641,8 +649,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         issue_date: date | None = None,
         due_date: date | None = None,
         metadata: Mapping[str, Any] | None = None,
-        custom_fields: Mapping[str, Any] | None = None,
-        footer: str | None = None,
         payment_provider: PaymentProvider | None = None,
         payment_connection_id: uuid.UUID | None = None,
         delivery_method: InvoiceDeliveryMethod | None = None,
@@ -664,8 +670,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.due_date = due_date
         self.net_payment_term = net_payment_term
         self.metadata = dict(metadata or self.metadata)
-        self.custom_fields = dict(custom_fields or self.custom_fields)
-        self.footer = footer
         self.payment_provider = payment_provider
         self.payment_connection_id = payment_connection_id
         self.customer = customer
@@ -677,6 +681,72 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             self.lines.all().delete()
 
         self.save()
+
+
+class InvoiceDocument(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="documents")
+    role = models.CharField(max_length=20, choices=InvoiceDocumentRole.choices)
+    language = models.CharField(max_length=10, choices=settings.LANGUAGES)
+    footer = models.CharField(max_length=600, null=True, blank=True)
+    memo = models.CharField(max_length=600, null=True, blank=True)
+    custom_fields = models.JSONField(default=dict)
+    file = models.OneToOneField(
+        "files.File",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="invoice_document_pdf",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = InvoiceDocumentManager()
+
+    def change_role(self, role: InvoiceDocumentRole) -> None:
+        if role == self.role:
+            return
+
+        if self.role == InvoiceDocumentRole.PRIMARY and role != InvoiceDocumentRole.PRIMARY:
+            raise ValidationError("Invoice must have a primary document")
+
+        if role in {InvoiceDocumentRole.PRIMARY, InvoiceDocumentRole.LEGAL}:
+            InvoiceDocument.objects.filter(invoice=self.invoice, role=role).exclude(id=self.id).update(
+                role=InvoiceDocumentRole.SECONDARY
+            )
+
+        self.role = role
+        self.save(update_fields=["role"])
+
+    def update(
+        self,
+        language: str,
+        footer: str | None,
+        memo: str | None,
+        custom_fields: dict[str, Any],
+    ) -> None:
+        self.language = language
+        self.footer = footer
+        self.memo = memo
+        self.custom_fields = custom_fields
+        self.save()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["invoice_id"]),
+            models.Index(fields=["invoice_id", "role"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                name="uniq_primary_invoice_document",
+                fields=["invoice"],
+                condition=Q(role=InvoiceDocumentRole.PRIMARY),
+            ),
+            models.UniqueConstraint(
+                name="uniq_legal_invoice_document",
+                fields=["invoice"],
+                condition=Q(role=InvoiceDocumentRole.LEGAL),
+            ),
+        ]
 
 
 class InvoiceLine(models.Model):

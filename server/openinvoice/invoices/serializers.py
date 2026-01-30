@@ -2,7 +2,7 @@ from djmoney.contrib.django_rest_framework.fields import MoneyField
 from djmoney.money import Money
 from rest_framework import serializers
 
-from common.fields import CurrencyField, MetadataField
+from common.fields import CurrencyField, LanguageField, MetadataField
 from common.validators import AllOrNoneValidator, AtMostOneValidator
 from openinvoice.addresses.serializers import AddressSerializer
 from openinvoice.coupons.fields import CouponRelatedField
@@ -18,7 +18,7 @@ from openinvoice.shipping_rates.fields import ShippingRateRelatedField
 from openinvoice.tax_rates.fields import TaxRateRelatedField
 from openinvoice.tax_rates.serializers import TaxRateSerializer
 
-from .choices import InvoiceDeliveryMethod, InvoiceStatus, InvoiceTaxBehavior
+from .choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus, InvoiceTaxBehavior
 from .fields import InvoiceRelatedField
 from .validators import (
     AutomaticDeliveryMethodValidator,
@@ -104,6 +104,18 @@ class InvoiceLineSerializer(serializers.Serializer):
     total_taxes = InvoiceTaxSerializer(many=True)
 
 
+class InvoiceDocumentSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    role = serializers.ChoiceField(choices=InvoiceDocumentRole.choices)
+    language = LanguageField()
+    footer = serializers.CharField(allow_null=True)
+    memo = serializers.CharField(allow_null=True)
+    custom_fields = MetadataField()
+    file_id = serializers.UUIDField(allow_null=True, read_only=True)
+    created_at = serializers.DateTimeField()
+    updated_at = serializers.DateTimeField(allow_null=True)
+
+
 class InvoiceSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     status = serializers.ChoiceField(choices=InvoiceStatus.choices)
@@ -119,8 +131,6 @@ class InvoiceSerializer(serializers.Serializer):
     customer = InvoiceCustomerSerializer(source="*", read_only=True)
     account = InvoiceAccountSerializer(source="*", read_only=True)
     metadata = MetadataField()
-    custom_fields = MetadataField()
-    footer = serializers.CharField(allow_null=True)
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2)
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2)
     total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2)
@@ -137,9 +147,9 @@ class InvoiceSerializer(serializers.Serializer):
     opened_at = serializers.DateTimeField(allow_null=True)
     paid_at = serializers.DateTimeField(allow_null=True)
     voided_at = serializers.DateTimeField(allow_null=True)
-    pdf_id = serializers.UUIDField(allow_null=True)
     previous_revision_id = serializers.UUIDField(allow_null=True)
     lines = InvoiceLineSerializer(many=True)
+    documents = InvoiceDocumentSerializer(many=True)
     shipping = InvoiceShippingSerializer()
     coupons = CouponSerializer(many=True)
     discounts = InvoiceDiscountSerializer(many=True)
@@ -166,8 +176,6 @@ class InvoiceCreateSerializer(serializers.Serializer):
     due_date = serializers.DateField(allow_null=True, required=False)
     net_payment_term = serializers.IntegerField(allow_null=True, min_value=0, required=False)
     metadata = MetadataField(allow_null=True, required=False)
-    custom_fields = MetadataField(allow_null=True, required=False)
-    footer = serializers.CharField(allow_null=True, required=False, max_length=600)
     payment_provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True, required=False)
     payment_connection_id = IntegrationConnectionField(
         source="payment_connection", type_field="payment_provider", allow_null=True, required=False
@@ -210,8 +218,6 @@ class InvoiceRevisionCreateSerializer(serializers.Serializer):
     due_date = serializers.DateField(allow_null=True, required=False)
     net_payment_term = serializers.IntegerField(allow_null=True, min_value=0, required=False)
     metadata = MetadataField(allow_null=True, required=False)
-    custom_fields = MetadataField(allow_null=True, required=False)
-    footer = serializers.CharField(allow_null=True, required=False, max_length=600)
     payment_provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True, required=False)
     payment_connection_id = IntegrationConnectionField(
         source="payment_connection", type_field="payment_provider", allow_null=True, required=False
@@ -252,8 +258,6 @@ class InvoiceUpdateSerializer(serializers.Serializer):
     due_date = serializers.DateField(allow_null=True, required=False)
     net_payment_term = serializers.IntegerField(min_value=0, required=False)
     metadata = MetadataField(required=False)
-    custom_fields = MetadataField(required=False)
-    footer = serializers.CharField(max_length=600, allow_null=True, required=False)
     payment_provider = serializers.ChoiceField(choices=PaymentProvider.choices, allow_null=True, required=False)
     payment_connection_id = IntegrationConnectionField(
         source="payment_connection", type_field="payment_provider", allow_null=True, required=False
@@ -286,6 +290,21 @@ class InvoiceUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError("Revision must use the same customer")
 
         return value
+
+
+class InvoiceDocumentCreateSerializer(serializers.Serializer):
+    language = LanguageField()
+    footer = serializers.CharField(allow_null=True, required=False)
+    memo = serializers.CharField(allow_null=True, required=False)
+    custom_fields = MetadataField(required=False)
+
+
+class InvoiceDocumentUpdateSerializer(serializers.Serializer):
+    role = serializers.ChoiceField(choices=InvoiceDocumentRole.choices, required=False)
+    language = LanguageField(required=False)
+    footer = serializers.CharField(allow_null=True, required=False)
+    memo = serializers.CharField(allow_null=True, required=False)
+    custom_fields = MetadataField(required=False)
 
 
 class InvoiceLineCreateSerializer(serializers.Serializer):

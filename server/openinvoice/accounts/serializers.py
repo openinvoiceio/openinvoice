@@ -1,7 +1,7 @@
 from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
 
-from common.fields import CurrencyField, MetadataField
+from common.fields import CurrencyField, LanguageField, MetadataField
 from openinvoice.addresses.serializers import AddressSerializer
 from openinvoice.files.fields import FileRelatedField
 from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
@@ -24,6 +24,7 @@ class AccountSerializer(serializers.Serializer):
     address = AddressSerializer()
     country = CountryField()
     default_currency = CurrencyField()
+    language = LanguageField()
     invoice_footer = serializers.CharField(allow_null=True)
     invoice_numbering_system_id = serializers.UUIDField(allow_null=True)
     credit_note_numbering_system_id = serializers.UUIDField(allow_null=True)
@@ -54,6 +55,7 @@ class AccountUpdateSerializer(serializers.Serializer):
     address = AddressSerializer(required=False)
     country = CountryField(required=False)
     default_currency = CurrencyField(required=False)
+    language = LanguageField(required=False)
     invoice_footer = serializers.CharField(allow_null=True, max_length=255, required=False)
     invoice_numbering_system_id = NumberingSystemRelatedField(
         source="invoice_numbering_system", applies_to=NumberingSystemAppliesTo.INVOICE, allow_null=True, required=False

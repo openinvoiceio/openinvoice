@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.db import models
 from djmoney import settings as djmoney_settings
 
@@ -25,6 +26,7 @@ class Customer(models.Model):
     phone = models.CharField(max_length=255, null=True)
     description = models.CharField(max_length=255, null=True, blank=True)
     currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES, null=True)
+    language = models.CharField(max_length=10, null=True, choices=settings.LANGUAGES)
     net_payment_term = models.PositiveIntegerField(null=True)
     invoice_numbering_system = models.ForeignKey(
         "numbering_systems.NumberingSystem",
@@ -92,6 +94,7 @@ class Customer(models.Model):
         phone: str | None,
         description: str | None,
         currency: str | None,
+        language: str | None,
         net_payment_term: int | None,
         invoice_numbering_system: NumberingSystem | None,
         credit_note_numbering_system: NumberingSystem | None,
@@ -105,6 +108,7 @@ class Customer(models.Model):
         self.phone = phone
         self.description = description
         self.currency = currency
+        self.language = language
         self.net_payment_term = net_payment_term
         self.invoice_numbering_system = invoice_numbering_system
         self.credit_note_numbering_system = credit_note_numbering_system

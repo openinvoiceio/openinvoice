@@ -94,6 +94,7 @@ class AccountRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             phone=data.get("phone", account.phone),
             country=data.get("country", account.country),
             default_currency=data.get("default_currency", account.default_currency),
+            language=data.get("language", account.language),
             invoice_footer=data.get("invoice_footer", account.invoice_footer),
             invoice_numbering_system=data.get("invoice_numbering_system", account.invoice_numbering_system),
             credit_note_numbering_system=data.get("credit_note_numbering_system", account.credit_note_numbering_system),

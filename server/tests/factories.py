@@ -16,7 +16,7 @@ from openinvoice.accounts.choices import InvitationStatus, MemberRole
 from openinvoice.comments.choices import CommentVisibility
 from openinvoice.coupons.choices import CouponStatus
 from openinvoice.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteStatus
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus, InvoiceTaxBehavior
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus, InvoiceTaxBehavior
 from openinvoice.numbering_systems.choices import (
     NumberingSystemAppliesTo,
     NumberingSystemResetInterval,
@@ -231,7 +231,6 @@ class InvoiceFactory(DjangoModelFactory):
     status = InvoiceStatus.DRAFT
     issue_date = None
     due_date = LazyFunction(lambda: timezone.now().date())
-    footer = None
     subtotal_amount = SelfAttribute("total_amount")
     total_discount_amount = Decimal("0")
     total_excluding_tax_amount = Decimal("0")
@@ -242,7 +241,6 @@ class InvoiceFactory(DjangoModelFactory):
     total_paid_amount = Decimal("0")
     outstanding_amount = SelfAttribute("total_amount")
     metadata = {}
-    custom_fields = {}
     paid_at = None
     delivery_method = InvoiceDeliveryMethod.MANUAL
     tax_behavior = InvoiceTaxBehavior.AUTOMATIC
@@ -260,6 +258,18 @@ class InvoiceFactory(DjangoModelFactory):
         if self.status != InvoiceStatus.DRAFT:
             self.head.current = self
             self.head.save()
+
+
+class InvoiceDocumentFactory(DjangoModelFactory):
+    class Meta:
+        model = "invoices.InvoiceDocument"
+
+    invoice = SubFactory(InvoiceFactory)
+    role = InvoiceDocumentRole.SECONDARY
+    language = "en-us"
+    footer = None
+    memo = None
+    custom_fields = {}
 
 
 class InvoiceLineFactory(DjangoModelFactory):

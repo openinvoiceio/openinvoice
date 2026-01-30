@@ -40,6 +40,7 @@ class Account(models.Model):
     )
     country = CountryField()
     default_currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
+    language = models.CharField(max_length=10, choices=settings.LANGUAGES)
     invoice_footer = models.CharField(max_length=600, null=True, blank=True)
     invoice_numbering_system = models.OneToOneField(
         "numbering_systems.NumberingSystem",
@@ -74,6 +75,7 @@ class Account(models.Model):
         phone: str | None,
         country: str,
         default_currency: str,
+        language: str,
         invoice_footer: str | None,
         invoice_numbering_system: NumberingSystem | None,
         credit_note_numbering_system: NumberingSystem | None,
@@ -88,6 +90,7 @@ class Account(models.Model):
         self.phone = phone
         self.country = country
         self.default_currency = default_currency
+        self.language = language
         self.invoice_footer = invoice_footer
         self.invoice_numbering_system = invoice_numbering_system
         self.credit_note_numbering_system = credit_note_numbering_system

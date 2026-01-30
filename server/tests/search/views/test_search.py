@@ -2,9 +2,11 @@ from unittest.mock import ANY
 
 import pytest
 
+from openinvoice.invoices.choices import InvoiceDocumentRole
 from tests.factories import (
     AccountFactory,
     CustomerFactory,
+    InvoiceDocumentFactory,
     InvoiceFactory,
     ProductFactory,
 )
@@ -20,15 +22,17 @@ def test_search_all(api_client, user, account):
         customer=customer_alpha,
         number="INV-ALPHA",
     )
+    document = InvoiceDocumentFactory(invoice=invoice_alpha, role=InvoiceDocumentRole.PRIMARY)
 
     # Non-matching or different account objects
     ProductFactory(account=account, name="Beta Product")
     CustomerFactory(account=account, name="Beta Customer", email="beta@example.com")
-    InvoiceFactory(
+    invoice_beta = InvoiceFactory(
         account=account,
         customer=CustomerFactory(account=account, name="Beta Customer", email="beta@example.com"),
         number="INV-BETA",
     )
+    InvoiceDocumentFactory(invoice=invoice_beta, role=InvoiceDocumentRole.PRIMARY)
     other_account = AccountFactory()
     ProductFactory(account=other_account, name="Alpha Product")
     CustomerFactory(account=other_account, name="Alpha Customer", email="alpha@example.com")
@@ -140,8 +144,6 @@ def test_search_all(api_client, user, account):
                     "logo_id": None,
                 },
                 "metadata": invoice_alpha.metadata,
-                "custom_fields": invoice_alpha.custom_fields,
-                "footer": invoice_alpha.footer,
                 "delivery_method": invoice_alpha.delivery_method,
                 "recipients": invoice_alpha.recipients,
                 "subtotal_amount": f"{invoice_alpha.subtotal_amount.amount:.2f}",
@@ -160,8 +162,20 @@ def test_search_all(api_client, user, account):
                 "opened_at": None,
                 "paid_at": None,
                 "voided_at": None,
-                "pdf_id": None,
                 "previous_revision_id": None,
+                "documents": [
+                    {
+                        "id": str(document.id),
+                        "role": document.role,
+                        "language": document.language,
+                        "footer": document.footer,
+                        "memo": document.memo,
+                        "custom_fields": document.custom_fields,
+                        "file_id": None,
+                        "created_at": ANY,
+                        "updated_at": ANY,
+                    }
+                ],
                 "lines": [],
                 "coupons": [],
                 "discounts": [],

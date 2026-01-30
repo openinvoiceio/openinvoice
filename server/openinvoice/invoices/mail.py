@@ -5,7 +5,12 @@ from .models import Invoice
 
 
 def send_invoice(invoice: Invoice) -> None:
-    context = {"invoice": invoice}
+    document = invoice.primary_document
+    context = {
+        "invoice": invoice,
+        "document": document,
+        "language": document.language if document else None,
+    }
     subject = render_to_string("invoices/email/invoice_email_subject.txt", context).strip()
     body_txt = render_to_string("invoices/email/invoice_email_message.txt", context)
     body_html = render_to_string("invoices/email/invoice_email_message.html", context)
@@ -16,6 +21,6 @@ def send_invoice(invoice: Invoice) -> None:
         to=invoice.recipients,
     )
     message.attach_alternative(body_html, "text/html")
-    if invoice.pdf:
-        message.attach(f"{invoice.number}.pdf", invoice.pdf.data.read(), invoice.pdf.content_type)
+    if document and document.file:
+        message.attach(f"{invoice.number}.pdf", document.file.data.read(), document.file.content_type)
     message.send()
