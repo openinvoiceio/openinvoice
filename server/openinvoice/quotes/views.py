@@ -274,7 +274,7 @@ class QuoteNotesListCreateAPIView(generics.ListAPIView):
                 quotes__account=self.request.account,
             )
             .select_related("author", "author__avatar")
-            .order_by("-created_at")
+            .order_by("created_at")
         )
 
     @extend_schema(operation_id="create_quote_note", request=NoteCreateSerializer, responses={201: NoteSerializer})

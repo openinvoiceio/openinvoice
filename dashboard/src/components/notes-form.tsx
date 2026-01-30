@@ -49,7 +49,7 @@ export function NotesForm({
       content: values.content.trim(),
       visibility: values.visibility,
     });
-    form.reset({ content: "", visibility: NoteVisibilityEnum.internal });
+    form.reset({ content: "", visibility: values.visibility });
   }
 
   const contentValue = form.watch("content");

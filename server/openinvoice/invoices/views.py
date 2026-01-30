@@ -434,7 +434,7 @@ class InvoiceNotesListCreateAPIView(generics.ListAPIView):
                 invoices__account=self.request.account,
             )
             .select_related("author", "author__avatar")
-            .order_by("-created_at")
+            .order_by("created_at")
         )
 
     @extend_schema(

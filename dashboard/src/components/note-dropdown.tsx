@@ -40,7 +40,7 @@ export function NoteDropdown({
       <Button
         size="icon"
         variant="ghost"
-        className="data-[state=open]:bg-accent size-8"
+        className="data-[state=open]:bg-accent size-6"
         disabled={isDeleting}
       >
         {isDeleting ? (

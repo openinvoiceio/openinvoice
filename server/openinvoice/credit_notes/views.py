@@ -189,7 +189,7 @@ class CreditNoteNotesListCreateAPIView(generics.ListAPIView):
                 credit_notes__account=self.request.account,
             )
             .select_related("author", "author__avatar")
-            .order_by("-created_at")
+            .order_by("created_at")
         )
 
     @extend_schema(
