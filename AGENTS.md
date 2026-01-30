@@ -103,6 +103,7 @@
 - Tests live under `server/tests`.
 - Use factories (factory-boy) where available.
 - Prefer deterministic tests; `pytest-randomly` is enabled.
+- Always assert full `response.data` with explicit expected structures/values; do not use serializers to build assertions.
 
 ## TypeScript/React Code Style (dashboard/)
 - TypeScript is strict (`tsconfig.json`).

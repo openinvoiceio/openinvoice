@@ -306,6 +306,12 @@ class InvoiceDocumentUpdateSerializer(serializers.Serializer):
     memo = serializers.CharField(allow_null=True, required=False)
     custom_fields = MetadataField(required=False)
 
+    def validate_role(self, value):
+        if self.instance.role == InvoiceDocumentRole.PRIMARY and value != InvoiceDocumentRole.PRIMARY:
+            raise serializers.ValidationError("Invoice must have a primary document")
+
+        return value
+
 
 class InvoiceLineCreateSerializer(serializers.Serializer):
     invoice_id = InvoiceRelatedField(source="invoice")

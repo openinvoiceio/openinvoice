@@ -9,7 +9,6 @@ from typing import Any
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import DecimalField, F, IntegerField, Q, Sum, Value
 from django.db.models.functions import Coalesce
@@ -705,9 +704,6 @@ class InvoiceDocument(models.Model):
     def change_role(self, role: InvoiceDocumentRole) -> None:
         if role == self.role:
             return
-
-        if self.role == InvoiceDocumentRole.PRIMARY and role != InvoiceDocumentRole.PRIMARY:
-            raise ValidationError("Invoice must have a primary document")
 
         if role in {InvoiceDocumentRole.PRIMARY, InvoiceDocumentRole.LEGAL}:
             InvoiceDocument.objects.filter(invoice=self.invoice, role=role).exclude(id=self.id).update(

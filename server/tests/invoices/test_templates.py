@@ -8,6 +8,7 @@ from tests.factories import (
     CouponFactory,
     CustomerFactory,
     CustomerShippingFactory,
+    InvoiceDocumentFactory,
     InvoiceFactory,
     InvoiceLineFactory,
     PaymentFactory,
@@ -60,12 +61,13 @@ def test_invoice_email_message_html_template_with_payment_url():
 def test_invoice_pdf_template():
     invoice = InvoiceFactory()
     InvoiceLineFactory(invoice=invoice, description="Line item")
+    document = InvoiceDocumentFactory(invoice=invoice)
 
     invoice.recalculate()
 
     body = render_to_string(
         "invoices/pdf/classic.html",
-        {"invoice": invoice, "language": "en"},
+        {"invoice": invoice, "document": document},
     )
     assert invoice.effective_number in body
     assert "Line item" in body
@@ -79,6 +81,7 @@ def test_invoice_pdf_template_with_discounts_and_taxes():
         total_tax_amount=Decimal("34"),
         total_amount=Decimal("119"),
     )
+    document = InvoiceDocumentFactory(invoice=invoice)
     line = InvoiceLineFactory(
         invoice=invoice,
         description="Line item",
@@ -100,7 +103,7 @@ def test_invoice_pdf_template_with_discounts_and_taxes():
     invoice.set_tax_rates([tax_rate])
     invoice.recalculate()
 
-    body = render_to_string("invoices/pdf/classic.html", {"invoice": invoice})
+    body = render_to_string("invoices/pdf/classic.html", {"invoice": invoice, "document": document})
 
     assert "Tax" in body
     assert coupon.name in body
@@ -118,6 +121,7 @@ def test_invoice_pdf_template_with_shipping_and_discount_summary():
         shipping=customer_shipping,
     )
     invoice = InvoiceFactory(account=account, customer=customer)
+    document = InvoiceDocumentFactory(invoice=invoice)
     InvoiceLineFactory(
         invoice=invoice,
         description="Line item",
@@ -132,7 +136,7 @@ def test_invoice_pdf_template_with_shipping_and_discount_summary():
     invoice.set_coupons([coupon])
     invoice.recalculate()
 
-    body = render_to_string("invoices/pdf/classic.html", {"invoice": invoice})
+    body = render_to_string("invoices/pdf/classic.html", {"invoice": invoice, "document": document})
 
     assert "Ship to" in body
     assert customer_shipping.name in body
@@ -144,11 +148,12 @@ def test_invoice_pdf_template_with_shipping_and_discount_summary():
 def test_invoice_pdf_template_without_line_tax_column():
     invoice = InvoiceFactory()
     InvoiceLineFactory(invoice=invoice, description="Line item")
+    document = InvoiceDocumentFactory(invoice=invoice)
 
     invoice.recalculate()
 
     body = render_to_string(
         "invoices/pdf/classic.html",
-        {"invoice": invoice, "language": "en"},
+        {"invoice": invoice, "document": document},
     )
     assert '<th style="width:15%; text-align: end">Tax</th>' not in body

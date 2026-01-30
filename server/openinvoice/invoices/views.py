@@ -424,7 +424,6 @@ class InvoicePreviewAPIView(generics.GenericAPIView):
             {
                 "invoice": invoice,
                 "document": document,
-                "language": document.language,
             },
             template_name=template_name,
         )

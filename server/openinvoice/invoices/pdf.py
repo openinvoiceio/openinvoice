@@ -19,7 +19,6 @@ def render_invoice_documents(invoice: Invoice) -> None:
             {
                 "invoice": invoice,
                 "document": document,
-                "language": document.language,
             },
         )
         content = generate_pdf(html)
