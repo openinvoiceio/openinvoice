@@ -61,38 +61,43 @@ export function NotesList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col">
       {notes.map((note) => (
-        <div key={note.id} className="border-input rounded-lg border">
-          <div className="bg-card flex items-center justify-between gap-3 rounded-t-lg px-3 py-1">
-            <div className="flex flex-1 items-start gap-3">
-              {note.author.avatar_url && (
-                <Avatar className="mt-0.5 size-5 rounded-full">
-                  <AvatarImage src={note.author.avatar_url || undefined} />
-                </Avatar>
-              )}
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="text-foreground font-medium">
-                  {note.author.name}
-                </span>
-                <span className="text-muted-foreground">
-                  {formatRelativeDatetime(note.created_at)}
-                </span>
-                {note.visibility === NoteVisibilityEnum.internal && (
-                  <Badge variant="secondary">Internal</Badge>
-                )}
+        <div key={note.id} className="group">
+            <div className="border-input rounded-lg border">
+              <div className="bg-card flex items-center justify-between gap-3 rounded-t-lg px-2">
+                <div className="flex flex-1 items-start gap-3">
+                  {note.author.avatar_url && (
+                    <Avatar className="mt-0.5 size-5 rounded-full">
+                      <AvatarImage src={note.author.avatar_url || undefined} />
+                    </Avatar>
+                  )}
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <span className="text-foreground font-medium">
+                      {note.author.name}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {formatRelativeDatetime(note.created_at)}
+                    </span>
+                    {note.visibility === NoteVisibilityEnum.internal && (
+                      <Badge variant="secondary">Internal</Badge>
+                    )}
+                  </div>
+                </div>
+                <NoteDropdown
+                  onDelete={() => handleDelete(note.id)}
+                  isDeleting={deletingId === note.id}
+                />
+              </div>
+              <Separator />
+              <div className="text-foreground px-2 py-2 text-sm whitespace-pre-wrap">
+                {note.content}
               </div>
             </div>
-            <NoteDropdown
-              onDelete={() => handleDelete(note.id)}
-              isDeleting={deletingId === note.id}
-            />
+            <div className="relative h-4 group-last:hidden">
+              <span className="bg-border absolute left-3 top-0 bottom-0 w-px" />
+            </div>
           </div>
-          <Separator />
-          <div className="text-foreground px-3 py-3 text-sm whitespace-pre-wrap">
-            {note.content}
-          </div>
-        </div>
       ))}
     </div>
   );
