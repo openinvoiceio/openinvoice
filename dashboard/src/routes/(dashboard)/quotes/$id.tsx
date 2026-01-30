@@ -135,17 +135,17 @@ function RouteComponent() {
               <SectionTitle>Notes</SectionTitle>
             </SectionHeader>
             <div className="space-y-4">
-              <NotesForm
-                isCreating={createNote.isPending}
-                onCreate={(data) =>
-                  createNote.mutateAsync({ quoteId: quote.id, data })
-                }
-              />
               <NotesList
                 notes={notes.data?.results ?? []}
                 isLoading={notes.isLoading}
                 onDelete={(noteId) =>
                   deleteNote.mutateAsync({ quoteId: quote.id, id: noteId })
+                }
+              />
+              <NotesForm
+                isCreating={createNote.isPending}
+                onCreate={(data) =>
+                  createNote.mutateAsync({ quoteId: quote.id, data })
                 }
               />
             </div>

@@ -484,12 +484,6 @@ function RouteComponent() {
               <SectionTitle>Notes</SectionTitle>
             </SectionHeader>
             <div className="space-y-4">
-              <NotesForm
-                isCreating={createNote.isPending}
-                onCreate={(data) =>
-                  createNote.mutateAsync({ creditNoteId: creditNote.id, data })
-                }
-              />
               <NotesList
                 notes={notes.data?.results ?? []}
                 isLoading={notes.isLoading}
@@ -498,6 +492,12 @@ function RouteComponent() {
                     creditNoteId: creditNote.id,
                     id: noteId,
                   })
+                }
+              />
+              <NotesForm
+                isCreating={createNote.isPending}
+                onCreate={(data) =>
+                  createNote.mutateAsync({ creditNoteId: creditNote.id, data })
                 }
               />
             </div>

@@ -39,6 +39,8 @@ export function NotesForm({
       content: "",
       visibility: NoteVisibilityEnum.internal,
     },
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
     resolver: zodResolver(schema),
   });
 
@@ -50,7 +52,8 @@ export function NotesForm({
     form.reset({ content: "", visibility: NoteVisibilityEnum.internal });
   }
 
-  const isDisabled = !form.formState.isValid || isCreating;
+  const contentValue = form.watch("content");
+  const isDisabled = isCreating || contentValue.trim().length === 0;
 
   return (
     <Form {...form}>
