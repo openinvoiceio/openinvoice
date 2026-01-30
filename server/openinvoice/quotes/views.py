@@ -268,6 +268,7 @@ class QuoteCommentsListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
+        get_object_or_404(Quote.objects.for_account(self.request.account), id=self.kwargs["quote_id"])
         return (
             Comment.objects.filter(
                 quotes__id=self.kwargs["quote_id"],

@@ -183,6 +183,7 @@ class CreditNoteCommentsListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
+        get_object_or_404(CreditNote.objects.for_account(self.request.account), id=self.kwargs["credit_note_id"])
         return (
             Comment.objects.filter(
                 credit_notes__id=self.kwargs["credit_note_id"],

@@ -428,6 +428,7 @@ class InvoiceCommentsListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
+        get_object_or_404(Invoice.objects.for_account(self.request.account), id=self.kwargs["invoice_id"])
         return (
             Comment.objects.filter(
                 invoices__id=self.kwargs["invoice_id"],

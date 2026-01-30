@@ -13,6 +13,7 @@ from factory import (
 from factory.django import DjangoModelFactory, FileField, Password
 
 from openinvoice.accounts.choices import InvitationStatus, MemberRole
+from openinvoice.comments.choices import CommentVisibility
 from openinvoice.coupons.choices import CouponStatus
 from openinvoice.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteStatus
 from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus, InvoiceTaxBehavior
@@ -61,6 +62,15 @@ class FileFactory(DjangoModelFactory):
     content_type = "text/plain"
     data = FileField(data=b"This is a test file content.", filename=filename)
     uploader = SubFactory(UserFactory)
+
+
+class CommentFactory(DjangoModelFactory):
+    class Meta:
+        model = "comments.Comment"
+
+    author = SubFactory(UserFactory)
+    content = Sequence(lambda n: f"Comment {n}")
+    visibility = CommentVisibility.PUBLIC
 
 
 class AccountFactory(DjangoModelFactory):
