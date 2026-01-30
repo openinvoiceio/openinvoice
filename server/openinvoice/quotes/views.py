@@ -10,8 +10,8 @@ from rest_framework.response import Response
 
 from common.utils import numeric_overflow
 from openinvoice.accounts.permissions import IsAccountMember
-from openinvoice.notes.models import Note
-from openinvoice.notes.serializers import NoteCreateSerializer, NoteSerializer
+from openinvoice.comments.models import Comment
+from openinvoice.comments.serializers import CommentCreateSerializer, CommentSerializer
 
 from .choices import QuoteDeliveryMethod, QuotePreviewFormat, QuoteStatus
 from .filtersets import QuoteFilterSet
@@ -261,15 +261,15 @@ class QuotePreviewAPIView(generics.GenericAPIView):
         return Response({"quote": quote}, template_name=template_name)
 
 
-@extend_schema_view(list=extend_schema(operation_id="list_quote_notes"))
-class QuoteNotesListCreateAPIView(generics.ListAPIView):
-    queryset = Note.objects.none()
-    serializer_class = NoteSerializer
+@extend_schema_view(list=extend_schema(operation_id="list_quote_comments"))
+class QuoteCommentsListCreateAPIView(generics.ListAPIView):
+    queryset = Comment.objects.none()
+    serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
         return (
-            Note.objects.filter(
+            Comment.objects.filter(
                 quotes__id=self.kwargs["quote_id"],
                 quotes__account=self.request.account,
             )
@@ -277,37 +277,41 @@ class QuoteNotesListCreateAPIView(generics.ListAPIView):
             .order_by("created_at")
         )
 
-    @extend_schema(operation_id="create_quote_note", request=NoteCreateSerializer, responses={201: NoteSerializer})
+    @extend_schema(
+        operation_id="create_quote_comment",
+        request=CommentCreateSerializer,
+        responses={201: CommentSerializer},
+    )
     def post(self, request, *_, **__):
-        serializer = NoteCreateSerializer(data=request.data)
+        serializer = CommentCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         quote = get_object_or_404(Quote.objects.for_account(self.request.account), id=self.kwargs["quote_id"])
 
-        note = quote.notes.create_note(
+        comment = quote.comments.create_comment(
             author=request.user,
             content=serializer.validated_data["content"],
             visibility=serializer.validated_data["visibility"],
         )
-        logger.info("Quote note created", note_id=note.id, quote_id=quote.id)
+        logger.info("Quote comment created", comment_id=comment.id, quote_id=quote.id)
 
-        serializer = self.get_serializer(note)
+        serializer = self.get_serializer(comment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class QuoteNoteDestroyAPIView(generics.DestroyAPIView):
-    queryset = Note.objects.none()
-    serializer_class = NoteSerializer
+class QuoteCommentDestroyAPIView(generics.DestroyAPIView):
+    queryset = Comment.objects.none()
+    serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Note.objects.filter(quotes__id=self.kwargs["note_id"], quotes__account=self.request.account)
+        return Comment.objects.filter(quotes__id=self.kwargs["quote_id"], quotes__account=self.request.account)
 
-    @extend_schema(operation_id="delete_quote_note", request=None, responses={204: None})
+    @extend_schema(operation_id="delete_quote_comment", request=None, responses={204: None})
     def delete(self, *_, **__):
-        note = self.get_object()
+        comment = self.get_object()
 
-        note.delete()
-        logger.info("Quote note deleted", note_id=note.id, quote_id=self.kwargs["quote_id"])
+        comment.delete()
+        logger.info("Quote comment deleted", comment_id=comment.id, quote_id=self.kwargs["quote_id"])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

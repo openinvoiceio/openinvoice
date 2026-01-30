@@ -172,7 +172,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         default=list,
         blank=True,
     )
-    notes = models.ManyToManyField("notes.Note", related_name="invoices")
+    comments = models.ManyToManyField("comments.Comment", related_name="invoices")
     coupons = models.ManyToManyField("coupons.Coupon", through="InvoiceCoupon", related_name="+")
     tax_rates = models.ManyToManyField("tax_rates.TaxRate", through="InvoiceTaxRate", related_name="+")
     shipping = models.OneToOneField(

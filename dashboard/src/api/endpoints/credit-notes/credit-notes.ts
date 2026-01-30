@@ -25,17 +25,17 @@ import type {
 import { axiosInstance } from "../../../lib/api/client";
 import type { ErrorType } from "../../../lib/api/client";
 import type {
+  Comment,
+  CommentCreate,
   CreditNote,
   CreditNoteCreate,
   CreditNoteIssue,
+  CreditNotesCommentsListParams,
   CreditNotesListParams,
-  CreditNotesNotesListParams,
   CreditNoteUpdate,
   CreditNoteVoid,
-  Note,
-  NoteCreate,
+  PaginatedCommentList,
   PaginatedCreditNoteList,
-  PaginatedNoteList,
   PreviewCreditNoteParams,
 } from "../../models";
 
@@ -409,15 +409,15 @@ export const useCreateCreditNote = <
 
   return useMutation(mutationOptions, queryClient);
 };
-export const creditNotesNotesList = (
+export const creditNotesCommentsList = (
   creditNoteId: string,
-  params?: CreditNotesNotesListParams,
+  params?: CreditNotesCommentsListParams,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return axiosInstance<PaginatedNoteList>(
+  return axiosInstance<PaginatedCommentList>(
     {
-      url: `/api/v1/credit-notes/${creditNoteId}/notes`,
+      url: `/api/v1/credit-notes/${creditNoteId}/comments`,
       method: "GET",
       params,
       signal,
@@ -426,26 +426,26 @@ export const creditNotesNotesList = (
   );
 };
 
-export const getCreditNotesNotesListQueryKey = (
+export const getCreditNotesCommentsListQueryKey = (
   creditNoteId?: string,
-  params?: CreditNotesNotesListParams,
+  params?: CreditNotesCommentsListParams,
 ) => {
   return [
-    `/api/v1/credit-notes/${creditNoteId}/notes`,
+    `/api/v1/credit-notes/${creditNoteId}/comments`,
     ...(params ? [params] : []),
   ] as const;
 };
 
-export const getCreditNotesNotesListQueryOptions = <
-  TData = Awaited<ReturnType<typeof creditNotesNotesList>>,
+export const getCreditNotesCommentsListQueryOptions = <
+  TData = Awaited<ReturnType<typeof creditNotesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   creditNoteId: string,
-  params?: CreditNotesNotesListParams,
+  params?: CreditNotesCommentsListParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof creditNotesNotesList>>,
+        Awaited<ReturnType<typeof creditNotesCommentsList>>,
         TError,
         TData
       >
@@ -457,12 +457,12 @@ export const getCreditNotesNotesListQueryOptions = <
 
   const queryKey =
     queryOptions?.queryKey ??
-    getCreditNotesNotesListQueryKey(creditNoteId, params);
+    getCreditNotesCommentsListQueryKey(creditNoteId, params);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof creditNotesNotesList>>
+    Awaited<ReturnType<typeof creditNotesCommentsList>>
   > = ({ signal }) =>
-    creditNotesNotesList(creditNoteId, params, requestOptions, signal);
+    creditNotesCommentsList(creditNoteId, params, requestOptions, signal);
 
   return {
     queryKey,
@@ -470,36 +470,36 @@ export const getCreditNotesNotesListQueryOptions = <
     enabled: !!creditNoteId,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof creditNotesNotesList>>,
+    Awaited<ReturnType<typeof creditNotesCommentsList>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type CreditNotesNotesListQueryResult = NonNullable<
-  Awaited<ReturnType<typeof creditNotesNotesList>>
+export type CreditNotesCommentsListQueryResult = NonNullable<
+  Awaited<ReturnType<typeof creditNotesCommentsList>>
 >;
-export type CreditNotesNotesListQueryError = ErrorType<unknown>;
+export type CreditNotesCommentsListQueryError = ErrorType<unknown>;
 
-export function useCreditNotesNotesList<
-  TData = Awaited<ReturnType<typeof creditNotesNotesList>>,
+export function useCreditNotesCommentsList<
+  TData = Awaited<ReturnType<typeof creditNotesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   creditNoteId: string,
-  params: undefined | CreditNotesNotesListParams,
+  params: undefined | CreditNotesCommentsListParams,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof creditNotesNotesList>>,
+        Awaited<ReturnType<typeof creditNotesCommentsList>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof creditNotesNotesList>>,
+          Awaited<ReturnType<typeof creditNotesCommentsList>>,
           TError,
-          Awaited<ReturnType<typeof creditNotesNotesList>>
+          Awaited<ReturnType<typeof creditNotesCommentsList>>
         >,
         "initialData"
       >;
@@ -509,25 +509,25 @@ export function useCreditNotesNotesList<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCreditNotesNotesList<
-  TData = Awaited<ReturnType<typeof creditNotesNotesList>>,
+export function useCreditNotesCommentsList<
+  TData = Awaited<ReturnType<typeof creditNotesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   creditNoteId: string,
-  params?: CreditNotesNotesListParams,
+  params?: CreditNotesCommentsListParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof creditNotesNotesList>>,
+        Awaited<ReturnType<typeof creditNotesCommentsList>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof creditNotesNotesList>>,
+          Awaited<ReturnType<typeof creditNotesCommentsList>>,
           TError,
-          Awaited<ReturnType<typeof creditNotesNotesList>>
+          Awaited<ReturnType<typeof creditNotesCommentsList>>
         >,
         "initialData"
       >;
@@ -537,16 +537,16 @@ export function useCreditNotesNotesList<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCreditNotesNotesList<
-  TData = Awaited<ReturnType<typeof creditNotesNotesList>>,
+export function useCreditNotesCommentsList<
+  TData = Awaited<ReturnType<typeof creditNotesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   creditNoteId: string,
-  params?: CreditNotesNotesListParams,
+  params?: CreditNotesCommentsListParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof creditNotesNotesList>>,
+        Awaited<ReturnType<typeof creditNotesCommentsList>>,
         TError,
         TData
       >
@@ -558,16 +558,16 @@ export function useCreditNotesNotesList<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useCreditNotesNotesList<
-  TData = Awaited<ReturnType<typeof creditNotesNotesList>>,
+export function useCreditNotesCommentsList<
+  TData = Awaited<ReturnType<typeof creditNotesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   creditNoteId: string,
-  params?: CreditNotesNotesListParams,
+  params?: CreditNotesCommentsListParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof creditNotesNotesList>>,
+        Awaited<ReturnType<typeof creditNotesCommentsList>>,
         TError,
         TData
       >
@@ -578,7 +578,7 @@ export function useCreditNotesNotesList<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getCreditNotesNotesListQueryOptions(
+  const queryOptions = getCreditNotesCommentsListQueryOptions(
     creditNoteId,
     params,
     options,
@@ -594,16 +594,16 @@ export function useCreditNotesNotesList<
   return query;
 }
 
-export const getCreditNotesNotesListSuspenseQueryOptions = <
-  TData = Awaited<ReturnType<typeof creditNotesNotesList>>,
+export const getCreditNotesCommentsListSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof creditNotesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   creditNoteId: string,
-  params?: CreditNotesNotesListParams,
+  params?: CreditNotesCommentsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof creditNotesNotesList>>,
+        Awaited<ReturnType<typeof creditNotesCommentsList>>,
         TError,
         TData
       >
@@ -615,35 +615,35 @@ export const getCreditNotesNotesListSuspenseQueryOptions = <
 
   const queryKey =
     queryOptions?.queryKey ??
-    getCreditNotesNotesListQueryKey(creditNoteId, params);
+    getCreditNotesCommentsListQueryKey(creditNoteId, params);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof creditNotesNotesList>>
+    Awaited<ReturnType<typeof creditNotesCommentsList>>
   > = ({ signal }) =>
-    creditNotesNotesList(creditNoteId, params, requestOptions, signal);
+    creditNotesCommentsList(creditNoteId, params, requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
-    Awaited<ReturnType<typeof creditNotesNotesList>>,
+    Awaited<ReturnType<typeof creditNotesCommentsList>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type CreditNotesNotesListSuspenseQueryResult = NonNullable<
-  Awaited<ReturnType<typeof creditNotesNotesList>>
+export type CreditNotesCommentsListSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof creditNotesCommentsList>>
 >;
-export type CreditNotesNotesListSuspenseQueryError = ErrorType<unknown>;
+export type CreditNotesCommentsListSuspenseQueryError = ErrorType<unknown>;
 
-export function useCreditNotesNotesListSuspense<
-  TData = Awaited<ReturnType<typeof creditNotesNotesList>>,
+export function useCreditNotesCommentsListSuspense<
+  TData = Awaited<ReturnType<typeof creditNotesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   creditNoteId: string,
-  params: undefined | CreditNotesNotesListParams,
+  params: undefined | CreditNotesCommentsListParams,
   options: {
     query: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof creditNotesNotesList>>,
+        Awaited<ReturnType<typeof creditNotesCommentsList>>,
         TError,
         TData
       >
@@ -654,16 +654,16 @@ export function useCreditNotesNotesListSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCreditNotesNotesListSuspense<
-  TData = Awaited<ReturnType<typeof creditNotesNotesList>>,
+export function useCreditNotesCommentsListSuspense<
+  TData = Awaited<ReturnType<typeof creditNotesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   creditNoteId: string,
-  params?: CreditNotesNotesListParams,
+  params?: CreditNotesCommentsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof creditNotesNotesList>>,
+        Awaited<ReturnType<typeof creditNotesCommentsList>>,
         TError,
         TData
       >
@@ -674,16 +674,16 @@ export function useCreditNotesNotesListSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCreditNotesNotesListSuspense<
-  TData = Awaited<ReturnType<typeof creditNotesNotesList>>,
+export function useCreditNotesCommentsListSuspense<
+  TData = Awaited<ReturnType<typeof creditNotesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   creditNoteId: string,
-  params?: CreditNotesNotesListParams,
+  params?: CreditNotesCommentsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof creditNotesNotesList>>,
+        Awaited<ReturnType<typeof creditNotesCommentsList>>,
         TError,
         TData
       >
@@ -695,16 +695,16 @@ export function useCreditNotesNotesListSuspense<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useCreditNotesNotesListSuspense<
-  TData = Awaited<ReturnType<typeof creditNotesNotesList>>,
+export function useCreditNotesCommentsListSuspense<
+  TData = Awaited<ReturnType<typeof creditNotesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   creditNoteId: string,
-  params?: CreditNotesNotesListParams,
+  params?: CreditNotesCommentsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof creditNotesNotesList>>,
+        Awaited<ReturnType<typeof creditNotesCommentsList>>,
         TError,
         TData
       >
@@ -715,7 +715,7 @@ export function useCreditNotesNotesListSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getCreditNotesNotesListSuspenseQueryOptions(
+  const queryOptions = getCreditNotesCommentsListSuspenseQueryOptions(
     creditNoteId,
     params,
     options,
@@ -733,42 +733,42 @@ export function useCreditNotesNotesListSuspense<
   return query;
 }
 
-export const createCreditNoteNote = (
+export const createCreditNoteComment = (
   creditNoteId: string,
-  noteCreate: NoteCreate,
+  commentCreate: CommentCreate,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return axiosInstance<Note>(
+  return axiosInstance<Comment>(
     {
-      url: `/api/v1/credit-notes/${creditNoteId}/notes`,
+      url: `/api/v1/credit-notes/${creditNoteId}/comments`,
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      data: noteCreate,
+      data: commentCreate,
       signal,
     },
     options,
   );
 };
 
-export const getCreateCreditNoteNoteMutationOptions = <
+export const getCreateCreditNoteCommentMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createCreditNoteNote>>,
+    Awaited<ReturnType<typeof createCreditNoteComment>>,
     TError,
-    { creditNoteId: string; data: NoteCreate },
+    { creditNoteId: string; data: CommentCreate },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof createCreditNoteNote>>,
+  Awaited<ReturnType<typeof createCreditNoteComment>>,
   TError,
-  { creditNoteId: string; data: NoteCreate },
+  { creditNoteId: string; data: CommentCreate },
   TContext
 > => {
-  const mutationKey = ["createCreditNoteNote"];
+  const mutationKey = ["createCreditNoteComment"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -778,79 +778,79 @@ export const getCreateCreditNoteNoteMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createCreditNoteNote>>,
-    { creditNoteId: string; data: NoteCreate }
+    Awaited<ReturnType<typeof createCreditNoteComment>>,
+    { creditNoteId: string; data: CommentCreate }
   > = (props) => {
     const { creditNoteId, data } = props ?? {};
 
-    return createCreditNoteNote(creditNoteId, data, requestOptions);
+    return createCreditNoteComment(creditNoteId, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type CreateCreditNoteNoteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createCreditNoteNote>>
+export type CreateCreditNoteCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCreditNoteComment>>
 >;
-export type CreateCreditNoteNoteMutationBody = NoteCreate;
-export type CreateCreditNoteNoteMutationError = ErrorType<unknown>;
+export type CreateCreditNoteCommentMutationBody = CommentCreate;
+export type CreateCreditNoteCommentMutationError = ErrorType<unknown>;
 
-export const useCreateCreditNoteNote = <
+export const useCreateCreditNoteComment = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof createCreditNoteNote>>,
+      Awaited<ReturnType<typeof createCreditNoteComment>>,
       TError,
-      { creditNoteId: string; data: NoteCreate },
+      { creditNoteId: string; data: CommentCreate },
       TContext
     >;
     request?: SecondParameter<typeof axiosInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof createCreditNoteNote>>,
+  Awaited<ReturnType<typeof createCreditNoteComment>>,
   TError,
-  { creditNoteId: string; data: NoteCreate },
+  { creditNoteId: string; data: CommentCreate },
   TContext
 > => {
-  const mutationOptions = getCreateCreditNoteNoteMutationOptions(options);
+  const mutationOptions = getCreateCreditNoteCommentMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
-export const deleteCreditNoteNote = (
+export const deleteCreditNoteComment = (
   creditNoteId: string,
   id: string,
   options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<void>(
     {
-      url: `/api/v1/credit-notes/${creditNoteId}/notes/${id}`,
+      url: `/api/v1/credit-notes/${creditNoteId}/comments/${id}`,
       method: "DELETE",
     },
     options,
   );
 };
 
-export const getDeleteCreditNoteNoteMutationOptions = <
+export const getDeleteCreditNoteCommentMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteCreditNoteNote>>,
+    Awaited<ReturnType<typeof deleteCreditNoteComment>>,
     TError,
     { creditNoteId: string; id: string },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof deleteCreditNoteNote>>,
+  Awaited<ReturnType<typeof deleteCreditNoteComment>>,
   TError,
   { creditNoteId: string; id: string },
   TContext
 > => {
-  const mutationKey = ["deleteCreditNoteNote"];
+  const mutationKey = ["deleteCreditNoteComment"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -860,30 +860,30 @@ export const getDeleteCreditNoteNoteMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteCreditNoteNote>>,
+    Awaited<ReturnType<typeof deleteCreditNoteComment>>,
     { creditNoteId: string; id: string }
   > = (props) => {
     const { creditNoteId, id } = props ?? {};
 
-    return deleteCreditNoteNote(creditNoteId, id, requestOptions);
+    return deleteCreditNoteComment(creditNoteId, id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type DeleteCreditNoteNoteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteCreditNoteNote>>
+export type DeleteCreditNoteCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteCreditNoteComment>>
 >;
 
-export type DeleteCreditNoteNoteMutationError = ErrorType<unknown>;
+export type DeleteCreditNoteCommentMutationError = ErrorType<unknown>;
 
-export const useDeleteCreditNoteNote = <
+export const useDeleteCreditNoteComment = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof deleteCreditNoteNote>>,
+      Awaited<ReturnType<typeof deleteCreditNoteComment>>,
       TError,
       { creditNoteId: string; id: string },
       TContext
@@ -892,12 +892,12 @@ export const useDeleteCreditNoteNote = <
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof deleteCreditNoteNote>>,
+  Awaited<ReturnType<typeof deleteCreditNoteComment>>,
   TError,
   { creditNoteId: string; id: string },
   TContext
 > => {
-  const mutationOptions = getDeleteCreditNoteNoteMutationOptions(options);
+  const mutationOptions = getDeleteCreditNoteCommentMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

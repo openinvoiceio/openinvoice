@@ -25,17 +25,17 @@ import type {
 import { axiosInstance } from "../../../lib/api/client";
 import type { ErrorType } from "../../../lib/api/client";
 import type {
+  Comment,
+  CommentCreate,
   Invoice,
   InvoiceCreate,
   InvoiceRevisionCreate,
+  InvoicesCommentsListParams,
   InvoicesListParams,
-  InvoicesNotesListParams,
   InvoiceUpdate,
   ListInvoiceRevisionsParams,
-  Note,
-  NoteCreate,
+  PaginatedCommentList,
   PaginatedInvoiceList,
-  PaginatedNoteList,
   PreviewInvoiceParams,
 } from "../../models";
 
@@ -389,15 +389,15 @@ export const useCreateInvoice = <
 
   return useMutation(mutationOptions, queryClient);
 };
-export const invoicesNotesList = (
+export const invoicesCommentsList = (
   invoiceId: string,
-  params?: InvoicesNotesListParams,
+  params?: InvoicesCommentsListParams,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return axiosInstance<PaginatedNoteList>(
+  return axiosInstance<PaginatedCommentList>(
     {
-      url: `/api/v1/invoices/${invoiceId}/notes`,
+      url: `/api/v1/invoices/${invoiceId}/comments`,
       method: "GET",
       params,
       signal,
@@ -406,26 +406,26 @@ export const invoicesNotesList = (
   );
 };
 
-export const getInvoicesNotesListQueryKey = (
+export const getInvoicesCommentsListQueryKey = (
   invoiceId?: string,
-  params?: InvoicesNotesListParams,
+  params?: InvoicesCommentsListParams,
 ) => {
   return [
-    `/api/v1/invoices/${invoiceId}/notes`,
+    `/api/v1/invoices/${invoiceId}/comments`,
     ...(params ? [params] : []),
   ] as const;
 };
 
-export const getInvoicesNotesListQueryOptions = <
-  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+export const getInvoicesCommentsListQueryOptions = <
+  TData = Awaited<ReturnType<typeof invoicesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   invoiceId: string,
-  params?: InvoicesNotesListParams,
+  params?: InvoicesCommentsListParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof invoicesNotesList>>,
+        Awaited<ReturnType<typeof invoicesCommentsList>>,
         TError,
         TData
       >
@@ -436,12 +436,13 @@ export const getInvoicesNotesListQueryOptions = <
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getInvoicesNotesListQueryKey(invoiceId, params);
+    queryOptions?.queryKey ??
+    getInvoicesCommentsListQueryKey(invoiceId, params);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof invoicesNotesList>>
+    Awaited<ReturnType<typeof invoicesCommentsList>>
   > = ({ signal }) =>
-    invoicesNotesList(invoiceId, params, requestOptions, signal);
+    invoicesCommentsList(invoiceId, params, requestOptions, signal);
 
   return {
     queryKey,
@@ -449,36 +450,36 @@ export const getInvoicesNotesListQueryOptions = <
     enabled: !!invoiceId,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof invoicesNotesList>>,
+    Awaited<ReturnType<typeof invoicesCommentsList>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type InvoicesNotesListQueryResult = NonNullable<
-  Awaited<ReturnType<typeof invoicesNotesList>>
+export type InvoicesCommentsListQueryResult = NonNullable<
+  Awaited<ReturnType<typeof invoicesCommentsList>>
 >;
-export type InvoicesNotesListQueryError = ErrorType<unknown>;
+export type InvoicesCommentsListQueryError = ErrorType<unknown>;
 
-export function useInvoicesNotesList<
-  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+export function useInvoicesCommentsList<
+  TData = Awaited<ReturnType<typeof invoicesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   invoiceId: string,
-  params: undefined | InvoicesNotesListParams,
+  params: undefined | InvoicesCommentsListParams,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof invoicesNotesList>>,
+        Awaited<ReturnType<typeof invoicesCommentsList>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof invoicesNotesList>>,
+          Awaited<ReturnType<typeof invoicesCommentsList>>,
           TError,
-          Awaited<ReturnType<typeof invoicesNotesList>>
+          Awaited<ReturnType<typeof invoicesCommentsList>>
         >,
         "initialData"
       >;
@@ -488,25 +489,25 @@ export function useInvoicesNotesList<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useInvoicesNotesList<
-  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+export function useInvoicesCommentsList<
+  TData = Awaited<ReturnType<typeof invoicesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   invoiceId: string,
-  params?: InvoicesNotesListParams,
+  params?: InvoicesCommentsListParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof invoicesNotesList>>,
+        Awaited<ReturnType<typeof invoicesCommentsList>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof invoicesNotesList>>,
+          Awaited<ReturnType<typeof invoicesCommentsList>>,
           TError,
-          Awaited<ReturnType<typeof invoicesNotesList>>
+          Awaited<ReturnType<typeof invoicesCommentsList>>
         >,
         "initialData"
       >;
@@ -516,16 +517,16 @@ export function useInvoicesNotesList<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useInvoicesNotesList<
-  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+export function useInvoicesCommentsList<
+  TData = Awaited<ReturnType<typeof invoicesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   invoiceId: string,
-  params?: InvoicesNotesListParams,
+  params?: InvoicesCommentsListParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof invoicesNotesList>>,
+        Awaited<ReturnType<typeof invoicesCommentsList>>,
         TError,
         TData
       >
@@ -537,16 +538,16 @@ export function useInvoicesNotesList<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useInvoicesNotesList<
-  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+export function useInvoicesCommentsList<
+  TData = Awaited<ReturnType<typeof invoicesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   invoiceId: string,
-  params?: InvoicesNotesListParams,
+  params?: InvoicesCommentsListParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof invoicesNotesList>>,
+        Awaited<ReturnType<typeof invoicesCommentsList>>,
         TError,
         TData
       >
@@ -557,7 +558,7 @@ export function useInvoicesNotesList<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getInvoicesNotesListQueryOptions(
+  const queryOptions = getInvoicesCommentsListQueryOptions(
     invoiceId,
     params,
     options,
@@ -573,16 +574,16 @@ export function useInvoicesNotesList<
   return query;
 }
 
-export const getInvoicesNotesListSuspenseQueryOptions = <
-  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+export const getInvoicesCommentsListSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof invoicesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   invoiceId: string,
-  params?: InvoicesNotesListParams,
+  params?: InvoicesCommentsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof invoicesNotesList>>,
+        Awaited<ReturnType<typeof invoicesCommentsList>>,
         TError,
         TData
       >
@@ -593,35 +594,36 @@ export const getInvoicesNotesListSuspenseQueryOptions = <
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getInvoicesNotesListQueryKey(invoiceId, params);
+    queryOptions?.queryKey ??
+    getInvoicesCommentsListQueryKey(invoiceId, params);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof invoicesNotesList>>
+    Awaited<ReturnType<typeof invoicesCommentsList>>
   > = ({ signal }) =>
-    invoicesNotesList(invoiceId, params, requestOptions, signal);
+    invoicesCommentsList(invoiceId, params, requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
-    Awaited<ReturnType<typeof invoicesNotesList>>,
+    Awaited<ReturnType<typeof invoicesCommentsList>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type InvoicesNotesListSuspenseQueryResult = NonNullable<
-  Awaited<ReturnType<typeof invoicesNotesList>>
+export type InvoicesCommentsListSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof invoicesCommentsList>>
 >;
-export type InvoicesNotesListSuspenseQueryError = ErrorType<unknown>;
+export type InvoicesCommentsListSuspenseQueryError = ErrorType<unknown>;
 
-export function useInvoicesNotesListSuspense<
-  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+export function useInvoicesCommentsListSuspense<
+  TData = Awaited<ReturnType<typeof invoicesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   invoiceId: string,
-  params: undefined | InvoicesNotesListParams,
+  params: undefined | InvoicesCommentsListParams,
   options: {
     query: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof invoicesNotesList>>,
+        Awaited<ReturnType<typeof invoicesCommentsList>>,
         TError,
         TData
       >
@@ -632,16 +634,16 @@ export function useInvoicesNotesListSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useInvoicesNotesListSuspense<
-  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+export function useInvoicesCommentsListSuspense<
+  TData = Awaited<ReturnType<typeof invoicesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   invoiceId: string,
-  params?: InvoicesNotesListParams,
+  params?: InvoicesCommentsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof invoicesNotesList>>,
+        Awaited<ReturnType<typeof invoicesCommentsList>>,
         TError,
         TData
       >
@@ -652,16 +654,16 @@ export function useInvoicesNotesListSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useInvoicesNotesListSuspense<
-  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+export function useInvoicesCommentsListSuspense<
+  TData = Awaited<ReturnType<typeof invoicesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   invoiceId: string,
-  params?: InvoicesNotesListParams,
+  params?: InvoicesCommentsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof invoicesNotesList>>,
+        Awaited<ReturnType<typeof invoicesCommentsList>>,
         TError,
         TData
       >
@@ -673,16 +675,16 @@ export function useInvoicesNotesListSuspense<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useInvoicesNotesListSuspense<
-  TData = Awaited<ReturnType<typeof invoicesNotesList>>,
+export function useInvoicesCommentsListSuspense<
+  TData = Awaited<ReturnType<typeof invoicesCommentsList>>,
   TError = ErrorType<unknown>,
 >(
   invoiceId: string,
-  params?: InvoicesNotesListParams,
+  params?: InvoicesCommentsListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof invoicesNotesList>>,
+        Awaited<ReturnType<typeof invoicesCommentsList>>,
         TError,
         TData
       >
@@ -693,7 +695,7 @@ export function useInvoicesNotesListSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getInvoicesNotesListSuspenseQueryOptions(
+  const queryOptions = getInvoicesCommentsListSuspenseQueryOptions(
     invoiceId,
     params,
     options,
@@ -711,42 +713,42 @@ export function useInvoicesNotesListSuspense<
   return query;
 }
 
-export const createInvoiceNote = (
+export const createInvoiceComment = (
   invoiceId: string,
-  noteCreate: NoteCreate,
+  commentCreate: CommentCreate,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return axiosInstance<Note>(
+  return axiosInstance<Comment>(
     {
-      url: `/api/v1/invoices/${invoiceId}/notes`,
+      url: `/api/v1/invoices/${invoiceId}/comments`,
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      data: noteCreate,
+      data: commentCreate,
       signal,
     },
     options,
   );
 };
 
-export const getCreateInvoiceNoteMutationOptions = <
+export const getCreateInvoiceCommentMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createInvoiceNote>>,
+    Awaited<ReturnType<typeof createInvoiceComment>>,
     TError,
-    { invoiceId: string; data: NoteCreate },
+    { invoiceId: string; data: CommentCreate },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof createInvoiceNote>>,
+  Awaited<ReturnType<typeof createInvoiceComment>>,
   TError,
-  { invoiceId: string; data: NoteCreate },
+  { invoiceId: string; data: CommentCreate },
   TContext
 > => {
-  const mutationKey = ["createInvoiceNote"];
+  const mutationKey = ["createInvoiceComment"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -756,76 +758,76 @@ export const getCreateInvoiceNoteMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createInvoiceNote>>,
-    { invoiceId: string; data: NoteCreate }
+    Awaited<ReturnType<typeof createInvoiceComment>>,
+    { invoiceId: string; data: CommentCreate }
   > = (props) => {
     const { invoiceId, data } = props ?? {};
 
-    return createInvoiceNote(invoiceId, data, requestOptions);
+    return createInvoiceComment(invoiceId, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type CreateInvoiceNoteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createInvoiceNote>>
+export type CreateInvoiceCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createInvoiceComment>>
 >;
-export type CreateInvoiceNoteMutationBody = NoteCreate;
-export type CreateInvoiceNoteMutationError = ErrorType<unknown>;
+export type CreateInvoiceCommentMutationBody = CommentCreate;
+export type CreateInvoiceCommentMutationError = ErrorType<unknown>;
 
-export const useCreateInvoiceNote = <
+export const useCreateInvoiceComment = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof createInvoiceNote>>,
+      Awaited<ReturnType<typeof createInvoiceComment>>,
       TError,
-      { invoiceId: string; data: NoteCreate },
+      { invoiceId: string; data: CommentCreate },
       TContext
     >;
     request?: SecondParameter<typeof axiosInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof createInvoiceNote>>,
+  Awaited<ReturnType<typeof createInvoiceComment>>,
   TError,
-  { invoiceId: string; data: NoteCreate },
+  { invoiceId: string; data: CommentCreate },
   TContext
 > => {
-  const mutationOptions = getCreateInvoiceNoteMutationOptions(options);
+  const mutationOptions = getCreateInvoiceCommentMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
-export const deleteInvoiceNote = (
+export const deleteInvoiceComment = (
   invoiceId: string,
   id: string,
   options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<void>(
-    { url: `/api/v1/invoices/${invoiceId}/notes/${id}`, method: "DELETE" },
+    { url: `/api/v1/invoices/${invoiceId}/comments/${id}`, method: "DELETE" },
     options,
   );
 };
 
-export const getDeleteInvoiceNoteMutationOptions = <
+export const getDeleteInvoiceCommentMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteInvoiceNote>>,
+    Awaited<ReturnType<typeof deleteInvoiceComment>>,
     TError,
     { invoiceId: string; id: string },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof deleteInvoiceNote>>,
+  Awaited<ReturnType<typeof deleteInvoiceComment>>,
   TError,
   { invoiceId: string; id: string },
   TContext
 > => {
-  const mutationKey = ["deleteInvoiceNote"];
+  const mutationKey = ["deleteInvoiceComment"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -835,30 +837,30 @@ export const getDeleteInvoiceNoteMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteInvoiceNote>>,
+    Awaited<ReturnType<typeof deleteInvoiceComment>>,
     { invoiceId: string; id: string }
   > = (props) => {
     const { invoiceId, id } = props ?? {};
 
-    return deleteInvoiceNote(invoiceId, id, requestOptions);
+    return deleteInvoiceComment(invoiceId, id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type DeleteInvoiceNoteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteInvoiceNote>>
+export type DeleteInvoiceCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteInvoiceComment>>
 >;
 
-export type DeleteInvoiceNoteMutationError = ErrorType<unknown>;
+export type DeleteInvoiceCommentMutationError = ErrorType<unknown>;
 
-export const useDeleteInvoiceNote = <
+export const useDeleteInvoiceComment = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof deleteInvoiceNote>>,
+      Awaited<ReturnType<typeof deleteInvoiceComment>>,
       TError,
       { invoiceId: string; id: string },
       TContext
@@ -867,12 +869,12 @@ export const useDeleteInvoiceNote = <
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof deleteInvoiceNote>>,
+  Awaited<ReturnType<typeof deleteInvoiceComment>>,
   TError,
   { invoiceId: string; id: string },
   TContext
 > => {
-  const mutationOptions = getDeleteInvoiceNoteMutationOptions(options);
+  const mutationOptions = getDeleteInvoiceCommentMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

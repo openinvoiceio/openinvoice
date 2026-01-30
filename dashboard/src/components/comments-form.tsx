@@ -1,5 +1,5 @@
-import { NoteVisibilityEnum, type Note } from "@/api/models";
-import type { NoteCreate } from "@/api/models";
+import { CommentVisibilityEnum, type Comment } from "@/api/models";
+import type { CommentCreate } from "@/api/models";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -20,24 +20,27 @@ const schema = z.object({
   content: z
     .string()
     .trim()
-    .min(1, "Note cannot be empty")
-    .max(2048, "Note is too long"),
-  visibility: z.enum([NoteVisibilityEnum.internal, NoteVisibilityEnum.public]),
+    .min(1, "Comment cannot be empty")
+    .max(2048, "Comment is too long"),
+  visibility: z.enum([
+    CommentVisibilityEnum.internal,
+    CommentVisibilityEnum.public,
+  ]),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-export function NotesForm({
+export function CommentsForm({
   isCreating = false,
   onCreate,
 }: {
   isCreating?: boolean;
-  onCreate: (data: NoteCreate) => Promise<Note> | void;
+  onCreate: (data: CommentCreate) => Promise<Comment> | void;
 }) {
   const form = useForm<FormValues>({
     defaultValues: {
       content: "",
-      visibility: NoteVisibilityEnum.internal,
+      visibility: CommentVisibilityEnum.internal,
     },
     mode: "onSubmit",
     reValidateMode: "onSubmit",
@@ -70,7 +73,7 @@ export function NotesForm({
                 <Textarea
                   {...field}
                   className="text-foreground min-h-12 resize-none border-none bg-transparent p-0 text-sm shadow-none focus-visible:border-transparent focus-visible:ring-0 dark:bg-transparent"
-                  placeholder="Write a note..."
+                  placeholder="Write a comment..."
                   maxLength={2048}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" && !event.shiftKey) {
@@ -93,12 +96,12 @@ export function NotesForm({
               <FormItem className="flex items-center gap-2">
                 <FormControl>
                   <Switch
-                    checked={field.value === NoteVisibilityEnum.internal}
+                    checked={field.value === CommentVisibilityEnum.internal}
                     onCheckedChange={(checked) =>
                       field.onChange(
                         checked
-                          ? NoteVisibilityEnum.internal
-                          : NoteVisibilityEnum.public,
+                          ? CommentVisibilityEnum.internal
+                          : CommentVisibilityEnum.public,
                       )
                     }
                     className="data-[state=checked]:bg-foreground"

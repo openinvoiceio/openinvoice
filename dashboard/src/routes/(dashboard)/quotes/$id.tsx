@@ -1,8 +1,8 @@
 import {
-  getQuotesNotesListQueryKey,
-  useCreateQuoteNote,
-  useDeleteQuoteNote,
-  useQuotesNotesList,
+  getQuotesCommentsListQueryKey,
+  useCreateQuoteComment,
+  useDeleteQuoteComment,
+  useQuotesCommentsList,
   useQuotesRetrieve,
 } from "@/api/endpoints/quotes/quotes";
 import { QuoteStatusEnum } from "@/api/models";
@@ -11,9 +11,9 @@ import {
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
+import { CommentsForm } from "@/components/comments-form";
+import { CommentsList } from "@/components/comments-list";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { NotesForm } from "@/components/notes-form";
-import { NotesList } from "@/components/notes-list";
 import { QuoteBadge } from "@/components/quote-badge";
 import { QuoteDropdown } from "@/components/quote-dropdown";
 import { SearchCommand } from "@/components/search-command";
@@ -42,14 +42,14 @@ function RouteComponent() {
   const queryClient = useQueryClient();
   const { data: quote } = useQuotesRetrieve(id);
 
-  const notes = useQuotesNotesList(id, undefined, {
+  const comments = useQuotesCommentsList(id, undefined, {
     query: { enabled: !!id },
   });
-  const createNote = useCreateQuoteNote({
+  const createComment = useCreateQuoteComment({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getQuotesNotesListQueryKey(id),
+          queryKey: getQuotesCommentsListQueryKey(id),
         });
       },
       onError: (error) => {
@@ -58,11 +58,11 @@ function RouteComponent() {
       },
     },
   });
-  const deleteNote = useDeleteQuoteNote({
+  const deleteComment = useDeleteQuoteComment({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getQuotesNotesListQueryKey(id),
+          queryKey: getQuotesCommentsListQueryKey(id),
         });
       },
       onError: (error) => {
@@ -132,20 +132,23 @@ function RouteComponent() {
           </Section>
           <Section>
             <SectionHeader>
-              <SectionTitle>Notes</SectionTitle>
+              <SectionTitle>Comments</SectionTitle>
             </SectionHeader>
             <div className="space-y-4">
-              <NotesList
-                notes={notes.data?.results ?? []}
-                isLoading={notes.isLoading}
-                onDelete={(noteId) =>
-                  deleteNote.mutateAsync({ quoteId: quote.id, id: noteId })
+              <CommentsList
+                comments={comments.data?.results ?? []}
+                isLoading={comments.isLoading}
+                onDelete={(commentId) =>
+                  deleteComment.mutateAsync({
+                    quoteId: quote.id,
+                    id: commentId,
+                  })
                 }
               />
-              <NotesForm
-                isCreating={createNote.isPending}
+              <CommentsForm
+                isCreating={createComment.isPending}
                 onCreate={(data) =>
-                  createNote.mutateAsync({ quoteId: quote.id, data })
+                  createComment.mutateAsync({ quoteId: quote.id, data })
                 }
               />
             </div>

@@ -10,8 +10,8 @@ from rest_framework.response import Response
 
 from common.utils import numeric_overflow
 from openinvoice.accounts.permissions import IsAccountMember
-from openinvoice.notes.models import Note
-from openinvoice.notes.serializers import NoteCreateSerializer, NoteSerializer
+from openinvoice.comments.models import Comment
+from openinvoice.comments.serializers import CommentCreateSerializer, CommentSerializer
 
 from .choices import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
 from .filtersets import InvoiceFilterSet
@@ -421,15 +421,15 @@ class InvoicePreviewAPIView(generics.GenericAPIView):
         return Response({"invoice": invoice}, template_name=template_name)
 
 
-@extend_schema_view(list=extend_schema(operation_id="list_invoice_notes"))
-class InvoiceNotesListCreateAPIView(generics.ListAPIView):
-    queryset = Note.objects.none()
-    serializer_class = NoteSerializer
+@extend_schema_view(list=extend_schema(operation_id="list_invoice_comments"))
+class InvoiceCommentsListCreateAPIView(generics.ListAPIView):
+    queryset = Comment.objects.none()
+    serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
         return (
-            Note.objects.filter(
+            Comment.objects.filter(
                 invoices__id=self.kwargs["invoice_id"],
                 invoices__account=self.request.account,
             )
@@ -438,40 +438,43 @@ class InvoiceNotesListCreateAPIView(generics.ListAPIView):
         )
 
     @extend_schema(
-        operation_id="create_invoice_note",
-        request=NoteCreateSerializer,
-        responses={201: NoteSerializer},
+        operation_id="create_invoice_comment",
+        request=CommentCreateSerializer,
+        responses={201: CommentSerializer},
     )
     def post(self, request, *_, **__):
-        serializer = NoteCreateSerializer(data=request.data)
+        serializer = CommentCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         invoice = get_object_or_404(Invoice.objects.for_account(self.request.account), id=self.kwargs["invoice_id"])
 
-        note = invoice.notes.create_note(
+        comment = invoice.comments.create_comment(
             author=request.user,
             content=serializer.data["content"],
             visibility=serializer.data["visibility"],
         )
-        logger.info("Invoice note created", note_id=note.id, invoice_id=invoice.id)
+        logger.info("Invoice comment created", comment_id=comment.id, invoice_id=invoice.id)
 
-        serializer = self.get_serializer(note)
+        serializer = self.get_serializer(comment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class InvoiceNoteDestroyAPIView(generics.DestroyAPIView):
-    queryset = Note.objects.none()
-    serializer_class = NoteSerializer
+class InvoiceCommentDestroyAPIView(generics.DestroyAPIView):
+    queryset = Comment.objects.none()
+    serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Note.objects.filter(invoices__id=self.kwargs["invoice_id"], invoices__account=self.request.account)
+        return Comment.objects.filter(
+            invoices__id=self.kwargs["invoice_id"],
+            invoices__account=self.request.account,
+        )
 
-    @extend_schema(operation_id="delete_invoice_note", request=None, responses={204: None})
+    @extend_schema(operation_id="delete_invoice_comment", request=None, responses={204: None})
     def delete(self, *_, **__):
-        note = self.get_object()
+        comment = self.get_object()
 
-        note.delete()
-        logger.info("Invoice note deleted", note_id=note.id, invoice_id=self.kwargs["invoice_id"])
+        comment.delete()
+        logger.info("Invoice comment deleted", comment_id=comment.id, invoice_id=self.kwargs["invoice_id"])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface NoteAuthor {
+export interface CommentAuthor {
   id: number;
   readonly name: string;
   /** @nullable */

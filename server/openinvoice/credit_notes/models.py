@@ -65,7 +65,7 @@ class CreditNote(models.Model):
         default=list,
         blank=True,
     )
-    notes = models.ManyToManyField("notes.Note", related_name="credit_notes")
+    comments = models.ManyToManyField("comments.Comment", related_name="credit_notes")
     updated_at = models.DateTimeField(auto_now=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     issued_at = models.DateTimeField(null=True)

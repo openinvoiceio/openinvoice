@@ -1,14 +1,14 @@
 import { useCreditNotesList } from "@/api/endpoints/credit-notes/credit-notes";
 import { useFilesRetrieve } from "@/api/endpoints/files/files";
 import {
+  getInvoicesCommentsListQueryKey,
   getInvoicesListQueryKey,
-  getInvoicesNotesListQueryKey,
   getInvoicesRetrieveQueryKey,
   getPreviewInvoiceQueryKey,
-  useCreateInvoiceNote,
-  useDeleteInvoiceNote,
+  useCreateInvoiceComment,
+  useDeleteInvoiceComment,
   useFinalizeInvoice,
-  useInvoicesNotesList,
+  useInvoicesCommentsList,
   useInvoicesRetrieve,
   useUpdateInvoice,
 } from "@/api/endpoints/invoices/invoices";
@@ -21,6 +21,8 @@ import {
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
+import { CommentsForm } from "@/components/comments-form";
+import { CommentsList } from "@/components/comments-list";
 import { columns } from "@/components/credit-note-table";
 import {
   DataTable,
@@ -30,8 +32,6 @@ import { InvoiceBadge } from "@/components/invoice-badge";
 import { InvoiceDropdown } from "@/components/invoice-dropdown";
 import { InvoiceLineDropdown } from "@/components/invoice-line-dropdown";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { NotesForm } from "@/components/notes-form";
-import { NotesList } from "@/components/notes-list";
 import { NumberingSystemView } from "@/components/numbering-system-view";
 import { PaymentBadge } from "@/components/payment-badge";
 import { pushModal } from "@/components/push-modals";
@@ -146,14 +146,14 @@ function RouteComponent() {
     },
   });
 
-  const notes = useInvoicesNotesList(id, undefined, {
+  const comments = useInvoicesCommentsList(id, undefined, {
     query: { enabled: !!id },
   });
-  const createNote = useCreateInvoiceNote({
+  const createComment = useCreateInvoiceComment({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getInvoicesNotesListQueryKey(id),
+          queryKey: getInvoicesCommentsListQueryKey(id),
         });
       },
       onError: (error) => {
@@ -162,11 +162,11 @@ function RouteComponent() {
       },
     },
   });
-  const deleteNote = useDeleteInvoiceNote({
+  const deleteComment = useDeleteInvoiceComment({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getInvoicesNotesListQueryKey(id),
+          queryKey: getInvoicesCommentsListQueryKey(id),
         });
       },
       onError: (error) => {
@@ -699,20 +699,23 @@ function RouteComponent() {
           </Section>
           <Section>
             <SectionHeader>
-              <SectionTitle>Notes</SectionTitle>
+              <SectionTitle>Comments</SectionTitle>
             </SectionHeader>
             <div className="space-y-4">
-              <NotesList
-                notes={notes.data?.results ?? []}
-                isLoading={notes.isLoading}
-                onDelete={(noteId) =>
-                  deleteNote.mutateAsync({ invoiceId: invoice.id, id: noteId })
+              <CommentsList
+                comments={comments.data?.results ?? []}
+                isLoading={comments.isLoading}
+                onDelete={(commentId) =>
+                  deleteComment.mutateAsync({
+                    invoiceId: invoice.id,
+                    id: commentId,
+                  })
                 }
               />
-              <NotesForm
-                isCreating={createNote.isPending}
+              <CommentsForm
+                isCreating={createComment.isPending}
                 onCreate={(data) =>
-                  createNote.mutateAsync({ invoiceId: invoice.id, data })
+                  createComment.mutateAsync({ invoiceId: invoice.id, data })
                 }
               />
             </div>

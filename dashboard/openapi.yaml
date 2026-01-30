@@ -2061,9 +2061,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/CreditNote'
           description: ''
-  /api/v1/credit-notes/{credit_note_id}/notes:
+  /api/v1/credit-notes/{credit_note_id}/comments:
     get:
-      operationId: credit_notes_notes_list
+      operationId: credit_notes_comments_list
       parameters:
       - in: path
         name: credit_note_id
@@ -2105,10 +2105,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedNoteList'
+                $ref: '#/components/schemas/PaginatedCommentList'
           description: ''
     post:
-      operationId: create_credit_note_note
+      operationId: create_credit_note_comment
       parameters:
       - in: path
         name: credit_note_id
@@ -2122,7 +2122,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NoteCreate'
+              $ref: '#/components/schemas/CommentCreate'
         required: true
       security:
       - cookieAuth: []
@@ -2132,11 +2132,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Note'
+                $ref: '#/components/schemas/Comment'
           description: ''
-  /api/v1/credit-notes/{credit_note_id}/notes/{id}:
+  /api/v1/credit-notes/{credit_note_id}/comments/{id}:
     delete:
-      operationId: delete_credit_note_note
+      operationId: delete_credit_note_comment
       parameters:
       - in: path
         name: credit_note_id
@@ -3146,9 +3146,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Invoice'
           description: ''
-  /api/v1/invoices/{invoice_id}/notes:
+  /api/v1/invoices/{invoice_id}/comments:
     get:
-      operationId: invoices_notes_list
+      operationId: invoices_comments_list
       parameters:
       - in: path
         name: invoice_id
@@ -3190,10 +3190,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedNoteList'
+                $ref: '#/components/schemas/PaginatedCommentList'
           description: ''
     post:
-      operationId: create_invoice_note
+      operationId: create_invoice_comment
       parameters:
       - in: path
         name: invoice_id
@@ -3207,7 +3207,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NoteCreate'
+              $ref: '#/components/schemas/CommentCreate'
         required: true
       security:
       - cookieAuth: []
@@ -3217,11 +3217,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Note'
+                $ref: '#/components/schemas/Comment'
           description: ''
-  /api/v1/invoices/{invoice_id}/notes/{id}:
+  /api/v1/invoices/{invoice_id}/comments/{id}:
     delete:
-      operationId: delete_invoice_note
+      operationId: delete_invoice_comment
       parameters:
       - in: path
         name: id
@@ -4687,6 +4687,103 @@ paths:
               schema:
                 $ref: '#/components/schemas/Quote'
           description: ''
+  /api/v1/quotes/{quote_id}/comments:
+    get:
+      operationId: quotes_comments_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: quote_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - quotes
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCommentList'
+          description: ''
+    post:
+      operationId: create_quote_comment
+      parameters:
+      - in: path
+        name: quote_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - quotes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+          description: ''
+  /api/v1/quotes/{quote_id}/comments/{id}:
+    delete:
+      operationId: delete_quote_comment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: quote_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - quotes
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/quotes/{quote_id}/discounts:
     post:
       operationId: add_quote_discount
@@ -4761,103 +4858,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Quote'
           description: ''
-  /api/v1/quotes/{quote_id}/notes:
-    get:
-      operationId: quotes_notes_list
-      parameters:
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      - in: path
-        name: quote_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
-      tags:
-      - quotes
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedNoteList'
-          description: ''
-    post:
-      operationId: create_quote_note
-      parameters:
-      - in: path
-        name: quote_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - quotes
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NoteCreate'
-        required: true
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Note'
-          description: ''
-  /api/v1/quotes/{quote_id}/notes/{id}:
-    delete:
-      operationId: delete_quote_note
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - in: path
-        name: quote_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - quotes
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/quotes/{quote_id}/preview:
     get:
       operationId: preview_quote
@@ -6214,6 +6214,63 @@ components:
       type: string
       enum:
       - client_error
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        content:
+          type: string
+          maxLength: 2048
+        visibility:
+          $ref: '#/components/schemas/CommentVisibilityEnum'
+        created_at:
+          type: string
+          format: date-time
+        author:
+          $ref: '#/components/schemas/CommentAuthor'
+      required:
+      - author
+      - content
+      - created_at
+      - id
+      - visibility
+    CommentAuthor:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          readOnly: true
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - avatar_url
+      - id
+      - name
+    CommentCreate:
+      type: object
+      properties:
+        content:
+          type: string
+          maxLength: 2048
+        visibility:
+          $ref: '#/components/schemas/CommentVisibilityEnum'
+      required:
+      - content
+      - visibility
+    CommentVisibilityEnum:
+      enum:
+      - internal
+      - public
+      type: string
+      description: |-
+        * `internal` - Internal
+        * `public` - Public
     Config:
       type: object
       properties:
@@ -9132,63 +9189,6 @@ components:
       description: |-
         * `member` - Member
         * `owner` - Owner
-    Note:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        content:
-          type: string
-          maxLength: 2048
-        visibility:
-          $ref: '#/components/schemas/NoteVisibilityEnum'
-        created_at:
-          type: string
-          format: date-time
-        author:
-          $ref: '#/components/schemas/NoteAuthor'
-      required:
-      - author
-      - content
-      - created_at
-      - id
-      - visibility
-    NoteAuthor:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-          readOnly: true
-        avatar_url:
-          type: string
-          format: uri
-          nullable: true
-      required:
-      - avatar_url
-      - id
-      - name
-    NoteCreate:
-      type: object
-      properties:
-        content:
-          type: string
-          maxLength: 2048
-        visibility:
-          $ref: '#/components/schemas/NoteVisibilityEnum'
-      required:
-      - content
-      - visibility
-    NoteVisibilityEnum:
-      enum:
-      - internal
-      - public
-      type: string
-      description: |-
-        * `internal` - Internal
-        * `public` - Public
     NumberingSystem:
       type: object
       properties:
@@ -9334,6 +9334,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Account'
+    PaginatedCommentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
     PaginatedCouponList:
       type: object
       required:
@@ -9495,29 +9518,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Member'
-    PaginatedNoteList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Note'
     PaginatedNumberingSystemList:
       type: object
       required:

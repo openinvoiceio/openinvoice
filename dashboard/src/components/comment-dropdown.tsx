@@ -7,24 +7,24 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { MoreHorizontalIcon, Trash2Icon } from "lucide-react";
 
-type NoteDropdownData = {
+type CommentDropdownData = {
   onDelete: () => Promise<void> | void;
 };
 
-type NoteDropdownProps = Omit<
-  ActionDropdownProps<NoteDropdownData>,
+type CommentDropdownProps = Omit<
+  ActionDropdownProps<CommentDropdownData>,
   "data" | "sections" | "children"
 > & {
   onDelete: () => Promise<void> | void;
   isDeleting?: boolean;
 };
 
-export function NoteDropdown({
+export function CommentDropdown({
   onDelete,
   isDeleting = false,
   ...props
-}: NoteDropdownProps) {
-  const deleteAction: DropdownAction<NoteDropdownData> = {
+}: CommentDropdownProps) {
+  const deleteAction: DropdownAction<CommentDropdownData> = {
     key: "delete",
     label: "Delete",
     icon: Trash2Icon,

@@ -2,12 +2,12 @@ from django.urls import path
 
 from .views import (
     InvoiceCloneAPIView,
+    InvoiceCommentDestroyAPIView,
+    InvoiceCommentsListCreateAPIView,
     InvoiceFinalizeAPIView,
     InvoiceLineCreateAPIView,
     InvoiceLineUpdateDestroyAPIView,
     InvoiceListCreateAPIView,
-    InvoiceNoteDestroyAPIView,
-    InvoiceNotesListCreateAPIView,
     InvoicePreviewAPIView,
     InvoiceRetrieveUpdateDestroyAPIView,
     InvoiceRevisionsListCreateAPIView,
@@ -23,8 +23,8 @@ urlpatterns = [
     path("invoices/<uuid:pk>/void", InvoiceVoidAPIView.as_view()),
     path("invoices/<uuid:pk>/preview", InvoicePreviewAPIView.as_view()),
     path("invoices/<uuid:pk>/clone", InvoiceCloneAPIView.as_view()),
-    path("invoices/<uuid:invoice_id>/notes", InvoiceNotesListCreateAPIView.as_view()),
-    path("invoices/<uuid:invoice_id>/notes/<uuid:pk>", InvoiceNoteDestroyAPIView.as_view()),
+    path("invoices/<uuid:invoice_id>/comments", InvoiceCommentsListCreateAPIView.as_view()),
+    path("invoices/<uuid:invoice_id>/comments/<uuid:pk>", InvoiceCommentDestroyAPIView.as_view()),
     # Lines
     path("invoice-lines", InvoiceLineCreateAPIView.as_view()),
     path("invoice-lines/<uuid:pk>", InvoiceLineUpdateDestroyAPIView.as_view()),

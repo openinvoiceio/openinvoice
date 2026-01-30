@@ -9,9 +9,9 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 
 from openinvoice.accounts.permissions import IsAccountMember
+from openinvoice.comments.models import Comment
+from openinvoice.comments.serializers import CommentCreateSerializer, CommentSerializer
 from openinvoice.invoices.choices import InvoiceStatus
-from openinvoice.notes.models import Note
-from openinvoice.notes.serializers import NoteCreateSerializer, NoteSerializer
 
 from .choices import CreditNoteDeliveryMethod, CreditNotePreviewFormat, CreditNoteStatus
 from .filtersets import CreditNoteFilterSet
@@ -176,15 +176,15 @@ class CreditNoteRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@extend_schema_view(list=extend_schema(operation_id="list_credit_note_notes"))
-class CreditNoteNotesListCreateAPIView(generics.ListAPIView):
-    queryset = Note.objects.none()
-    serializer_class = NoteSerializer
+@extend_schema_view(list=extend_schema(operation_id="list_credit_note_comments"))
+class CreditNoteCommentsListCreateAPIView(generics.ListAPIView):
+    queryset = Comment.objects.none()
+    serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
         return (
-            Note.objects.filter(
+            Comment.objects.filter(
                 credit_notes__id=self.kwargs["credit_note_id"],
                 credit_notes__account=self.request.account,
             )
@@ -193,46 +193,46 @@ class CreditNoteNotesListCreateAPIView(generics.ListAPIView):
         )
 
     @extend_schema(
-        operation_id="create_credit_note_note",
-        request=NoteCreateSerializer,
-        responses={201: NoteSerializer},
+        operation_id="create_credit_note_comment",
+        request=CommentCreateSerializer,
+        responses={201: CommentSerializer},
     )
     def post(self, request, *_, **__):
-        serializer = NoteCreateSerializer(data=request.data)
+        serializer = CommentCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         credit_note = get_object_or_404(
             CreditNote.objects.for_account(self.request.account),
             id=self.kwargs["credit_note_id"],
         )
 
-        note = credit_note.notes.create_note(
+        comment = credit_note.comments.create_comment(
             author=request.user,
             content=serializer.validated_data["content"],
             visibility=serializer.validated_data["visibility"],
         )
-        logger.info("Credit note note created", note_id=note.id, credit_note_id=credit_note.id)
+        logger.info("Credit note comment created", comment_id=comment.id, credit_note_id=credit_note.id)
 
-        serializer = self.get_serializer(note)
+        serializer = self.get_serializer(comment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CreditNoteNoteDestroyAPIView(generics.DestroyAPIView):
-    queryset = Note.objects.none()
-    serializer_class = NoteSerializer
+class CreditNoteCommentDestroyAPIView(generics.DestroyAPIView):
+    queryset = Comment.objects.none()
+    serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return Note.objects.filter(
+        return Comment.objects.filter(
             credit_notes__id=self.kwargs["credit_note_id"],
             credit_notes__account=self.request.account,
         )
 
-    @extend_schema(operation_id="delete_credit_note_note", request=None, responses={204: None})
+    @extend_schema(operation_id="delete_credit_note_comment", request=None, responses={204: None})
     def delete(self, *_, **__):
-        note = self.get_object()
+        comment = self.get_object()
 
-        note.delete()
-        logger.info("Credit note note deleted", note_id=note.id, credit_note_id=self.kwargs["credit_note_id"])
+        comment.delete()
+        logger.info("Credit note comment deleted", comment_id=comment.id, credit_note_id=self.kwargs["credit_note_id"])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

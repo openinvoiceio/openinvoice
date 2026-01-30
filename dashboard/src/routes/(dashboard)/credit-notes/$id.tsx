@@ -1,11 +1,11 @@
 import {
+  getCreditNotesCommentsListQueryKey,
   getCreditNotesListQueryKey,
-  getCreditNotesNotesListQueryKey,
   getCreditNotesRetrieveQueryKey,
-  useCreateCreditNoteNote,
-  useCreditNotesNotesList,
+  useCreateCreditNoteComment,
+  useCreditNotesCommentsList,
   useCreditNotesRetrieve,
-  useDeleteCreditNoteNote,
+  useDeleteCreditNoteComment,
   useIssueCreditNote,
   useUpdateCreditNote,
 } from "@/api/endpoints/credit-notes/credit-notes";
@@ -19,11 +19,11 @@ import {
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
+import { CommentsForm } from "@/components/comments-form";
+import { CommentsList } from "@/components/comments-list";
 import { CreditNoteBadge } from "@/components/credit-note-badge";
 import { CreditNoteDropdown } from "@/components/credit-note-dropdown.tsx";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { NotesForm } from "@/components/notes-form";
-import { NotesList } from "@/components/notes-list";
 import { NumberingSystemView } from "@/components/numbering-system-view.tsx";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -114,14 +114,14 @@ function RouteComponent() {
     });
   }
 
-  const notes = useCreditNotesNotesList(id, undefined, {
+  const comments = useCreditNotesCommentsList(id, undefined, {
     query: { enabled: !!id },
   });
-  const createNote = useCreateCreditNoteNote({
+  const createComment = useCreateCreditNoteComment({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getCreditNotesNotesListQueryKey(id),
+          queryKey: getCreditNotesCommentsListQueryKey(id),
         });
       },
       onError: (error) => {
@@ -130,11 +130,11 @@ function RouteComponent() {
       },
     },
   });
-  const deleteNote = useDeleteCreditNoteNote({
+  const deleteComment = useDeleteCreditNoteComment({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getCreditNotesNotesListQueryKey(id),
+          queryKey: getCreditNotesCommentsListQueryKey(id),
         });
       },
       onError: (error) => {
@@ -481,23 +481,26 @@ function RouteComponent() {
 
           <Section>
             <SectionHeader>
-              <SectionTitle>Notes</SectionTitle>
+              <SectionTitle>Comments</SectionTitle>
             </SectionHeader>
             <div className="space-y-4">
-              <NotesList
-                notes={notes.data?.results ?? []}
-                isLoading={notes.isLoading}
-                onDelete={(noteId) =>
-                  deleteNote.mutateAsync({
+              <CommentsList
+                comments={comments.data?.results ?? []}
+                isLoading={comments.isLoading}
+                onDelete={(commentId) =>
+                  deleteComment.mutateAsync({
                     creditNoteId: creditNote.id,
-                    id: noteId,
+                    id: commentId,
                   })
                 }
               />
-              <NotesForm
-                isCreating={createNote.isPending}
+              <CommentsForm
+                isCreating={createComment.isPending}
                 onCreate={(data) =>
-                  createNote.mutateAsync({ creditNoteId: creditNote.id, data })
+                  createComment.mutateAsync({
+                    creditNoteId: creditNote.id,
+                    data,
+                  })
                 }
               />
             </div>

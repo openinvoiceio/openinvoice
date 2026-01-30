@@ -5,14 +5,14 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { NoteAuthor } from "./noteAuthor";
-import type { NoteVisibilityEnum } from "./noteVisibilityEnum";
+import type { CommentAuthor } from "./commentAuthor";
+import type { CommentVisibilityEnum } from "./commentVisibilityEnum";
 
-export interface Note {
+export interface Comment {
   id: string;
   /** @maxLength 2048 */
   content: string;
-  visibility: NoteVisibilityEnum;
+  visibility: CommentVisibilityEnum;
   created_at: string;
-  author: NoteAuthor;
+  author: CommentAuthor;
 }

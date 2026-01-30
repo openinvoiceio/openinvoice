@@ -5,10 +5,10 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { NoteVisibilityEnum } from "./noteVisibilityEnum";
+import type { CommentVisibilityEnum } from "./commentVisibilityEnum";
 
-export interface NoteCreate {
+export interface CommentCreate {
   /** @maxLength 2048 */
   content: string;
-  visibility: NoteVisibilityEnum;
+  visibility: CommentVisibilityEnum;
 }

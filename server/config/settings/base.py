@@ -42,7 +42,7 @@ LOCAL_APPS = [
     "openinvoice.credit_notes.apps.CreditNotesConfig",
     "openinvoice.integrations.apps.IntegrationsConfig",
     "openinvoice.integrations.stripe.apps.StripeIntegrationsConfig",
-    "openinvoice.notes.apps.NotesConfig",
+    "openinvoice.comments.apps.CommentsConfig",
     "openinvoice.numbering_systems.apps.NumberingSystemsConfig",
     "openinvoice.payments.apps.PaymentsConfig",
     "openinvoice.portal.apps.PortalConfig",
@@ -351,7 +351,7 @@ SPECTACULAR_SETTINGS = {
         # because they use the same set of choices, so we use ProductCatalogStatusEnum
         # for all product catalog related status enums
         "ProductCatalogStatusEnum": "openinvoice.products.choices.ProductStatus.choices",
-        "NoteVisibilityEnum": "openinvoice.notes.choices.NoteVisibility.choices",
+        "CommentVisibilityEnum": "openinvoice.comments.choices.CommentVisibility.choices",
     },
 }
 

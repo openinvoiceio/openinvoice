@@ -5,13 +5,13 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { Note } from "./note";
+import type { Comment } from "./comment";
 
-export interface PaginatedNoteList {
+export interface PaginatedCommentList {
   count: number;
   /** @nullable */
   next?: string | null;
   /** @nullable */
   previous?: string | null;
-  results: Note[];
+  results: Comment[];
 }

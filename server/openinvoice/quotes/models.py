@@ -117,7 +117,7 @@ class Quote(models.Model):
         default=list,
         blank=True,
     )
-    notes = models.ManyToManyField("notes.Note", related_name="quotes")
+    comments = models.ManyToManyField("comments.Comment", related_name="quotes")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
     opened_at = models.DateTimeField(null=True)

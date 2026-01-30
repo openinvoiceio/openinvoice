@@ -10,11 +10,11 @@
  * * `internal` - Internal
  * `public` - Public
  */
-export type NoteVisibilityEnum =
-  (typeof NoteVisibilityEnum)[keyof typeof NoteVisibilityEnum];
+export type CommentVisibilityEnum =
+  (typeof CommentVisibilityEnum)[keyof typeof CommentVisibilityEnum];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const NoteVisibilityEnum = {
+export const CommentVisibilityEnum = {
   internal: "internal",
   public: "public",
 } as const;

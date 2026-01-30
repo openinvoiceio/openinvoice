@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CreditNotesNotesListParams = {
+export type QuotesCommentsListParams = {
   /**
    * Which field to use when ordering the results.
    */

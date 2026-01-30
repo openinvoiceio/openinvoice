@@ -1,14 +1,14 @@
 from django.urls import path
 
 from .views import (
+    CreditNoteCommentDestroyAPIView,
+    CreditNoteCommentsListCreateAPIView,
     CreditNoteIssueAPIView,
     CreditNoteLineCreateAPIView,
     CreditNoteLineTaxCreateAPIView,
     CreditNoteLineTaxDestroyAPIView,
     CreditNoteLineUpdateDestroyAPIView,
     CreditNoteListCreateAPIView,
-    CreditNoteNoteDestroyAPIView,
-    CreditNoteNotesListCreateAPIView,
     CreditNotePreviewAPIView,
     CreditNoteRetrieveUpdateDestroyAPIView,
     CreditNoteVoidAPIView,
@@ -18,8 +18,8 @@ urlpatterns = [
     path("credit-notes", CreditNoteListCreateAPIView.as_view()),
     path("credit-notes/<uuid:pk>", CreditNoteRetrieveUpdateDestroyAPIView.as_view()),
     path("credit-notes/<uuid:pk>/preview", CreditNotePreviewAPIView.as_view()),
-    path("credit-notes/<uuid:credit_note_id>/notes", CreditNoteNotesListCreateAPIView.as_view()),
-    path("credit-notes/<uuid:credit_note_id>/notes/<uuid:pk>", CreditNoteNoteDestroyAPIView.as_view()),
+    path("credit-notes/<uuid:credit_note_id>/comments", CreditNoteCommentsListCreateAPIView.as_view()),
+    path("credit-notes/<uuid:credit_note_id>/comments/<uuid:pk>", CreditNoteCommentDestroyAPIView.as_view()),
     path("credit-note-lines", CreditNoteLineCreateAPIView.as_view()),
     path("credit-note-lines/<uuid:pk>", CreditNoteLineUpdateDestroyAPIView.as_view()),
     path("credit-note-lines/<uuid:line_id>/taxes", CreditNoteLineTaxCreateAPIView.as_view()),
