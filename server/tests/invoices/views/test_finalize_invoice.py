@@ -118,7 +118,7 @@ def test_finalize_invoice(api_client, user, account):
                 "footer": document.footer,
                 "memo": document.memo,
                 "custom_fields": document.custom_fields,
-                "file_id": str(document.file_id),
+                "url": document.file.data.url,
                 "created_at": ANY,
                 "updated_at": ANY,
             }
@@ -332,7 +332,7 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
                 "footer": document.footer,
                 "memo": document.memo,
                 "custom_fields": document.custom_fields,
-                "file_id": str(document.file_id),
+                "url": document.file.data.url,
                 "created_at": ANY,
                 "updated_at": ANY,
             }

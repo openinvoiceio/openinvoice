@@ -9,5 +9,4 @@ import type { PreviewInvoiceFormat } from "./previewInvoiceFormat";
 
 export type PreviewInvoiceParams = {
   format?: PreviewInvoiceFormat;
-  language?: string;
 };

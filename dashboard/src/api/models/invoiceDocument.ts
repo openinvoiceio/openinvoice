@@ -18,7 +18,7 @@ export interface InvoiceDocument {
   memo: string | null;
   custom_fields: unknown;
   /** @nullable */
-  readonly file_id: string | null;
+  readonly url: string | null;
   created_at: string;
   /** @nullable */
   updated_at: string | null;

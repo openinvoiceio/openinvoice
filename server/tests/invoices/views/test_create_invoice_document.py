@@ -34,7 +34,7 @@ def test_create_invoice_document(api_client, user, account):
         "footer": "Footer",
         "memo": "Memo",
         "custom_fields": {"ref": "DOC-1"},
-        "file_id": None,
+        "url": None,
         "created_at": ANY,
         "updated_at": ANY,
     }

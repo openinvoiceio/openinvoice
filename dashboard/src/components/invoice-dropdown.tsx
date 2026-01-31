@@ -3,7 +3,6 @@ import {
   getCreditNotesRetrieveQueryKey,
   useCreateCreditNote,
 } from "@/api/endpoints/credit-notes/credit-notes";
-import { useFilesRetrieve } from "@/api/endpoints/files/files";
 import {
   getInvoicesListQueryKey,
   getInvoicesRetrieveQueryKey,
@@ -45,67 +44,6 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { toast } from "sonner";
-
-function InvoiceDocumentDownloadItem({
-  fileId,
-  label,
-  filename,
-  download,
-  isDownloading,
-}: {
-  fileId: string | null;
-  label: string;
-  filename: string;
-  download: (url?: string, filename?: string) => void;
-  isDownloading: boolean;
-}) {
-  const { data: file } = useFilesRetrieve(fileId ?? "", {
-    query: { enabled: !!fileId },
-  });
-
-  return (
-    <DropdownMenuItem
-      disabled={!file?.url || isDownloading}
-      onClick={() => download(file?.url, filename)}
-    >
-      <span>{label}</span>
-    </DropdownMenuItem>
-  );
-}
-
-function InvoiceDocumentDownloadSubmenu({
-  invoice,
-  download,
-  isDownloading,
-}: {
-  invoice: Invoice;
-  download: (url?: string, filename?: string) => void;
-  isDownloading: boolean;
-}) {
-  const documents = invoice.documents.filter((document) => document.file_id);
-  const filenameBase = invoice.number || "invoice";
-
-  return (
-    <DropdownMenuSub>
-      <DropdownMenuSubTrigger>
-        <DownloadIcon className="text-muted-foreground mr-2 size-4" />
-        <span>Download</span>
-      </DropdownMenuSubTrigger>
-      <DropdownMenuSubContent>
-        {documents.map((document) => (
-          <InvoiceDocumentDownloadItem
-            key={document.id}
-            fileId={document.file_id}
-            label={formatLanguage(document.language)}
-            filename={`${filenameBase}-${document.language}.pdf`}
-            download={download}
-            isDownloading={isDownloading}
-          />
-        ))}
-      </DropdownMenuSubContent>
-    </DropdownMenuSub>
-  );
-}
 
 export function useEditInvoiceAction(): DropdownAction<Invoice> {
   const navigate = useNavigate();
@@ -333,23 +271,54 @@ export function useCloneInvoiceAction(): DropdownAction<Invoice> {
   };
 }
 
+function InvoiceDocumentDownloadSubmenu({
+  invoice,
+  download,
+  isDownloading,
+}: {
+  invoice: Invoice;
+  download: (url?: string | null, filename?: string) => void;
+  isDownloading: boolean;
+}) {
+  const documents = invoice.documents.filter((document) => document.url);
+
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <DownloadIcon className="text-muted-foreground mr-2 size-4" />
+        <span>Download</span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent>
+        {documents.map((document) => (
+          <DropdownMenuItem
+            key={document.id}
+            disabled={!document.url || isDownloading}
+            onClick={() =>
+              download(
+                document.url,
+                `${invoice.number}-${document.language}.pdf`,
+              )
+            }
+          >
+            <span>{formatLanguage(document.language)}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+  );
+}
+
 export function useDownloadInvoiceActions(
   invoice: Invoice,
 ): DropdownAction<Invoice>[] {
-  const documents = invoice.documents.filter((document) => document.file_id);
-  const filenameBase = invoice.number || "invoice";
-  const [primaryDocument] = documents;
-  const { data: file } = useFilesRetrieve(primaryDocument?.file_id ?? "", {
-    query: {
-      enabled: documents.length === 1 && !!primaryDocument?.file_id,
-    },
-  });
+  const documents = invoice.documents.filter((document) => document.url);
   const { isDownloading, download } = useDownload();
 
   if (documents.length === 0) return [];
 
   if (documents.length === 1) {
-    const filename = `${filenameBase}-${primaryDocument?.language}.pdf`;
+    const document = documents[0];
+    const filename = `${invoice.number}.pdf`;
 
     return [
       {
@@ -358,8 +327,8 @@ export function useDownloadInvoiceActions(
         icon: DownloadIcon,
         shortcut: "D",
         hotkey: "d",
-        disabled: () => !file?.url || isDownloading,
-        onSelect: () => download(file?.url, filename),
+        disabled: () => !document.url || isDownloading,
+        onSelect: () => download(document?.url, filename),
       },
     ];
   }

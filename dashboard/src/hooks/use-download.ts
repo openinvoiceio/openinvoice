@@ -4,7 +4,7 @@ import { toast } from "sonner";
 export function useDownload() {
   const [isPending, startTransition] = useTransition();
 
-  const download = useCallback((url?: string, filename?: string) => {
+  const download = useCallback((url?: string | null, filename?: string) => {
     if (!url) return;
 
     startTransition(async () => {

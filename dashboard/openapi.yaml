@@ -8903,9 +8903,9 @@ components:
           type: string
           nullable: true
         custom_fields: {}
-        file_id:
+        url:
           type: string
-          format: uuid
+          format: uri
           readOnly: true
           nullable: true
         created_at:
@@ -8919,12 +8919,12 @@ components:
       - audience
       - created_at
       - custom_fields
-      - file_id
       - footer
       - id
       - language
       - memo
       - updated_at
+      - url
     InvoiceDocumentAudienceEnum:
       enum:
       - customer

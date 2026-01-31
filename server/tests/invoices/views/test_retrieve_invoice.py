@@ -103,7 +103,7 @@ def test_retrieve_invoice(api_client, user, account):
                 "footer": document.footer,
                 "memo": document.memo,
                 "custom_fields": document.custom_fields,
-                "file_id": None,
+                "url": None,
                 "created_at": ANY,
                 "updated_at": ANY,
             }

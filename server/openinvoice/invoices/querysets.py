@@ -52,7 +52,7 @@ class InvoiceQuerySet(models.QuerySet):
             Prefetch("tax_allocations", queryset=InvoiceTaxAllocation.objects.annotate_position()),
             Prefetch("lines__tax_allocations", queryset=InvoiceTaxAllocation.objects.annotate_position()),
             Prefetch("shipping__tax_allocations", queryset=InvoiceTaxAllocation.objects.annotate_position()),
-            Prefetch("documents", queryset=InvoiceDocument.objects.order_by("created_at")),
+            Prefetch("documents", queryset=InvoiceDocument.objects.select_related("file").order_by("created_at")),
         )
 
     def revisions(self, head_id: UUID):

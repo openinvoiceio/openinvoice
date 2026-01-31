@@ -111,40 +111,10 @@ export const Route = createFileRoute("/(dashboard)/invoices/$id")({
   component: RouteComponent,
 });
 
-function InvoiceDocumentDownloadButton({
-  invoiceNumber,
-  fileId,
-  language,
-}: {
-  invoiceNumber: string | null;
-  fileId: string | null;
-  language: string;
-}) {
-  const enabled = !!fileId;
-  const { data: file } = useFilesRetrieve(fileId ?? "", {
-    query: { enabled },
-  });
-  const { download, isDownloading } = useDownload();
-
-  if (!enabled) return null;
-
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      disabled={!file?.url || isDownloading}
-      onClick={() =>
-        download(file?.url, `${invoiceNumber || "invoice"}-${language}.pdf`)
-      }
-    >
-      <DownloadIcon />
-    </Button>
-  );
-}
-
 function RouteComponent() {
   const { id } = Route.useParams();
   const { queryClient } = Route.useRouteContext();
+  const { download, isDownloading } = useDownload();
   const { data: invoice } = useInvoicesRetrieve(id);
   const { data: numberingSystem } = useNumberingSystemsRetrieve(
     invoice?.numbering_system_id || "",
@@ -681,11 +651,19 @@ function RouteComponent() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <InvoiceDocumentDownloadButton
-                            invoiceNumber={invoice.number}
-                            fileId={document.file_id}
-                            language={document.language}
-                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={!document.url || isDownloading}
+                            onClick={() =>
+                              download(
+                                document.url,
+                                `${invoice.number}-${document.language}.pdf`,
+                              )
+                            }
+                          >
+                            <DownloadIcon />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}

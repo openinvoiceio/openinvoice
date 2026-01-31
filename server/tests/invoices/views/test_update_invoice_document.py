@@ -32,7 +32,7 @@ def test_update_invoice_document(api_client, user, account):
         "footer": "Updated footer",
         "memo": "Updated memo",
         "custom_fields": {"ref": "DOC-UPDATED"},
-        "file_id": None,
+        "url": None,
         "created_at": ANY,
         "updated_at": ANY,
     }

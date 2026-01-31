@@ -154,7 +154,7 @@ def test_clone_invoice(api_client, user, account):
                 "footer": response.data["documents"][0]["footer"],
                 "memo": response.data["documents"][0]["memo"],
                 "custom_fields": response.data["documents"][0]["custom_fields"],
-                "file_id": None,
+                "url": None,
                 "created_at": ANY,
                 "updated_at": ANY,
             }

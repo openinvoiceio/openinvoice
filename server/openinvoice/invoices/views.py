@@ -442,7 +442,7 @@ class InvoiceDocumentListCreateAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         invoice = get_object_or_404(Invoice.objects.for_account(self.request.account), id=self.kwargs["invoice_id"])
-        return InvoiceDocument.objects.filter(invoice=invoice).order_by("created_at")
+        return InvoiceDocument.objects.filter(invoice=invoice).select_related("file").order_by("created_at")
 
     @extend_schema(
         operation_id="create_invoice_document",

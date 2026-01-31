@@ -111,7 +111,7 @@ class InvoiceDocumentSerializer(serializers.Serializer):
     footer = serializers.CharField(allow_null=True)
     memo = serializers.CharField(allow_null=True)
     custom_fields = MetadataField()
-    file_id = serializers.UUIDField(allow_null=True, read_only=True)
+    url = serializers.URLField(source="file.data.url", allow_null=True, read_only=True)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
 
