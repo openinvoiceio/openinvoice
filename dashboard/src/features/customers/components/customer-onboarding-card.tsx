@@ -24,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form.tsx";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -39,7 +40,6 @@ import { allCountries } from "country-region-data";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Input } from "./ui/input";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),

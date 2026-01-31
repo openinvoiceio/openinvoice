@@ -75,10 +75,7 @@ export function InvoicePreview({ invoice }: { invoice: Invoice }) {
           {hasDocuments && (
             <TabsContent value="pdf">
               <Suspense fallback={<Spinner />}>
-                <PdfPreview
-                  invoiceId={invoice.id}
-                  language={selectedLanguage}
-                />
+                <PdfPreview invoiceId={invoice.id} />
               </Suspense>
             </TabsContent>
           )}
@@ -96,16 +93,9 @@ export function InvoicePreview({ invoice }: { invoice: Invoice }) {
   );
 }
 
-function PdfPreview({
-  invoiceId,
-  language,
-}: {
-  invoiceId: string;
-  language?: string;
-}) {
+function PdfPreview({ invoiceId }: { invoiceId: string }) {
   const { data: srcDoc } = usePreviewInvoiceSuspense(invoiceId, {
     format: "pdf",
-    language,
   });
 
   const iframeRef = useRef<HTMLIFrameElement>(null);

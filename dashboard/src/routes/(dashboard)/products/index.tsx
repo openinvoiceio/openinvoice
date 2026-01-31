@@ -154,7 +154,7 @@ function RouteComponent() {
 
   return (
     <SidebarProvider>
-      <AppSidebar user={auth.user} account={account} />
+      <AppSidebar user={auth?.user} account={account} />
       <SidebarInset>
         <div>
           <AppHeader>

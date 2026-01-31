@@ -223,7 +223,7 @@ function RouteComponent() {
   const hasPaid = invoice.total_paid_amount !== "0.00";
   return (
     <SidebarProvider>
-      <AppSidebar user={auth.user} account={account} />
+      <AppSidebar user={auth?.user} account={account} />
       <SidebarInset>
         <div>
           <AppHeader>

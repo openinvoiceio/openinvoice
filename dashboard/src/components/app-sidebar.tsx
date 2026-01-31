@@ -64,11 +64,12 @@ const data = [
 ];
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  user: User;
-  account: Account;
+  user?: User;
+  account?: Account;
 }
 
 export function AppSidebar({ user, account, ...props }: AppSidebarProps) {
+  if (!user || !account) return null;
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="flex h-14 justify-center border-b py-1">
