@@ -1,6 +1,13 @@
 import { usePreviewInvoiceSuspense } from "@/api/endpoints/invoices/invoices";
 import type { Invoice } from "@/api/models";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   FormCard,
   FormCardContent,
@@ -8,25 +15,64 @@ import {
 } from "@/components/ui/form-card";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatDatetime, formatEmailList } from "@/lib/formatters";
+import {
+  formatDatetime,
+  formatEmailList,
+  formatLanguage,
+} from "@/lib/formatters";
 import { Suspense, useEffect, useRef, useState } from "react";
 
 export function InvoicePreview({ invoice }: { invoice: Invoice }) {
+  const hasDocuments = invoice.documents.length > 0;
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    invoice.documents[0]?.language,
+  );
+
+  useEffect(() => {
+    setSelectedLanguage(invoice.documents[0]?.language);
+  }, [invoice.documents]);
+
   return (
     <FormCard>
-      <Tabs defaultValue="pdf">
+      <Tabs defaultValue={hasDocuments ? "pdf" : "email"}>
         <FormCardHeader>
           <TabsList className="w-full">
-            <TabsTrigger value="pdf">PDF</TabsTrigger>
+            {hasDocuments && <TabsTrigger value="pdf">PDF</TabsTrigger>}
             <TabsTrigger value="email">Email</TabsTrigger>
           </TabsList>
         </FormCardHeader>
         <FormCardContent className="pb-4">
-          <TabsContent value="pdf">
-            <Suspense fallback={<Spinner />}>
-              <PdfPreview invoiceId={invoice.id} />
-            </Suspense>
-          </TabsContent>
+          {hasDocuments && (
+            <TabsContent value="pdf">
+              <div className="mb-3 flex items-center justify-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      {selectedLanguage
+                        ? formatLanguage(selectedLanguage)
+                        : "Select language"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {invoice.documents.map((document) => (
+                      <DropdownMenuItem
+                        key={document.id}
+                        onClick={() => setSelectedLanguage(document.language)}
+                      >
+                        {formatLanguage(document.language)}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <Suspense fallback={<Spinner />}>
+                <PdfPreview
+                  invoiceId={invoice.id}
+                  language={selectedLanguage}
+                />
+              </Suspense>
+            </TabsContent>
+          )}
           <TabsContent value="email">
             <Suspense fallback={<Spinner />}>
               <EmailPreview
@@ -41,9 +87,16 @@ export function InvoicePreview({ invoice }: { invoice: Invoice }) {
   );
 }
 
-function PdfPreview({ invoiceId }: { invoiceId: string }) {
+function PdfPreview({
+  invoiceId,
+  language,
+}: {
+  invoiceId: string;
+  language?: string;
+}) {
   const { data: srcDoc } = usePreviewInvoiceSuspense(invoiceId, {
     format: "pdf",
+    language,
   });
 
   const iframeRef = useRef<HTMLIFrameElement>(null);

@@ -21,8 +21,15 @@ import {
   type ActionDropdownProps,
   type DropdownAction,
 } from "@/components/ui/action-dropdown";
+import {
+  DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useDownload } from "@/hooks/use-download";
 import { getErrorSummary } from "@/lib/api/errors";
+import { formatLanguage } from "@/lib/formatters";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import {
@@ -38,6 +45,67 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { toast } from "sonner";
+
+function InvoiceDocumentDownloadItem({
+  fileId,
+  label,
+  filename,
+  download,
+  isDownloading,
+}: {
+  fileId: string | null;
+  label: string;
+  filename: string;
+  download: (url?: string, filename?: string) => void;
+  isDownloading: boolean;
+}) {
+  const { data: file } = useFilesRetrieve(fileId ?? "", {
+    query: { enabled: !!fileId },
+  });
+
+  return (
+    <DropdownMenuItem
+      disabled={!file?.url || isDownloading}
+      onClick={() => download(file?.url, filename)}
+    >
+      <span>{label}</span>
+    </DropdownMenuItem>
+  );
+}
+
+function InvoiceDocumentDownloadSubmenu({
+  invoice,
+  download,
+  isDownloading,
+}: {
+  invoice: Invoice;
+  download: (url?: string, filename?: string) => void;
+  isDownloading: boolean;
+}) {
+  const documents = invoice.documents.filter((document) => document.file_id);
+  const filenameBase = invoice.number || "invoice";
+
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <DownloadIcon className="size-4" />
+        <span>Download</span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent>
+        {documents.map((document) => (
+          <InvoiceDocumentDownloadItem
+            key={document.id}
+            fileId={document.file_id}
+            label={formatLanguage(document.language)}
+            filename={`${filenameBase}-${document.language}.pdf`}
+            download={download}
+            isDownloading={isDownloading}
+          />
+        ))}
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+  );
+}
 
 export function useEditInvoiceAction(): DropdownAction<Invoice> {
   const navigate = useNavigate();
@@ -265,25 +333,51 @@ export function useCloneInvoiceAction(): DropdownAction<Invoice> {
   };
 }
 
-export function useDownloadInvoiceAction(
+export function useDownloadInvoiceActions(
   invoice: Invoice,
-): DropdownAction<Invoice> {
-  const enabled = !!invoice.pdf_id;
-  const { data: file } = useFilesRetrieve(invoice.pdf_id!, {
-    query: { enabled },
+): DropdownAction<Invoice>[] {
+  const documents = invoice.documents.filter((document) => document.file_id);
+  const filenameBase = invoice.number || "invoice";
+  const [primaryDocument] = documents;
+  const { data: file } = useFilesRetrieve(primaryDocument?.file_id ?? "", {
+    query: {
+      enabled: documents.length === 1 && !!primaryDocument?.file_id,
+    },
   });
   const { isDownloading, download } = useDownload();
-  const filename = `${invoice.number}.pdf`;
-  return {
-    key: "download",
-    label: "Download",
-    icon: DownloadIcon,
-    shortcut: "D",
-    hotkey: "d",
-    visible: () => enabled,
-    disabled: () => !file?.url || isDownloading,
-    onSelect: () => download(file?.url, filename),
-  };
+
+  if (documents.length === 0) return [];
+
+  if (documents.length === 1) {
+    const filename = `${filenameBase}-${primaryDocument?.language}.pdf`;
+
+    return [
+      {
+        key: "download",
+        label: "Download",
+        icon: DownloadIcon,
+        shortcut: "D",
+        hotkey: "d",
+        disabled: () => !file?.url || isDownloading,
+        onSelect: () => download(file?.url, filename),
+      },
+    ];
+  }
+
+  return [
+    {
+      key: "download",
+      label: "Download",
+      icon: DownloadIcon,
+      render: () => (
+        <InvoiceDocumentDownloadSubmenu
+          invoice={invoice}
+          download={download}
+          isDownloading={isDownloading}
+        />
+      ),
+    },
+  ];
 }
 
 export function useVoidInvoiceAction(): DropdownAction<Invoice> {
@@ -402,7 +496,7 @@ export function InvoiceDropdown({
             useVoidInvoiceAction(),
           ],
         },
-        { items: [useDownloadInvoiceAction(invoice)] },
+        { items: useDownloadInvoiceActions(invoice) },
         { items: [useDeleteInvoiceAction()], danger: true },
       ]}
       {...props}

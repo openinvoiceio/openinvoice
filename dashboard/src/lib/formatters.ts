@@ -3,6 +3,9 @@ import { enUS } from "date-fns/locale";
 import Decimal from "decimal.js";
 
 const regionDisplayNames = new Intl.DisplayNames(["en"], { type: "region" });
+const languageDisplayNames = new Intl.DisplayNames(["en"], {
+  type: "language",
+});
 
 export function formatDate(value?: string | number | Date): string {
   if (!value) return "";
@@ -78,6 +81,12 @@ export function formatEmailList(emails: string[], maxVisible = 2): string {
 export function formatEnum(value: string) {
   const formatted = value.replace(/_/g, " ");
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
+export function formatLanguage(value?: string) {
+  if (!value) return "";
+  const normalized = value.replace(/_/g, "-");
+  return languageDisplayNames.of(normalized) ?? formatEnum(normalized);
 }
 
 export function formatNetPaymentTerm(value: number): string {

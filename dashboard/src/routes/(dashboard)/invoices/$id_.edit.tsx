@@ -10,12 +10,12 @@ import {
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
-import { InvoiceAdditionalCard } from "@/components/invoice-additional-card.tsx";
 import { InvoiceBadge } from "@/components/invoice-badge";
 import { InvoiceCurrencyCard } from "@/components/invoice-currency-card.tsx";
 import { InvoiceCustomerCard } from "@/components/invoice-customer-card.tsx";
 import { InvoiceDeliveryCard } from "@/components/invoice-delivery-card";
 import { InvoiceDiscountsCard } from "@/components/invoice-discounts-card.tsx";
+import { InvoiceDocumentsCard } from "@/components/invoice-documents-card";
 import { InvoiceDropdown } from "@/components/invoice-dropdown";
 import { InvoiceLinesCard } from "@/components/invoice-lines-card.tsx";
 import { InvoiceNumberingCard } from "@/components/invoice-numbering-card.tsx";
@@ -158,9 +158,9 @@ function RouteComponent() {
               <InvoiceDiscountsCard invoice={invoice} />
               <InvoiceShippingCard invoice={invoice} />
               <InvoiceTaxesCard invoice={invoice} />
+              <InvoiceDocumentsCard invoice={invoice} />
               <InvoicePaymentCollectionCard invoice={invoice} />
               <InvoiceDeliveryCard invoice={invoice} />
-              <InvoiceAdditionalCard invoice={invoice} />
             </Section>
           </ScrollArea>
           <Section className="hidden max-w-[600px] 2xl:block">

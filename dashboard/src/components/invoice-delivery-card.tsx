@@ -15,6 +15,13 @@ import {
 } from "@/components/delivery-recipient-tags";
 import { Badge } from "@/components/ui/badge.tsx";
 import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+  FieldTitle,
+} from "@/components/ui/field.tsx";
+import {
   Form,
   FormControl,
   FormDescription,
@@ -30,7 +37,6 @@ import {
   FormCardHeader,
   FormCardTitle,
 } from "@/components/ui/form-card";
-import { Label } from "@/components/ui/label.tsx";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
 import { useActiveAccount } from "@/hooks/use-active-account.ts";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
@@ -102,7 +108,6 @@ export function InvoiceDeliveryCard({ invoice }: { invoice: Invoice }) {
 
   const submit = form.handleSubmit(onSubmit);
   const debouncedSubmit = useDebouncedCallback(() => submit(), 400);
-
   const deliveryMethod = form.watch("delivery_method");
 
   return (
@@ -128,38 +133,42 @@ export function InvoiceDeliveryCard({ invoice }: { invoice: Invoice }) {
                       value={field.value}
                       onValueChange={field.onChange}
                     >
-                      <div className="border-input has-data-[state=checked]:border-primary/50 relative flex w-full items-start gap-2 rounded-md border p-4 shadow-xs outline-none">
-                        <RadioGroupItem
-                          value={DeliveryMethodEnum.manual}
-                          className="order-1 after:absolute after:inset-0"
-                        />
-                        <div className="grid grow gap-2">
-                          <Label className="h-4">Manual</Label>
-                          <p className="text-muted-foreground text-xs">
-                            You will need to send the invoice to the customer
-                            manually.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="border-input has-data-[state=checked]:border-primary/50 relative flex w-full items-start gap-2 rounded-md border p-4 shadow-xs outline-none">
-                        <RadioGroupItem
-                          value={DeliveryMethodEnum.automatic}
-                          className="peer order-1 after:absolute after:inset-0"
-                          disabled={!account.subscription}
-                        />
-                        <div className="grid grow gap-2 peer-disabled:opacity-50">
-                          <Label className="h-4">
-                            <span>Automatic</span>
-                            {!account.subscription && (
-                              <Badge className="px-1.5 py-0">Upgrade</Badge>
-                            )}
-                          </Label>
-                          <p className="text-muted-foreground text-xs">
-                            Invoice will be automatically sent to recipients
-                            when finalized.
-                          </p>
-                        </div>
-                      </div>
+                      <FieldLabel>
+                        <Field orientation="horizontal">
+                          <FieldContent>
+                            <FieldTitle>Manual</FieldTitle>
+                            <FieldDescription>
+                              You will need to send the invoice to the customer
+                              manually.
+                            </FieldDescription>
+                          </FieldContent>
+                          <RadioGroupItem value={DeliveryMethodEnum.manual} />
+                        </Field>
+                      </FieldLabel>
+
+                      <FieldLabel>
+                        <Field
+                          orientation="horizontal"
+                          data-disabled={!account.subscription}
+                        >
+                          <FieldContent>
+                            <FieldTitle>
+                              Automatic
+                              {!account.subscription && (
+                                <Badge className="px-1.5 py-0">Upgrade</Badge>
+                              )}
+                            </FieldTitle>
+                            <FieldDescription>
+                              Invoice will be automatically sent to recipients
+                              when finalized.
+                            </FieldDescription>
+                          </FieldContent>
+                          <RadioGroupItem
+                            value={DeliveryMethodEnum.automatic}
+                            disabled={!account.subscription}
+                          />
+                        </Field>
+                      </FieldLabel>
                     </RadioGroup>
                   </FormControl>
                   <FormMessage />

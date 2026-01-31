@@ -80,6 +80,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDataTable } from "@/hooks/use-data-table.ts";
+import { useDownload } from "@/hooks/use-download";
 import { getErrorSummary } from "@/lib/api/errors";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";
 import {
@@ -87,6 +88,7 @@ import {
   formatDate,
   formatDatetime,
   formatEnum,
+  formatLanguage,
   formatPercentage,
 } from "@/lib/formatters";
 import { cn } from "@/lib/utils.ts";
@@ -96,6 +98,7 @@ import {
   BracesIcon,
   CheckIcon,
   CreditCardIcon,
+  DownloadIcon,
   InfoIcon,
   MoreHorizontalIcon,
   PencilIcon,
@@ -107,6 +110,37 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/(dashboard)/invoices/$id")({
   component: RouteComponent,
 });
+
+function InvoiceDocumentDownloadButton({
+  invoiceNumber,
+  fileId,
+  language,
+}: {
+  invoiceNumber: string | null;
+  fileId: string | null;
+  language: string;
+}) {
+  const enabled = !!fileId;
+  const { data: file } = useFilesRetrieve(fileId ?? "", {
+    query: { enabled },
+  });
+  const { download, isDownloading } = useDownload();
+
+  if (!enabled) return null;
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      disabled={!file?.url || isDownloading}
+      onClick={() =>
+        download(file?.url, `${invoiceNumber || "invoice"}-${language}.pdf`)
+      }
+    >
+      <DownloadIcon />
+    </Button>
+  );
+}
 
 function RouteComponent() {
   const { id } = Route.useParams();
@@ -212,10 +246,6 @@ function RouteComponent() {
   const summaryColSpan = hasLineTaxes ? 4 : 3;
   const hasCredit = invoice.total_credit_amount !== "0.00";
   const hasPaid = invoice.total_paid_amount !== "0.00";
-  const customFields = Object.entries(
-    invoice.custom_fields as Record<string, string>,
-  );
-
   return (
     <div>
       <AppHeader>
@@ -623,6 +653,58 @@ function RouteComponent() {
           </Section>
           <Section>
             <SectionHeader>
+              <SectionTitle>Documents</SectionTitle>
+            </SectionHeader>
+            {invoice.documents.length > 0 ? (
+              <div className="overflow-hidden rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Language</TableHead>
+                      <TableHead>Audience</TableHead>
+                      <TableHead className="sr-only">Download</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoice.documents.map((document) => (
+                      <TableRow key={document.id}>
+                        <TableCell>
+                          {formatLanguage(document.language)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-2">
+                            {document.audience.map((audience) => (
+                              <Badge key={audience} variant="secondary">
+                                {formatEnum(audience)}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <InvoiceDocumentDownloadButton
+                            invoiceNumber={invoice.number}
+                            fileId={document.file_id}
+                            language={document.language}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <Empty className="border">
+                <EmptyHeader>
+                  <EmptyTitle>No documents available</EmptyTitle>
+                  <EmptyDescription>
+                    Documents will appear here once configured.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            )}
+          </Section>
+          <Section>
+            <SectionHeader>
               <SectionTitle>Payments</SectionTitle>
             </SectionHeader>
             {payments?.data && payments.data.count > 0 ? (
@@ -783,12 +865,6 @@ function RouteComponent() {
                     : "-"}
                 </DataListValue>
               </DataListItem>
-              {invoice.footer && (
-                <DataListItem>
-                  <DataListLabel>Footer</DataListLabel>
-                  <DataListValue>{invoice.footer}</DataListValue>
-                </DataListItem>
-              )}
             </DataList>
             {numberingSystem && (
               <Fragment>
@@ -832,23 +908,6 @@ function RouteComponent() {
                 </DataListValue>
               </DataListItem>
             </DataList>
-            {customFields.length > 0 && (
-              <Fragment>
-                <DataSidebarSeparator />
-                <DataList
-                  orientation="vertical"
-                  className="gap-3 px-4"
-                  size="sm"
-                >
-                  {customFields.map(([label, value]) => (
-                    <DataListItem key={label}>
-                      <DataListLabel>{label}</DataListLabel>
-                      <DataListValue>{value || "-"}</DataListValue>
-                    </DataListItem>
-                  ))}
-                </DataList>
-              </Fragment>
-            )}
           </DataSidebarContent>
           <DataSidebarContent value="metadata">
             <DataSidebarTitle>Metadata</DataSidebarTitle>

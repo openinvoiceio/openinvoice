@@ -12,6 +12,12 @@ import {
   DataListValue,
 } from "@/components/ui/data-list";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Empty,
   EmptyDescription,
   EmptyHeader,
@@ -38,7 +44,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDownload } from "@/hooks/use-download";
-import { formatAmount, formatDate, formatTaxIdType } from "@/lib/formatters";
+import {
+  formatAmount,
+  formatDate,
+  formatLanguage,
+  formatTaxIdType,
+} from "@/lib/formatters";
 import { createFileRoute } from "@tanstack/react-router";
 import { DownloadIcon } from "lucide-react";
 
@@ -193,32 +204,69 @@ function RouteComponent() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {invoices?.results.map((invoice) => (
-                    <TableRow key={invoice.id}>
-                      <TableCell>{invoice.number}</TableCell>
-                      <TableCell>
-                        {formatDate(invoice.issue_date || undefined)}
-                      </TableCell>
-                      <TableCell>
-                        {formatAmount(invoice.total_amount, invoice.currency)}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          disabled={!invoice.pdf_url || isDownloading}
-                          onClick={() =>
-                            download(
-                              invoice.pdf_url || "",
-                              `${invoice.number}.pdf`,
-                            )
-                          }
-                        >
-                          <DownloadIcon />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {invoices?.results.map((invoice) => {
+                    const downloadableDocuments = invoice.documents.filter(
+                      (doc) => doc.url,
+                    );
+                    const filenameBase = invoice.number || "invoice";
+                    const [singleDocument] = downloadableDocuments;
+
+                    return (
+                      <TableRow key={invoice.id}>
+                        <TableCell>{invoice.number}</TableCell>
+                        <TableCell>
+                          {formatDate(invoice.issue_date || undefined)}
+                        </TableCell>
+                        <TableCell>
+                          {formatAmount(invoice.total_amount, invoice.currency)}
+                        </TableCell>
+                        <TableCell>
+                          {downloadableDocuments.length === 1 ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={isDownloading}
+                              onClick={() =>
+                                download(
+                                  singleDocument?.url || "",
+                                  `${filenameBase}-${singleDocument?.language}.pdf`,
+                                )
+                              }
+                            >
+                              <DownloadIcon />
+                            </Button>
+                          ) : downloadableDocuments.length > 1 ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  disabled={isDownloading}
+                                >
+                                  <DownloadIcon />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {downloadableDocuments.map((document) => (
+                                  <DropdownMenuItem
+                                    key={document.id}
+                                    onClick={() =>
+                                      download(
+                                        document.url || "",
+                                        `${filenameBase}-${document.language}.pdf`,
+                                      )
+                                    }
+                                  >
+                                    {formatLanguage(document.language)}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : null}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             ) : (

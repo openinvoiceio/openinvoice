@@ -36,6 +36,7 @@ export type DropdownAction<TData> = {
   visible?: (data: TData) => boolean;
   disabled?: (data: TData) => boolean;
   onSelect?: (data: TData) => void | Promise<void>;
+  render?: (data: TData) => ReactNode;
 };
 
 export type ActionSection<TData> = {
@@ -157,6 +158,9 @@ export function ActionDropdown<TData>({
   };
 
   const renderItem = (a: DropdownAction<TData>, danger?: boolean) => {
+    if (a.render) {
+      return <Fragment key={a.key}>{a.render(data)}</Fragment>;
+    }
     const disabled = a.disabled ? a.disabled(data) : false;
     const label = typeof a.label === "function" ? a.label(data) : a.label;
     const tip = typeof a.tooltip === "function" ? a.tooltip(data) : a.tooltip;
