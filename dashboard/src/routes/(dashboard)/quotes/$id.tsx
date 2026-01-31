@@ -15,8 +15,6 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { CommentsForm } from "@/components/comments-form";
 import { CommentsList } from "@/components/comments-list";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { QuoteBadge } from "@/components/quote-badge";
-import { QuoteDropdown } from "@/components/quote-dropdown";
 import { SearchCommand } from "@/components/search-command";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +29,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { QuoteBadge } from "@/features/quotes/components/quote-badge";
+import { QuoteDropdown } from "@/features/quotes/components/quote-dropdown";
 import { getErrorSummary } from "@/lib/api/errors";
 import { formatAmount } from "@/lib/formatters";
 import { useQueryClient } from "@tanstack/react-query";

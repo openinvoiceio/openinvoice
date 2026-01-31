@@ -5,9 +5,6 @@ import {
   useCreditNotesList,
 } from "@/api/endpoints/credit-notes/credit-notes";
 import { InvoiceStatusEnum } from "@/api/models";
-import { CreditNoteBadge } from "@/components/credit-note-badge";
-import { CreditNoteDropdown } from "@/components/credit-note-dropdown";
-import { InvoiceCombobox } from "@/components/invoice-combobox.tsx";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -16,6 +13,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { CreditNoteBadge } from "@/features/credit-notes/components/credit-note-badge";
+import { CreditNoteDropdown } from "@/features/credit-notes/components/credit-note-dropdown";
+import { InvoiceCombobox } from "@/features/invoices/components/invoice-combobox.tsx";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";

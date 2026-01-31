@@ -17,7 +17,6 @@ import {
   AppHeaderContent,
 } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
-import { columns } from "@/components/credit-note-table";
 import {
   DataTable,
   DataTableContainer,
@@ -30,7 +29,6 @@ import {
   DataTableToolbar,
 } from "@/components/data-table/data-table-toolbar";
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
-import { InvoiceCombobox } from "@/components/invoice-combobox.tsx";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Button } from "@/components/ui/button";
@@ -61,6 +59,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { columns } from "@/features/credit-notes/components/credit-note-table";
+import { InvoiceCombobox } from "@/features/invoices/components/invoice-combobox.tsx";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";

@@ -11,19 +11,6 @@ import {
   AppHeaderContent,
 } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
-import { InvoiceBadge } from "@/components/invoice-badge";
-import { InvoiceCurrencyCard } from "@/components/invoice-currency-card.tsx";
-import { InvoiceCustomerCard } from "@/components/invoice-customer-card.tsx";
-import { InvoiceDeliveryCard } from "@/components/invoice-delivery-card";
-import { InvoiceDiscountsCard } from "@/components/invoice-discounts-card.tsx";
-import { InvoiceDocumentsCard } from "@/components/invoice-documents-card";
-import { InvoiceDropdown } from "@/components/invoice-dropdown";
-import { InvoiceLinesCard } from "@/components/invoice-lines-card.tsx";
-import { InvoiceNumberingCard } from "@/components/invoice-numbering-card.tsx";
-import { InvoicePaymentCollectionCard } from "@/components/invoice-payment-collection-card.tsx";
-import { InvoicePreview } from "@/components/invoice-preview";
-import { InvoiceShippingCard } from "@/components/invoice-shipping-card";
-import { InvoiceTaxesCard } from "@/components/invoice-taxes-card.tsx";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { pushModal } from "@/components/push-modals";
 import { SearchCommand } from "@/components/search-command.tsx";
@@ -41,6 +28,19 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
 import { Spinner } from "@/components/ui/spinner";
+import { InvoiceBadge } from "@/features/invoices/components/invoice-badge";
+import { InvoiceCurrencyCard } from "@/features/invoices/components/invoice-currency-card.tsx";
+import { InvoiceCustomerCard } from "@/features/invoices/components/invoice-customer-card.tsx";
+import { InvoiceDeliveryCard } from "@/features/invoices/components/invoice-delivery-card";
+import { InvoiceDiscountsCard } from "@/features/invoices/components/invoice-discounts-card.tsx";
+import { InvoiceDocumentsCard } from "@/features/invoices/components/invoice-documents-card";
+import { InvoiceDropdown } from "@/features/invoices/components/invoice-dropdown";
+import { InvoiceLinesCard } from "@/features/invoices/components/invoice-lines-card.tsx";
+import { InvoiceNumberingCard } from "@/features/invoices/components/invoice-numbering-card.tsx";
+import { InvoicePaymentCollectionCard } from "@/features/invoices/components/invoice-payment-collection-card.tsx";
+import { InvoicePreview } from "@/features/invoices/components/invoice-preview";
+import { InvoiceShippingCard } from "@/features/invoices/components/invoice-shipping-card";
+import { InvoiceTaxesCard } from "@/features/invoices/components/invoice-taxes-card.tsx";
 import { getErrorSummary } from "@/lib/api/errors";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { CheckIcon, FileTextIcon, MoreHorizontalIcon } from "lucide-react";

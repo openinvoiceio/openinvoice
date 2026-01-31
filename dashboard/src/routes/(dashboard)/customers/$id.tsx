@@ -21,11 +21,8 @@ import {
   AppHeaderContent,
 } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
-import { CustomerDropdown } from "@/components/customer-dropdown";
 import { DataTable } from "@/components/data-table/data-table";
-import { columns } from "@/components/invoice-table";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { NumberingSystemView } from "@/components/numbering-system-view";
 import { pushModal } from "@/components/push-modals.tsx";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -86,6 +83,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CustomerDropdown } from "@/features/customers/components/customer-dropdown";
+import { columns } from "@/features/invoices/components/invoice-table";
+import { NumberingSystemView } from "@/features/settings/components/numbering-system-view";
 import { useDataTable } from "@/hooks/use-data-table";
 import { getErrorSummary } from "@/lib/api/errors";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";

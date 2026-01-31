@@ -24,17 +24,11 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { CommentsForm } from "@/components/comments-form";
 import { CommentsList } from "@/components/comments-list";
-import { columns } from "@/components/credit-note-table";
 import {
   DataTable,
   DataTableContainer,
 } from "@/components/data-table/data-table";
-import { InvoiceBadge } from "@/components/invoice-badge";
-import { InvoiceDropdown } from "@/components/invoice-dropdown";
-import { InvoiceLineDropdown } from "@/components/invoice-line-dropdown";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { NumberingSystemView } from "@/components/numbering-system-view";
-import { PaymentBadge } from "@/components/payment-badge";
 import { pushModal } from "@/components/push-modals";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -84,6 +78,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { columns } from "@/features/credit-notes/components/credit-note-table";
+import { InvoiceBadge } from "@/features/invoices/components/invoice-badge";
+import { InvoiceDropdown } from "@/features/invoices/components/invoice-dropdown";
+import { InvoiceLineDropdown } from "@/features/invoices/components/invoice-line-dropdown";
+import { PaymentBadge } from "@/features/invoices/components/payment-badge";
+import { NumberingSystemView } from "@/features/settings/components/numbering-system-view";
 import { useDataTable } from "@/hooks/use-data-table.ts";
 import { useDownload } from "@/hooks/use-download";
 import { getErrorSummary } from "@/lib/api/errors";

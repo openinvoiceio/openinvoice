@@ -12,7 +12,6 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { CurrencyCombobox } from "@/components/currency-combobox.tsx";
 import { DataTable } from "@/components/data-table/data-table";
-import { columns } from "@/components/invoice-table";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Button } from "@/components/ui/button";
@@ -57,6 +56,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { columns } from "@/features/invoices/components/invoice-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";
 import { formatAmount, formatISODate } from "@/lib/formatters";

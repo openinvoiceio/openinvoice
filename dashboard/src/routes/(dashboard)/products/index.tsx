@@ -23,7 +23,6 @@ import {
 } from "@/components/data-table/data-table-toolbar";
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options.tsx";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { columns } from "@/components/product-table";
 import { pushModal } from "@/components/push-modals";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Button } from "@/components/ui/button";
@@ -53,6 +52,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { columns } from "@/features/products/components/product-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { formatEnum } from "@/lib/formatters";
 import { getSortingStateParser } from "@/lib/parsers";

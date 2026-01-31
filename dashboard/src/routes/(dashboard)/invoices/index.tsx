@@ -22,7 +22,6 @@ import {
   DataTableToolbar,
 } from "@/components/data-table/data-table-toolbar";
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options.tsx";
-import { columns } from "@/components/invoice-table";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { pushModal } from "@/components/push-modals.tsx";
 import { SearchCommand } from "@/components/search-command.tsx";
@@ -54,6 +53,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
+import { columns } from "@/features/invoices/components/invoice-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useDebounce } from "@/hooks/use-debounce.ts";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";

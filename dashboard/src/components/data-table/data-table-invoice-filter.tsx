@@ -1,8 +1,8 @@
 import { useInvoicesRetrieve } from "@/api/endpoints/invoices/invoices.ts";
 import type { Invoice } from "@/api/models";
-import { InvoiceCombobox } from "@/components/invoice-combobox.tsx";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { InvoiceCombobox } from "@/features/invoices/components/invoice-combobox.tsx";
 import type { Column } from "@tanstack/react-table";
 import { FileTextIcon, XCircle } from "lucide-react";
 import * as React from "react";

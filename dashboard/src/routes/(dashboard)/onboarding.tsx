@@ -5,8 +5,6 @@ import {
   AppHeaderContent,
 } from "@/components/app-header.tsx";
 import { AppSidebar } from "@/components/app-sidebar";
-import { CustomerOnboardingCard } from "@/components/customer-onboarding-card.tsx";
-import { InvoiceOnboardingCard } from "@/components/invoice-onboarding-card.tsx";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb.tsx";
 import { SearchCommand } from "@/components/search-command.tsx";
 import {
@@ -28,6 +26,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
+import { CustomerOnboardingCard } from "@/features/customers/components/customer-onboarding-card.tsx";
+import { InvoiceOnboardingCard } from "@/features/invoices/components/invoice-onboarding-card.tsx";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
 

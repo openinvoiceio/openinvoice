@@ -23,9 +23,6 @@ import {
 } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { columns } from "@/components/price-table";
-import { ProductBadge } from "@/components/product-badge";
-import { ProductDropdown } from "@/components/product-dropdown";
 import { pushModal } from "@/components/push-modals";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -70,6 +67,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
+import { columns } from "@/features/products/components/price-table";
+import { ProductBadge } from "@/features/products/components/product-badge";
+import { ProductDropdown } from "@/features/products/components/product-dropdown";
 import { useDataTable } from "@/hooks/use-data-table";
 import { getErrorSummary } from "@/lib/api/errors.ts";
 import { formatDatetime, formatEnum } from "@/lib/formatters";

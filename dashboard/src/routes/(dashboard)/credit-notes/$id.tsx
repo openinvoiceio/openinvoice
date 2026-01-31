@@ -22,10 +22,7 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { CommentsForm } from "@/components/comments-form";
 import { CommentsList } from "@/components/comments-list";
-import { CreditNoteBadge } from "@/components/credit-note-badge";
-import { CreditNoteDropdown } from "@/components/credit-note-dropdown.tsx";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
-import { NumberingSystemView } from "@/components/numbering-system-view.tsx";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -71,6 +68,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CreditNoteBadge } from "@/features/credit-notes/components/credit-note-badge";
+import { CreditNoteDropdown } from "@/features/credit-notes/components/credit-note-dropdown.tsx";
+import { NumberingSystemView } from "@/features/settings/components/numbering-system-view.tsx";
 import { getErrorSummary } from "@/lib/api/errors";
 import {
   formatAmount,

@@ -6,7 +6,6 @@ import {
   AppHeaderContent,
 } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
-import { columns } from "@/components/customer-table";
 import {
   DataTable,
   DataTableContainer,
@@ -42,6 +41,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
+import { columns } from "@/features/customers/components/customer-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { getSortingStateParser } from "@/lib/parsers";
 import { createFileRoute } from "@tanstack/react-router";

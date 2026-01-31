@@ -1,6 +1,4 @@
 import { useInvoicesList } from "@/api/endpoints/invoices/invoices";
-import { InvoiceBadge } from "@/components/invoice-badge";
-import { InvoiceDropdown } from "@/components/invoice-dropdown";
 import { pushModal } from "@/components/push-modals.tsx";
 import {
   SidebarGroup,
@@ -10,6 +8,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { InvoiceBadge } from "@/features/invoices/components/invoice-badge";
+import { InvoiceDropdown } from "@/features/invoices/components/invoice-dropdown";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "@tanstack/react-router";
 import { MoreHorizontalIcon, PlusIcon } from "lucide-react";

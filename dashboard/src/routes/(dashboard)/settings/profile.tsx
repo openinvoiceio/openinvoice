@@ -1,6 +1,4 @@
 import { useListSessions } from "@/api/endpoints/sessions/sessions";
-import { ProfileGeneralCard } from "@/components/profile-general-card";
-import { ProfilePasswordCard } from "@/components/profile-password-card";
 import { Badge } from "@/components/ui/badge";
 import {
   FormCard,
@@ -24,6 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ProfileGeneralCard } from "@/features/settings/components/profile-general-card";
+import { ProfilePasswordCard } from "@/features/settings/components/profile-password-card";
 import { formatDatetime } from "@/lib/formatters";
 import { createFileRoute } from "@tanstack/react-router";
 

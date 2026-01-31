@@ -24,7 +24,6 @@ import {
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options.tsx";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { pushModal } from "@/components/push-modals.tsx";
-import { columns } from "@/components/quote-table";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,6 +53,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
+import { columns } from "@/features/quotes/components/quote-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useDebounce } from "@/hooks/use-debounce.ts";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";

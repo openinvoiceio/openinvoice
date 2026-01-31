@@ -6,13 +6,6 @@ import {
   AppHeaderContent,
 } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
-import { CreditNoteBadge } from "@/components/credit-note-badge";
-import { CreditNoteDeliveryCard } from "@/components/credit-note-delivery-card";
-import { CreditNoteDropdown } from "@/components/credit-note-dropdown.tsx";
-import { CreditNoteInvoiceCard } from "@/components/credit-note-invoice-card.tsx";
-import { CreditNoteLinesCard } from "@/components/credit-note-lines-card.tsx";
-import { CreditNoteNumberingCard } from "@/components/credit-note-numbering-card";
-import { CreditNotePreview } from "@/components/credit-note-preview";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { pushModal } from "@/components/push-modals";
 import { SearchCommand } from "@/components/search-command.tsx";
@@ -29,6 +22,13 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { CreditNoteBadge } from "@/features/credit-notes/components/credit-note-badge";
+import { CreditNoteDeliveryCard } from "@/features/credit-notes/components/credit-note-delivery-card";
+import { CreditNoteDropdown } from "@/features/credit-notes/components/credit-note-dropdown.tsx";
+import { CreditNoteInvoiceCard } from "@/features/credit-notes/components/credit-note-invoice-card.tsx";
+import { CreditNoteLinesCard } from "@/features/credit-notes/components/credit-note-lines-card.tsx";
+import { CreditNoteNumberingCard } from "@/features/credit-notes/components/credit-note-numbering-card";
+import { CreditNotePreview } from "@/features/credit-notes/components/credit-note-preview";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { FileTextIcon, MoreHorizontalIcon } from "lucide-react";
 

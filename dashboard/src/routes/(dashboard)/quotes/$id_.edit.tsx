@@ -13,17 +13,6 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { pushModal } from "@/components/push-modals.tsx";
-import { QuoteAdditionalCard } from "@/components/quote-additional-card.tsx";
-import { QuoteBadge } from "@/components/quote-badge";
-import { QuoteCurrencyCard } from "@/components/quote-currency-card.tsx";
-import { QuoteCustomerCard } from "@/components/quote-customer-card.tsx";
-import { QuoteDeliveryCard } from "@/components/quote-delivery-card";
-import { QuoteDiscountsCard } from "@/components/quote-discounts-card.tsx";
-import { QuoteDropdown } from "@/components/quote-dropdown.tsx";
-import { QuoteLinesCard } from "@/components/quote-lines-card.tsx";
-import { QuoteNumberingCard } from "@/components/quote-numbering-card.tsx";
-import { QuotePreview } from "@/components/quote-preview";
-import { QuoteTaxesCard } from "@/components/quote-taxes-card.tsx";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -39,6 +28,17 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
 import { Spinner } from "@/components/ui/spinner";
+import { QuoteAdditionalCard } from "@/features/quotes/components/quote-additional-card.tsx";
+import { QuoteBadge } from "@/features/quotes/components/quote-badge";
+import { QuoteCurrencyCard } from "@/features/quotes/components/quote-currency-card.tsx";
+import { QuoteCustomerCard } from "@/features/quotes/components/quote-customer-card.tsx";
+import { QuoteDeliveryCard } from "@/features/quotes/components/quote-delivery-card";
+import { QuoteDiscountsCard } from "@/features/quotes/components/quote-discounts-card.tsx";
+import { QuoteDropdown } from "@/features/quotes/components/quote-dropdown.tsx";
+import { QuoteLinesCard } from "@/features/quotes/components/quote-lines-card.tsx";
+import { QuoteNumberingCard } from "@/features/quotes/components/quote-numbering-card.tsx";
+import { QuotePreview } from "@/features/quotes/components/quote-preview";
+import { QuoteTaxesCard } from "@/features/quotes/components/quote-taxes-card.tsx";
 import { getErrorSummary } from "@/lib/api/errors";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { CheckIcon, FileTextIcon, MoreHorizontalIcon } from "lucide-react";

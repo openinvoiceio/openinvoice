@@ -25,7 +25,6 @@ import { DataTableViewOptions } from "@/components/data-table/data-table-view-op
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { pushModal } from "@/components/push-modals";
 import { SearchCommand } from "@/components/search-command.tsx";
-import { columns } from "@/components/tax-rate-table";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -53,6 +52,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { columns } from "@/features/tax-rates/components/tax-rate-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { formatEnum } from "@/lib/formatters";
 import { getSortingStateParser } from "@/lib/parsers";

@@ -5,12 +5,6 @@ import {
   AppHeaderContent,
 } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
-import { CustomerBillingAddressCard } from "@/components/customer-billing-address-card";
-import { CustomerGeneralCard } from "@/components/customer-general-card";
-import { CustomerInvoicingCard } from "@/components/customer-invoicing-card";
-import { CustomerShippingCard } from "@/components/customer-shipping-card";
-import { CustomerTaxIdsCard } from "@/components/customer-tax-ids-card";
-import { CustomerTaxRatesCard } from "@/components/customer-tax-rates-card";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { SearchCommand } from "@/components/search-command.tsx";
 import {
@@ -24,6 +18,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
+import { CustomerBillingAddressCard } from "@/features/customers/components/customer-billing-address-card";
+import { CustomerGeneralCard } from "@/features/customers/components/customer-general-card";
+import { CustomerInvoicingCard } from "@/features/customers/components/customer-invoicing-card";
+import { CustomerShippingCard } from "@/features/customers/components/customer-shipping-card";
+import { CustomerTaxIdsCard } from "@/features/customers/components/customer-tax-ids-card";
+import { CustomerTaxRatesCard } from "@/features/customers/components/customer-tax-rates-card";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/(dashboard)/customers/$id_/edit")({

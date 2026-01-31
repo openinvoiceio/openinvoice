@@ -1,8 +1,8 @@
 import { useCustomersRetrieve } from "@/api/endpoints/customers/customers.ts";
 import type { Customer } from "@/api/models";
-import { CustomerCombobox } from "@/components/customer-combobox.tsx";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { CustomerCombobox } from "@/features/customers/components/customer-combobox.tsx";
 import type { Column } from "@tanstack/react-table";
 import { UserIcon, XCircle } from "lucide-react";
 import * as React from "react";

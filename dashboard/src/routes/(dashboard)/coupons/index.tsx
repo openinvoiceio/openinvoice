@@ -10,7 +10,6 @@ import {
   AppHeaderContent,
 } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
-import { columns } from "@/components/coupon-table";
 import {
   DataTable,
   DataTableContainer,
@@ -53,6 +52,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { columns } from "@/features/coupons/components/coupon-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { formatEnum } from "@/lib/formatters";
 import { getSortingStateParser } from "@/lib/parsers";

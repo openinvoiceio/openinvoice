@@ -1,8 +1,8 @@
 import { useProductsRetrieve } from "@/api/endpoints/products/products.ts";
 import type { Product } from "@/api/models";
-import { ProductCombobox } from "@/components/product-combobox.tsx";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { ProductCombobox } from "@/features/products/components/product-combobox.tsx";
 import type { Column } from "@tanstack/react-table";
 import { BoxIcon, XCircle } from "lucide-react";
 import * as React from "react";
