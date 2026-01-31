@@ -4,7 +4,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Install system dependencies
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends weasyprint && \
+    apt-get install -y --no-install-recommends gettext weasyprint && \
     rm -rf /var/lib/apt/lists/*
 
 # Change the working directory to the `app` directory
@@ -22,5 +22,7 @@ ADD . /app
 # Sync the project
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-editable
+
+RUN uv run python manage.py compilemessages
 
 ENV PATH="/app/.venv/bin:$PATH"

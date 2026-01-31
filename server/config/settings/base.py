@@ -136,7 +136,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        **env.db("DJANGO_DATABASE_URL", engine="django.db.backends.postgresql"),
+        **env.db("DJANGO_DATABASE_URL", default="", engine="django.db.backends.postgresql"),
         "ATOMIC_REQUESTS": True,
         "CONN_MAX_AGE": env.int("DJANGO_CONN_MAX_AGE", default=60),
         "CONN_HEALTH_CHECKS": True,

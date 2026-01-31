@@ -1,252 +1,255 @@
 {% load djmoney %}
+{% load i18n %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="{{ document.language }}">
-<head>
-    <meta charset="UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="stylesheet" href="{% static 'css/pdf/classic.css' %}">
-    <title>Invoice</title>
-</head>
-<body>
-<main>
-    <header class="header">
-        <h1 class="title">
-            {% if invoice.previous_revision %}
-                Corrective Invoice
-            {% else %}
-                Invoice
-            {% endif %}
-        </h1>
-        {% if invoice.effective_account.logo %}
-            <img
-                    src="data:{{ invoice.effective_account.logo.content_type }};base64,{{ invoice.effective_account.logo.base64 }}"
-                    alt="logo"
-                    style="max-height: 32px;"
-            />
-        {% else %}
-            <div style="font-size:12px">{{ invoice.effective_account.name }}</div>
-        {% endif %}
-    </header>
-
-    <section class="info">
-        <div>
-            <p>
-                <span class="info-label">Number:</span>
-                <span class="info-value">{{ invoice.effective_number }}</span>
-            </p>
-            {% if invoice.previous_revision %}
-                <p>
-                    <span class="info-label">Corrects invoice:</span>
-                    <span class="info-value">{{ invoice.previous_revision.effective_number }}</span>
-                </p>
-            {% endif %}
-            {% if invoice.issue_date %}
-                <p>
-                    <span class="info-label">Issue date:</span>
-                    <span class="info-value">{{ invoice.issue_date|date:"j E, Y" }}</span>
-                </p>
-            {% endif %}
-            {% if invoice.previous_revision and invoice.previous_revision.issue_date %}
-                <p>
-                    <span class="info-label">Original invoice issue date:</span>
-                    <span class="info-value">{{ invoice.previous_revision.issue_date|date:"j E, Y" }}</span>
-                </p>
-            {% endif %}
-        </div>
-        <div>
-            {% for key, value in document.custom_fields.items %}
-                <p>
-                    <span class="info-label">{{ key }}:</span>
-                    <span class="info-value">{{ value }}</span>
-                </p>
-            {% endfor %}
-        </div>
-    </section>
-
-    <section class="parties">
-        <section class="party party-account">
-            <h2 class="party-title">From</h2>
-            <p class="party-detail">
-                {{ invoice.effective_account.legal_name|default:invoice.effective_account.name }}
-            </p>
-            {% if invoice.effective_account.legal_number %}
-                <p class="party-detail">
-                    <span>{{ invoice.effective_account.legal_number }}</span>
-                </p>
-            {% endif %}
-            <address class="party-detail">
-                {% include "address.html" with address=invoice.effective_account.address %}
-            </address>
-            <p class="party-detail">
-                {% if invoice.effective_account.email %}
-                    <span>{{ invoice.effective_account.email }}</span>
+{% language document.language %}
+    <!DOCTYPE html>
+    <html lang="{{ document.language }}">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="{% static 'css/pdf/classic.css' %}">
+        <title>{% trans "invoice.pdf.title" %}</title>
+    </head>
+    <body>
+    <main>
+        <header class="header">
+            <h1 class="title">
+                {% if invoice.previous_revision %}
+                    {% trans "invoice.pdf.corrective_title" %}
+                {% else %}
+                    {% trans "invoice.pdf.title" %}
                 {% endif %}
-            </p>
-            {% for tax_id in invoice.effective_account.tax_ids.all %}
-                <p class="party-detail">
-                    <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
-                </p>
-            {% endfor %}
-        </section>
+            </h1>
+            {% if invoice.effective_account.logo %}
+                <img
+                        src="data:{{ invoice.effective_account.logo.content_type }};base64,{{ invoice.effective_account.logo.base64 }}"
+                        alt="{% trans "invoice.pdf.logo_alt" %}"
+                        style="max-height: 32px;"
+                />
+            {% else %}
+                <div style="font-size:12px">{{ invoice.effective_account.name }}</div>
+            {% endif %}
+        </header>
 
-        <section class="party party-customer">
-            <div class="party-columns">
-                <div>
-                    <h2 class="party-title">Bill to</h2>
-                    <p class="party-detail">
-                        {{ invoice.effective_customer.legal_name|default:invoice.effective_customer.name }}
+        <section class="info">
+            <div>
+                <p>
+                    <span class="info-label">{% trans "invoice.pdf.number" %}:</span>
+                    <span class="info-value">{{ invoice.effective_number }}</span>
+                </p>
+                {% if invoice.previous_revision %}
+                    <p>
+                        <span class="info-label">{% trans "invoice.pdf.corrects_invoice" %}:</span>
+                        <span class="info-value">{{ invoice.previous_revision.effective_number }}</span>
                     </p>
-                    {% if invoice.effective_customer.legal_number %}
-                        <p class="party-detail">
-                            <span>{{ invoice.effective_customer.legal_number }}</span>
-                        </p>
-                    {% endif %}
-                    <address class="party-detail">
-                        {% include "address.html" with address=invoice.effective_customer.address %}
-                    </address>
-                    <p class="party-detail">
-                        {% if invoice.effective_customer.email %}
-                            <span>{{ invoice.effective_customer.email }}</span>
-                        {% endif %}
+                {% endif %}
+                {% if invoice.issue_date %}
+                    <p>
+                        <span class="info-label">{% trans "invoice.pdf.issue_date" %}:</span>
+                        <span class="info-value">{{ invoice.issue_date|date:"j E, Y" }}</span>
                     </p>
-                    {% for tax_id in invoice.effective_customer.tax_ids.all %}
-                        <p class="party-detail">
-                            <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
-                        </p>
-                    {% endfor %}
-                </div>
-                {% if invoice.shipping %}
-                    <div>
-                        <h2 class="party-title">Ship to</h2>
-                        {% if invoice.shipping.effective_name %}
-                            <p class="party-detail">
-                                {{ invoice.shipping.effective_name }}
-                            </p>
-                        {% endif %}
-                        {% if invoice.shipping.effective_phone %}
-                            <p class="party-detail">
-                                <span>{{ invoice.shipping.effective_phone }}</span>
-                            </p>
-                        {% endif %}
-                        {% if invoice.shipping.effective_address %}
-                            <address class="party-detail">
-                                {% include "address.html" with address=invoice.shipping.effective_address %}
-                            </address>
-                        {% endif %}
-                    </div>
+                {% endif %}
+                {% if invoice.previous_revision and invoice.previous_revision.issue_date %}
+                    <p>
+                        <span class="info-label">{% trans "invoice.pdf.original_issue_date" %}:</span>
+                        <span class="info-value">{{ invoice.previous_revision.issue_date|date:"j E, Y" }}</span>
+                    </p>
                 {% endif %}
             </div>
+            <div>
+                {% for key, value in document.custom_fields.items %}
+                    <p>
+                        <span class="info-label">{{ key }}:</span>
+                        <span class="info-value">{{ value }}</span>
+                    </p>
+                {% endfor %}
+            </div>
         </section>
-    </section>
 
-    <section class="total">
-        <p class="total-amount">
-            {% money_localize invoice.total_amount %}
-        </p>
-        <p class="total-due">
-            Due {{ invoice.effective_due_date|date:"j E, Y" }}
-        </p>
-    </section>
-
-    <section class="lines">
-        <table class="table">
-            <thead>
-            <tr>
-                <th style="width:40%; text-align: start">Description</th>
-                <th style="width:10%; text-align: end">Quantity</th>
-                <th style="width:{% if invoice.has_line_taxes %}20%{% else %}25%{% endif %};text-align: end">
-                    Price
-                </th>
-                {% if invoice.has_line_taxes %}
-                    <th style="width:15%; text-align: end">Tax</th>
+        <section class="parties">
+            <section class="party party-account">
+                <h2 class="party-title">{% trans "invoice.pdf.from" %}</h2>
+                <p class="party-detail">
+                    {{ invoice.effective_account.legal_name|default:invoice.effective_account.name }}
+                </p>
+                {% if invoice.effective_account.legal_number %}
+                    <p class="party-detail">
+                        <span>{{ invoice.effective_account.legal_number }}</span>
+                    </p>
                 {% endif %}
-                <th style="width:{% if invoice.has_line_taxes %}15%{% else %}25%{% endif %}; text-align: end;">
-                    Amount
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for line in invoice.lines.all %}
-                <tr>
-                    <td class="line-description">{{ line.description }}</td>
-                    <td class="line-quantity">{{ line.quantity }}</td>
-                    <td class="line-price">
-                        {% money_localize line.unit_amount %}
-                    </td>
-                    {% if line.tax_rates.exists %}
-                        <td class="line-tax">
-                            {{ line.total_tax_rate|floatformat:"-2" }}%
-                        </td>
+                <address class="party-detail">
+                    {% include "address.html" with address=invoice.effective_account.address %}
+                </address>
+                <p class="party-detail">
+                    {% if invoice.effective_account.email %}
+                        <span>{{ invoice.effective_account.email }}</span>
                     {% endif %}
-                    <td class="line-total" style="text-align: end">
-                        {% money_localize line.amount %}
-                    </td>
-                </tr>
-                {% for discount in line.discounts %}
-                    <tr>
-                        <td class="line-description" style="padding-left:20px;">{{ discount.name }}</td>
-                        <td></td>
-                        <td></td>
-                        {% if line.tax_rates.exists %}
-                            <td></td>
+                </p>
+                {% for tax_id in invoice.effective_account.tax_ids.all %}
+                    <p class="party-detail">
+                        <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
+                    </p>
+                {% endfor %}
+            </section>
+
+            <section class="party party-customer">
+                <div class="party-columns">
+                    <div>
+                        <h2 class="party-title">{% trans "invoice.pdf.bill_to" %}</h2>
+                        <p class="party-detail">
+                            {{ invoice.effective_customer.legal_name|default:invoice.effective_customer.name }}
+                        </p>
+                        {% if invoice.effective_customer.legal_number %}
+                            <p class="party-detail">
+                                <span>{{ invoice.effective_customer.legal_number }}</span>
+                            </p>
                         {% endif %}
-                        <td class="line-total line-discount" style="text-align: end">
-                            -{% money_localize discount.amount %}
+                        <address class="party-detail">
+                            {% include "address.html" with address=invoice.effective_customer.address %}
+                        </address>
+                        <p class="party-detail">
+                            {% if invoice.effective_customer.email %}
+                                <span>{{ invoice.effective_customer.email }}</span>
+                            {% endif %}
+                        </p>
+                        {% for tax_id in invoice.effective_customer.tax_ids.all %}
+                            <p class="party-detail">
+                                <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
+                            </p>
+                        {% endfor %}
+                    </div>
+                    {% if invoice.shipping %}
+                        <div>
+                            <h2 class="party-title">{% trans "invoice.pdf.ship_to" %}</h2>
+                            {% if invoice.shipping.effective_name %}
+                                <p class="party-detail">
+                                    {{ invoice.shipping.effective_name }}
+                                </p>
+                            {% endif %}
+                            {% if invoice.shipping.effective_phone %}
+                                <p class="party-detail">
+                                    <span>{{ invoice.shipping.effective_phone }}</span>
+                                </p>
+                            {% endif %}
+                            {% if invoice.shipping.effective_address %}
+                                <address class="party-detail">
+                                    {% include "address.html" with address=invoice.shipping.effective_address %}
+                                </address>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        </section>
+
+        <section class="total">
+            <p class="total-amount">
+                {% money_localize invoice.total_amount %}
+            </p>
+            <p class="total-due">
+                {% trans "invoice.pdf.due" %} {{ invoice.effective_due_date|date:"j E, Y" }}
+            </p>
+        </section>
+
+        <section class="lines">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th style="width:40%; text-align: start">{% trans "invoice.pdf.description" %}</th>
+                    <th style="width:10%; text-align: end">{% trans "invoice.pdf.quantity" %}</th>
+                    <th style="width:{% if invoice.has_line_taxes %}20%{% else %}25%{% endif %};text-align: end">
+                        {% trans "invoice.pdf.price" %}
+                    </th>
+                    {% if invoice.has_line_taxes %}
+                        <th style="width:15%; text-align: end">{% trans "invoice.pdf.tax" %}</th>
+                    {% endif %}
+                    <th style="width:{% if invoice.has_line_taxes %}15%{% else %}25%{% endif %}; text-align: end;">
+                        {% trans "invoice.pdf.amount" %}
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for line in invoice.lines.all %}
+                    <tr>
+                        <td class="line-description">{{ line.description }}</td>
+                        <td class="line-quantity">{{ line.quantity }}</td>
+                        <td class="line-price">
+                            {% money_localize line.unit_amount %}
+                        </td>
+                        {% if line.tax_rates.exists %}
+                            <td class="line-tax">
+                                {{ line.total_tax_rate|floatformat:"-2" }}%
+                            </td>
+                        {% endif %}
+                        <td class="line-total" style="text-align: end">
+                            {% money_localize line.amount %}
                         </td>
                     </tr>
+                    {% for discount in line.discounts %}
+                        <tr>
+                            <td class="line-description" style="padding-left:20px;">{{ discount.name }}</td>
+                            <td></td>
+                            <td></td>
+                            {% if line.tax_rates.exists %}
+                                <td></td>
+                            {% endif %}
+                            <td class="line-total line-discount" style="text-align: end">
+                                -{% money_localize discount.amount %}
+                            </td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
-            </tbody>
-        </table>
-    </section>
+                </tbody>
+            </table>
+        </section>
 
-    <section class="summary">
-        <dl class="summary-group">
-            <div class="sum-row">
-                <dt class="sum-label">Subtotal</dt>
-                <dd class="sum-value">{% money_localize invoice.subtotal_amount %}</dd>
-            </div>
-            {% for discount in invoice.discounts %}
+        <section class="summary">
+            <dl class="summary-group">
                 <div class="sum-row">
-                    <dt class="sum-label">{{ discount.name }}</dt>
-                    <dd class="sum-value sum-discount">-{% money_localize discount.amount %}</dd>
+                    <dt class="sum-label">{% trans "invoice.pdf.subtotal" %}</dt>
+                    <dd class="sum-value">{% money_localize invoice.subtotal_amount %}</dd>
                 </div>
-            {% endfor %}
-            {% if invoice.shipping %}
+                {% for discount in invoice.discounts %}
+                    <div class="sum-row">
+                        <dt class="sum-label">{{ discount.name }}</dt>
+                        <dd class="sum-value sum-discount">-{% money_localize discount.amount %}</dd>
+                    </div>
+                {% endfor %}
+                {% if invoice.shipping %}
+                    <div class="sum-row">
+                        <dt class="sum-label">{% trans "invoice.pdf.shipping_fee" %}</dt>
+                        <dd class="sum-value">{% money_localize invoice.shipping_amount %}</dd>
+                    </div>
+                {% endif %}
                 <div class="sum-row">
-                    <dt class="sum-label">Shipping fee</dt>
-                    <dd class="sum-value">{% money_localize invoice.shipping_amount %}</dd>
+                    <dt class="sum-label">{% trans "invoice.pdf.total_excluding_tax" %}</dt>
+                    <dd class="sum-value">{% money_localize invoice.total_excluding_tax_amount %}</dd>
                 </div>
-            {% endif %}
-            <div class="sum-row">
-                <dt class="sum-label">Total excluding tax</dt>
-                <dd class="sum-value">{% money_localize invoice.total_excluding_tax_amount %}</dd>
-            </div>
-            {% for tax in invoice.total_taxes %}
+                {% for tax in invoice.total_taxes %}
+                    <div class="sum-row">
+                        <dt class="sum-label">{{ tax.name }} {{ tax.percentage|floatformat:"-2" }}%</dt>
+                        <dd class="sum-value">{% money_localize tax.amount %}</dd>
+                    </div>
+                {% endfor %}
                 <div class="sum-row">
-                    <dt class="sum-label">{{ tax.name }} {{ tax.percentage|floatformat:"-2" }}%</dt>
-                    <dd class="sum-value">{% money_localize tax.amount %}</dd>
+                    <dt class="sum-label">{% trans "invoice.pdf.total" %}</dt>
+                    <dd class="sum-value">{% money_localize invoice.total_amount %}</dd>
                 </div>
-            {% endfor %}
-            <div class="sum-row">
-                <dt class="sum-label">Total</dt>
-                <dd class="sum-value">{% money_localize invoice.total_amount %}</dd>
-            </div>
-        </dl>
-    </section>
-</main>
+            </dl>
+        </section>
+    </main>
 
-<footer>
-    <hr class="divider"/>
-    {% if document.footer %}
-        <div>
-            {{ document.footer | linebreaks }}
-        </div>
-    {% endif %}
-</footer>
+    <footer>
+        <hr class="divider"/>
+        {% if document.footer %}
+            <div>
+                {{ document.footer | linebreaks }}
+            </div>
+        {% endif %}
+    </footer>
 
-</body>
-</html>
+    </body>
+    </html>
+{% endlanguage %}

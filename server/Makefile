@@ -22,13 +22,15 @@ test:
 
 .PHONY: openapi
 openapi:
-	export DJANGO_SETTINGS_MODULE=config.settings.development && \
 	uv run manage.py spectacular --file ../dashboard/openapi.yaml --format openapi
 
 .PHONY: migrations
 migrations:
-	export DJANGO_SETTINGS_MODULE=config.settings.development && \
 	uv run manage.py makemigrations
+
+.PHONY: messages
+messages:
+	uv run manage.py makemessages -a
 
 .PHONY: all
 all: lint format typecheck test

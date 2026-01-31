@@ -89,14 +89,14 @@ def test_void_invoice(api_client, user, account):
             {
                 "id": str(document.id),
                 "audience": document.audience,
-                    "language": document.language,
-                    "footer": document.footer,
-                    "memo": document.memo,
-                    "custom_fields": document.custom_fields,
-                    "url": None,
-                    "created_at": ANY,
-                    "updated_at": ANY,
-                }
+                "language": document.language,
+                "footer": document.footer,
+                "memo": document.memo,
+                "custom_fields": document.custom_fields,
+                "url": None,
+                "created_at": ANY,
+                "updated_at": ANY,
+            }
         ],
         "lines": [],
         "coupons": [],
