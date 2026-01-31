@@ -4,7 +4,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentAudience
 from tests.factories import (
     AccountFactory,
     AddressFactory,
@@ -23,7 +23,7 @@ pytestmark = pytest.mark.django_db
 
 def test_retrieve_invoice(api_client, user, account):
     invoice = InvoiceFactory(account=account)
-    document = InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
+    document = InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -98,7 +98,7 @@ def test_retrieve_invoice(api_client, user, account):
         "documents": [
             {
                 "id": str(document.id),
-                "role": document.role,
+                "audience": document.audience,
                 "language": document.language,
                 "footer": document.footer,
                 "memo": document.memo,
@@ -121,7 +121,7 @@ def test_retrieve_invoice(api_client, user, account):
 
 def test_retrieve_invoice_with_line(api_client, user, account):
     invoice = InvoiceFactory(account=account)
-    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
+    InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
     line = InvoiceLineFactory(
         invoice=invoice,
         quantity=1,

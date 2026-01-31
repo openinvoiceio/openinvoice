@@ -370,6 +370,7 @@ SPECTACULAR_SETTINGS = {
         # for all product catalog related status enums
         "ProductCatalogStatusEnum": "openinvoice.products.choices.ProductStatus.choices",
         "CommentVisibilityEnum": "openinvoice.comments.choices.CommentVisibility.choices",
+        "InvoiceDocumentAudienceEnum": "openinvoice.invoices.choices.InvoiceDocumentAudience.choices",
     },
 }
 

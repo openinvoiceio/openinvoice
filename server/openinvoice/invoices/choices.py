@@ -35,7 +35,7 @@ class InvoiceTaxBehavior(models.TextChoices):
     AUTOMATIC = "automatic", "Automatic"
 
 
-class InvoiceDocumentRole(models.TextChoices):
-    PRIMARY = "primary", "Primary"
+class InvoiceDocumentAudience(models.TextChoices):
+    CUSTOMER = "customer", "Customer"
+    INTERNAL = "internal", "Internal"
     LEGAL = "legal", "Legal"
-    SECONDARY = "secondary", "Secondary"

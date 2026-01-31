@@ -18,7 +18,7 @@ from openinvoice.shipping_rates.fields import ShippingRateRelatedField
 from openinvoice.tax_rates.fields import TaxRateRelatedField
 from openinvoice.tax_rates.serializers import TaxRateSerializer
 
-from .choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus, InvoiceTaxBehavior
+from .choices import InvoiceDeliveryMethod, InvoiceDocumentAudience, InvoiceStatus, InvoiceTaxBehavior
 from .fields import InvoiceRelatedField
 from .validators import (
     AutomaticDeliveryMethodValidator,
@@ -106,7 +106,7 @@ class InvoiceLineSerializer(serializers.Serializer):
 
 class InvoiceDocumentSerializer(serializers.Serializer):
     id = serializers.UUIDField()
-    role = serializers.ChoiceField(choices=InvoiceDocumentRole.choices)
+    audience = serializers.ListField(child=serializers.ChoiceField(choices=InvoiceDocumentAudience.choices))
     language = LanguageField()
     footer = serializers.CharField(allow_null=True)
     memo = serializers.CharField(allow_null=True)
@@ -293,6 +293,11 @@ class InvoiceUpdateSerializer(serializers.Serializer):
 
 
 class InvoiceDocumentCreateSerializer(serializers.Serializer):
+    audience = serializers.ListField(
+        child=serializers.ChoiceField(choices=InvoiceDocumentAudience.choices),
+        required=False,
+        allow_empty=True,
+    )
     language = LanguageField()
     footer = serializers.CharField(allow_null=True, required=False)
     memo = serializers.CharField(allow_null=True, required=False)
@@ -300,17 +305,15 @@ class InvoiceDocumentCreateSerializer(serializers.Serializer):
 
 
 class InvoiceDocumentUpdateSerializer(serializers.Serializer):
-    role = serializers.ChoiceField(choices=InvoiceDocumentRole.choices, required=False)
+    audience = serializers.ListField(
+        child=serializers.ChoiceField(choices=InvoiceDocumentAudience.choices),
+        required=False,
+        allow_empty=True,
+    )
     language = LanguageField(required=False)
     footer = serializers.CharField(allow_null=True, required=False)
     memo = serializers.CharField(allow_null=True, required=False)
     custom_fields = MetadataField(required=False)
-
-    def validate_role(self, value):
-        if self.instance.role == InvoiceDocumentRole.PRIMARY and value != InvoiceDocumentRole.PRIMARY:
-            raise serializers.ValidationError("Invoice must have a primary document")
-
-        return value
 
 
 class InvoiceLineCreateSerializer(serializers.Serializer):

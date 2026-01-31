@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from openinvoice.invoices.choices import InvoiceDocumentRole, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDocumentAudience, InvoiceStatus
 from tests.factories import InvoiceDocumentFactory, InvoiceFactory
 
 pytestmark = pytest.mark.django_db
@@ -10,7 +10,7 @@ pytestmark = pytest.mark.django_db
 
 def test_preview_invoice(api_client, user, account):
     invoice = InvoiceFactory(account=account)
-    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
+    InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -23,7 +23,7 @@ def test_preview_invoice(api_client, user, account):
 
 def test_preview_invoice_rejects_foreign_account(api_client, user, account):
     other_invoice = InvoiceFactory()
-    InvoiceDocumentFactory(invoice=other_invoice, role=InvoiceDocumentRole.PRIMARY)
+    InvoiceDocumentFactory(invoice=other_invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -41,7 +41,7 @@ def test_preview_invoice_requires_account(api_client, user):
 
 def test_preview_invoice_format_email(api_client, user, account):
     invoice = InvoiceFactory(account=account)
-    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
+    InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -54,7 +54,7 @@ def test_preview_invoice_format_email(api_client, user, account):
 
 def test_preview_invoice_format_pdf(api_client, user, account):
     invoice = InvoiceFactory(account=account)
-    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
+    InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -63,6 +63,39 @@ def test_preview_invoice_format_pdf(api_client, user, account):
     assert response.status_code == 200
     assert response["Content-Type"] == "text/html; charset=utf-8"
     assert "Invoice" in response.content.decode()
+
+
+def test_preview_invoice_format_pdf_without_documents(api_client, user, account):
+    invoice = InvoiceFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get(f"/api/v1/invoices/{invoice.id}/preview", {"format": "pdf"})
+
+    assert response.status_code == 404
+    assert response.data == {
+        "type": "client_error",
+        "status_code": 404,
+        "errors": [
+            {
+                "attr": None,
+                "code": "not_found",
+                "detail": "Invoice has no customer documents",
+            }
+        ],
+    }
+
+
+def test_preview_invoice_format_email_without_documents(api_client, user, account):
+    invoice = InvoiceFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.get(f"/api/v1/invoices/{invoice.id}/preview", {"format": "email"})
+
+    assert response.status_code == 200
+    assert response["Content-Type"] == "text/html; charset=utf-8"
+    assert f"Hi {invoice.customer.name}" in response.content.decode()
 
 
 def test_preview_invoice_requires_authentication(api_client):
@@ -85,8 +118,8 @@ def test_preview_invoice_requires_authentication(api_client):
 def test_preview_revision_highlights_correction(api_client, user, account):
     invoice = InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
     revision = InvoiceFactory(account=account, previous_revision=invoice, head=invoice.head)
-    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
-    InvoiceDocumentFactory(invoice=revision, role=InvoiceDocumentRole.PRIMARY)
+    InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
+    InvoiceDocumentFactory(invoice=revision, audience=[InvoiceDocumentAudience.CUSTOMER])
 
     api_client.force_login(user)
     api_client.force_account(account)

@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentAudience, InvoiceStatus
 from openinvoice.invoices.models import Invoice
 from tests.factories import CustomerFactory, InvoiceDocumentFactory, InvoiceFactory, InvoiceLineFactory
 
@@ -14,8 +14,8 @@ pytestmark = pytest.mark.django_db
 def test_list_invoices(api_client, user, account):
     first_invoice = InvoiceFactory(account=account)
     second_invoice = InvoiceFactory(account=account)
-    first_document = InvoiceDocumentFactory(invoice=first_invoice, role=InvoiceDocumentRole.PRIMARY)
-    second_document = InvoiceDocumentFactory(invoice=second_invoice, role=InvoiceDocumentRole.PRIMARY)
+    first_document = InvoiceDocumentFactory(invoice=first_invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
+    second_document = InvoiceDocumentFactory(invoice=second_invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
     InvoiceFactory()  # other account
 
     api_client.force_login(user)
@@ -96,7 +96,7 @@ def test_list_invoices(api_client, user, account):
                 "documents": [
                     {
                         "id": str(document.id),
-                        "role": document.role,
+                        "audience": document.audience,
                         "language": document.language,
                         "footer": document.footer,
                         "memo": document.memo,

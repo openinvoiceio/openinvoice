@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from openinvoice.invoices.choices import InvoiceDocumentRole, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDocumentAudience, InvoiceStatus
 from openinvoice.invoices.models import InvoiceDocument
 from tests.factories import InvoiceDocumentFactory, InvoiceFactory
 
@@ -11,8 +11,8 @@ pytestmark = pytest.mark.django_db
 
 def test_delete_invoice_document(api_client, user, account):
     invoice = InvoiceFactory(account=account)
-    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
-    document = InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.SECONDARY)
+    InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
+    document = InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.INTERNAL])
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -32,7 +32,7 @@ def test_delete_invoice_document(api_client, user, account):
 )
 def test_delete_invoice_document_non_draft_invoice(api_client, user, account, status):
     invoice = InvoiceFactory(account=account, status=status)
-    document = InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.SECONDARY)
+    document = InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.INTERNAL])
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -46,48 +46,6 @@ def test_delete_invoice_document_non_draft_invoice(api_client, user, account, st
                 "attr": None,
                 "code": "invalid",
                 "detail": "Only draft invoices can be modified",
-            }
-        ],
-    }
-
-
-def test_delete_invoice_document_rejects_primary_document(api_client, user, account):
-    invoice = InvoiceFactory(account=account)
-    document = InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.delete(f"/api/v1/invoices/{invoice.id}/documents/{document.id}")
-
-    assert response.status_code == 400
-    assert response.data == {
-        "type": "validation_error",
-        "errors": [
-            {
-                "attr": None,
-                "code": "invalid",
-                "detail": "Primary document cannot be deleted",
-            }
-        ],
-    }
-
-
-def test_delete_invoice_document_rejects_last_document(api_client, user, account):
-    invoice = InvoiceFactory(account=account)
-    document = InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.SECONDARY)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.delete(f"/api/v1/invoices/{invoice.id}/documents/{document.id}")
-
-    assert response.status_code == 400
-    assert response.data == {
-        "type": "validation_error",
-        "errors": [
-            {
-                "attr": None,
-                "code": "invalid",
-                "detail": "Invoice must have at least one document",
             }
         ],
     }

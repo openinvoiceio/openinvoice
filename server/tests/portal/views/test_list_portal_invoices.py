@@ -1,7 +1,7 @@
 import pytest
 
 from openinvoice.files.choices import FilePurpose
-from openinvoice.invoices.choices import InvoiceDocumentRole, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDocumentAudience, InvoiceStatus
 from tests.factories import (
     CustomerFactory,
     FileFactory,
@@ -17,8 +17,8 @@ def test_list_invoices_via_portal(api_client, account):
     customer = CustomerFactory(account=account)
     invoice1 = InvoiceFactory(account=account, customer=customer, status=InvoiceStatus.OPEN)
     invoice2 = InvoiceFactory(account=account, customer=customer, status=InvoiceStatus.PAID)
-    InvoiceDocumentFactory(invoice=invoice1, role=InvoiceDocumentRole.PRIMARY)
-    InvoiceDocumentFactory(invoice=invoice2, role=InvoiceDocumentRole.PRIMARY)
+    document1 = InvoiceDocumentFactory(invoice=invoice1, audience=[InvoiceDocumentAudience.CUSTOMER])
+    document2 = InvoiceDocumentFactory(invoice=invoice2, audience=[InvoiceDocumentAudience.CUSTOMER])
     InvoiceFactory(account=account, status=InvoiceStatus.OPEN)
     token = PortalTokenFactory(customer=customer)["token"]
 
@@ -38,9 +38,15 @@ def test_list_invoices_via_portal(api_client, account):
                 "issue_date": invoice.issue_date.isoformat() if invoice.issue_date else None,
                 "due_date": invoice.due_date.isoformat(),
                 "total_amount": f"{invoice.total_amount.amount:.2f}",
-                "pdf_url": None,
+                "documents": [
+                    {
+                        "id": str(document.id),
+                        "language": document.language,
+                        "url": None,
+                    }
+                ],
             }
-            for invoice in [invoice2, invoice1]
+            for invoice, document in zip([invoice2, invoice1], [document2, document1], strict=False)
         ],
     }
 
@@ -49,7 +55,11 @@ def test_list_invoices_with_pdf(api_client, account):
     customer = CustomerFactory(account=account)
     pdf = FileFactory(account=account, purpose=FilePurpose.INVOICE_PDF)
     invoice = InvoiceFactory(account=account, customer=customer, status=InvoiceStatus.PAID)
-    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY, file=pdf)
+    document = InvoiceDocumentFactory(
+        invoice=invoice,
+        audience=[InvoiceDocumentAudience.CUSTOMER],
+        file=pdf,
+    )
     token = PortalTokenFactory(customer=customer)["token"]
 
     response = api_client.get("/api/v1/portal/invoices", HTTP_AUTHORIZATION=f"Bearer {token}")
@@ -68,7 +78,13 @@ def test_list_invoices_with_pdf(api_client, account):
                 "issue_date": invoice.issue_date.isoformat() if invoice.issue_date else None,
                 "due_date": invoice.due_date.isoformat(),
                 "total_amount": f"{invoice.total_amount.amount:.2f}",
-                "pdf_url": pdf.data.url,
+                "documents": [
+                    {
+                        "id": str(document.id),
+                        "language": document.language,
+                        "url": pdf.data.url,
+                    }
+                ],
             }
         ],
     }

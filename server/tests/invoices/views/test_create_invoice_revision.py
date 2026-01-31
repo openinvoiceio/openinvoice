@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from common.choices import LimitCode
 from openinvoice.coupons.choices import CouponStatus
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentAudience, InvoiceStatus
 from openinvoice.invoices.models import Invoice
 from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
@@ -35,7 +35,7 @@ def test_create_invoice_revision(api_client, user, account):
         issue_date=original_issue_date,
         recipients=[customer.email],
     )
-    InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
+    InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -43,7 +43,7 @@ def test_create_invoice_revision(api_client, user, account):
 
     assert response.status_code == 201
     revision = Invoice.objects.get(id=response.data["id"])
-    document = revision.documents.get(role=InvoiceDocumentRole.PRIMARY)
+    document = revision.documents.get(audience__contains=[InvoiceDocumentAudience.CUSTOMER])
     assert response.data == {
         "id": response.data["id"],
         "status": InvoiceStatus.DRAFT,
@@ -112,7 +112,7 @@ def test_create_invoice_revision(api_client, user, account):
         "documents": [
             {
                 "id": str(document.id),
-                "role": document.role,
+                "audience": document.audience,
                 "language": document.language,
                 "footer": document.footer,
                 "memo": document.memo,
@@ -159,7 +159,7 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
     )
     InvoiceDocumentFactory(
         invoice=invoice,
-        role=InvoiceDocumentRole.PRIMARY,
+        audience=[InvoiceDocumentAudience.CUSTOMER],
         footer="Original footer",
         custom_fields={"po": "123"},
     )
@@ -197,8 +197,8 @@ def test_create_invoice_revision_clones_previous_details(api_client, user, accou
     revision = Invoice.objects.get(id=response.data["id"])
     assert revision.previous_revision_id == invoice.id
     assert revision.metadata == {}
-    revision_document = revision.documents.get(role=InvoiceDocumentRole.PRIMARY)
-    invoice_document = invoice.documents.get(role=InvoiceDocumentRole.PRIMARY)
+    revision_document = revision.documents.get(audience__contains=[InvoiceDocumentAudience.CUSTOMER])
+    invoice_document = invoice.documents.get(audience__contains=[InvoiceDocumentAudience.CUSTOMER])
     assert revision_document.custom_fields == invoice_document.custom_fields
     assert revision_document.footer == invoice_document.footer
     assert revision.subtotal_amount == invoice.subtotal_amount

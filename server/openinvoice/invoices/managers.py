@@ -19,7 +19,7 @@ from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.numbering_systems.models import NumberingSystem
 from openinvoice.prices.models import Price
 
-from .choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus, InvoiceTaxBehavior
+from .choices import InvoiceDeliveryMethod, InvoiceDocumentAudience, InvoiceStatus, InvoiceTaxBehavior
 
 if TYPE_CHECKING:
     from .models import Invoice, InvoiceAccount, InvoiceCustomer
@@ -63,14 +63,14 @@ class InvoiceDocumentManager(models.Manager):
         self,
         invoice: Invoice,
         language: str,
-        role: InvoiceDocumentRole | None = None,
+        audience: list[InvoiceDocumentAudience] | None = None,
         footer: str | None = None,
         memo: str | None = None,
         custom_fields: Mapping[str, Any] | None = None,
     ):
         return self.create(
             invoice=invoice,
-            role=role or InvoiceDocumentRole.SECONDARY,
+            audience=audience or [InvoiceDocumentAudience.INTERNAL],
             language=language,
             footer=footer,
             memo=memo,
@@ -145,7 +145,7 @@ class InvoiceManager(models.Manager):
 
         invoice.documents.create_document(
             invoice=invoice,
-            role=InvoiceDocumentRole.PRIMARY,
+            audience=[InvoiceDocumentAudience.CUSTOMER],
             language=language,
             footer=account.invoice_footer,
         )
@@ -233,7 +233,7 @@ class InvoiceManager(models.Manager):
         for document in previous_revision.documents.all():
             invoice.documents.create_document(
                 invoice=invoice,
-                role=document.role,
+                audience=document.audience,
                 language=document.language,
                 footer=document.footer,
                 memo=document.memo,
@@ -314,7 +314,7 @@ class InvoiceManager(models.Manager):
         for document in invoice.documents.all():
             new_invoice.documents.create_document(
                 invoice=new_invoice,
-                role=document.role,
+                audience=document.audience,
                 language=document.language,
                 footer=document.footer,
                 memo=document.memo,

@@ -113,7 +113,7 @@ def test_update_invoice(api_client, user, account):
         "documents": [
             {
                 "id": str(document.id),
-                "role": document.role,
+                "audience": document.audience,
                 "language": document.language,
                 "footer": document.footer,
                 "memo": document.memo,

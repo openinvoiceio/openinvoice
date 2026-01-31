@@ -5,7 +5,7 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from openinvoice.invoices.choices import InvoiceDocumentRole
+from openinvoice.invoices.choices import InvoiceDocumentAudience
 from tests.factories import InvoiceDocumentFactory, InvoiceFactory
 
 pytestmark = pytest.mark.django_db
@@ -16,12 +16,12 @@ def test_list_invoice_documents(api_client, user, account):
     base_time = timezone.now().replace(microsecond=0)
     first_document = InvoiceDocumentFactory(
         invoice=invoice,
-        role=InvoiceDocumentRole.PRIMARY,
+        audience=[InvoiceDocumentAudience.CUSTOMER],
         created_at=base_time - timedelta(hours=1),
     )
     second_document = InvoiceDocumentFactory(
         invoice=invoice,
-        role=InvoiceDocumentRole.SECONDARY,
+        audience=[InvoiceDocumentAudience.INTERNAL],
         footer="Footer",
         memo="Memo",
         custom_fields={"ref": "DOC-2"},
@@ -40,7 +40,7 @@ def test_list_invoice_documents(api_client, user, account):
         "results": [
             {
                 "id": str(first_document.id),
-                "role": first_document.role,
+                "audience": first_document.audience,
                 "language": first_document.language,
                 "footer": first_document.footer,
                 "memo": first_document.memo,
@@ -51,7 +51,7 @@ def test_list_invoice_documents(api_client, user, account):
             },
             {
                 "id": str(second_document.id),
-                "role": second_document.role,
+                "audience": second_document.audience,
                 "language": second_document.language,
                 "footer": second_document.footer,
                 "memo": second_document.memo,

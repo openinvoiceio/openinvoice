@@ -2,7 +2,7 @@ import structlog
 from django.conf import settings
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import generics, status
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import TemplateHTMLRenderer
@@ -13,7 +13,7 @@ from openinvoice.accounts.permissions import IsAccountMember
 from openinvoice.comments.models import Comment
 from openinvoice.comments.serializers import CommentCreateSerializer, CommentSerializer
 
-from .choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoicePreviewFormat, InvoiceStatus
+from .choices import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
 from .filtersets import InvoiceFilterSet
 from .mail import send_invoice
 from .models import Invoice, InvoiceDocument, InvoiceLine
@@ -408,13 +408,18 @@ class InvoicePreviewAPIView(generics.GenericAPIView):
     def get(self, request, **_):
         invoice = self.get_object()
         language = request.query_params.get("language")
-        if language:
-            document = invoice.documents.filter(language=language).first()
-            document = document or invoice.primary_document
-        else:
-            document = invoice.primary_document
         invoice_format = request.query_params.get("format", InvoicePreviewFormat.PDF)
         template_name = "invoices/pdf/classic.html"
+
+        document = None
+        if invoice_format == InvoicePreviewFormat.PDF:
+            documents = invoice.documents.order_by("created_at")
+            if language:
+                documents = documents.filter(language=language)
+
+            document = documents.first()
+            if not document:
+                raise NotFound("Invoice has no customer documents")
 
         match invoice_format:
             case InvoicePreviewFormat.EMAIL:
@@ -456,7 +461,7 @@ class InvoiceDocumentListCreateAPIView(generics.ListAPIView):
 
         document = InvoiceDocument.objects.create_document(
             invoice=invoice,
-            role=InvoiceDocumentRole.SECONDARY,
+            audience=data.get("audience"),
             language=data["language"],
             footer=data.get("footer"),
             memo=data.get("memo"),
@@ -497,11 +502,9 @@ class InvoiceDocumentRetrieveUpdateDestroyAPIView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        if "role" in data:
-            document.change_role(data["role"])
-
         document.update(
             language=data.get("language", document.language),
+            audience=data.get("audience", document.audience),
             footer=data.get("footer", document.footer),
             memo=data.get("memo", document.memo),
             custom_fields=data.get("custom_fields", document.custom_fields),
@@ -523,12 +526,6 @@ class InvoiceDocumentRetrieveUpdateDestroyAPIView(generics.GenericAPIView):
 
         if invoice.status != InvoiceStatus.DRAFT:
             raise ValidationError("Only draft invoices can be modified")
-
-        if document.role == InvoiceDocumentRole.PRIMARY:
-            raise ValidationError("Primary document cannot be deleted")
-
-        if invoice.documents.count() <= 1:
-            raise ValidationError("Invoice must have at least one document")
 
         document.delete()
         logger.info("Invoice document deleted", invoice_id=invoice.id, document_id=document.id)

@@ -2,7 +2,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from openinvoice.invoices.choices import InvoiceDocumentRole
+from openinvoice.invoices.choices import InvoiceDocumentAudience
 from tests.factories import (
     AccountFactory,
     CustomerFactory,
@@ -22,7 +22,7 @@ def test_search_all(api_client, user, account):
         customer=customer_alpha,
         number="INV-ALPHA",
     )
-    document = InvoiceDocumentFactory(invoice=invoice_alpha, role=InvoiceDocumentRole.PRIMARY)
+    document = InvoiceDocumentFactory(invoice=invoice_alpha, audience=[InvoiceDocumentAudience.CUSTOMER])
 
     # Non-matching or different account objects
     ProductFactory(account=account, name="Beta Product")
@@ -32,7 +32,7 @@ def test_search_all(api_client, user, account):
         customer=CustomerFactory(account=account, name="Beta Customer", email="beta@example.com"),
         number="INV-BETA",
     )
-    InvoiceDocumentFactory(invoice=invoice_beta, role=InvoiceDocumentRole.PRIMARY)
+    InvoiceDocumentFactory(invoice=invoice_beta, audience=[InvoiceDocumentAudience.CUSTOMER])
     other_account = AccountFactory()
     ProductFactory(account=other_account, name="Alpha Product")
     CustomerFactory(account=other_account, name="Alpha Customer", email="alpha@example.com")
@@ -167,7 +167,7 @@ def test_search_all(api_client, user, account):
                 "documents": [
                     {
                         "id": str(document.id),
-                        "role": document.role,
+                        "audience": document.audience,
                         "language": document.language,
                         "footer": document.footer,
                         "memo": document.memo,

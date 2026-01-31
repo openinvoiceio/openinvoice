@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from openinvoice.invoices.choices import InvoiceDocumentRole, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDocumentAudience, InvoiceStatus
 from openinvoice.invoices.models import InvoiceDocument
 from tests.factories import InvoiceFactory
 
@@ -29,7 +29,7 @@ def test_create_invoice_document(api_client, user, account):
     document = InvoiceDocument.objects.get(id=response.data["id"])
     assert response.data == {
         "id": str(document.id),
-        "role": InvoiceDocumentRole.SECONDARY,
+        "audience": [InvoiceDocumentAudience.INTERNAL],
         "language": "en-us",
         "footer": "Footer",
         "memo": "Memo",

@@ -4,8 +4,14 @@ from rest_framework import serializers
 from common.fields import CurrencyField
 from openinvoice.addresses.serializers import AddressSerializer
 from openinvoice.customers.fields import CustomerRelatedField
-from openinvoice.invoices.choices import InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDocumentAudience, InvoiceStatus
 from openinvoice.tax_ids.serializers import TaxIdSerializer
+
+
+class PortalInvoiceDocumentSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    language = serializers.CharField()
+    url = serializers.URLField(source="file.data.url", allow_null=True)
 
 
 class PortalInvoiceSerializer(serializers.Serializer):
@@ -16,7 +22,15 @@ class PortalInvoiceSerializer(serializers.Serializer):
     issue_date = serializers.DateField(allow_null=True)
     due_date = serializers.DateField()
     total_amount = MoneyField(max_digits=19, decimal_places=2)
-    pdf_url = serializers.URLField(source="primary_document.file.data.url", allow_null=True)
+    documents = serializers.SerializerMethodField()
+
+    def get_documents(self, invoice):
+        documents = (
+            invoice.documents.filter(audience__contains=[InvoiceDocumentAudience.CUSTOMER])
+            .select_related("file")
+            .order_by("created_at")
+        )
+        return PortalInvoiceDocumentSerializer(documents, many=True).data
 
 
 class PortalSessionCreateSerializer(serializers.Serializer):

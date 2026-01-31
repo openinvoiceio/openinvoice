@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from openinvoice.invoices.choices import InvoiceDocumentRole, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDocumentAudience, InvoiceStatus
 from tests.factories import InvoiceDocumentFactory, InvoiceFactory
 
 pytestmark = pytest.mark.django_db
@@ -27,7 +27,7 @@ def test_update_invoice_document(api_client, user, account):
     assert response.status_code == 200
     assert response.data == {
         "id": str(document.id),
-        "role": document.role,
+        "audience": document.audience,
         "language": document.language,
         "footer": "Updated footer",
         "memo": "Updated memo",
@@ -43,37 +43,34 @@ def test_update_invoice_document(api_client, user, account):
 
 
 @pytest.mark.parametrize(
-    "role",
+    "audience",
     [
-        InvoiceDocumentRole.SECONDARY,
-        InvoiceDocumentRole.LEGAL,
+        [InvoiceDocumentAudience.INTERNAL],
+        [InvoiceDocumentAudience.LEGAL],
+        [InvoiceDocumentAudience.INTERNAL, InvoiceDocumentAudience.LEGAL],
+        [InvoiceDocumentAudience.CUSTOMER, InvoiceDocumentAudience.LEGAL],
+        [InvoiceDocumentAudience.CUSTOMER, InvoiceDocumentAudience.INTERNAL],
+        [InvoiceDocumentAudience.CUSTOMER, InvoiceDocumentAudience.INTERNAL, InvoiceDocumentAudience.LEGAL],
     ],
 )
-def test_update_invoice_document_rejects_primary_role_change(api_client, user, account, role):
+def test_update_invoice_document_audience(api_client, user, account, audience):
     invoice = InvoiceFactory(account=account)
-    document = InvoiceDocumentFactory(invoice=invoice, role=InvoiceDocumentRole.PRIMARY)
+    document = InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoices/{invoice.id}/documents/{document.id}",
-        {"role": role},
+        {"audience": audience},
     )
 
-    assert response.status_code == 400
-    assert response.data == {
-        "type": "validation_error",
-        "errors": [
-            {
-                "attr": "role",
-                "code": "invalid",
-                "detail": "Invoice must have a primary document",
-            }
-        ],
-    }
+    assert response.status_code == 200
+    assert response.data["audience"] == audience
+    document.refresh_from_db()
+    assert document.audience == audience
 
 
-def test_update_invoice_document_rejects_invalid_role(api_client, user, account):
+def test_update_invoice_document_rejects_invalid_audience(api_client, user, account):
     invoice = InvoiceFactory(account=account)
     document = InvoiceDocumentFactory(invoice=invoice)
 
@@ -81,7 +78,7 @@ def test_update_invoice_document_rejects_invalid_role(api_client, user, account)
     api_client.force_account(account)
     response = api_client.put(
         f"/api/v1/invoices/{invoice.id}/documents/{document.id}",
-        {"role": "invalid"},
+        {"audience": ["invalid"]},
     )
 
     assert response.status_code == 400
@@ -89,7 +86,7 @@ def test_update_invoice_document_rejects_invalid_role(api_client, user, account)
         "type": "validation_error",
         "errors": [
             {
-                "attr": "role",
+                "attr": "audience.0",
                 "code": "invalid_choice",
                 "detail": '"invalid" is not a valid choice.',
             }

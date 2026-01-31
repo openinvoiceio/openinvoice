@@ -8,7 +8,7 @@ import pytest
 from common.choices import LimitCode
 from openinvoice.coupons.choices import CouponStatus
 from openinvoice.integrations.choices import PaymentProvider
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentAudience, InvoiceStatus
 from openinvoice.invoices.models import Invoice
 from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
@@ -52,7 +52,7 @@ def test_clone_invoice(api_client, user, account):
     )
     InvoiceDocumentFactory(
         invoice=invoice,
-        role=InvoiceDocumentRole.PRIMARY,
+        audience=[InvoiceDocumentAudience.CUSTOMER],
         footer="Original footer",
         custom_fields={"po": "123"},
     )
@@ -149,7 +149,7 @@ def test_clone_invoice(api_client, user, account):
         "documents": [
             {
                 "id": ANY,
-                "role": InvoiceDocumentRole.PRIMARY,
+                "audience": [InvoiceDocumentAudience.CUSTOMER],
                 "language": response.data["documents"][0]["language"],
                 "footer": response.data["documents"][0]["footer"],
                 "memo": response.data["documents"][0]["memo"],
@@ -342,8 +342,8 @@ def test_clone_invoice(api_client, user, account):
     assert new_invoice.issue_date is None
     assert new_invoice.due_date is None
     assert new_invoice.metadata == {}
-    new_document = new_invoice.documents.get(role=InvoiceDocumentRole.PRIMARY)
-    invoice_document = invoice.documents.get(role=InvoiceDocumentRole.PRIMARY)
+    new_document = new_invoice.documents.get(audience__contains=[InvoiceDocumentAudience.CUSTOMER])
+    invoice_document = invoice.documents.get(audience__contains=[InvoiceDocumentAudience.CUSTOMER])
     assert new_document.custom_fields == invoice_document.custom_fields
     assert new_document.footer == invoice_document.footer
     assert new_invoice.numbering_system_id == invoice.numbering_system_id

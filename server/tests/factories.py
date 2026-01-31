@@ -16,7 +16,12 @@ from openinvoice.accounts.choices import InvitationStatus, MemberRole
 from openinvoice.comments.choices import CommentVisibility
 from openinvoice.coupons.choices import CouponStatus
 from openinvoice.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteStatus
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus, InvoiceTaxBehavior
+from openinvoice.invoices.choices import (
+    InvoiceDeliveryMethod,
+    InvoiceDocumentAudience,
+    InvoiceStatus,
+    InvoiceTaxBehavior,
+)
 from openinvoice.numbering_systems.choices import (
     NumberingSystemAppliesTo,
     NumberingSystemResetInterval,
@@ -265,7 +270,7 @@ class InvoiceDocumentFactory(DjangoModelFactory):
         model = "invoices.InvoiceDocument"
 
     invoice = SubFactory(InvoiceFactory)
-    role = InvoiceDocumentRole.SECONDARY
+    audience = [InvoiceDocumentAudience.INTERNAL]
     language = "en-us"
     footer = None
     memo = None

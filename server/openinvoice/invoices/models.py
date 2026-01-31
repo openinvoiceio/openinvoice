@@ -33,7 +33,7 @@ from openinvoice.tax_rates.models import TaxRate
 from .choices import (
     InvoiceDeliveryMethod,
     InvoiceDiscountSource,
-    InvoiceDocumentRole,
+    InvoiceDocumentAudience,
     InvoiceStatus,
     InvoiceTaxBehavior,
     InvoiceTaxSource,
@@ -225,13 +225,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     @property
     def effective_account(self):
         return self.invoice_account or self.account
-
-    @cached_property
-    def primary_document(self) -> InvoiceDocument:
-        for document in self.documents.all():
-            if document.role == InvoiceDocumentRole.PRIMARY:
-                return document
-        raise ValueError("Invoice is missing a primary document")
 
     @property
     def effective_tax_behavior(self) -> InvoiceTaxBehavior:
@@ -685,7 +678,10 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
 class InvoiceDocument(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     invoice = models.ForeignKey("Invoice", on_delete=models.CASCADE, related_name="documents")
-    role = models.CharField(max_length=20, choices=InvoiceDocumentRole.choices)
+    audience = ArrayField(
+        models.CharField(max_length=20, choices=InvoiceDocumentAudience.choices),
+        default=list,
+    )
     language = models.CharField(max_length=10, choices=settings.LANGUAGES)
     footer = models.CharField(max_length=600, null=True, blank=True)
     memo = models.CharField(max_length=600, null=True, blank=True)
@@ -701,26 +697,16 @@ class InvoiceDocument(models.Model):
 
     objects = InvoiceDocumentManager()
 
-    def change_role(self, role: InvoiceDocumentRole) -> None:
-        if role == self.role:
-            return
-
-        if role in {InvoiceDocumentRole.PRIMARY, InvoiceDocumentRole.LEGAL}:
-            InvoiceDocument.objects.filter(invoice=self.invoice, role=role).exclude(id=self.id).update(
-                role=InvoiceDocumentRole.SECONDARY
-            )
-
-        self.role = role
-        self.save(update_fields=["role"])
-
     def update(
         self,
         language: str,
+        audience: list[InvoiceDocumentAudience],
         footer: str | None,
         memo: str | None,
         custom_fields: dict[str, Any],
     ) -> None:
         self.language = language
+        self.audience = audience
         self.footer = footer
         self.memo = memo
         self.custom_fields = custom_fields
@@ -729,19 +715,6 @@ class InvoiceDocument(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=["invoice_id"]),
-            models.Index(fields=["invoice_id", "role"]),
-        ]
-        constraints = [
-            models.UniqueConstraint(
-                name="uniq_primary_invoice_document",
-                fields=["invoice"],
-                condition=Q(role=InvoiceDocumentRole.PRIMARY),
-            ),
-            models.UniqueConstraint(
-                name="uniq_legal_invoice_document",
-                fields=["invoice"],
-                condition=Q(role=InvoiceDocumentRole.LEGAL),
-            ),
         ]
 
 

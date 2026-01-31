@@ -6,7 +6,7 @@ import pytest
 
 from common.choices import FeatureCode, LimitCode
 from openinvoice.integrations.choices import PaymentProvider
-from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentRole, InvoiceStatus
+from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentAudience, InvoiceStatus
 from openinvoice.invoices.models import Invoice
 from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
@@ -32,7 +32,7 @@ def test_create_invoice(api_client, user, account):
 
     assert response.status_code == 201
     invoice = Invoice.objects.get(id=response.data["id"])
-    document = invoice.documents.get(role=InvoiceDocumentRole.PRIMARY)
+    document = invoice.documents.get(audience__contains=[InvoiceDocumentAudience.CUSTOMER])
     assert response.data == {
         "id": response.data["id"],
         "status": InvoiceStatus.DRAFT,
@@ -101,7 +101,7 @@ def test_create_invoice(api_client, user, account):
         "documents": [
             {
                 "id": str(document.id),
-                "role": document.role,
+                "audience": document.audience,
                 "language": document.language,
                 "footer": document.footer,
                 "memo": document.memo,
