@@ -9,6 +9,7 @@ import type { AccountSubscription } from "./accountSubscription";
 import type { Address } from "./address";
 import type { CountryEnum } from "./countryEnum";
 import type { CurrencyEnum } from "./currencyEnum";
+import type { LanguageEnum } from "./languageEnum";
 import type { TaxId } from "./taxId";
 
 export interface Account {
@@ -24,6 +25,7 @@ export interface Account {
   address: Address;
   country: CountryEnum;
   default_currency: CurrencyEnum;
+  language: LanguageEnum;
   /** @nullable */
   invoice_footer: string | null;
   /** @nullable */

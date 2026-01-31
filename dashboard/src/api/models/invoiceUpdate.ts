@@ -29,12 +29,6 @@ export interface InvoiceUpdate {
   /** @minimum 0 */
   net_payment_term?: number;
   metadata?: unknown;
-  custom_fields?: unknown;
-  /**
-   * @maxLength 600
-   * @nullable
-   */
-  footer?: string | null;
   /** @nullable */
   payment_provider?: InvoiceUpdatePaymentProvider;
   /** @nullable */

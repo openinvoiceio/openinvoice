@@ -3243,6 +3243,135 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/invoices/{invoice_id}/documents:
+    get:
+      operationId: invoices_documents_list
+      parameters:
+      - in: path
+        name: invoice_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInvoiceDocumentList'
+          description: ''
+    post:
+      operationId: create_invoice_document
+      parameters:
+      - in: path
+        name: invoice_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - invoices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceDocumentCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDocument'
+          description: ''
+  /api/v1/invoices/{invoice_id}/documents/{id}:
+    put:
+      operationId: update_invoice_document
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: invoice_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - invoices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceDocumentUpdate'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDocument'
+          description: ''
+    delete:
+      operationId: delete_invoice_document
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: invoice_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/invoices/{id}:
     get:
       operationId: invoices_retrieve
@@ -6051,6 +6180,8 @@ components:
           $ref: '#/components/schemas/CountryEnum'
         default_currency:
           $ref: '#/components/schemas/CurrencyEnum'
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
         invoice_footer:
           type: string
           nullable: true
@@ -6100,6 +6231,7 @@ components:
       - id
       - invoice_footer
       - invoice_numbering_system_id
+      - language
       - legal_name
       - legal_number
       - logo_id
@@ -6163,6 +6295,8 @@ components:
           $ref: '#/components/schemas/CountryEnum'
         default_currency:
           $ref: '#/components/schemas/CurrencyEnum'
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
         invoice_footer:
           type: string
           nullable: true
@@ -7995,6 +8129,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/CurrencyEnum'
           nullable: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          nullable: true
         net_payment_term:
           type: integer
           minimum: 0
@@ -8052,6 +8190,7 @@ components:
       - email
       - id
       - invoice_numbering_system_id
+      - language
       - legal_name
       - legal_number
       - logo_id
@@ -8094,6 +8233,10 @@ components:
         currency:
           allOf:
           - $ref: '#/components/schemas/CurrencyEnum'
+          nullable: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
           nullable: true
         net_payment_term:
           type: integer
@@ -8173,6 +8316,10 @@ components:
         currency:
           allOf:
           - $ref: '#/components/schemas/CurrencyEnum'
+          nullable: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
           nullable: true
         net_payment_term:
           type: integer
@@ -8440,10 +8587,6 @@ components:
           - $ref: '#/components/schemas/InvoiceAccount'
           readOnly: true
         metadata: {}
-        custom_fields: {}
-        footer:
-          type: string
-          nullable: true
         subtotal_amount:
           type: string
           format: decimal
@@ -8507,10 +8650,6 @@ components:
           type: string
           format: date-time
           nullable: true
-        pdf_id:
-          type: string
-          format: uuid
-          nullable: true
         previous_revision_id:
           type: string
           format: uuid
@@ -8519,6 +8658,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceLine'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceDocument'
         shipping:
           $ref: '#/components/schemas/InvoiceShipping'
         coupons:
@@ -8550,12 +8693,11 @@ components:
       - coupons
       - created_at
       - currency
-      - custom_fields
       - customer
       - delivery_method
       - discounts
+      - documents
       - due_date
-      - footer
       - id
       - issue_date
       - lines
@@ -8568,7 +8710,6 @@ components:
       - paid_at
       - payment_connection_id
       - payment_provider
-      - pdf_id
       - previous_revision_id
       - recipients
       - shipping
@@ -8657,12 +8798,6 @@ components:
           nullable: true
         metadata:
           nullable: true
-        custom_fields:
-          nullable: true
-        footer:
-          type: string
-          nullable: true
-          maxLength: 600
         payment_provider:
           allOf:
           - $ref: '#/components/schemas/PaymentProviderEnum'
@@ -8749,6 +8884,91 @@ components:
       - amount
       - coupon_id
       - name
+    InvoiceDocument:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        audience:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceDocumentAudienceEnum'
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
+        footer:
+          type: string
+          nullable: true
+        memo:
+          type: string
+          nullable: true
+        custom_fields: {}
+        file_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - audience
+      - created_at
+      - custom_fields
+      - file_id
+      - footer
+      - id
+      - language
+      - memo
+      - updated_at
+    InvoiceDocumentAudienceEnum:
+      enum:
+      - customer
+      - internal
+      - legal
+      type: string
+      description: |-
+        * `customer` - Customer
+        * `internal` - Internal
+        * `legal` - Legal
+    InvoiceDocumentCreate:
+      type: object
+      properties:
+        audience:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceDocumentAudienceEnum'
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
+        footer:
+          type: string
+          nullable: true
+        memo:
+          type: string
+          nullable: true
+        custom_fields: {}
+      required:
+      - language
+    InvoiceDocumentUpdate:
+      type: object
+      properties:
+        audience:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceDocumentAudienceEnum'
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
+        footer:
+          type: string
+          nullable: true
+        memo:
+          type: string
+          nullable: true
+        custom_fields: {}
     InvoiceLine:
       type: object
       properties:
@@ -8958,12 +9178,6 @@ components:
           nullable: true
         metadata:
           nullable: true
-        custom_fields:
-          nullable: true
-        footer:
-          type: string
-          nullable: true
-          maxLength: 600
         payment_provider:
           allOf:
           - $ref: '#/components/schemas/PaymentProviderEnum'
@@ -9126,11 +9340,6 @@ components:
           type: integer
           minimum: 0
         metadata: {}
-        custom_fields: {}
-        footer:
-          type: string
-          nullable: true
-          maxLength: 600
         payment_provider:
           allOf:
           - $ref: '#/components/schemas/PaymentProviderEnum'
@@ -9160,6 +9369,16 @@ components:
           allOf:
           - $ref: '#/components/schemas/InvoiceShippingAdd'
           nullable: true
+    LanguageEnum:
+      enum:
+      - en-us
+      - en-gb
+      - en-au
+      type: string
+      description: |-
+        * `en-us` - English
+        * `en-gb` - British English
+        * `en-au` - Australian English
     Member:
       type: object
       properties:
@@ -9472,6 +9691,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Invitation'
+    PaginatedInvoiceDocumentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceDocument'
     PaginatedInvoiceList:
       type: object
       required:
@@ -10028,19 +10270,36 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,17}(?:\.\d{0,2})?$
-        pdf_url:
-          type: string
-          format: uri
-          nullable: true
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/PortalInvoiceDocument'
+          readOnly: true
       required:
       - currency
+      - documents
       - due_date
       - id
       - issue_date
       - number
-      - pdf_url
       - status
       - total_amount
+    PortalInvoiceDocument:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        language:
+          type: string
+        url:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - id
+      - language
+      - url
     PortalSession:
       type: object
       properties:

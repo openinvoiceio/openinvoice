@@ -7,6 +7,7 @@
  */
 import type { Address } from "./address";
 import type { CustomerCurrency } from "./customerCurrency";
+import type { CustomerLanguage } from "./customerLanguage";
 import type { CustomerShippingProperty } from "./customerShippingProperty";
 import type { TaxId } from "./taxId";
 import type { TaxRate } from "./taxRate";
@@ -25,6 +26,8 @@ export interface Customer {
   phone: string | null;
   /** @nullable */
   currency: CustomerCurrency;
+  /** @nullable */
+  language: CustomerLanguage;
   /**
    * @minimum 0
    * @nullable

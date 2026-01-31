@@ -7,6 +7,7 @@
  */
 import type { CustomerUpdateAddress } from "./customerUpdateAddress";
 import type { CustomerUpdateCurrency } from "./customerUpdateCurrency";
+import type { CustomerUpdateLanguage } from "./customerUpdateLanguage";
 import type { CustomerUpdateShipping } from "./customerUpdateShipping";
 
 export interface CustomerUpdate {
@@ -39,6 +40,8 @@ export interface CustomerUpdate {
   description?: string | null;
   /** @nullable */
   currency?: CustomerUpdateCurrency;
+  /** @nullable */
+  language?: CustomerUpdateLanguage;
   /**
    * @minimum 0
    * @nullable

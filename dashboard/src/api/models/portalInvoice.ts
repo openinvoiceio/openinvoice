@@ -7,6 +7,7 @@
  */
 import type { CurrencyEnum } from "./currencyEnum";
 import type { InvoiceStatusEnum } from "./invoiceStatusEnum";
+import type { PortalInvoiceDocument } from "./portalInvoiceDocument";
 
 export interface PortalInvoice {
   id: string;
@@ -19,6 +20,5 @@ export interface PortalInvoice {
   due_date: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   total_amount: string;
-  /** @nullable */
-  pdf_url: string | null;
+  readonly documents: readonly PortalInvoiceDocument[];
 }

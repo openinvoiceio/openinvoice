@@ -5,8 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { LanguageEnum } from "./languageEnum";
 
 /**
  * @nullable
  */
-export type InvoiceCreateCustomFields = unknown | null;
+export type CustomerCreateLanguage = LanguageEnum | null;

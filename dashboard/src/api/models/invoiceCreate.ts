@@ -7,7 +7,6 @@
  */
 import type { DeliveryMethodEnum } from "./deliveryMethodEnum";
 import type { InvoiceCreateCurrency } from "./invoiceCreateCurrency";
-import type { InvoiceCreateCustomFields } from "./invoiceCreateCustomFields";
 import type { InvoiceCreateMetadata } from "./invoiceCreateMetadata";
 import type { InvoiceCreatePaymentProvider } from "./invoiceCreatePaymentProvider";
 import type { InvoiceCreateShipping } from "./invoiceCreateShipping";
@@ -36,13 +35,6 @@ export interface InvoiceCreate {
   net_payment_term?: number | null;
   /** @nullable */
   metadata?: InvoiceCreateMetadata;
-  /** @nullable */
-  custom_fields?: InvoiceCreateCustomFields;
-  /**
-   * @maxLength 600
-   * @nullable
-   */
-  footer?: string | null;
   /** @nullable */
   payment_provider?: InvoiceCreatePaymentProvider;
   /** @nullable */

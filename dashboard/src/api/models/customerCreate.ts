@@ -7,6 +7,7 @@
  */
 import type { CustomerCreateAddress } from "./customerCreateAddress";
 import type { CustomerCreateCurrency } from "./customerCreateCurrency";
+import type { CustomerCreateLanguage } from "./customerCreateLanguage";
 import type { CustomerCreateShipping } from "./customerCreateShipping";
 
 export interface CustomerCreate {
@@ -39,6 +40,8 @@ export interface CustomerCreate {
   description?: string | null;
   /** @nullable */
   currency?: CustomerCreateCurrency;
+  /** @nullable */
+  language?: CustomerCreateLanguage;
   /**
    * @minimum 0
    * @nullable

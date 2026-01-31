@@ -11,6 +11,7 @@ import type { DeliveryMethodEnum } from "./deliveryMethodEnum";
 import type { InvoiceAccount } from "./invoiceAccount";
 import type { InvoiceCustomer } from "./invoiceCustomer";
 import type { InvoiceDiscount } from "./invoiceDiscount";
+import type { InvoiceDocument } from "./invoiceDocument";
 import type { InvoiceLine } from "./invoiceLine";
 import type { InvoicePaymentProvider } from "./invoicePaymentProvider";
 import type { InvoiceShipping } from "./invoiceShipping";
@@ -39,9 +40,6 @@ export interface Invoice {
   readonly customer: InvoiceCustomer;
   readonly account: InvoiceAccount;
   metadata: unknown;
-  custom_fields: unknown;
-  /** @nullable */
-  footer: string | null;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   subtotal_amount: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
@@ -74,10 +72,9 @@ export interface Invoice {
   /** @nullable */
   voided_at: string | null;
   /** @nullable */
-  pdf_id: string | null;
-  /** @nullable */
   previous_revision_id: string | null;
   lines: InvoiceLine[];
+  documents: InvoiceDocument[];
   shipping: InvoiceShipping;
   coupons: Coupon[];
   discounts: InvoiceDiscount[];

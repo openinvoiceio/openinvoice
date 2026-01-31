@@ -8,6 +8,7 @@
 import type { Address } from "./address";
 import type { CountryEnum } from "./countryEnum";
 import type { CurrencyEnum } from "./currencyEnum";
+import type { LanguageEnum } from "./languageEnum";
 
 export interface AccountUpdate {
   /** @maxLength 255 */
@@ -32,6 +33,7 @@ export interface AccountUpdate {
   address?: Address;
   country?: CountryEnum;
   default_currency?: CurrencyEnum;
+  language?: LanguageEnum;
   /**
    * @maxLength 255
    * @nullable

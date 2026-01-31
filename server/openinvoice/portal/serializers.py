@@ -1,4 +1,5 @@
 from djmoney.contrib.django_rest_framework import MoneyField
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from common.fields import CurrencyField
@@ -24,6 +25,7 @@ class PortalInvoiceSerializer(serializers.Serializer):
     total_amount = MoneyField(max_digits=19, decimal_places=2)
     documents = serializers.SerializerMethodField()
 
+    @extend_schema_field(PortalInvoiceDocumentSerializer(many=True))
     def get_documents(self, invoice):
         documents = (
             invoice.documents.filter(audience__contains=[InvoiceDocumentAudience.CUSTOMER])
