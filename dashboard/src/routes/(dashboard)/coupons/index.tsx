@@ -23,6 +23,7 @@ import {
 } from "@/components/data-table/data-table-toolbar";
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options.tsx";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
+import { ProductCatalogTabs } from "@/components/product-catalog-tabs";
 import { pushModal } from "@/components/push-modals";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Button } from "@/components/ui/button";
@@ -51,7 +52,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent } from "@/components/ui/tabs";
 import { columns } from "@/features/coupons/tables/columns";
 import { useDataTable } from "@/hooks/use-data-table";
 import { formatEnum } from "@/lib/formatters";
@@ -59,14 +60,7 @@ import { getSortingStateParser } from "@/lib/parsers";
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { addDays, formatISO } from "date-fns";
-import {
-  BoxIcon,
-  ListFilterIcon,
-  PercentIcon,
-  PlusIcon,
-  TagIcon,
-  TruckIcon,
-} from "lucide-react";
+import { ListFilterIcon, PlusIcon } from "lucide-react";
 import {
   parseAsArrayOf,
   parseAsInteger,
@@ -183,28 +177,10 @@ function RouteComponent() {
                 <SectionHeader>
                   <SectionTitle>Product catalogue</SectionTitle>
                 </SectionHeader>
-                <Tabs
+                <ProductCatalogTabs
                   defaultValue="/coupons"
                   onValueChange={(value) => navigate({ to: value })}
                 >
-                  <TabsList>
-                    <TabsTrigger value="/products">
-                      <BoxIcon />
-                      Products
-                    </TabsTrigger>
-                    <TabsTrigger value="/coupons">
-                      <TagIcon />
-                      Coupons
-                    </TabsTrigger>
-                    <TabsTrigger value="/tax-rates">
-                      <PercentIcon />
-                      Tax rates
-                    </TabsTrigger>
-                    <TabsTrigger value="/shipping-rates">
-                      <TruckIcon />
-                      Shipping rates
-                    </TabsTrigger>
-                  </TabsList>
                   <TabsContent value="/coupons" className="my-2 grid gap-4">
                     <MetricCardGroup className="flex">
                       {metrics.map((item, index) => {
@@ -261,7 +237,7 @@ function RouteComponent() {
                       </DataTableFooter>
                     </DataTableContainer>
                   </TabsContent>
-                </Tabs>
+                </ProductCatalogTabs>
               </Section>
             </SectionGroup>
           </main>
