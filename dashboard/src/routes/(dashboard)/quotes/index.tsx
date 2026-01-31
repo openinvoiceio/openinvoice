@@ -9,6 +9,7 @@ import {
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   DataTable,
   DataTableContainer,
@@ -48,7 +49,11 @@ import {
   SectionHeader,
   SectionTitle,
 } from "@/components/ui/section";
-import { SidebarTrigger } from "@/components/ui/sidebar.tsx";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar.tsx";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useDebounce } from "@/hooks/use-debounce.ts";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";
@@ -95,6 +100,7 @@ export const Route = createFileRoute("/(dashboard)/quotes/")({
 });
 
 function RouteComponent() {
+  const { auth, account } = Route.useRouteContext();
   const [
     {
       page,
@@ -193,123 +199,130 @@ function RouteComponent() {
   });
 
   return (
-    <div>
-      <AppHeader>
-        <AppHeaderContent>
-          <SidebarTrigger />
-          <NavBreadcrumb items={[{ type: "page", label: "Quotes" }]} />
-        </AppHeaderContent>
-        <AppHeaderActions>
-          <div className="flex items-center gap-2 text-sm">
-            <SearchCommand />
-            <Button
-              type="button"
-              size="sm"
-              onClick={() =>
-                pushModal("QuoteCreateDialog", { defaultCustomer: undefined })
-              }
-            >
-              <PlusIcon />
-              Add quote
-            </Button>
-          </div>
-        </AppHeaderActions>
-      </AppHeader>
-      <main className="w-full flex-1">
-        <SectionGroup>
-          <Section>
-            <SectionHeader>
-              <SectionTitle>Quotes</SectionTitle>
-              <SectionDescription>
-                Manage and review your quotes.
-              </SectionDescription>
-            </SectionHeader>
-            <div className="grid gap-4">
-              <MetricCardGroup className="flex">
-                {metrics.map((item, index) => {
-                  const query = counters[index];
-                  return (
-                    <MetricCardButton
-                      key={item.value}
-                      selected={status.includes(item.value)}
-                      onClick={async () => {
-                        const column = table.getColumn("status");
-                        if (!column) return;
-                        column.setFilterValue(
-                          item.value === "all" ? undefined : [item.value],
-                        );
-                      }}
-                    >
-                      <MetricCardHeader className="flex items-center justify-between">
-                        <MetricCardTitle>{item.label}</MetricCardTitle>
-                        <ListFilterIcon className="size-4" />
-                      </MetricCardHeader>
-                      <MetricCardValue>
-                        {query.isLoading ? "…" : query.data?.count}
-                      </MetricCardValue>
-                    </MetricCardButton>
-                  );
-                })}
-              </MetricCardGroup>
-              <DataTableContainer>
-                <DataTableToolbar table={table}>
-                  <DataTableFilterList table={table}>
-                    <Input
-                      placeholder="Search..."
-                      value={search}
-                      onChange={(event) =>
-                        setQueryState({ search: event.target.value })
-                      }
-                      className="h-8 w-40 lg:w-56"
-                    />
-                  </DataTableFilterList>
-                  <DataTableSortList table={table} />
-                  <DataTableViewOptions table={table} />
-                </DataTableToolbar>
-                <DataTable table={table}>
-                  {!hasFilters ? (
-                    <Empty>
-                      <EmptyHeader>
-                        <EmptyTitle>Add your first quote</EmptyTitle>
-                        <EmptyDescription>
-                          Quotes help you provide customers with pricing
-                          breakdowns before invoicing.
-                        </EmptyDescription>
-                      </EmptyHeader>
-                      <EmptyContent>
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            pushModal("QuoteCreateDialog", {
-                              defaultCustomer: undefined,
-                            })
-                          }
+    <SidebarProvider>
+      <AppSidebar user={auth.user} account={account} />
+      <SidebarInset>
+        <div>
+          <AppHeader>
+            <AppHeaderContent>
+              <SidebarTrigger />
+              <NavBreadcrumb items={[{ type: "page", label: "Quotes" }]} />
+            </AppHeaderContent>
+            <AppHeaderActions>
+              <div className="flex items-center gap-2 text-sm">
+                <SearchCommand />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() =>
+                    pushModal("QuoteCreateDialog", {
+                      defaultCustomer: undefined,
+                    })
+                  }
+                >
+                  <PlusIcon />
+                  Add quote
+                </Button>
+              </div>
+            </AppHeaderActions>
+          </AppHeader>
+          <main className="w-full flex-1">
+            <SectionGroup>
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Quotes</SectionTitle>
+                  <SectionDescription>
+                    Manage and review your quotes.
+                  </SectionDescription>
+                </SectionHeader>
+                <div className="grid gap-4">
+                  <MetricCardGroup className="flex">
+                    {metrics.map((item, index) => {
+                      const query = counters[index];
+                      return (
+                        <MetricCardButton
+                          key={item.value}
+                          selected={status.includes(item.value)}
+                          onClick={async () => {
+                            const column = table.getColumn("status");
+                            if (!column) return;
+                            column.setFilterValue(
+                              item.value === "all" ? undefined : [item.value],
+                            );
+                          }}
                         >
-                          <PlusIcon />
-                          Add quote
-                        </Button>
-                      </EmptyContent>
-                    </Empty>
-                  ) : (
-                    <Empty>
-                      <EmptyHeader>
-                        <EmptyTitle>No results found</EmptyTitle>
-                        <EmptyDescription>
-                          Try adjusting your filters to find quotes you're
-                          looking for.
-                        </EmptyDescription>
-                      </EmptyHeader>
-                    </Empty>
-                  )}
-                </DataTable>
-                <DataTableFooter>
-                  <DataTablePagination table={table} />
-                </DataTableFooter>
-              </DataTableContainer>
-            </div>
-          </Section>
-        </SectionGroup>
-      </main>
-    </div>
+                          <MetricCardHeader className="flex items-center justify-between">
+                            <MetricCardTitle>{item.label}</MetricCardTitle>
+                            <ListFilterIcon className="size-4" />
+                          </MetricCardHeader>
+                          <MetricCardValue>
+                            {query.isLoading ? "…" : query.data?.count}
+                          </MetricCardValue>
+                        </MetricCardButton>
+                      );
+                    })}
+                  </MetricCardGroup>
+                  <DataTableContainer>
+                    <DataTableToolbar table={table}>
+                      <DataTableFilterList table={table}>
+                        <Input
+                          placeholder="Search..."
+                          value={search}
+                          onChange={(event) =>
+                            setQueryState({ search: event.target.value })
+                          }
+                          className="h-8 w-40 lg:w-56"
+                        />
+                      </DataTableFilterList>
+                      <DataTableSortList table={table} />
+                      <DataTableViewOptions table={table} />
+                    </DataTableToolbar>
+                    <DataTable table={table}>
+                      {!hasFilters ? (
+                        <Empty>
+                          <EmptyHeader>
+                            <EmptyTitle>Add your first quote</EmptyTitle>
+                            <EmptyDescription>
+                              Quotes help you provide customers with pricing
+                              breakdowns before invoicing.
+                            </EmptyDescription>
+                          </EmptyHeader>
+                          <EmptyContent>
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                pushModal("QuoteCreateDialog", {
+                                  defaultCustomer: undefined,
+                                })
+                              }
+                            >
+                              <PlusIcon />
+                              Add quote
+                            </Button>
+                          </EmptyContent>
+                        </Empty>
+                      ) : (
+                        <Empty>
+                          <EmptyHeader>
+                            <EmptyTitle>No results found</EmptyTitle>
+                            <EmptyDescription>
+                              Try adjusting your filters to find quotes you're
+                              looking for.
+                            </EmptyDescription>
+                          </EmptyHeader>
+                        </Empty>
+                      )}
+                    </DataTable>
+                    <DataTableFooter>
+                      <DataTablePagination table={table} />
+                    </DataTableFooter>
+                  </DataTableContainer>
+                </div>
+              </Section>
+            </SectionGroup>
+          </main>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

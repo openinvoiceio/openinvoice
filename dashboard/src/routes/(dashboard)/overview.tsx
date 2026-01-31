@@ -9,6 +9,7 @@ import {
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
+import { AppSidebar } from "@/components/app-sidebar";
 import { CurrencyCombobox } from "@/components/currency-combobox.tsx";
 import { DataTable } from "@/components/data-table/data-table";
 import { columns } from "@/components/invoice-table";
@@ -45,7 +46,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SidebarTrigger } from "@/components/ui/sidebar.tsx";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar.tsx";
 import {
   Tooltip,
   TooltipContent,
@@ -77,7 +82,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 function RouteComponent() {
-  const { account } = Route.useRouteContext();
+  const { auth, account } = Route.useRouteContext();
   const { data } = useInvoicesList({
     page_size: 20,
     ordering: "-created_at",
@@ -168,219 +173,232 @@ function RouteComponent() {
   );
 
   return (
-    <div>
-      <AppHeader>
-        <AppHeaderContent>
-          <SidebarTrigger />
-          <NavBreadcrumb items={[{ type: "page", label: "Overview" }]} />
-        </AppHeaderContent>
-        <AppHeaderActions>
-          <div className="flex items-center gap-2 text-sm">
-            <SearchCommand />
-          </div>
-        </AppHeaderActions>
-      </AppHeader>
-      <main className="w-full flex-1">
-        <SectionGroup>
-          <Section>
-            <SectionHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <SectionTitle>Overview</SectionTitle>
-                <SectionDescription>
-                  Welcome to your dashboard
-                </SectionDescription>
+    <SidebarProvider>
+      <AppSidebar user={auth.user} account={account} />
+      <SidebarInset>
+        <div>
+          <AppHeader>
+            <AppHeaderContent>
+              <SidebarTrigger />
+              <NavBreadcrumb items={[{ type: "page", label: "Overview" }]} />
+            </AppHeaderContent>
+            <AppHeaderActions>
+              <div className="flex items-center gap-2 text-sm">
+                <SearchCommand />
               </div>
-              <div className="flex items-center gap-2">
-                <Select
-                  value={range}
-                  onValueChange={(value) => setRange(value as DateRange)}
-                >
-                  <SelectTrigger className="hidden w-[140px] sm:ml-auto sm:flex">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30d">Last month</SelectItem>
-                    <SelectItem value="90d">Last 3 months</SelectItem>
-                    <SelectItem value="180d">Last 6 months</SelectItem>
-                    <SelectItem value="365d">Last year</SelectItem>
-                  </SelectContent>
-                </Select>
-                <CurrencyCombobox
-                  align="end"
-                  selected={currency}
-                  onSelect={async (c) => {
-                    await setCurrency(c as CurrencyEnum);
-                  }}
-                >
-                  <ComboboxButton>{currency}</ComboboxButton>
-                </CurrencyCombobox>
-              </div>
-            </SectionHeader>
-            <MetricCardGroup>
-              {metrics.map((metric) => (
-                <MetricCard key={metric.title}>
-                  <MetricCardHeader>
-                    <MetricCardTitle>{metric.title}</MetricCardTitle>
-                  </MetricCardHeader>
-                  <MetricCardValue>{metric.value}</MetricCardValue>
-                </MetricCard>
-              ))}
-            </MetricCardGroup>
-          </Section>
+            </AppHeaderActions>
+          </AppHeader>
+          <main className="w-full flex-1">
+            <SectionGroup>
+              <Section>
+                <SectionHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <SectionTitle>Overview</SectionTitle>
+                    <SectionDescription>
+                      Welcome to your dashboard
+                    </SectionDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={range}
+                      onValueChange={(value) => setRange(value as DateRange)}
+                    >
+                      <SelectTrigger className="hidden w-[140px] sm:ml-auto sm:flex">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="30d">Last month</SelectItem>
+                        <SelectItem value="90d">Last 3 months</SelectItem>
+                        <SelectItem value="180d">Last 6 months</SelectItem>
+                        <SelectItem value="365d">Last year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <CurrencyCombobox
+                      align="end"
+                      selected={currency}
+                      onSelect={async (c) => {
+                        await setCurrency(c as CurrencyEnum);
+                      }}
+                    >
+                      <ComboboxButton>{currency}</ComboboxButton>
+                    </CurrencyCombobox>
+                  </div>
+                </SectionHeader>
+                <MetricCardGroup>
+                  {metrics.map((metric) => (
+                    <MetricCard key={metric.title}>
+                      <MetricCardHeader>
+                        <MetricCardTitle>{metric.title}</MetricCardTitle>
+                      </MetricCardHeader>
+                      <MetricCardValue>{metric.value}</MetricCardValue>
+                    </MetricCard>
+                  ))}
+                </MetricCardGroup>
+              </Section>
 
-          <Section className="flex gap-4 space-y-0">
-            <Card className="w-full">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <CardTitle>Gross Revenue</CardTitle>
-                  <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="size-4">
-                          <InfoIcon className="size-3.5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Total revenue from paid invoices within the selected
-                        date range.
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={chartConfig}
-                  className="aspect-auto h-32 w-full"
-                >
-                  <AreaChart
-                    data={
-                      grossRevenue.data?.map((value) => {
-                        return {
-                          date: value.date,
-                          total_amount: Number(value.total_amount),
-                        };
-                      }) || []
-                    }
-                  >
-                    <CartesianGrid vertical={false} />
-                    <XAxis
-                      dataKey="date"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={8}
-                      minTickGap={32}
-                      tickFormatter={(value) => format(value, "LLL")}
-                      allowDataOverflow={false}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={
-                        <ChartTooltipContent
-                          indicator="line"
-                          labelFormatter={(value) =>
-                            format(value, "LLLL, yyyy")
+              <Section className="flex gap-4 space-y-0">
+                <Card className="w-full">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <CardTitle>Gross Revenue</CardTitle>
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-4"
+                            >
+                              <InfoIcon className="size-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Total revenue from paid invoices within the selected
+                            date range.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ChartContainer
+                      config={chartConfig}
+                      className="aspect-auto h-32 w-full"
+                    >
+                      <AreaChart
+                        data={
+                          grossRevenue.data?.map((value) => {
+                            return {
+                              date: value.date,
+                              total_amount: Number(value.total_amount),
+                            };
+                          }) || []
+                        }
+                      >
+                        <CartesianGrid vertical={false} />
+                        <XAxis
+                          dataKey="date"
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={8}
+                          minTickGap={32}
+                          tickFormatter={(value) => format(value, "LLL")}
+                          allowDataOverflow={false}
+                        />
+                        <ChartTooltip
+                          cursor={false}
+                          content={
+                            <ChartTooltipContent
+                              indicator="line"
+                              labelFormatter={(value) =>
+                                format(value, "LLLL, yyyy")
+                              }
+                            />
                           }
                         />
-                      }
-                    />
-                    <Area
-                      dataKey="total_amount"
-                      type="monotone"
-                      fill="var(--color-total_amount)"
-                      fillOpacity={0.4}
-                      stroke="var(--color-total_amount)"
-                    />
-                  </AreaChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+                        <Area
+                          dataKey="total_amount"
+                          type="monotone"
+                          fill="var(--color-total_amount)"
+                          fillOpacity={0.4}
+                          stroke="var(--color-total_amount)"
+                        />
+                      </AreaChart>
+                    </ChartContainer>
+                  </CardContent>
+                </Card>
 
-            <Card className="w-full">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <CardTitle>Overdue balance</CardTitle>
-                  <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="size-4">
-                          <InfoIcon className="size-3.5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Total amount from overdue invoices within the selected
-                        date range.
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={chartConfig}
-                  className="aspect-auto h-32 w-full"
-                >
-                  <AreaChart
-                    data={
-                      overdueBalance.data?.map((value) => {
-                        return {
-                          date: value.date,
-                          total_amount: Number(value.total_amount),
-                        };
-                      }) || []
-                    }
-                  >
-                    <CartesianGrid vertical={false} />
-                    <XAxis
-                      dataKey="date"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={8}
-                      minTickGap={32}
-                      tickFormatter={(value) => format(value, "LLL")}
-                      allowDataOverflow={false}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={
-                        <ChartTooltipContent
-                          indicator="line"
-                          labelFormatter={(value) =>
-                            format(value, "LLLL, yyyy")
+                <Card className="w-full">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <CardTitle>Overdue balance</CardTitle>
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-4"
+                            >
+                              <InfoIcon className="size-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Total amount from overdue invoices within the
+                            selected date range.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ChartContainer
+                      config={chartConfig}
+                      className="aspect-auto h-32 w-full"
+                    >
+                      <AreaChart
+                        data={
+                          overdueBalance.data?.map((value) => {
+                            return {
+                              date: value.date,
+                              total_amount: Number(value.total_amount),
+                            };
+                          }) || []
+                        }
+                      >
+                        <CartesianGrid vertical={false} />
+                        <XAxis
+                          dataKey="date"
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={8}
+                          minTickGap={32}
+                          tickFormatter={(value) => format(value, "LLL")}
+                          allowDataOverflow={false}
+                        />
+                        <ChartTooltip
+                          cursor={false}
+                          content={
+                            <ChartTooltipContent
+                              indicator="line"
+                              labelFormatter={(value) =>
+                                format(value, "LLLL, yyyy")
+                              }
+                            />
                           }
                         />
-                      }
-                    />
-                    <Area
-                      dataKey="total_amount"
-                      type="monotone"
-                      fill="var(--color-total_amount)"
-                      fillOpacity={0.4}
-                      stroke="var(--color-total_amount)"
-                    />
-                  </AreaChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-          </Section>
+                        <Area
+                          dataKey="total_amount"
+                          type="monotone"
+                          fill="var(--color-total_amount)"
+                          fillOpacity={0.4}
+                          stroke="var(--color-total_amount)"
+                        />
+                      </AreaChart>
+                    </ChartContainer>
+                  </CardContent>
+                </Card>
+              </Section>
 
-          <Section>
-            <SectionHeader>
-              <SectionTitle>Invoices</SectionTitle>
-              <SectionDescription>
-                Paid invoices over the last 30 days.
-              </SectionDescription>
-            </SectionHeader>
-            <DataTable table={table}>
-              <Empty>
-                <EmptyHeader>
-                  <EmptyTitle>You have no invoices yet</EmptyTitle>
-                </EmptyHeader>
-              </Empty>
-            </DataTable>
-          </Section>
-        </SectionGroup>
-      </main>
-    </div>
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Invoices</SectionTitle>
+                  <SectionDescription>
+                    Paid invoices over the last 30 days.
+                  </SectionDescription>
+                </SectionHeader>
+                <DataTable table={table}>
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyTitle>You have no invoices yet</EmptyTitle>
+                    </EmptyHeader>
+                  </Empty>
+                </DataTable>
+              </Section>
+            </SectionGroup>
+          </main>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

@@ -9,6 +9,7 @@ import {
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   DataTable,
   DataTableContainer,
@@ -46,7 +47,11 @@ import {
   SectionHeader,
   SectionTitle,
 } from "@/components/ui/section";
-import { SidebarTrigger } from "@/components/ui/sidebar.tsx";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDataTable } from "@/hooks/use-data-table";
 import { formatEnum } from "@/lib/formatters";
@@ -96,6 +101,7 @@ export const Route = createFileRoute("/(dashboard)/shipping-rates/")({
 });
 
 function RouteComponent() {
+  const { auth, account } = Route.useRouteContext();
   const navigate = Route.useNavigate();
   const [{ page, perPage, sort, name, created_at, status }, setQueryState] =
     useQueryStates(searchParams);
@@ -148,116 +154,132 @@ function RouteComponent() {
   });
 
   return (
-    <div>
-      <AppHeader>
-        <AppHeaderContent>
-          <SidebarTrigger />
-          <NavBreadcrumb items={[{ type: "page", label: "Shipping rates" }]} />
-        </AppHeaderContent>
-        <AppHeaderActions>
-          <div className="flex items-center gap-2 text-sm">
-            <SearchCommand />
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => pushModal("ShippingRateCreateSheet", { name: "" })}
-            >
-              <PlusIcon />
-              Add shipping rate
-            </Button>
-          </div>
-        </AppHeaderActions>
-      </AppHeader>
-      <main className="w-full flex-1">
-        <SectionGroup>
-          <Section>
-            <SectionHeader>
-              <SectionTitle>Product catalogue</SectionTitle>
-            </SectionHeader>
-            <Tabs
-              defaultValue="/shipping-rates"
-              onValueChange={(value) => navigate({ to: value })}
-            >
-              <TabsList>
-                <TabsTrigger value="/products">
-                  <BoxIcon />
-                  Products
-                </TabsTrigger>
-                <TabsTrigger value="/coupons">
-                  <TagIcon />
-                  Coupons
-                </TabsTrigger>
-                <TabsTrigger value="/tax-rates">
-                  <PercentIcon />
-                  Tax rates
-                </TabsTrigger>
-                <TabsTrigger value="/shipping-rates">
-                  <TruckIcon />
-                  Shipping rates
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="/shipping-rates" className="my-2 grid gap-4">
-                <MetricCardGroup className="flex">
-                  {metrics.map((item, index) => {
-                    const query = counters[index];
-                    return (
-                      <MetricCardButton
-                        key={item.value}
-                        selected={status === item.value}
-                        onClick={() =>
-                          setQueryState({ status: item.value, page: 1 })
-                        }
-                      >
-                        <MetricCardHeader className="flex items-center justify-between">
-                          <MetricCardTitle>{item.label}</MetricCardTitle>
-                          <ListFilterIcon className="size-4" />
-                        </MetricCardHeader>
-                        <MetricCardValue>
-                          {query.isLoading ? "…" : query.data?.count}
-                        </MetricCardValue>
-                      </MetricCardButton>
-                    );
-                  })}
-                </MetricCardGroup>
-                <DataTableContainer>
-                  <DataTableToolbar table={table}>
-                    <DataTableFilterList table={table} />
-                    <DataTableSortList table={table} />
-                    <DataTableViewOptions table={table} />
-                  </DataTableToolbar>
-                  <DataTable table={table}>
-                    <Empty>
-                      <EmptyHeader>
-                        <EmptyHeader>
-                          <EmptyTitle>Add your first shipping rate</EmptyTitle>
-                          <EmptyDescription>
-                            Shipping rates help you manage how much to charge
-                            for shipping.
-                          </EmptyDescription>
-                        </EmptyHeader>
-                        <EmptyContent>
-                          <Button
-                            size="sm"
+    <SidebarProvider>
+      <AppSidebar user={auth.user} account={account} />
+      <SidebarInset>
+        <div>
+          <AppHeader>
+            <AppHeaderContent>
+              <SidebarTrigger />
+              <NavBreadcrumb
+                items={[{ type: "page", label: "Shipping rates" }]}
+              />
+            </AppHeaderContent>
+            <AppHeaderActions>
+              <div className="flex items-center gap-2 text-sm">
+                <SearchCommand />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() =>
+                    pushModal("ShippingRateCreateSheet", { name: "" })
+                  }
+                >
+                  <PlusIcon />
+                  Add shipping rate
+                </Button>
+              </div>
+            </AppHeaderActions>
+          </AppHeader>
+          <main className="w-full flex-1">
+            <SectionGroup>
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Product catalogue</SectionTitle>
+                </SectionHeader>
+                <Tabs
+                  defaultValue="/shipping-rates"
+                  onValueChange={(value) => navigate({ to: value })}
+                >
+                  <TabsList>
+                    <TabsTrigger value="/products">
+                      <BoxIcon />
+                      Products
+                    </TabsTrigger>
+                    <TabsTrigger value="/coupons">
+                      <TagIcon />
+                      Coupons
+                    </TabsTrigger>
+                    <TabsTrigger value="/tax-rates">
+                      <PercentIcon />
+                      Tax rates
+                    </TabsTrigger>
+                    <TabsTrigger value="/shipping-rates">
+                      <TruckIcon />
+                      Shipping rates
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent
+                    value="/shipping-rates"
+                    className="my-2 grid gap-4"
+                  >
+                    <MetricCardGroup className="flex">
+                      {metrics.map((item, index) => {
+                        const query = counters[index];
+                        return (
+                          <MetricCardButton
+                            key={item.value}
+                            selected={status === item.value}
                             onClick={() =>
-                              pushModal("ShippingRateCreateSheet", { name: "" })
+                              setQueryState({ status: item.value, page: 1 })
                             }
                           >
-                            <PlusIcon />
-                            Add shipping rate
-                          </Button>
-                        </EmptyContent>
-                      </EmptyHeader>
-                    </Empty>
-                  </DataTable>
-                  <DataTableFooter>
-                    <DataTablePagination table={table} />
-                  </DataTableFooter>
-                </DataTableContainer>
-              </TabsContent>
-            </Tabs>
-          </Section>
-        </SectionGroup>
-      </main>
-    </div>
+                            <MetricCardHeader className="flex items-center justify-between">
+                              <MetricCardTitle>{item.label}</MetricCardTitle>
+                              <ListFilterIcon className="size-4" />
+                            </MetricCardHeader>
+                            <MetricCardValue>
+                              {query.isLoading ? "…" : query.data?.count}
+                            </MetricCardValue>
+                          </MetricCardButton>
+                        );
+                      })}
+                    </MetricCardGroup>
+                    <DataTableContainer>
+                      <DataTableToolbar table={table}>
+                        <DataTableFilterList table={table} />
+                        <DataTableSortList table={table} />
+                        <DataTableViewOptions table={table} />
+                      </DataTableToolbar>
+                      <DataTable table={table}>
+                        <Empty>
+                          <EmptyHeader>
+                            <EmptyHeader>
+                              <EmptyTitle>
+                                Add your first shipping rate
+                              </EmptyTitle>
+                              <EmptyDescription>
+                                Shipping rates help you manage how much to
+                                charge for shipping.
+                              </EmptyDescription>
+                            </EmptyHeader>
+                            <EmptyContent>
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  pushModal("ShippingRateCreateSheet", {
+                                    name: "",
+                                  })
+                                }
+                              >
+                                <PlusIcon />
+                                Add shipping rate
+                              </Button>
+                            </EmptyContent>
+                          </EmptyHeader>
+                        </Empty>
+                      </DataTable>
+                      <DataTableFooter>
+                        <DataTablePagination table={table} />
+                      </DataTableFooter>
+                    </DataTableContainer>
+                  </TabsContent>
+                </Tabs>
+              </Section>
+            </SectionGroup>
+          </main>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

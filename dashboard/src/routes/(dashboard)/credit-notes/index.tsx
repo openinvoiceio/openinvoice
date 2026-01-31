@@ -16,6 +16,7 @@ import {
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
+import { AppSidebar } from "@/components/app-sidebar";
 import { columns } from "@/components/credit-note-table";
 import {
   DataTable,
@@ -55,7 +56,11 @@ import {
   SectionHeader,
   SectionTitle,
 } from "@/components/ui/section";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";
@@ -103,6 +108,7 @@ export const Route = createFileRoute("/(dashboard)/credit-notes/")({
 });
 
 function RouteComponent() {
+  const { auth, account } = Route.useRouteContext();
   const queryClient = useQueryClient();
   const navigate = Route.useNavigate();
   const [
@@ -193,126 +199,136 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex min-h-full flex-col">
-      <AppHeader>
-        <SidebarTrigger className="mr-2" />
-        <AppHeaderContent>
-          <NavBreadcrumb items={[{ type: "page", label: "Credit notes" }]} />
-        </AppHeaderContent>
-        <AppHeaderActions>
-          <div className="flex items-center gap-2 text-sm">
-            <SearchCommand />
-            <InvoiceCombobox
-              align="end"
-              onSelect={onInvoiceSelect}
-              status={[InvoiceStatusEnum.open, InvoiceStatusEnum.paid]}
-              minOutstandingAmount={0.01}
-            >
-              <Button type="button" size="sm">
-                <PlusIcon />
-                Add credit note
-              </Button>
-            </InvoiceCombobox>
-          </div>
-        </AppHeaderActions>
-      </AppHeader>
-      <main className="flex-1">
-        <SectionGroup>
-          <Section>
-            <SectionHeader>
-              <SectionTitle>Credit notes</SectionTitle>
-              <SectionDescription>
-                Track adjustments issued against finalized invoices.
-              </SectionDescription>
-            </SectionHeader>
-            <div className="grid gap-4">
-              <MetricCardGroup className="flex">
-                {metrics.map((item, index) => {
-                  const query = counters[index];
-                  return (
-                    <MetricCardButton
-                      key={item.value}
-                      selected={status.includes(item.value)}
-                      onClick={() => {
-                        const column = table.getColumn("status");
-                        if (!column) return;
-                        column.setFilterValue(
-                          item.value === "all" ? undefined : [item.value],
-                        );
-                      }}
-                    >
-                      <MetricCardHeader className="flex items-center justify-between">
-                        <MetricCardTitle>{item.label}</MetricCardTitle>
-                        <ListFilterIcon className="size-4" />
-                      </MetricCardHeader>
-                      <MetricCardValue>
-                        {query.isLoading ? "…" : (query.data?.count ?? 0)}
-                      </MetricCardValue>
-                    </MetricCardButton>
-                  );
-                })}
-              </MetricCardGroup>
-              <DataTableContainer>
-                <DataTableToolbar table={table}>
-                  <DataTableFilterList table={table}>
-                    <Input
-                      placeholder="Search..."
-                      value={search}
-                      onChange={(event) =>
-                        setQueryState({ page: 1, search: event.target.value })
-                      }
-                      className="h-8 w-40 lg:w-56"
-                    />
-                  </DataTableFilterList>
-                  <DataTableSortList table={table} />
-                  <DataTableViewOptions table={table} />
-                </DataTableToolbar>
-                <DataTable table={table}>
-                  {!hasFilters ? (
-                    <Empty>
-                      <EmptyHeader>
-                        <EmptyTitle>Add your first credit note</EmptyTitle>
-                        <EmptyDescription>
-                          Credit notes are adjustments issued against finalized
-                          invoices.
-                        </EmptyDescription>
-                      </EmptyHeader>
-                      <EmptyContent>
-                        <InvoiceCombobox
-                          onSelect={onInvoiceSelect}
-                          status={[
-                            InvoiceStatusEnum.open,
-                            InvoiceStatusEnum.paid,
-                          ]}
-                          minOutstandingAmount={0.01}
+    <SidebarProvider>
+      <AppSidebar user={auth.user} account={account} />
+      <SidebarInset>
+        <div className="flex min-h-full flex-col">
+          <AppHeader>
+            <SidebarTrigger className="mr-2" />
+            <AppHeaderContent>
+              <NavBreadcrumb
+                items={[{ type: "page", label: "Credit notes" }]}
+              />
+            </AppHeaderContent>
+            <AppHeaderActions>
+              <div className="flex items-center gap-2 text-sm">
+                <SearchCommand />
+                <InvoiceCombobox
+                  align="end"
+                  onSelect={onInvoiceSelect}
+                  status={[InvoiceStatusEnum.open, InvoiceStatusEnum.paid]}
+                  minOutstandingAmount={0.01}
+                >
+                  <Button type="button" size="sm">
+                    <PlusIcon />
+                    Add credit note
+                  </Button>
+                </InvoiceCombobox>
+              </div>
+            </AppHeaderActions>
+          </AppHeader>
+          <main className="flex-1">
+            <SectionGroup>
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Credit notes</SectionTitle>
+                  <SectionDescription>
+                    Track adjustments issued against finalized invoices.
+                  </SectionDescription>
+                </SectionHeader>
+                <div className="grid gap-4">
+                  <MetricCardGroup className="flex">
+                    {metrics.map((item, index) => {
+                      const query = counters[index];
+                      return (
+                        <MetricCardButton
+                          key={item.value}
+                          selected={status.includes(item.value)}
+                          onClick={() => {
+                            const column = table.getColumn("status");
+                            if (!column) return;
+                            column.setFilterValue(
+                              item.value === "all" ? undefined : [item.value],
+                            );
+                          }}
                         >
-                          <Button size="sm">
-                            <PlusIcon />
-                            Add credit note
-                          </Button>
-                        </InvoiceCombobox>
-                      </EmptyContent>
-                    </Empty>
-                  ) : (
-                    <Empty>
-                      <EmptyHeader>
-                        <EmptyTitle>No results found</EmptyTitle>
-                        <EmptyDescription>
-                          Try adjusting your filters to find credit notes you're
-                          looking for.
-                        </EmptyDescription>
-                      </EmptyHeader>
-                    </Empty>
-                  )}
-                </DataTable>
-                <DataTableFooter>
-                  <DataTablePagination table={table} />
-                </DataTableFooter>
-              </DataTableContainer>
-            </div>
-          </Section>
-        </SectionGroup>
-      </main>
-    </div>
+                          <MetricCardHeader className="flex items-center justify-between">
+                            <MetricCardTitle>{item.label}</MetricCardTitle>
+                            <ListFilterIcon className="size-4" />
+                          </MetricCardHeader>
+                          <MetricCardValue>
+                            {query.isLoading ? "…" : (query.data?.count ?? 0)}
+                          </MetricCardValue>
+                        </MetricCardButton>
+                      );
+                    })}
+                  </MetricCardGroup>
+                  <DataTableContainer>
+                    <DataTableToolbar table={table}>
+                      <DataTableFilterList table={table}>
+                        <Input
+                          placeholder="Search..."
+                          value={search}
+                          onChange={(event) =>
+                            setQueryState({
+                              page: 1,
+                              search: event.target.value,
+                            })
+                          }
+                          className="h-8 w-40 lg:w-56"
+                        />
+                      </DataTableFilterList>
+                      <DataTableSortList table={table} />
+                      <DataTableViewOptions table={table} />
+                    </DataTableToolbar>
+                    <DataTable table={table}>
+                      {!hasFilters ? (
+                        <Empty>
+                          <EmptyHeader>
+                            <EmptyTitle>Add your first credit note</EmptyTitle>
+                            <EmptyDescription>
+                              Credit notes are adjustments issued against
+                              finalized invoices.
+                            </EmptyDescription>
+                          </EmptyHeader>
+                          <EmptyContent>
+                            <InvoiceCombobox
+                              onSelect={onInvoiceSelect}
+                              status={[
+                                InvoiceStatusEnum.open,
+                                InvoiceStatusEnum.paid,
+                              ]}
+                              minOutstandingAmount={0.01}
+                            >
+                              <Button size="sm">
+                                <PlusIcon />
+                                Add credit note
+                              </Button>
+                            </InvoiceCombobox>
+                          </EmptyContent>
+                        </Empty>
+                      ) : (
+                        <Empty>
+                          <EmptyHeader>
+                            <EmptyTitle>No results found</EmptyTitle>
+                            <EmptyDescription>
+                              Try adjusting your filters to find credit notes
+                              you're looking for.
+                            </EmptyDescription>
+                          </EmptyHeader>
+                        </Empty>
+                      )}
+                    </DataTable>
+                    <DataTableFooter>
+                      <DataTablePagination table={table} />
+                    </DataTableFooter>
+                  </DataTableContainer>
+                </div>
+              </Section>
+            </SectionGroup>
+          </main>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

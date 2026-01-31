@@ -9,6 +9,7 @@ import {
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   DataTable,
   DataTableContainer,
@@ -48,7 +49,11 @@ import {
   SectionHeader,
   SectionTitle,
 } from "@/components/ui/section";
-import { SidebarTrigger } from "@/components/ui/sidebar.tsx";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar.tsx";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useDebounce } from "@/hooks/use-debounce.ts";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";
@@ -108,6 +113,7 @@ export const Route = createFileRoute("/(dashboard)/invoices/")({
 });
 
 function RouteComponent() {
+  const { auth, account } = Route.useRouteContext();
   const today = new Date();
   const [
     {
@@ -269,136 +275,141 @@ function RouteComponent() {
   });
 
   return (
-    <div>
-      <AppHeader>
-        <AppHeaderContent>
-          <SidebarTrigger />
-          <NavBreadcrumb items={[{ type: "page", label: "Invoices" }]} />
-        </AppHeaderContent>
-        <AppHeaderActions>
-          <div className="flex items-center gap-2 text-sm">
-            <SearchCommand />
-            <Button
-              type="button"
-              size="sm"
-              onClick={() =>
-                pushModal("InvoiceCreateDialog", {
-                  defaultCustomer: undefined,
-                })
-              }
-            >
-              <PlusIcon />
-              Add invoice
-            </Button>
-          </div>
-        </AppHeaderActions>
-      </AppHeader>
-      <main className="w-full flex-1">
-        <SectionGroup>
-          <Section>
-            <SectionHeader>
-              <SectionTitle>Invoices</SectionTitle>
-              <SectionDescription>Manage your invoices.</SectionDescription>
-            </SectionHeader>
-            <div className="grid gap-4">
-              <MetricCardGroup className="flex">
-                {metrics.map((item, index) => {
-                  const query = counters[index];
-                  return (
+    <SidebarProvider>
+      <AppSidebar user={auth.user} account={account} />
+      <SidebarInset>
+        <div>
+          <AppHeader>
+            <AppHeaderContent>
+              <SidebarTrigger />
+              <NavBreadcrumb items={[{ type: "page", label: "Invoices" }]} />
+            </AppHeaderContent>
+            <AppHeaderActions>
+              <div className="flex items-center gap-2 text-sm">
+                <SearchCommand />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() =>
+                    pushModal("InvoiceCreateDialog", {
+                      defaultCustomer: undefined,
+                    })
+                  }
+                >
+                  <PlusIcon />
+                  Add invoice
+                </Button>
+              </div>
+            </AppHeaderActions>
+          </AppHeader>
+          <main className="w-full flex-1">
+            <SectionGroup>
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Invoices</SectionTitle>
+                  <SectionDescription>Manage your invoices.</SectionDescription>
+                </SectionHeader>
+                <div className="grid gap-4">
+                  <MetricCardGroup className="flex">
+                    {metrics.map((item, index) => {
+                      const query = counters[index];
+                      return (
+                        <MetricCardButton
+                          key={item.value}
+                          selected={status.includes(item.value)}
+                          onClick={async () => {
+                            const column = table.getColumn("status");
+                            if (!column) return;
+                            column.setFilterValue(
+                              item.value === "all" ? undefined : [item.value],
+                            );
+                          }}
+                        >
+                          <MetricCardHeader className="flex items-center justify-between">
+                            <MetricCardTitle>{item.label}</MetricCardTitle>
+                            <ListFilterIcon className="size-4" />
+                          </MetricCardHeader>
+                          <MetricCardValue>
+                            {query.isLoading ? "…" : query.data?.count}
+                          </MetricCardValue>
+                        </MetricCardButton>
+                      );
+                    })}
                     <MetricCardButton
-                      key={item.value}
-                      selected={status.includes(item.value)}
-                      onClick={async () => {
-                        const column = table.getColumn("status");
-                        if (!column) return;
-                        column.setFilterValue(
-                          item.value === "all" ? undefined : [item.value],
-                        );
-                      }}
+                      variant={currentDeadlineFilter.variant}
+                      selected={deadline !== "all"}
+                      onClick={cycleDeadlineFilter}
                     >
                       <MetricCardHeader className="flex items-center justify-between">
-                        <MetricCardTitle>{item.label}</MetricCardTitle>
-                        <ListFilterIcon className="size-4" />
+                        <MetricCardTitle>Deadline</MetricCardTitle>
+                        <currentDeadlineFilter.icon className="size-4" />
                       </MetricCardHeader>
                       <MetricCardValue>
-                        {query.isLoading ? "…" : query.data?.count}
+                        {currentDeadlineFilter.label}
                       </MetricCardValue>
                     </MetricCardButton>
-                  );
-                })}
-                <MetricCardButton
-                  variant={currentDeadlineFilter.variant}
-                  selected={deadline !== "all"}
-                  onClick={cycleDeadlineFilter}
-                >
-                  <MetricCardHeader className="flex items-center justify-between">
-                    <MetricCardTitle>Deadline</MetricCardTitle>
-                    <currentDeadlineFilter.icon className="size-4" />
-                  </MetricCardHeader>
-                  <MetricCardValue>
-                    {currentDeadlineFilter.label}
-                  </MetricCardValue>
-                </MetricCardButton>
-              </MetricCardGroup>
-              <DataTableContainer>
-                <DataTableToolbar table={table}>
-                  <DataTableFilterList table={table}>
-                    <Input
-                      placeholder="Search..."
-                      value={search}
-                      onChange={(event) =>
-                        setQueryState({ search: event.target.value })
-                      }
-                      className="h-8 w-40 lg:w-56"
-                    />
-                  </DataTableFilterList>
-                  <DataTableSortList table={table} />
-                  <DataTableViewOptions table={table} />
-                </DataTableToolbar>
-                <DataTable table={table}>
-                  {!hasFilters ? (
-                    <Empty>
-                      <EmptyHeader>
-                        <EmptyTitle>Add your first invoice</EmptyTitle>
-                        <EmptyDescription>
-                          Invoices are used to bill your customers for your
-                          products.
-                        </EmptyDescription>
-                      </EmptyHeader>
-                      <EmptyContent>
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            pushModal("InvoiceCreateDialog", {
-                              defaultCustomer: undefined,
-                            })
+                  </MetricCardGroup>
+                  <DataTableContainer>
+                    <DataTableToolbar table={table}>
+                      <DataTableFilterList table={table}>
+                        <Input
+                          placeholder="Search..."
+                          value={search}
+                          onChange={(event) =>
+                            setQueryState({ search: event.target.value })
                           }
-                        >
-                          <PlusIcon />
-                          Add invoice
-                        </Button>
-                      </EmptyContent>
-                    </Empty>
-                  ) : (
-                    <Empty>
-                      <EmptyHeader>
-                        <EmptyTitle>No results found</EmptyTitle>
-                        <EmptyDescription>
-                          Try adjusting your filters to find invoices you're
-                          looking for.
-                        </EmptyDescription>
-                      </EmptyHeader>
-                    </Empty>
-                  )}
-                </DataTable>
-                <DataTableFooter>
-                  <DataTablePagination table={table} />
-                </DataTableFooter>
-              </DataTableContainer>
-            </div>
-          </Section>
-        </SectionGroup>
-      </main>
-    </div>
+                          className="h-8 w-40 lg:w-56"
+                        />
+                      </DataTableFilterList>
+                      <DataTableSortList table={table} />
+                      <DataTableViewOptions table={table} />
+                    </DataTableToolbar>
+                    <DataTable table={table}>
+                      {!hasFilters ? (
+                        <Empty>
+                          <EmptyHeader>
+                            <EmptyTitle>Add your first invoice</EmptyTitle>
+                            <EmptyDescription>
+                              Invoices are used to bill your customers for your
+                              products.
+                            </EmptyDescription>
+                          </EmptyHeader>
+                          <EmptyContent>
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                pushModal("InvoiceCreateDialog", {
+                                  defaultCustomer: undefined,
+                                })
+                              }
+                            >
+                              <PlusIcon />
+                              Add invoice
+                            </Button>
+                          </EmptyContent>
+                        </Empty>
+                      ) : (
+                        <Empty>
+                          <EmptyHeader>
+                            <EmptyTitle>No results found</EmptyTitle>
+                            <EmptyDescription>
+                              Try adjusting your filters to find invoices you're
+                              looking for.
+                            </EmptyDescription>
+                          </EmptyHeader>
+                        </Empty>
+                      )}
+                    </DataTable>
+                    <DataTableFooter>
+                      <DataTablePagination table={table} />
+                    </DataTableFooter>
+                  </DataTableContainer>
+                </div>
+              </Section>
+            </SectionGroup>
+          </main>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

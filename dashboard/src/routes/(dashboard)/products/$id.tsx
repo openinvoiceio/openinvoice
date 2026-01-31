@@ -15,6 +15,7 @@ import {
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   DataTable,
   DataTableContainer,
@@ -64,7 +65,11 @@ import {
   SectionHeader,
   SectionTitle,
 } from "@/components/ui/section";
-import { SidebarTrigger } from "@/components/ui/sidebar.tsx";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar.tsx";
 import { useDataTable } from "@/hooks/use-data-table";
 import { getErrorSummary } from "@/lib/api/errors.ts";
 import { formatDatetime, formatEnum } from "@/lib/formatters";
@@ -102,6 +107,7 @@ export const Route = createFileRoute("/(dashboard)/products/$id")({
 });
 
 function RouteComponent() {
+  const { auth, account } = Route.useRouteContext();
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
   const { data: product } = useProductsRetrieve(id);
@@ -173,186 +179,195 @@ function RouteComponent() {
   if (!product) return;
 
   return (
-    <div>
-      <AppHeader>
-        <AppHeaderContent>
-          <SidebarTrigger />
-          <NavBreadcrumb
-            items={[
-              {
-                type: "link",
-                label: "Products",
-                href: "/products",
-              },
-              { type: "page", label: product.name },
-            ]}
-          />
-        </AppHeaderContent>
-        <AppHeaderActions>
-          <div className="flex items-center gap-2 text-sm">
-            <SearchCommand />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => pushModal("ProductEditSheet", { product })}
-            >
-              <PencilIcon />
-              Edit
-            </Button>
-            <ProductDropdown product={product} actions={{ edit: false }}>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="data-[state=open]:bg-accent size-8"
-              >
-                <MoreHorizontalIcon />
-              </Button>
-            </ProductDropdown>
-          </div>
-        </AppHeaderActions>
-      </AppHeader>
-      <main className="flex min-h-[calc(100svh_-_56px)]">
-        <SectionGroup>
-          <Section>
-            <SectionHeader className="flex flex-row items-center gap-2">
-              <Avatar className="size-12 rounded-md">
-                <AvatarImage src={product.image_url || undefined} />
-                <AvatarFallback className="rounded-md">
-                  <BoxIcon className="size-6" />
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="flex items-center gap-2 self-start">
-                  <SectionTitle>{product.name}</SectionTitle>
-                  <ProductBadge status={product.status} />
-                </div>
-                <SectionDescription>{description}</SectionDescription>
+    <SidebarProvider>
+      <AppSidebar user={auth.user} account={account} />
+      <SidebarInset>
+        <div>
+          <AppHeader>
+            <AppHeaderContent>
+              <SidebarTrigger />
+              <NavBreadcrumb
+                items={[
+                  {
+                    type: "link",
+                    label: "Products",
+                    href: "/products",
+                  },
+                  { type: "page", label: product.name },
+                ]}
+              />
+            </AppHeaderContent>
+            <AppHeaderActions>
+              <div className="flex items-center gap-2 text-sm">
+                <SearchCommand />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => pushModal("ProductEditSheet", { product })}
+                >
+                  <PencilIcon />
+                  Edit
+                </Button>
+                <ProductDropdown product={product} actions={{ edit: false }}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="data-[state=open]:bg-accent size-8"
+                  >
+                    <MoreHorizontalIcon />
+                  </Button>
+                </ProductDropdown>
               </div>
-            </SectionHeader>
-          </Section>
-          <Section>
-            <SectionHeader>
-              <SectionTitle>Prices</SectionTitle>
-            </SectionHeader>
-            <div className="my-2 grid gap-4">
-              <MetricCardGroup className="flex">
-                {metrics.map((item, index) => {
-                  const query = counters[index];
-                  return (
-                    <MetricCardButton
-                      key={item.value}
-                      selected={status === item.value}
-                      onClick={() => setQueryState({ status: item.value })}
-                    >
-                      <MetricCardHeader className="flex items-center justify-between">
-                        <MetricCardTitle>{item.label}</MetricCardTitle>
-                        <ListFilterIcon className="size-4" />
-                      </MetricCardHeader>
-                      <MetricCardValue>
-                        {query.isLoading ? "…" : query.data?.count}
-                      </MetricCardValue>
-                    </MetricCardButton>
-                  );
-                })}
-              </MetricCardGroup>
-              <DataTableContainer>
-                <DataTable table={table}>
-                  <Empty>
-                    <EmptyHeader>
-                      <EmptyTitle>
-                        Add your first price for {product.name}
-                      </EmptyTitle>
-                      <EmptyDescription>
-                        Prices define how much and how you charge for your
-                        products.
-                      </EmptyDescription>
-                    </EmptyHeader>
-                    <EmptyContent>
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          pushModal("PriceCreateSheet", {
-                            productId: product.id,
-                          })
-                        }
-                      >
-                        <PlusIcon />
-                        Add price
-                      </Button>
-                    </EmptyContent>
-                  </Empty>
-                </DataTable>
-                <DataTableFooter>
-                  <DataTablePagination table={table} />
-                </DataTableFooter>
-              </DataTableContainer>
-            </div>
-          </Section>
-        </SectionGroup>
-        <DataSidebar defaultValue="overview">
-          <DataSidebarList>
-            <DataSidebarTrigger value="overview">
-              <InfoIcon />
-            </DataSidebarTrigger>
-            <DataSidebarTrigger value="metadata">
-              <BracesIcon />
-            </DataSidebarTrigger>
-          </DataSidebarList>
-          <DataSidebarContent value="overview">
-            <DataSidebarTitle>Overview</DataSidebarTitle>
-            <DataList orientation="vertical" className="gap-3 px-4" size="sm">
-              <DataListItem>
-                <DataListLabel>ID</DataListLabel>
-                <DataListValue>{product.id}</DataListValue>
-              </DataListItem>
-              <DataListItem>
-                <DataListLabel>Name</DataListLabel>
-                <DataListValue>{product.name}</DataListValue>
-              </DataListItem>
-              <DataListItem>
-                <DataListLabel>Description</DataListLabel>
-                <DataListValue>{product.description || "-"}</DataListValue>
-              </DataListItem>
-              <DataListItem>
-                <DataListLabel>Status</DataListLabel>
-                <DataListValue>
-                  <ProductBadge status={product.status} />
-                </DataListValue>
-              </DataListItem>
-              <DataListItem>
-                <DataListLabel>Created</DataListLabel>
-                <DataListValue>
-                  {formatDatetime(product.created_at)}
-                </DataListValue>
-              </DataListItem>
-              <DataListItem>
-                <DataListLabel>Last updated</DataListLabel>
-                <DataListValue>
-                  {product.updated_at
-                    ? formatDatetime(product.updated_at)
-                    : "-"}
-                </DataListValue>
-              </DataListItem>
-            </DataList>
-          </DataSidebarContent>
-          <DataSidebarContent value="metadata">
-            <DataSidebarTitle>Metadata</DataSidebarTitle>
-            <Metadata
-              className="my-1 px-4"
-              data={product.metadata as Record<string, string>}
-              onSubmit={(metadata) => {
-                void updateProduct.mutateAsync({
-                  id: id,
-                  data: { metadata },
-                });
-              }}
-              submitOnChange
-            />
-          </DataSidebarContent>
-        </DataSidebar>
-      </main>
-    </div>
+            </AppHeaderActions>
+          </AppHeader>
+          <main className="flex min-h-[calc(100svh_-_56px)]">
+            <SectionGroup>
+              <Section>
+                <SectionHeader className="flex flex-row items-center gap-2">
+                  <Avatar className="size-12 rounded-md">
+                    <AvatarImage src={product.image_url || undefined} />
+                    <AvatarFallback className="rounded-md">
+                      <BoxIcon className="size-6" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="flex items-center gap-2 self-start">
+                      <SectionTitle>{product.name}</SectionTitle>
+                      <ProductBadge status={product.status} />
+                    </div>
+                    <SectionDescription>{description}</SectionDescription>
+                  </div>
+                </SectionHeader>
+              </Section>
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Prices</SectionTitle>
+                </SectionHeader>
+                <div className="my-2 grid gap-4">
+                  <MetricCardGroup className="flex">
+                    {metrics.map((item, index) => {
+                      const query = counters[index];
+                      return (
+                        <MetricCardButton
+                          key={item.value}
+                          selected={status === item.value}
+                          onClick={() => setQueryState({ status: item.value })}
+                        >
+                          <MetricCardHeader className="flex items-center justify-between">
+                            <MetricCardTitle>{item.label}</MetricCardTitle>
+                            <ListFilterIcon className="size-4" />
+                          </MetricCardHeader>
+                          <MetricCardValue>
+                            {query.isLoading ? "…" : query.data?.count}
+                          </MetricCardValue>
+                        </MetricCardButton>
+                      );
+                    })}
+                  </MetricCardGroup>
+                  <DataTableContainer>
+                    <DataTable table={table}>
+                      <Empty>
+                        <EmptyHeader>
+                          <EmptyTitle>
+                            Add your first price for {product.name}
+                          </EmptyTitle>
+                          <EmptyDescription>
+                            Prices define how much and how you charge for your
+                            products.
+                          </EmptyDescription>
+                        </EmptyHeader>
+                        <EmptyContent>
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              pushModal("PriceCreateSheet", {
+                                productId: product.id,
+                              })
+                            }
+                          >
+                            <PlusIcon />
+                            Add price
+                          </Button>
+                        </EmptyContent>
+                      </Empty>
+                    </DataTable>
+                    <DataTableFooter>
+                      <DataTablePagination table={table} />
+                    </DataTableFooter>
+                  </DataTableContainer>
+                </div>
+              </Section>
+            </SectionGroup>
+            <DataSidebar defaultValue="overview">
+              <DataSidebarList>
+                <DataSidebarTrigger value="overview">
+                  <InfoIcon />
+                </DataSidebarTrigger>
+                <DataSidebarTrigger value="metadata">
+                  <BracesIcon />
+                </DataSidebarTrigger>
+              </DataSidebarList>
+              <DataSidebarContent value="overview">
+                <DataSidebarTitle>Overview</DataSidebarTitle>
+                <DataList
+                  orientation="vertical"
+                  className="gap-3 px-4"
+                  size="sm"
+                >
+                  <DataListItem>
+                    <DataListLabel>ID</DataListLabel>
+                    <DataListValue>{product.id}</DataListValue>
+                  </DataListItem>
+                  <DataListItem>
+                    <DataListLabel>Name</DataListLabel>
+                    <DataListValue>{product.name}</DataListValue>
+                  </DataListItem>
+                  <DataListItem>
+                    <DataListLabel>Description</DataListLabel>
+                    <DataListValue>{product.description || "-"}</DataListValue>
+                  </DataListItem>
+                  <DataListItem>
+                    <DataListLabel>Status</DataListLabel>
+                    <DataListValue>
+                      <ProductBadge status={product.status} />
+                    </DataListValue>
+                  </DataListItem>
+                  <DataListItem>
+                    <DataListLabel>Created</DataListLabel>
+                    <DataListValue>
+                      {formatDatetime(product.created_at)}
+                    </DataListValue>
+                  </DataListItem>
+                  <DataListItem>
+                    <DataListLabel>Last updated</DataListLabel>
+                    <DataListValue>
+                      {product.updated_at
+                        ? formatDatetime(product.updated_at)
+                        : "-"}
+                    </DataListValue>
+                  </DataListItem>
+                </DataList>
+              </DataSidebarContent>
+              <DataSidebarContent value="metadata">
+                <DataSidebarTitle>Metadata</DataSidebarTitle>
+                <Metadata
+                  className="my-1 px-4"
+                  data={product.metadata as Record<string, string>}
+                  onSubmit={(metadata) => {
+                    void updateProduct.mutateAsync({
+                      id: id,
+                      data: { metadata },
+                    });
+                  }}
+                  submitOnChange
+                />
+              </DataSidebarContent>
+            </DataSidebar>
+          </main>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

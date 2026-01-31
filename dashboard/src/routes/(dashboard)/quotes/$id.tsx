@@ -11,6 +11,7 @@ import {
   AppHeaderActions,
   AppHeaderContent,
 } from "@/components/app-header";
+import { AppSidebar } from "@/components/app-sidebar";
 import { CommentsForm } from "@/components/comments-form";
 import { CommentsList } from "@/components/comments-list";
 import { NavBreadcrumb } from "@/components/nav-breadcrumb";
@@ -25,7 +26,11 @@ import {
   SectionHeader,
   SectionTitle,
 } from "@/components/ui/section";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { getErrorSummary } from "@/lib/api/errors";
 import { formatAmount } from "@/lib/formatters";
 import { useQueryClient } from "@tanstack/react-query";
@@ -38,6 +43,7 @@ export const Route = createFileRoute("/(dashboard)/quotes/$id")({
 });
 
 function RouteComponent() {
+  const { auth, account } = Route.useRouteContext();
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
   const { data: quote } = useQuotesRetrieve(id);
@@ -75,86 +81,96 @@ function RouteComponent() {
   if (!quote) return null;
 
   return (
-    <div>
-      <AppHeader>
-        <AppHeaderContent>
-          <SidebarTrigger />
-          <NavBreadcrumb
-            items={[
-              { type: "link", label: "Quotes", href: "/quotes" },
-              { type: "page", label: quote.number || "Quote" },
-            ]}
-          />
-        </AppHeaderContent>
-        <AppHeaderActions>
-          <div className="flex items-center gap-2 text-sm">
-            <SearchCommand />
-            {quote.status === QuoteStatusEnum.draft && (
-              <Button type="button" variant="outline" size="sm" asChild>
-                <Link to="/quotes/$id/edit" params={{ id: quote.id }}>
-                  <PencilIcon />
-                  Edit
-                </Link>
-              </Button>
-            )}
-            <QuoteDropdown quote={quote} actions={{ edit: false }}>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="data-[state=open]:bg-accent size-8"
-              >
-                <MoreHorizontalIcon />
-              </Button>
-            </QuoteDropdown>
-          </div>
-        </AppHeaderActions>
-      </AppHeader>
-      <main className="flex min-h-[calc(100svh_-_56px)]">
-        <SectionGroup className="w-full flex-1">
-          <Section>
-            <SectionHeader>
-              <div className="flex items-center gap-2">
-                <SectionTitle>{quote.number || quote.id}</SectionTitle>
-                <QuoteBadge status={quote.status} />
+    <SidebarProvider>
+      <AppSidebar user={auth.user} account={account} />
+      <SidebarInset>
+        <div>
+          <AppHeader>
+            <AppHeaderContent>
+              <SidebarTrigger />
+              <NavBreadcrumb
+                items={[
+                  { type: "link", label: "Quotes", href: "/quotes" },
+                  { type: "page", label: quote.number || "Quote" },
+                ]}
+              />
+            </AppHeaderContent>
+            <AppHeaderActions>
+              <div className="flex items-center gap-2 text-sm">
+                <SearchCommand />
+                {quote.status === QuoteStatusEnum.draft && (
+                  <Button type="button" variant="outline" size="sm" asChild>
+                    <Link to="/quotes/$id/edit" params={{ id: quote.id }}>
+                      <PencilIcon />
+                      Edit
+                    </Link>
+                  </Button>
+                )}
+                <QuoteDropdown quote={quote} actions={{ edit: false }}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="data-[state=open]:bg-accent size-8"
+                  >
+                    <MoreHorizontalIcon />
+                  </Button>
+                </QuoteDropdown>
               </div>
-              <SectionDescription>
-                <span>Quoted to </span>
-                <Link to="/customers/$id" params={{ id: quote.customer.id }}>
-                  <span className="text-primary underline-offset-4 hover:underline">
-                    {quote.customer.name}
-                  </span>
-                </Link>
-                <span> - </span>
-                <span>{formatAmount(quote.total_amount, quote.currency)}</span>
-              </SectionDescription>
-            </SectionHeader>
-          </Section>
-          <Section>
-            <SectionHeader>
-              <SectionTitle>Comments</SectionTitle>
-            </SectionHeader>
-            <div className="space-y-4">
-              <CommentsList
-                comments={comments.data?.results ?? []}
-                isLoading={comments.isLoading}
-                onDelete={(commentId) =>
-                  deleteComment.mutateAsync({
-                    quoteId: quote.id,
-                    id: commentId,
-                  })
-                }
-              />
-              <CommentsForm
-                isCreating={createComment.isPending}
-                onCreate={(data) =>
-                  createComment.mutateAsync({ quoteId: quote.id, data })
-                }
-              />
-            </div>
-          </Section>
-        </SectionGroup>
-      </main>
-    </div>
+            </AppHeaderActions>
+          </AppHeader>
+          <main className="flex min-h-[calc(100svh_-_56px)]">
+            <SectionGroup className="w-full flex-1">
+              <Section>
+                <SectionHeader>
+                  <div className="flex items-center gap-2">
+                    <SectionTitle>{quote.number || quote.id}</SectionTitle>
+                    <QuoteBadge status={quote.status} />
+                  </div>
+                  <SectionDescription>
+                    <span>Quoted to </span>
+                    <Link
+                      to="/customers/$id"
+                      params={{ id: quote.customer.id }}
+                    >
+                      <span className="text-primary underline-offset-4 hover:underline">
+                        {quote.customer.name}
+                      </span>
+                    </Link>
+                    <span> - </span>
+                    <span>
+                      {formatAmount(quote.total_amount, quote.currency)}
+                    </span>
+                  </SectionDescription>
+                </SectionHeader>
+              </Section>
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Comments</SectionTitle>
+                </SectionHeader>
+                <div className="space-y-4">
+                  <CommentsList
+                    comments={comments.data?.results ?? []}
+                    isLoading={comments.isLoading}
+                    onDelete={(commentId) =>
+                      deleteComment.mutateAsync({
+                        quoteId: quote.id,
+                        id: commentId,
+                      })
+                    }
+                  />
+                  <CommentsForm
+                    isCreating={createComment.isPending}
+                    onCreate={(data) =>
+                      createComment.mutateAsync({ quoteId: quote.id, data })
+                    }
+                  />
+                </div>
+              </Section>
+            </SectionGroup>
+          </main>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
