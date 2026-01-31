@@ -1,4 +1,5 @@
 .DEFAULT_GOAL := all
+DJANGO_SETTINGS_MODULE := config.settings.development
 
 .PHONY: install
 install:

@@ -1,6 +1,7 @@
+{% load static %}
 {% load djmoney %}
 {% load i18n %}
-{% load static %}
+{% load l10n %}
 
 {% language document.language %}
     <!DOCTYPE html>
@@ -48,13 +49,13 @@
                 {% if invoice.issue_date %}
                     <p>
                         <span class="info-label">{% trans "invoice.pdf.issue_date" %}:</span>
-                        <span class="info-value">{{ invoice.issue_date|date:"j E, Y" }}</span>
+                        <span class="info-value">{{ invoice.issue_date|date:"j E, Y"|localize }}</span>
                     </p>
                 {% endif %}
                 {% if invoice.previous_revision and invoice.previous_revision.issue_date %}
                     <p>
                         <span class="info-label">{% trans "invoice.pdf.original_issue_date" %}:</span>
-                        <span class="info-value">{{ invoice.previous_revision.issue_date|date:"j E, Y" }}</span>
+                        <span class="info-value">{{ invoice.previous_revision.issue_date|date:"j E, Y"|localize }}</span>
                     </p>
                 {% endif %}
             </div>
@@ -149,7 +150,7 @@
                 {% money_localize invoice.total_amount %}
             </p>
             <p class="total-due">
-                {% trans "invoice.pdf.due" %} {{ invoice.effective_due_date|date:"j E, Y" }}
+                {% trans "invoice.pdf.due" %} {{ invoice.effective_due_date|date:"j E, Y"|localize }}
             </p>
         </section>
 

@@ -10,6 +10,10 @@
  * * `en-us` - English
  * `en-gb` - British English
  * `en-au` - Australian English
+ * `de` - German
+ * `fr` - French
+ * `it` - Italian
+ * `es` - Spanish
  */
 export type LanguageEnum = (typeof LanguageEnum)[keyof typeof LanguageEnum];
 
@@ -18,4 +22,8 @@ export const LanguageEnum = {
   "en-us": "en-us",
   "en-gb": "en-gb",
   "en-au": "en-au",
+  de: "de",
+  fr: "fr",
+  it: "it",
+  es: "es",
 } as const;

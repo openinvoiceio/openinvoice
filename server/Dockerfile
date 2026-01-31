@@ -23,6 +23,6 @@ ADD . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-editable
 
-RUN uv run python manage.py compilemessages
+RUN uv run manage.py compilemessages
 
 ENV PATH="/app/.venv/bin:$PATH"

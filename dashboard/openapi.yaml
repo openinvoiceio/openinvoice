@@ -9374,11 +9374,19 @@ components:
       - en-us
       - en-gb
       - en-au
+      - de
+      - fr
+      - it
+      - es
       type: string
       description: |-
         * `en-us` - English
         * `en-gb` - British English
         * `en-au` - Australian English
+        * `de` - German
+        * `fr` - French
+        * `it` - Italian
+        * `es` - Spanish
     Member:
       type: object
       properties:

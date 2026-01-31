@@ -170,12 +170,20 @@ LANGUAGES = [
     ("en-us", gettext_noop("English")),
     ("en-gb", gettext_noop("British English")),
     ("en-au", gettext_noop("Australian English")),
+    ("de", gettext_noop("German")),
+    ("fr", gettext_noop("French")),
+    ("it", gettext_noop("Italian")),
+    ("es", gettext_noop("Spanish")),
 ]
 
-COUNTRY_TO_LANUAGE = {
+COUNTRY_TO_LANGUAGE = {
     "US": "en-us",
     "GB": "en-gb",
     "AU": "en-au",
+    "DE": "de",
+    "FR": "fr",
+    "IT": "it",
+    "ES": "es",
 }
 
 TIME_ZONE = "UTC"

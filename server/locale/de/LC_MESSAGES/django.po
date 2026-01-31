@@ -4,116 +4,116 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-31 09:28-0600\n"
 "PO-Revision-Date: 2026-01-31 00:00+0000\n"
-"Language: en-us\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: config/settings/base.py:170
 msgid "English"
-msgstr "English"
+msgstr "Englisch"
 
 #: config/settings/base.py:171
 msgid "British English"
-msgstr "British English"
+msgstr "Britisches Englisch"
 
 #: config/settings/base.py:172
 msgid "Australian English"
-msgstr "Australian English"
+msgstr "Australisches Englisch"
 
 #: config/settings/base.py:173
 msgid "German"
-msgstr ""
+msgstr "Deutsch"
 
 #: config/settings/base.py:174
 msgid "French"
-msgstr ""
+msgstr "Französisch"
 
 #: config/settings/base.py:175
 msgid "Italian"
-msgstr ""
+msgstr "Italienisch"
 
 #: config/settings/base.py:176
 msgid "Spanish"
-msgstr ""
+msgstr "Spanisch"
 
 #: templates/invoices/pdf/classic.html:14
 #: templates/invoices/pdf/classic.html:23
 msgid "invoice.pdf.title"
-msgstr "Invoice"
+msgstr "Rechnung"
 
 #: templates/invoices/pdf/classic.html:21
 msgid "invoice.pdf.corrective_title"
-msgstr "Corrective Invoice"
+msgstr "Korrekturrechnung"
 
 #: templates/invoices/pdf/classic.html:29
 msgid "invoice.pdf.logo_alt"
-msgstr "logo"
+msgstr "Logo"
 
 #: templates/invoices/pdf/classic.html:40
 msgid "invoice.pdf.number"
-msgstr "Number"
+msgstr "Nummer"
 
 #: templates/invoices/pdf/classic.html:45
 msgid "invoice.pdf.corrects_invoice"
-msgstr "Corrects invoice"
+msgstr "Korrigiert Rechnung"
 
 #: templates/invoices/pdf/classic.html:51
 msgid "invoice.pdf.issue_date"
-msgstr "Issue date"
+msgstr "Ausstellungsdatum"
 
 #: templates/invoices/pdf/classic.html:57
 msgid "invoice.pdf.original_issue_date"
-msgstr "Original invoice issue date"
+msgstr "Ursprüngliches Ausstellungsdatum"
 
 #: templates/invoices/pdf/classic.html:74
 msgid "invoice.pdf.from"
-msgstr "From"
+msgstr "Von"
 
 #: templates/invoices/pdf/classic.html:101
 msgid "invoice.pdf.bill_to"
-msgstr "Bill to"
+msgstr "Rechnung an"
 
 #: templates/invoices/pdf/classic.html:126
 msgid "invoice.pdf.ship_to"
-msgstr "Ship to"
+msgstr "Lieferung an"
 
 #: templates/invoices/pdf/classic.html:153
 msgid "invoice.pdf.due"
-msgstr "Due"
+msgstr "Fällig"
 
 #: templates/invoices/pdf/classic.html:161
 msgid "invoice.pdf.description"
-msgstr "Description"
+msgstr "Beschreibung"
 
 #: templates/invoices/pdf/classic.html:162
 msgid "invoice.pdf.quantity"
-msgstr "Quantity"
+msgstr "Menge"
 
 #: templates/invoices/pdf/classic.html:164
 msgid "invoice.pdf.price"
-msgstr "Price"
+msgstr "Preis"
 
 #: templates/invoices/pdf/classic.html:167
 msgid "invoice.pdf.tax"
-msgstr "Tax"
+msgstr "Steuer"
 
 #: templates/invoices/pdf/classic.html:170
 msgid "invoice.pdf.amount"
-msgstr "Amount"
+msgstr "Betrag"
 
 #: templates/invoices/pdf/classic.html:212
 msgid "invoice.pdf.subtotal"
-msgstr "Subtotal"
+msgstr "Zwischensumme"
 
 #: templates/invoices/pdf/classic.html:223
 msgid "invoice.pdf.shipping_fee"
-msgstr "Shipping fee"
+msgstr "Versandkosten"
 
 #: templates/invoices/pdf/classic.html:228
 msgid "invoice.pdf.total_excluding_tax"
-msgstr "Total excluding tax"
+msgstr "Summe ohne Steuer"
 
 #: templates/invoices/pdf/classic.html:238
 msgid "invoice.pdf.total"
-msgstr "Total"
+msgstr "Gesamt"
