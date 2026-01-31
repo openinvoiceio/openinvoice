@@ -1,18 +1,18 @@
 import { usePreviewInvoiceSuspense } from "@/api/endpoints/invoices/invoices";
 import type { Invoice } from "@/api/models";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   FormCard,
   FormCardContent,
   FormCardHeader,
 } from "@/components/ui/form-card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -20,51 +20,60 @@ import {
   formatEmailList,
   formatLanguage,
 } from "@/lib/formatters";
+import { cn } from "@/lib/utils.ts";
 import { Suspense, useEffect, useRef, useState } from "react";
 
 export function InvoicePreview({ invoice }: { invoice: Invoice }) {
   const hasDocuments = invoice.documents.length > 0;
-  const [selectedLanguage, setSelectedLanguage] = useState(
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
     invoice.documents[0]?.language,
   );
-
-  useEffect(() => {
-    setSelectedLanguage(invoice.documents[0]?.language);
-  }, [invoice.documents]);
 
   return (
     <FormCard>
       <Tabs defaultValue={hasDocuments ? "pdf" : "email"}>
         <FormCardHeader>
-          <TabsList className="w-full">
-            {hasDocuments && <TabsTrigger value="pdf">PDF</TabsTrigger>}
-            <TabsTrigger value="email">Email</TabsTrigger>
-          </TabsList>
+          <div
+            className={
+              hasDocuments
+                ? "grid grid-cols-3 items-center gap-2"
+                : "flex items-center"
+            }
+          >
+            <TabsList className={cn("w-full", hasDocuments && "col-span-2")}>
+              {hasDocuments && (
+                <TabsTrigger value="pdf" className="flex-1">
+                  PDF
+                </TabsTrigger>
+              )}
+              <TabsTrigger value="email" className="flex-1">
+                Email
+              </TabsTrigger>
+            </TabsList>
+            {hasDocuments && (
+              <div className="col-span-1 w-full min-w-0">
+                <Select
+                  value={selectedLanguage}
+                  onValueChange={setSelectedLanguage}
+                >
+                  <SelectTrigger className="h-9 w-full min-w-0">
+                    <SelectValue className="block max-w-full truncate" />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    {invoice.documents.map((document) => (
+                      <SelectItem key={document.id} value={document.language}>
+                        {formatLanguage(document.language)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
         </FormCardHeader>
         <FormCardContent className="pb-4">
           {hasDocuments && (
             <TabsContent value="pdf">
-              <div className="mb-3 flex items-center justify-end">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      {selectedLanguage
-                        ? formatLanguage(selectedLanguage)
-                        : "Select language"}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {invoice.documents.map((document) => (
-                      <DropdownMenuItem
-                        key={document.id}
-                        onClick={() => setSelectedLanguage(document.language)}
-                      >
-                        {formatLanguage(document.language)}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
               <Suspense fallback={<Spinner />}>
                 <PdfPreview
                   invoiceId={invoice.id}

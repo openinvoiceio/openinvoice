@@ -88,7 +88,7 @@ function InvoiceDocumentDownloadSubmenu({
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
-        <DownloadIcon className="size-4" />
+        <DownloadIcon className="text-muted-foreground mr-2 size-4" />
         <span>Download</span>
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
