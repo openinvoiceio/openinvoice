@@ -56,7 +56,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { columns } from "@/features/invoices/components/invoice-table";
+import { columns } from "@/features/invoices/tables/columns";
 import { useDataTable } from "@/hooks/use-data-table";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";
 import { formatAmount, formatISODate } from "@/lib/formatters";

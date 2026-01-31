@@ -53,7 +53,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
-import { columns } from "@/features/quotes/components/quote-table";
+import { columns } from "@/features/quotes/tables/columns";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useDebounce } from "@/hooks/use-debounce.ts";
 import { getInitialColumnVisibility } from "@/lib/data-table.ts";

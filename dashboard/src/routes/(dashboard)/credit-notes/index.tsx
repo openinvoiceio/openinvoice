@@ -59,7 +59,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { columns } from "@/features/credit-notes/components/credit-note-table";
+import { columns } from "@/features/credit-notes/tables/columns";
 import { InvoiceCombobox } from "@/features/invoices/components/invoice-combobox.tsx";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useDebounce } from "@/hooks/use-debounce";

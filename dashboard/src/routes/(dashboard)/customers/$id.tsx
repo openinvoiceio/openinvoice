@@ -84,7 +84,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CustomerDropdown } from "@/features/customers/components/customer-dropdown";
-import { columns } from "@/features/invoices/components/invoice-table";
+import { columns } from "@/features/invoices/tables/columns";
 import { NumberingSystemView } from "@/features/settings/components/numbering-system-view";
 import { useDataTable } from "@/hooks/use-data-table";
 import { getErrorSummary } from "@/lib/api/errors";

@@ -41,7 +41,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
-import { columns } from "@/features/customers/components/customer-table";
+import { columns } from "@/features/customers/tables/columns";
 import { useDataTable } from "@/hooks/use-data-table";
 import { getSortingStateParser } from "@/lib/parsers";
 import { createFileRoute } from "@tanstack/react-router";

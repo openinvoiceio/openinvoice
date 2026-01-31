@@ -52,7 +52,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { columns } from "@/features/products/components/product-table";
+import { columns } from "@/features/products/tables/product-columns";
 import { useDataTable } from "@/hooks/use-data-table";
 import { formatEnum } from "@/lib/formatters";
 import { getSortingStateParser } from "@/lib/parsers";

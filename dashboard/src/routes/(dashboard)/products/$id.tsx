@@ -67,9 +67,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
-import { columns } from "@/features/products/components/price-table";
 import { ProductBadge } from "@/features/products/components/product-badge";
 import { ProductDropdown } from "@/features/products/components/product-dropdown";
+import { columns } from "@/features/products/tables/price-columns";
 import { useDataTable } from "@/hooks/use-data-table";
 import { getErrorSummary } from "@/lib/api/errors.ts";
 import { formatDatetime, formatEnum } from "@/lib/formatters";

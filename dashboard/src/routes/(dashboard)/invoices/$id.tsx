@@ -78,7 +78,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { columns } from "@/features/credit-notes/components/credit-note-table";
+import { columns } from "@/features/credit-notes/tables/columns";
 import { InvoiceBadge } from "@/features/invoices/components/invoice-badge";
 import { InvoiceDropdown } from "@/features/invoices/components/invoice-dropdown";
 import { InvoiceLineDropdown } from "@/features/invoices/components/invoice-line-dropdown";
