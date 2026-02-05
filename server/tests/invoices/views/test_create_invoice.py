@@ -4,7 +4,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from common.choices import FeatureCode, LimitCode
+from openinvoice.core.choices import FeatureCode, LimitCode
 from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentAudience, InvoiceStatus
 from openinvoice.invoices.models import Invoice

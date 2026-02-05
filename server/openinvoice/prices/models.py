@@ -8,7 +8,7 @@ from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from common.calculations import zero
+from openinvoice.core.calculations import zero
 
 from .choices import PriceModel, PriceStatus
 from .managers import PriceManager

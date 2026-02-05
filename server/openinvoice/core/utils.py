@@ -5,7 +5,7 @@ import moneyed
 from django.db import DataError
 from rest_framework.exceptions import ValidationError
 
-from common.db import is_numeric_out_of_range_error
+from openinvoice.core.db import is_numeric_out_of_range_error
 
 
 def country_to_currency(country_code: str) -> str:

@@ -1,7 +1,7 @@
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template.loader import render_to_string
 
-from common.pdf import generate_pdf
+from openinvoice.core.pdf import generate_pdf
 from openinvoice.files.choices import FilePurpose
 from openinvoice.files.models import File
 

@@ -4,7 +4,7 @@ from datetime import date
 import pytest
 from freezegun import freeze_time
 
-from common.choices import FeatureCode
+from openinvoice.core.choices import FeatureCode
 from openinvoice.quotes.choices import QuoteDeliveryMethod, QuoteStatus
 from tests.factories import CustomerFactory, QuoteFactory
 

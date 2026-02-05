@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import pytest
 from freezegun import freeze_time
 
-from common.choices import FeatureCode, LimitCode
+from openinvoice.core.choices import FeatureCode, LimitCode
 from openinvoice.quotes.choices import QuoteDeliveryMethod
 from tests.factories import CustomerFactory
 

@@ -2,7 +2,7 @@ from djmoney.contrib.django_rest_framework import MoneyField
 from djmoney.money import Money
 from rest_framework import serializers
 
-from common.fields import CurrencyField
+from openinvoice.core.fields import CurrencyField
 from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.invoices.choices import InvoiceStatus
 from openinvoice.invoices.fields import InvoiceRelatedField

@@ -4,7 +4,7 @@ from django.conf import settings
 from gotenberg_client import BaseClientError, GotenbergClient
 from gotenberg_client.options import PdfAFormat
 
-from common.pdf.exceptions import PdfError, PdfGenerationError
+from openinvoice.core.pdf.exceptions import PdfError, PdfGenerationError
 
 from .base import PdfBackend
 

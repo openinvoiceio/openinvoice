@@ -1,8 +1,8 @@
 from djmoney.contrib.django_rest_framework.fields import MoneyField
 from rest_framework import serializers
 
-from common.fields import CurrencyField
-from common.validators import ExactlyOneValidator
+from openinvoice.core.fields import CurrencyField
+from openinvoice.core.validators import ExactlyOneValidator
 
 from .choices import CouponStatus
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.conf import settings
 from weasyprint import HTML
 
-from common.pdf.exceptions import PdfError
+from openinvoice.core.pdf.exceptions import PdfError
 
 from .base import PdfBackend
 

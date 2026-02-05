@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Any
 from django.db import models
 from djmoney.money import Money
 
-from common.calculations import zero
 from openinvoice.accounts.models import Account
+from openinvoice.core.calculations import zero
 from openinvoice.invoices.models import Invoice
 from openinvoice.numbering_systems.models import NumberingSystem
 

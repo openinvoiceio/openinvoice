@@ -2,8 +2,8 @@ from djmoney.contrib.django_rest_framework import MoneyField
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from common.fields import CurrencyField
 from openinvoice.addresses.serializers import AddressSerializer
+from openinvoice.core.fields import CurrencyField
 from openinvoice.customers.fields import CustomerRelatedField
 from openinvoice.invoices.choices import InvoiceDocumentAudience, InvoiceStatus
 from openinvoice.tax_ids.serializers import TaxIdSerializer

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from common.fields import CurrencyField
+from openinvoice.core.fields import CurrencyField
 
 
 class GrossRevenueParamsSerializer(serializers.Serializer):

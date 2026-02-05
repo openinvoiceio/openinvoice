@@ -19,7 +19,7 @@ from corsheaders.defaults import default_headers
 from django.utils.translation import gettext_noop
 from drf_standardized_errors.openapi_serializers import ClientErrorEnum, ServerErrorEnum, ValidationErrorEnum
 
-from common.choices import FeatureCode, LimitCode
+from openinvoice.core.choices import FeatureCode, LimitCode
 
 env = environ.Env()
 
@@ -41,6 +41,7 @@ LOCAL_APPS = [
     "openinvoice.files.apps.FilesConfig",
     "openinvoice.invoices.apps.InvoicesConfig",
     "openinvoice.credit_notes.apps.CreditNotesConfig",
+    "openinvoice.core.apps.CoreConfig",
     "openinvoice.integrations.apps.IntegrationsConfig",
     "openinvoice.integrations.stripe.apps.StripeIntegrationsConfig",
     "openinvoice.comments.apps.CommentsConfig",
@@ -301,11 +302,11 @@ else:
 
 PDF_ENGINE = env("DJANGO_PDF_ENGINE", default="weasyprint")
 if PDF_ENGINE == "gotenberg":
-    PDF_GENERATOR_BACKEND = "common.pdf.backends.gotenberg.GotenbergBackend"
+    PDF_GENERATOR_BACKEND = "openinvoice.core.pdf.backends.gotenberg.GotenbergBackend"
     GOTENBERG_URL = env.str("DJANGO_GOTENBERG_URL", default="http://localhost:3000")
     GOTENBERG_TIMEOUT = env.int("DJANGO_GOTENBERG_TIMEOUT", default=60)
 else:
-    PDF_GENERATOR_BACKEND = "common.pdf.backends.weasyprint.WeasyPrintBackend"
+    PDF_GENERATOR_BACKEND = "openinvoice.core.pdf.backends.weasyprint.WeasyPrintBackend"
 
 # API
 
@@ -317,7 +318,7 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
-    "DEFAULT_PAGINATION_CLASS": "common.pagination.PageNumberPagination",
+    "DEFAULT_PAGINATION_CLASS": "openinvoice.core.pagination.PageNumberPagination",
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning",
     "DEFAULT_VERSION": "v1",
     "DEFAULT_AUTHENTICATION_CLASSES": [

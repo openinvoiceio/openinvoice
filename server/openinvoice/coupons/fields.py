@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from common.fields import UniqueManyRelatedField
+from openinvoice.core.fields import UniqueManyRelatedField
 
 from .models import Coupon
 

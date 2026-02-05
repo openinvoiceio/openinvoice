@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from common.choices import LimitCode
+from openinvoice.core.choices import LimitCode
 from openinvoice.prices.choices import PriceModel
 
 pytestmark = pytest.mark.django_db

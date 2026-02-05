@@ -2,11 +2,11 @@ from djmoney.contrib.django_rest_framework import MoneyField
 from djmoney.money import Money
 from rest_framework import serializers
 
-from common.access import has_feature
-from common.choices import FeatureCode
-from common.fields import CurrencyField, MetadataField
-from common.validators import ExactlyOneValidator
 from openinvoice.addresses.serializers import AddressSerializer
+from openinvoice.core.access import has_feature
+from openinvoice.core.choices import FeatureCode
+from openinvoice.core.fields import CurrencyField, MetadataField
+from openinvoice.core.validators import ExactlyOneValidator
 from openinvoice.coupons.fields import CouponRelatedField
 from openinvoice.coupons.serializers import CouponSerializer
 from openinvoice.customers.fields import CustomerRelatedField

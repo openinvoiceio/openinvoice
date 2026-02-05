@@ -5,7 +5,7 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from common.choices import FeatureCode
+from openinvoice.core.choices import FeatureCode
 from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceStatus
 from openinvoice.invoices.models import InvoiceCoupon, InvoiceTaxRate

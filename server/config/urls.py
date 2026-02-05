@@ -22,7 +22,7 @@ from django.urls import URLPattern, URLResolver, include, path, re_path
 from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from common.views import ConfigAPIView
+from openinvoice.core.views import ConfigAPIView
 
 urlpatterns: list[URLPattern | URLResolver] = [
     path("admin/", admin.site.urls),

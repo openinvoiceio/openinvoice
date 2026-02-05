@@ -5,7 +5,7 @@ from django.db import models
 from django.utils import timezone
 from djmoney.money import Money
 
-from common.calculations import zero
+from openinvoice.core.calculations import zero
 
 from .choices import TaxRateStatus
 from .managers import TaxRateManager

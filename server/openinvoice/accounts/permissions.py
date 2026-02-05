@@ -1,9 +1,9 @@
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import BasePermission
 
-from common.access import is_limit_exceeded
-from common.choices import LimitCode
-from common.permissions import WithinLimit
+from openinvoice.core.access import is_limit_exceeded
+from openinvoice.core.choices import LimitCode
+from openinvoice.core.permissions import WithinLimit
 
 from .choices import MemberRole
 from .models import Member

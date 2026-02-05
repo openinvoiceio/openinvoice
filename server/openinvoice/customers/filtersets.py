@@ -1,6 +1,6 @@
 import django_filters
 
-from common.filters import CharInFilter
+from openinvoice.core.filters import CharInFilter
 
 from .models import Customer
 

@@ -2,7 +2,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from common.choices import LimitCode
+from openinvoice.core.choices import LimitCode
 
 pytestmark = pytest.mark.django_db
 

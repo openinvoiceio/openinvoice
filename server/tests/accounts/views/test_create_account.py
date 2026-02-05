@@ -2,8 +2,8 @@ from unittest.mock import ANY
 
 import pytest
 
-from common.choices import LimitCode
 from openinvoice.accounts.session import ACTIVE_ACCOUNT_SESSION_KEY
+from openinvoice.core.choices import LimitCode
 from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
 from openinvoice.numbering_systems.models import NumberingSystem
 

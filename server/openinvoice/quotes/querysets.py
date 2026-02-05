@@ -8,7 +8,7 @@ from django.db import models
 from django.db.models import Prefetch
 from djmoney.money import Money
 
-from common.calculations import zero
+from openinvoice.core.calculations import zero
 
 if TYPE_CHECKING:
     from openinvoice.accounts.models import Account

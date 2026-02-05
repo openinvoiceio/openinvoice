@@ -1,5 +1,5 @@
-from common.choices import LimitCode
-from common.permissions import WithinLimit
+from openinvoice.core.choices import LimitCode
+from openinvoice.core.permissions import WithinLimit
 
 from .models import Product
 

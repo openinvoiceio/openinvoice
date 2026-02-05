@@ -15,8 +15,8 @@ from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from common.calculations import calculate_percentage_amount, zero
-from common.pdf import generate_pdf
+from openinvoice.core.calculations import calculate_percentage_amount, zero
+from openinvoice.core.pdf import generate_pdf
 from openinvoice.coupons.models import Coupon
 from openinvoice.customers.models import Customer
 from openinvoice.files.choices import FilePurpose

@@ -36,7 +36,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # PDF
 
-PDF_GENERATOR_BACKEND = "common.pdf.backends.dummy.DummyBackend"
+PDF_GENERATOR_BACKEND = "openinvoice.core.pdf.backends.dummy.DummyBackend"
 
 # Storage
 

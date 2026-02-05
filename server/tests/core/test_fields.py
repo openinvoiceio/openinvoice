@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ErrorDetail
 
-from common.fields import MetadataField
+from openinvoice.core.fields import MetadataField
 
 
 class DummySerializer(serializers.Serializer):

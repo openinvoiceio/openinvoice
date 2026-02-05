@@ -11,9 +11,9 @@ from django.conf import settings
 from django.db import models
 from djmoney.money import Money
 
-from common.calculations import zero
 from openinvoice.accounts.models import Account
 from openinvoice.addresses.models import Address
+from openinvoice.core.calculations import zero
 from openinvoice.customers.models import Customer
 from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.numbering_systems.models import NumberingSystem

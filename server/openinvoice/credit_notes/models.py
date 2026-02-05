@@ -16,8 +16,8 @@ from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from common.calculations import zero
-from common.pdf import generate_pdf
+from openinvoice.core.calculations import zero
+from openinvoice.core.pdf import generate_pdf
 from openinvoice.files.choices import FilePurpose
 from openinvoice.files.models import File
 from openinvoice.integrations.choices import PaymentProvider

@@ -1,7 +1,7 @@
 from djmoney.contrib.django_rest_framework.fields import MoneyField
 from rest_framework import serializers
 
-from common.fields import CurrencyField, MetadataField
+from openinvoice.core.fields import CurrencyField, MetadataField
 from openinvoice.files.fields import FileRelatedField
 from openinvoice.prices.choices import PriceModel
 from openinvoice.prices.fields import PriceRelatedField

@@ -1,7 +1,7 @@
 from django.conf import settings
 
-from common.choices import FeatureCode, LimitCode
 from openinvoice.accounts.models import Account
+from openinvoice.core.choices import FeatureCode, LimitCode
 from openinvoice.stripe.models import StripeSubscription
 
 

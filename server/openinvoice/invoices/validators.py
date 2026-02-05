@@ -1,8 +1,8 @@
 from django.conf import settings
 from rest_framework import serializers
 
-from common.access import has_feature
-from common.choices import FeatureCode
+from openinvoice.core.access import has_feature
+from openinvoice.core.choices import FeatureCode
 
 from .choices import InvoiceDeliveryMethod
 

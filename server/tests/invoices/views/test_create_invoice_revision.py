@@ -6,7 +6,7 @@ from unittest.mock import ANY
 import pytest
 from django.utils import timezone
 
-from common.choices import LimitCode
+from openinvoice.core.choices import LimitCode
 from openinvoice.coupons.choices import CouponStatus
 from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentAudience, InvoiceStatus
 from openinvoice.invoices.models import Invoice

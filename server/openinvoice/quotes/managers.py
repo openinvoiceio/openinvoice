@@ -6,9 +6,9 @@ from decimal import Decimal
 from django.db import models
 from djmoney.money import Money
 
-from common.calculations import zero
 from openinvoice.accounts.models import Account
 from openinvoice.addresses.models import Address
+from openinvoice.core.calculations import zero
 from openinvoice.customers.models import Customer
 from openinvoice.numbering_systems.models import NumberingSystem
 from openinvoice.prices.models import Price

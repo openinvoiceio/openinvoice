@@ -3,8 +3,8 @@ from __future__ import annotations
 from django.conf import settings
 from django.db import models
 
-from common.utils import country_to_currency
 from openinvoice.addresses.models import Address
+from openinvoice.core.utils import country_to_currency
 from openinvoice.numbering_systems.models import NumberingSystem
 from openinvoice.users.models import User
 

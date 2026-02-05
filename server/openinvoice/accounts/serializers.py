@@ -1,8 +1,8 @@
 from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
 
-from common.fields import CurrencyField, LanguageField, MetadataField
 from openinvoice.addresses.serializers import AddressSerializer
+from openinvoice.core.fields import CurrencyField, LanguageField, MetadataField
 from openinvoice.files.fields import FileRelatedField
 from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
 from openinvoice.numbering_systems.fields import NumberingSystemRelatedField

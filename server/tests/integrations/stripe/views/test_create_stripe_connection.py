@@ -2,7 +2,7 @@ from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 
-from common.choices import FeatureCode
+from openinvoice.core.choices import FeatureCode
 from openinvoice.integrations.stripe.models import StripeConnection
 
 pytestmark = pytest.mark.django_db

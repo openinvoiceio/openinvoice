@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from common.choices import FeatureCode
+from openinvoice.core.choices import FeatureCode
 from tests.factories import (
     StripeConnectionFactory,
 )

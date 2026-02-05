@@ -18,8 +18,8 @@ from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from common.calculations import aggregate_allocations, allocate_proportionally, calculate_tax_amounts, zero
 from openinvoice.addresses.models import Address
+from openinvoice.core.calculations import aggregate_allocations, allocate_proportionally, calculate_tax_amounts, zero
 from openinvoice.coupons.models import Coupon
 from openinvoice.credit_notes.choices import CreditNoteStatus
 from openinvoice.customers.models import Customer

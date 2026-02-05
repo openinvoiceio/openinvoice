@@ -1,5 +1,5 @@
-from common.choices import FeatureCode
-from common.permissions import HasFeature
+from openinvoice.core.choices import FeatureCode
+from openinvoice.core.permissions import HasFeature
 
 
 class CustomNumberingSystemFeature(HasFeature):

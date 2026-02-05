@@ -8,10 +8,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 
-from common.utils import numeric_overflow
 from openinvoice.accounts.permissions import IsAccountMember
 from openinvoice.comments.models import Comment
 from openinvoice.comments.serializers import CommentCreateSerializer, CommentSerializer
+from openinvoice.core.utils import numeric_overflow
 
 from .choices import InvoiceDeliveryMethod, InvoicePreviewFormat, InvoiceStatus
 from .filtersets import InvoiceFilterSet
