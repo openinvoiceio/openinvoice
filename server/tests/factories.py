@@ -440,6 +440,7 @@ class QuoteFactory(DjangoModelFactory):
         model = "quotes.Quote"
 
     account = SubFactory(AccountFactory)
+    customer = SubFactory(CustomerFactory, account=SelfAttribute("..account"))
     number = None
     numbering_system = None
     currency = LazyAttribute(lambda obj: obj.billing_profile.currency or obj.account.default_currency)

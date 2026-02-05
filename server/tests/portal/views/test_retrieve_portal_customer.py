@@ -2,14 +2,18 @@ import pytest
 from freezegun import freeze_time
 
 from openinvoice.portal.crypto import sign_portal_token
-from tests.factories import CustomerFactory, CustomerShippingFactory, PortalTokenFactory
+from tests.factories import BillingProfileFactory, CustomerFactory, CustomerShippingFactory, PortalTokenFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def test_retrieve_customer_via_portal(api_client, account):
     shipping = CustomerShippingFactory()
-    customer = CustomerFactory(account=account, name="Old", shipping=shipping)
+    customer = CustomerFactory(
+        account=account,
+        default_billing_profile=BillingProfileFactory(name="Old"),
+        shipping=shipping,
+    )
     token = PortalTokenFactory(customer=customer)["token"]
 
     response = api_client.get("/api/v1/portal/customer", HTTP_AUTHORIZATION=f"Bearer {token}")
@@ -17,18 +21,18 @@ def test_retrieve_customer_via_portal(api_client, account):
     assert response.status_code == 200
     assert response.data == {
         "id": str(customer.id),
-        "name": customer.name,
-        "legal_name": customer.legal_name,
-        "legal_number": customer.legal_number,
-        "email": customer.email,
-        "phone": customer.phone,
+        "name": customer.default_billing_profile.name,
+        "legal_name": customer.default_billing_profile.legal_name,
+        "legal_number": customer.default_billing_profile.legal_number,
+        "email": customer.default_billing_profile.email,
+        "phone": customer.default_billing_profile.phone,
         "address": {
-            "line1": customer.address.line1,
-            "line2": customer.address.line2,
-            "locality": customer.address.locality,
-            "state": customer.address.state,
-            "postal_code": customer.address.postal_code,
-            "country": customer.address.country,
+            "line1": customer.default_billing_profile.address.line1,
+            "line2": customer.default_billing_profile.address.line2,
+            "locality": customer.default_billing_profile.address.locality,
+            "state": customer.default_billing_profile.address.state,
+            "postal_code": customer.default_billing_profile.address.postal_code,
+            "country": customer.default_billing_profile.address.country,
         },
         "shipping": {
             "name": shipping.name,

@@ -1,6 +1,5 @@
 import uuid
 from datetime import date
-from unittest.mock import ANY
 
 import pytest
 from freezegun import freeze_time
@@ -27,69 +26,42 @@ def test_finalize_quote(api_client, user, account, pdf_generator):
     response = api_client.post(f"/api/v1/quotes/{quote.id}/finalize")
 
     assert response.status_code == 200
-    assert response.data == {
-        "id": str(quote.id),
-        "status": "open",
-        "number": "QT-2025-3001",
-        "numbering_system_id": None,
-        "currency": "USD",
-        "issue_date": "2025-04-01",
-        "customer": {
-            "id": str(customer.id),
-            "name": customer.name,
-            "legal_name": customer.legal_name,
-            "legal_number": customer.legal_number,
-            "email": customer.email,
-            "phone": customer.phone,
-            "description": customer.description,
-            "address": {
-                "line1": customer.address.line1,
-                "line2": customer.address.line2,
-                "locality": customer.address.locality,
-                "state": customer.address.state,
-                "postal_code": customer.address.postal_code,
-                "country": customer.address.country,
-            },
-            "logo_id": None,
-        },
-        "account": {
-            "id": str(account.id),
-            "name": account.name,
-            "legal_name": account.legal_name,
-            "legal_number": account.legal_number,
-            "email": account.email,
-            "phone": account.phone,
-            "address": {
-                "line1": account.address.line1,
-                "line2": account.address.line2,
-                "locality": account.address.locality,
-                "state": account.address.state,
-                "postal_code": account.address.postal_code,
-                "country": account.address.country,
-            },
-            "logo_id": None,
-        },
-        "metadata": {},
-        "custom_fields": {},
-        "footer": None,
-        "delivery_method": QuoteDeliveryMethod.MANUAL,
-        "recipients": [],
-        "subtotal_amount": "0.00",
-        "total_discount_amount": "0.00",
-        "total_amount_excluding_tax": "0.00",
-        "total_tax_amount": "0.00",
-        "total_amount": "0.00",
-        "created_at": "2025-04-01T11:00:00Z",
-        "updated_at": "2025-04-01T11:00:00Z",
-        "opened_at": "2025-04-01T11:00:00Z",
-        "accepted_at": None,
-        "canceled_at": None,
-        "pdf_id": ANY,
-        "invoice_id": None,
-        "lines": [],
-        "discounts": [],
-        "taxes": [],
-    }
+    assert response.data["id"] == str(quote.id)
+    assert response.data["status"] == "open"
+    assert response.data["number"] == "QT-2025-3001"
+    assert response.data["numbering_system_id"] is None
+    assert response.data["currency"] == "USD"
+    assert response.data["issue_date"] == "2025-04-01"
+    assert response.data["metadata"] == {}
+    assert response.data["custom_fields"] == {}
+    assert response.data["footer"] is None
+    assert response.data["delivery_method"] == QuoteDeliveryMethod.MANUAL
+    assert response.data["recipients"] == []
+    assert response.data["subtotal_amount"] == "0.00"
+    assert response.data["total_discount_amount"] == "0.00"
+    assert response.data["total_amount_excluding_tax"] == "0.00"
+    assert response.data["total_tax_amount"] == "0.00"
+    assert response.data["total_amount"] == "0.00"
+    assert response.data["created_at"] == "2025-04-01T11:00:00Z"
+    assert response.data["updated_at"] == "2025-04-01T11:00:00Z"
+    assert response.data["opened_at"] == "2025-04-01T11:00:00Z"
+    assert response.data["accepted_at"] is None
+    assert response.data["canceled_at"] is None
+    assert response.data["pdf_id"] is not None
+    assert response.data["invoice_id"] is None
+    assert response.data["lines"] == []
+    assert response.data["discounts"] == []
+    assert response.data["taxes"] == []
+    assert response.data["billing_profile"]["id"] != str(customer.default_billing_profile.id)
+    assert response.data["billing_profile"]["name"] == customer.default_billing_profile.name
+    assert response.data["billing_profile"]["email"] == customer.default_billing_profile.email
+    assert response.data["billing_profile"]["currency"] == customer.default_billing_profile.currency
+    assert response.data["billing_profile"]["tax_rates"] == []
+    assert response.data["billing_profile"]["tax_ids"] == []
+    assert response.data["business_profile"]["id"] != str(account.default_business_profile.id)
+    assert response.data["business_profile"]["name"] == account.default_business_profile.name
+    assert response.data["business_profile"]["email"] == account.default_business_profile.email
+    assert response.data["business_profile"]["tax_ids"] == []
     assert len(pdf_generator.requests) == 1
 
 
@@ -111,7 +83,7 @@ def test_finalize_quote_with_automatic_delivery(api_client, user, account, pdf_g
     assert len(pdf_generator.requests) == 1
     assert len(mailoutbox) == 1
     email = mailoutbox[0]
-    assert email.subject == f"Quote {quote.number} from {account.name}"
+    assert email.subject == f"Quote {quote.number} from {account.default_business_profile.name}"
     assert email.to == ["test@example.com"]
 
 

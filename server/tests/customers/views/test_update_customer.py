@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from tests.factories import AddressFactory, CustomerFactory, CustomerShippingFactory
+from tests.factories import CustomerFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -16,37 +16,8 @@ def test_update_customer(api_client, user, account):
     response = api_client.put(
         f"/api/v1/customers/{customer.id}",
         data={
-            "name": "New Name",
-            "legal_name": "Legal Name",
-            "legal_number": "LN-999",
-            "email": "new@example.com",
-            "phone": "999",
             "description": "New description",
-            "currency": "EUR",
-            "net_payment_term": 30,
-            "invoice_numbering_system_id": None,
-            "credit_note_numbering_system_id": None,
             "metadata": {"key": "value"},
-            "address": {
-                "line1": "New Line1",
-                "line2": "Line2",
-                "locality": "City",
-                "postal_code": "00-002",
-                "state": "State",
-                "country": "US",
-            },
-            "shipping": {
-                "name": "Shipping Name",
-                "phone": "111222333",
-                "address": {
-                    "line1": "Ship Line1",
-                    "line2": "Ship Line2",
-                    "locality": "Ship City",
-                    "postal_code": "00-003",
-                    "state": "Ship State",
-                    "country": "DE",
-                },
-            },
             "logo_id": None,
         },
     )
@@ -55,40 +26,50 @@ def test_update_customer(api_client, user, account):
     assert response.data == {
         "id": str(customer.id),
         "account_id": str(customer.account_id),
-        "name": "New Name",
-        "legal_name": "Legal Name",
-        "legal_number": "LN-999",
-        "email": "new@example.com",
-        "phone": "999",
-        "currency": "EUR",
-        "language": None,
-        "net_payment_term": 30,
-        "invoice_numbering_system_id": None,
-        "credit_note_numbering_system_id": None,
         "description": "New description",
         "metadata": {"key": "value"},
-        "address": {
-            "country": "US",
-            "line1": "New Line1",
-            "line2": "Line2",
-            "locality": "City",
-            "postal_code": "00-002",
-            "state": "State",
-        },
-        "shipping": {
-            "name": "Shipping Name",
-            "phone": "111222333",
+        "default_billing_profile": {
+            "id": str(customer.default_billing_profile.id),
+            "name": customer.default_billing_profile.name,
+            "legal_name": customer.default_billing_profile.legal_name,
+            "legal_number": customer.default_billing_profile.legal_number,
+            "email": customer.default_billing_profile.email,
+            "phone": customer.default_billing_profile.phone,
             "address": {
-                "country": "DE",
-                "line1": "Ship Line1",
-                "line2": "Ship Line2",
-                "locality": "Ship City",
-                "postal_code": "00-003",
-                "state": "Ship State",
+                "line1": customer.default_billing_profile.address.line1,
+                "line2": customer.default_billing_profile.address.line2,
+                "locality": customer.default_billing_profile.address.locality,
+                "state": customer.default_billing_profile.address.state,
+                "postal_code": customer.default_billing_profile.address.postal_code,
+                "country": str(customer.default_billing_profile.address.country),
             },
+            "currency": customer.default_billing_profile.currency,
+            "language": customer.default_billing_profile.language,
+            "net_payment_term": customer.default_billing_profile.net_payment_term,
+            "invoice_numbering_system_id": customer.default_billing_profile.invoice_numbering_system_id,
+            "credit_note_numbering_system_id": customer.default_billing_profile.credit_note_numbering_system_id,
+            "tax_rates": [],
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
-        "tax_rates": [],
-        "tax_ids": [],
+        "default_shipping_profile": {
+            "id": str(customer.default_shipping_profile.id),
+            "name": customer.default_shipping_profile.name,
+            "phone": customer.default_shipping_profile.phone,
+            "address": {
+                "line1": customer.default_shipping_profile.address.line1,
+                "line2": customer.default_shipping_profile.address.line2,
+                "locality": customer.default_shipping_profile.address.locality,
+                "state": customer.default_shipping_profile.address.state,
+                "postal_code": customer.default_shipping_profile.address.postal_code,
+                "country": str(customer.default_shipping_profile.address.country),
+            },
+            "created_at": ANY,
+            "updated_at": ANY,
+        }
+        if customer.default_shipping_profile
+        else None,
         "logo_id": None,
         "logo_url": None,
         "created_at": ANY,
@@ -105,37 +86,8 @@ def test_update_customer_logo_not_found(api_client, user, account):
     response = api_client.put(
         f"/api/v1/customers/{customer.id}",
         data={
-            "name": "New Name",
-            "legal_name": "Legal Name",
-            "legal_number": "LN-999",
-            "email": "new@example.com",
-            "phone": "999",
             "description": "New description",
-            "currency": "EUR",
-            "net_payment_term": 30,
-            "invoice_numbering_system_id": None,
-            "credit_note_numbering_system_id": None,
             "metadata": {"key": "value"},
-            "address": {
-                "line1": "New Line1",
-                "line2": "Line2",
-                "locality": "City",
-                "postal_code": "00-002",
-                "state": "State",
-                "country": "US",
-            },
-            "shipping": {
-                "name": "Shipping Name",
-                "phone": "111222333",
-                "address": {
-                    "line1": "Ship Line1",
-                    "line2": "Ship Line2",
-                    "locality": "Ship City",
-                    "postal_code": "00-003",
-                    "state": "Ship State",
-                    "country": "DE",
-                },
-            },
             "logo_id": str(logo_id),
         },
     )
@@ -156,7 +108,7 @@ def test_update_customer_logo_not_found(api_client, user, account):
 def test_update_customer_requires_account(api_client, user):
     customer = CustomerFactory()
     api_client.force_login(user)
-    response = api_client.put(f"/api/v1/customers/{customer.id}", data={"name": "New"})
+    response = api_client.put(f"/api/v1/customers/{customer.id}", data={"description": "New"})
 
     assert response.status_code == 403
     assert response.data == {
@@ -174,7 +126,7 @@ def test_update_customer_requires_account(api_client, user):
 def test_update_customer_requires_authentication(api_client, account):
     customer = CustomerFactory(account=account)
 
-    response = api_client.put(f"/api/v1/customers/{customer.id}", data={"name": "New"})
+    response = api_client.put(f"/api/v1/customers/{customer.id}", data={"description": "New"})
 
     assert response.status_code == 403
     assert response.data == {
@@ -194,7 +146,7 @@ def test_update_customer_rejects_foreign_account(api_client, user, account):
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.put(f"/api/v1/customers/{customer.id}", data={"name": "New"})
+    response = api_client.put(f"/api/v1/customers/{customer.id}", data={"description": "New"})
 
     assert response.status_code == 404
     assert response.data == {
@@ -207,85 +159,3 @@ def test_update_customer_rejects_foreign_account(api_client, user, account):
             }
         ],
     }
-
-
-def test_update_customer_shipping_partial_update(api_client, user, account):
-    shipping_address = AddressFactory(line1="Old Line1", country="US")
-    shipping = CustomerShippingFactory(name="Original", phone="123", address=shipping_address)
-    customer = CustomerFactory(account=account, shipping=shipping)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.put(
-        f"/api/v1/customers/{customer.id}",
-        data={
-            "shipping": {
-                "phone": "999",
-                "address": {"line1": "Partial"},
-            }
-        },
-    )
-
-    assert response.status_code == 200
-    customer.refresh_from_db()
-    assert customer.shipping is not None
-    assert customer.shipping.name == "Original"
-    assert customer.shipping.phone == "999"
-    assert customer.shipping.address.line1 == "Partial"
-    assert customer.shipping.address.country == "US"
-
-
-def test_update_customer_remove_shipping(api_client, user, account):
-    shipping = CustomerShippingFactory()
-    customer = CustomerFactory(account=account, shipping=shipping)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.put(
-        f"/api/v1/customers/{customer.id}",
-        data={"shipping": None},
-    )
-
-    assert response.status_code == 200
-    customer.refresh_from_db()
-    assert customer.shipping is None
-
-
-def test_update_customer_remove_missing_shipping(api_client, user, account):
-    customer = CustomerFactory(account=account)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.put(
-        f"/api/v1/customers/{customer.id}",
-        data={"shipping": None},
-    )
-
-    assert response.status_code == 200
-    customer.refresh_from_db()
-    assert customer.shipping is None
-
-
-def test_update_customer_add_shipping(api_client, user, account):
-    customer = CustomerFactory(account=account, shipping=None)
-
-    api_client.force_login(user)
-    api_client.force_account(account)
-    response = api_client.put(
-        f"/api/v1/customers/{customer.id}",
-        data={
-            "shipping": {
-                "name": "New Ship",
-                "phone": "555",
-                "address": {"line1": "Ship Line", "country": "US"},
-            }
-        },
-    )
-
-    assert response.status_code == 200
-    customer.refresh_from_db()
-    assert customer.shipping is not None
-    assert customer.shipping.name == "New Ship"
-    assert customer.shipping.phone == "555"
-    assert customer.shipping.address.line1 == "Ship Line"
-    assert customer.shipping.address.country == "US"

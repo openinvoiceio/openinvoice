@@ -12,6 +12,7 @@ from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentA
 from openinvoice.payments.choices import PaymentStatus
 from tests.factories import (
     AddressFactory,
+    BillingProfileFactory,
     CustomerFactory,
     CustomerShippingFactory,
     InvoiceDocumentFactory,
@@ -57,40 +58,49 @@ def test_finalize_invoice(api_client, user, account):
         "net_payment_term": invoice.net_payment_term,
         "delivery_method": invoice.delivery_method,
         "recipients": invoice.recipients,
-        "customer": {
-            "id": str(invoice.customer.id),
-            "name": invoice.customer.name,
-            "legal_name": invoice.customer.legal_name,
-            "legal_number": invoice.customer.legal_number,
-            "email": invoice.customer.email,
-            "phone": invoice.customer.phone,
-            "description": invoice.customer.description,
+        "billing_profile": {
+            "id": str(invoice.billing_profile.id),
+            "name": invoice.billing_profile.name,
+            "legal_name": invoice.billing_profile.legal_name,
+            "legal_number": invoice.billing_profile.legal_number,
+            "email": invoice.billing_profile.email,
+            "phone": invoice.billing_profile.phone,
             "address": {
-                "line1": invoice.customer.address.line1,
-                "line2": invoice.customer.address.line2,
-                "locality": invoice.customer.address.locality,
-                "state": invoice.customer.address.state,
-                "postal_code": invoice.customer.address.postal_code,
-                "country": invoice.customer.address.country,
+                "line1": invoice.billing_profile.address.line1,
+                "line2": invoice.billing_profile.address.line2,
+                "locality": invoice.billing_profile.address.locality,
+                "state": invoice.billing_profile.address.state,
+                "postal_code": invoice.billing_profile.address.postal_code,
+                "country": str(invoice.billing_profile.address.country),
             },
-            "logo_id": None,
+            "currency": invoice.billing_profile.currency,
+            "language": invoice.billing_profile.language,
+            "net_payment_term": invoice.billing_profile.net_payment_term,
+            "invoice_numbering_system_id": invoice.billing_profile.invoice_numbering_system_id,
+            "credit_note_numbering_system_id": invoice.billing_profile.credit_note_numbering_system_id,
+            "tax_rates": [],
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
-        "account": {
-            "id": str(invoice.account.id),
-            "name": invoice.account.name,
-            "legal_name": invoice.account.legal_name,
-            "legal_number": invoice.account.legal_number,
-            "email": invoice.account.email,
-            "phone": invoice.account.phone,
+        "business_profile": {
+            "id": str(invoice.business_profile.id),
+            "name": invoice.business_profile.name,
+            "legal_name": invoice.business_profile.legal_name,
+            "legal_number": invoice.business_profile.legal_number,
+            "email": invoice.business_profile.email,
+            "phone": invoice.business_profile.phone,
             "address": {
-                "line1": invoice.account.address.line1,
-                "line2": invoice.account.address.line2,
-                "locality": invoice.account.address.locality,
-                "state": invoice.account.address.state,
-                "postal_code": invoice.account.address.postal_code,
-                "country": invoice.account.address.country,
+                "line1": invoice.business_profile.address.line1,
+                "line2": invoice.business_profile.address.line2,
+                "locality": invoice.business_profile.address.locality,
+                "state": invoice.business_profile.address.state,
+                "postal_code": invoice.business_profile.address.postal_code,
+                "country": str(invoice.business_profile.address.country),
             },
-            "logo_id": None,
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
         "metadata": {},
         "subtotal_amount": "10.00",
@@ -166,7 +176,7 @@ def test_finalize_invoice_clones_customer_tax_ids(api_client, user, account):
     invoice = InvoiceFactory(account=account)
     InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
     customer_tax_id = TaxIdFactory()
-    invoice.customer.tax_ids.add(customer_tax_id)
+    invoice.customer.default_billing_profile.tax_ids.add(customer_tax_id)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -188,7 +198,7 @@ def test_finalize_invoice_clones_account_tax_ids(api_client, user, account):
     invoice = InvoiceFactory(account=account)
     InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
     account_tax_id = TaxIdFactory()
-    invoice.account.tax_ids.add(account_tax_id)
+    invoice.account.default_business_profile.tax_ids.add(account_tax_id)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -209,12 +219,20 @@ def test_finalize_invoice_clones_account_tax_ids(api_client, user, account):
 def test_finalize_invoice_with_shipping_uses_customer_shipping_snapshot(api_client, user, account):
     shipping_address = AddressFactory(line1="123 Shipping St", country="US")
     customer_shipping = CustomerShippingFactory(name="Ship to", phone="555", address=shipping_address)
-    customer = CustomerFactory(account=account, name="Bill to", phone="111", shipping=customer_shipping)
+    customer = CustomerFactory(
+        account=account,
+        default_billing_profile=BillingProfileFactory(name="Bill to", phone="111"),
+        shipping=customer_shipping,
+    )
     invoice = InvoiceFactory(account=account, customer=customer, total_amount=Decimal("0.00"))
     InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
     shipping_rate = ShippingRateFactory(account=account, amount=Decimal("12.00"))
     tax_rate = TaxRateFactory(account=account, percentage=Decimal("10.00"))
-    invoice.add_shipping(shipping_rate=shipping_rate, tax_rates=[tax_rate])
+    invoice.add_shipping(
+        shipping_rate=shipping_rate,
+        tax_rates=[tax_rate],
+        shipping_profile=customer.default_shipping_profile,
+    )
     invoice.recalculate()
 
     api_client.force_login(user)
@@ -222,14 +240,18 @@ def test_finalize_invoice_with_shipping_uses_customer_shipping_snapshot(api_clie
     response = api_client.post(f"/api/v1/invoices/{invoice.id}/finalize")
 
     assert response.status_code == 200
-    assert response.data["shipping"]["name"] == customer_shipping.name
-    assert response.data["shipping"]["phone"] == customer_shipping.phone
-    assert response.data["shipping"]["address"]["line1"] == shipping_address.line1
-    assert response.data["shipping"]["address"]["country"] == shipping_address.country
+    assert response.data["shipping"]["profile"]["name"] == customer_shipping.name
+    assert response.data["shipping"]["profile"]["phone"] == customer_shipping.phone
+    assert response.data["shipping"]["profile"]["address"]["line1"] == shipping_address.line1
+    assert response.data["shipping"]["profile"]["address"]["country"] == shipping_address.country
 
 
 def test_finalize_invoice_with_shipping_uses_customer_fallback(api_client, user, account):
-    customer = CustomerFactory(account=account, name="Bill to", phone="111", shipping=None)
+    customer = CustomerFactory(
+        account=account,
+        default_billing_profile=BillingProfileFactory(name="Bill to", phone="111"),
+        shipping=None,
+    )
     invoice = InvoiceFactory(account=account, customer=customer, total_amount=Decimal("0.00"))
     InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
     shipping_rate = ShippingRateFactory(account=account, amount=Decimal("8.00"))
@@ -242,10 +264,7 @@ def test_finalize_invoice_with_shipping_uses_customer_fallback(api_client, user,
     response = api_client.post(f"/api/v1/invoices/{invoice.id}/finalize")
 
     assert response.status_code == 200
-    assert response.data["shipping"]["name"] == customer.name
-    assert response.data["shipping"]["phone"] == customer.phone
-    assert response.data["shipping"]["address"]["line1"] == customer.address.line1
-    assert response.data["shipping"]["address"]["country"] == customer.address.country
+    assert response.data["shipping"]["profile"] is None
 
 
 def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account):
@@ -271,40 +290,49 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
         "net_payment_term": invoice.net_payment_term,
         "delivery_method": invoice.delivery_method,
         "recipients": invoice.recipients,
-        "customer": {
-            "id": str(invoice.customer.id),
-            "name": invoice.customer.name,
-            "legal_name": invoice.customer.legal_name,
-            "legal_number": invoice.customer.legal_number,
-            "email": invoice.customer.email,
-            "phone": invoice.customer.phone,
-            "description": invoice.customer.description,
+        "billing_profile": {
+            "id": str(invoice.billing_profile.id),
+            "name": invoice.billing_profile.name,
+            "legal_name": invoice.billing_profile.legal_name,
+            "legal_number": invoice.billing_profile.legal_number,
+            "email": invoice.billing_profile.email,
+            "phone": invoice.billing_profile.phone,
             "address": {
-                "line1": invoice.customer.address.line1,
-                "line2": invoice.customer.address.line2,
-                "locality": invoice.customer.address.locality,
-                "state": invoice.customer.address.state,
-                "postal_code": invoice.customer.address.postal_code,
-                "country": invoice.customer.address.country,
+                "line1": invoice.billing_profile.address.line1,
+                "line2": invoice.billing_profile.address.line2,
+                "locality": invoice.billing_profile.address.locality,
+                "state": invoice.billing_profile.address.state,
+                "postal_code": invoice.billing_profile.address.postal_code,
+                "country": str(invoice.billing_profile.address.country),
             },
-            "logo_id": None,
+            "currency": invoice.billing_profile.currency,
+            "language": invoice.billing_profile.language,
+            "net_payment_term": invoice.billing_profile.net_payment_term,
+            "invoice_numbering_system_id": invoice.billing_profile.invoice_numbering_system_id,
+            "credit_note_numbering_system_id": invoice.billing_profile.credit_note_numbering_system_id,
+            "tax_rates": [],
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
-        "account": {
-            "id": str(invoice.account.id),
-            "name": invoice.account.name,
-            "legal_name": invoice.account.legal_name,
-            "legal_number": invoice.account.legal_number,
-            "email": invoice.account.email,
-            "phone": invoice.account.phone,
+        "business_profile": {
+            "id": str(invoice.business_profile.id),
+            "name": invoice.business_profile.name,
+            "legal_name": invoice.business_profile.legal_name,
+            "legal_number": invoice.business_profile.legal_number,
+            "email": invoice.business_profile.email,
+            "phone": invoice.business_profile.phone,
             "address": {
-                "line1": invoice.account.address.line1,
-                "line2": invoice.account.address.line2,
-                "locality": invoice.account.address.locality,
-                "state": invoice.account.address.state,
-                "postal_code": invoice.account.address.postal_code,
-                "country": invoice.account.address.country,
+                "line1": invoice.business_profile.address.line1,
+                "line2": invoice.business_profile.address.line2,
+                "locality": invoice.business_profile.address.locality,
+                "state": invoice.business_profile.address.state,
+                "postal_code": invoice.business_profile.address.postal_code,
+                "country": str(invoice.business_profile.address.country),
             },
-            "logo_id": None,
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
         "metadata": {},
         "subtotal_amount": "0.00",
@@ -479,7 +507,7 @@ def test_finalize_invoice_with_automatic_delivery_method(api_client, user, accou
     assert response.status_code == 200
     assert len(mailoutbox) == 1
     email = mailoutbox[0]
-    assert email.subject == f"Invoice {invoice.effective_number} from {invoice.account.name}"
+    assert email.subject == f"Invoice {invoice.effective_number} from {invoice.account.default_business_profile.name}"
     assert email.to == ["test@example.com"]
 
 

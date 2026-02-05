@@ -8,6 +8,7 @@ from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentA
 from tests.factories import (
     AccountFactory,
     AddressFactory,
+    BillingProfileFactory,
     CouponFactory,
     CustomerFactory,
     CustomerShippingFactory,
@@ -40,40 +41,49 @@ def test_retrieve_invoice(api_client, user, account):
         "issue_date": None,
         "due_date": invoice.due_date.isoformat(),
         "net_payment_term": invoice.net_payment_term,
-        "customer": {
-            "id": str(invoice.customer.id),
-            "name": invoice.customer.name,
-            "legal_name": invoice.customer.legal_name,
-            "legal_number": invoice.customer.legal_number,
-            "email": invoice.customer.email,
-            "phone": invoice.customer.phone,
-            "description": invoice.customer.description,
+        "billing_profile": {
+            "id": str(invoice.billing_profile.id),
+            "name": invoice.billing_profile.name,
+            "legal_name": invoice.billing_profile.legal_name,
+            "legal_number": invoice.billing_profile.legal_number,
+            "email": invoice.billing_profile.email,
+            "phone": invoice.billing_profile.phone,
             "address": {
-                "line1": invoice.customer.address.line1,
-                "line2": invoice.customer.address.line2,
-                "locality": invoice.customer.address.locality,
-                "state": invoice.customer.address.state,
-                "postal_code": invoice.customer.address.postal_code,
-                "country": invoice.customer.address.country,
+                "line1": invoice.billing_profile.address.line1,
+                "line2": invoice.billing_profile.address.line2,
+                "locality": invoice.billing_profile.address.locality,
+                "state": invoice.billing_profile.address.state,
+                "postal_code": invoice.billing_profile.address.postal_code,
+                "country": str(invoice.billing_profile.address.country),
             },
-            "logo_id": None,
+            "currency": invoice.billing_profile.currency,
+            "language": invoice.billing_profile.language,
+            "net_payment_term": invoice.billing_profile.net_payment_term,
+            "invoice_numbering_system_id": invoice.billing_profile.invoice_numbering_system_id,
+            "credit_note_numbering_system_id": invoice.billing_profile.credit_note_numbering_system_id,
+            "tax_rates": [],
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
-        "account": {
-            "id": str(invoice.account.id),
-            "name": invoice.account.name,
-            "legal_name": invoice.account.legal_name,
-            "legal_number": invoice.account.legal_number,
-            "email": invoice.account.email,
-            "phone": invoice.account.phone,
+        "business_profile": {
+            "id": str(invoice.business_profile.id),
+            "name": invoice.business_profile.name,
+            "legal_name": invoice.business_profile.legal_name,
+            "legal_number": invoice.business_profile.legal_number,
+            "email": invoice.business_profile.email,
+            "phone": invoice.business_profile.phone,
             "address": {
-                "line1": invoice.account.address.line1,
-                "line2": invoice.account.address.line2,
-                "locality": invoice.account.address.locality,
-                "state": invoice.account.address.state,
-                "postal_code": invoice.account.address.postal_code,
-                "country": invoice.account.address.country,
+                "line1": invoice.business_profile.address.line1,
+                "line2": invoice.business_profile.address.line2,
+                "locality": invoice.business_profile.address.locality,
+                "state": invoice.business_profile.address.state,
+                "postal_code": invoice.business_profile.address.postal_code,
+                "country": str(invoice.business_profile.address.country),
             },
-            "logo_id": None,
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
         "metadata": {},
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
@@ -348,33 +358,41 @@ def test_retrieve_finalized_invoice_returns_snapshot(
     account,
 ):
     invoice = InvoiceFactory(account=account)
-    original_account_name = invoice.account.name
-    original_customer_name = invoice.customer.name
+    original_account_name = invoice.account.default_business_profile.name
+    original_customer_name = invoice.customer.default_billing_profile.name
 
     api_client.force_login(user)
     api_client.force_account(account)
     send_response = api_client.post(f"/api/v1/invoices/{invoice.id}/finalize")
     assert send_response.status_code == 200
 
-    invoice.account.name = "Updated account"
-    invoice.account.save(update_fields=["name"])
-    invoice.customer.name = "Updated customer"
-    invoice.customer.save(update_fields=["name"])
+    invoice.account.default_business_profile.name = "Updated account"
+    invoice.account.default_business_profile.save(update_fields=["name"])
+    invoice.customer.default_billing_profile.name = "Updated customer"
+    invoice.customer.default_billing_profile.save(update_fields=["name"])
 
     response = api_client.get(f"/api/v1/invoices/{invoice.id}")
 
     assert response.status_code == 200
-    assert response.data["account"]["name"] == original_account_name
-    assert response.data["customer"]["name"] == original_customer_name
+    assert response.data["business_profile"]["name"] == original_account_name
+    assert response.data["billing_profile"]["name"] == original_customer_name
 
 
 def test_retrieve_draft_invoice_shipping_uses_customer_shipping(api_client, user, account):
     shipping_address = AddressFactory(line1="Ship Line 1", country="US")
     customer_shipping = CustomerShippingFactory(name="Ship Draft", phone="111", address=shipping_address)
-    customer = CustomerFactory(account=account, name="Bill Draft", phone="222", shipping=customer_shipping)
+    customer = CustomerFactory(
+        account=account,
+        default_billing_profile=BillingProfileFactory(name="Bill Draft", phone="222"),
+        shipping=customer_shipping,
+    )
     invoice = InvoiceFactory(account=account, customer=customer)
     shipping_rate = ShippingRateFactory(account=account, amount=Decimal("5.00"))
-    invoice.add_shipping(shipping_rate=shipping_rate, tax_rates=[])
+    invoice.add_shipping(
+        shipping_rate=shipping_rate,
+        tax_rates=[],
+        shipping_profile=customer.default_shipping_profile,
+    )
     invoice.recalculate()
 
     customer_shipping.name = "Updated Ship"
@@ -387,26 +405,34 @@ def test_retrieve_draft_invoice_shipping_uses_customer_shipping(api_client, user
     response = api_client.get(f"/api/v1/invoices/{invoice.id}")
 
     assert response.status_code == 200
-    assert response.data["shipping"]["name"] == "Updated Ship"
-    assert response.data["shipping"]["phone"] == "123"
-    assert response.data["shipping"]["address"]["line1"] == "Ship Line 2"
-    assert response.data["shipping"]["address"]["country"] == "CA"
+    assert response.data["shipping"]["profile"]["name"] == "Updated Ship"
+    assert response.data["shipping"]["profile"]["phone"] == "123"
+    assert response.data["shipping"]["profile"]["address"]["line1"] == "Ship Line 2"
+    assert response.data["shipping"]["profile"]["address"]["country"] == "CA"
 
 
 def test_retrieve_finalized_invoice_shipping_uses_snapshot(api_client, user, account):
     shipping_address = AddressFactory(line1="Ship Line 1", country="US")
     customer_shipping = CustomerShippingFactory(name="Ship Final", phone="222", address=shipping_address)
-    customer = CustomerFactory(account=account, name="Bill Final", phone="333", shipping=customer_shipping)
+    customer = CustomerFactory(
+        account=account,
+        default_billing_profile=BillingProfileFactory(name="Bill Final", phone="333"),
+        shipping=customer_shipping,
+    )
     invoice = InvoiceFactory(account=account, customer=customer)
     shipping_rate = ShippingRateFactory(account=account, amount=Decimal("7.00"))
-    invoice.add_shipping(shipping_rate=shipping_rate, tax_rates=[])
+    invoice.add_shipping(
+        shipping_rate=shipping_rate,
+        tax_rates=[],
+        shipping_profile=customer.default_shipping_profile,
+    )
     invoice.recalculate()
     invoice.finalize()
 
-    customer.name = "Updated Final"
-    customer.phone = "444"
-    customer.address = AddressFactory(line1="Bill Line 2", country="US")
-    customer.save()
+    customer.default_billing_profile.name = "Updated Final"
+    customer.default_billing_profile.phone = "444"
+    customer.default_billing_profile.address = AddressFactory(line1="Bill Line 2", country="US")
+    customer.default_billing_profile.save()
     customer_shipping.name = "Updated Ship"
     customer_shipping.phone = "123"
     customer_shipping.address = AddressFactory(line1="Ship Line 2", country="CA")
@@ -417,10 +443,10 @@ def test_retrieve_finalized_invoice_shipping_uses_snapshot(api_client, user, acc
     response = api_client.get(f"/api/v1/invoices/{invoice.id}")
 
     assert response.status_code == 200
-    assert response.data["shipping"]["name"] == "Ship Final"
-    assert response.data["shipping"]["phone"] == "222"
-    assert response.data["shipping"]["address"]["line1"] == "Ship Line 1"
-    assert response.data["shipping"]["address"]["country"] == "US"
+    assert response.data["shipping"]["profile"]["name"] == "Ship Final"
+    assert response.data["shipping"]["profile"]["phone"] == "222"
+    assert response.data["shipping"]["profile"]["address"]["line1"] == "Ship Line 1"
+    assert response.data["shipping"]["profile"]["address"]["country"] == "US"
 
 
 def test_retrieve_invoice_rejects_foreign_account(api_client, user, account):

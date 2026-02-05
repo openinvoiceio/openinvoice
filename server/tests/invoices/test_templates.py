@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 
 from tests.factories import (
     AccountFactory,
+    BillingProfileFactory,
     CouponFactory,
     CustomerFactory,
     CustomerShippingFactory,
@@ -23,7 +24,7 @@ def test_invoice_email_subject_template():
     invoice = InvoiceFactory()
     context = {"invoice": invoice}
     subject = render_to_string("invoices/email/invoice_email_subject.txt", context).strip()
-    assert subject == f"Invoice {invoice.effective_number} from {invoice.account.name}"
+    assert subject == f"Invoice {invoice.effective_number} from {invoice.account.default_business_profile.name}"
 
 
 def test_invoice_email_message_text_template():
@@ -38,8 +39,8 @@ def test_invoice_email_message_html_template():
     context = {"invoice": invoice}
     body = render_to_string("invoices/email/invoice_email_message.html", context)
     assert invoice.effective_number in body
-    assert invoice.account.name in body
-    assert invoice.customer.name in body
+    assert invoice.account.default_business_profile.name in body
+    assert invoice.billing_profile.name in body
 
 
 def test_invoice_email_message_text_template_with_payment_url():
@@ -117,7 +118,7 @@ def test_invoice_pdf_template_with_shipping_and_discount_summary():
     customer_shipping = CustomerShippingFactory()
     customer = CustomerFactory(
         account=account,
-        currency=account.default_currency,
+        default_billing_profile=BillingProfileFactory(currency=account.default_currency),
         shipping=customer_shipping,
     )
     invoice = InvoiceFactory(account=account, customer=customer)
@@ -132,7 +133,11 @@ def test_invoice_pdf_template_with_shipping_and_discount_summary():
     shipping_rate = ShippingRateFactory(account=invoice.account, currency=invoice.currency)
     coupon = CouponFactory(account=invoice.account, currency=invoice.currency)
 
-    invoice.add_shipping(shipping_rate=shipping_rate, tax_rates=[])
+    invoice.add_shipping(
+        shipping_rate=shipping_rate,
+        tax_rates=[],
+        shipping_profile=customer.default_shipping_profile,
+    )
     invoice.set_coupons([coupon])
     invoice.recalculate()
 

@@ -3,13 +3,13 @@ from unittest.mock import ANY
 import pytest
 
 from openinvoice.accounts.choices import InvitationStatus
-from tests.factories import AccountFactory, InvitationFactory
+from tests.factories import AccountFactory, BusinessProfileFactory, InvitationFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def test_list_invitations(api_client, user, account):
-    other_account = AccountFactory(name="Test Account")
+    other_account = AccountFactory(default_business_profile=BusinessProfileFactory(name="Test Account"))
     invitation_1 = InvitationFactory(
         code="invitation_code_1",
         account=account,

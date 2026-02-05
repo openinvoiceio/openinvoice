@@ -55,40 +55,49 @@ def test_update_invoice(api_client, user, account):
         "issue_date": None,
         "due_date": invoice.due_date.isoformat(),
         "net_payment_term": invoice.net_payment_term,
-        "customer": {
-            "id": str(invoice.customer.id),
-            "name": invoice.customer.name,
-            "legal_name": invoice.customer.legal_name,
-            "legal_number": invoice.customer.legal_number,
-            "email": invoice.customer.email,
-            "phone": invoice.customer.phone,
-            "description": invoice.customer.description,
+        "billing_profile": {
+            "id": str(invoice.billing_profile.id),
+            "name": invoice.billing_profile.name,
+            "legal_name": invoice.billing_profile.legal_name,
+            "legal_number": invoice.billing_profile.legal_number,
+            "email": invoice.billing_profile.email,
+            "phone": invoice.billing_profile.phone,
             "address": {
-                "line1": invoice.customer.address.line1,
-                "line2": invoice.customer.address.line2,
-                "locality": invoice.customer.address.locality,
-                "state": invoice.customer.address.state,
-                "postal_code": invoice.customer.address.postal_code,
-                "country": invoice.customer.address.country,
+                "line1": invoice.billing_profile.address.line1,
+                "line2": invoice.billing_profile.address.line2,
+                "locality": invoice.billing_profile.address.locality,
+                "state": invoice.billing_profile.address.state,
+                "postal_code": invoice.billing_profile.address.postal_code,
+                "country": str(invoice.billing_profile.address.country),
             },
-            "logo_id": None,
+            "currency": invoice.billing_profile.currency,
+            "language": invoice.billing_profile.language,
+            "net_payment_term": invoice.billing_profile.net_payment_term,
+            "invoice_numbering_system_id": invoice.billing_profile.invoice_numbering_system_id,
+            "credit_note_numbering_system_id": invoice.billing_profile.credit_note_numbering_system_id,
+            "tax_rates": [],
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
-        "account": {
-            "id": str(invoice.account.id),
-            "name": invoice.account.name,
-            "legal_name": invoice.account.legal_name,
-            "legal_number": invoice.account.legal_number,
-            "email": invoice.account.email,
-            "phone": invoice.account.phone,
+        "business_profile": {
+            "id": str(invoice.business_profile.id),
+            "name": invoice.business_profile.name,
+            "legal_name": invoice.business_profile.legal_name,
+            "legal_number": invoice.business_profile.legal_number,
+            "email": invoice.business_profile.email,
+            "phone": invoice.business_profile.phone,
             "address": {
-                "line1": invoice.account.address.line1,
-                "line2": invoice.account.address.line2,
-                "locality": invoice.account.address.locality,
-                "state": invoice.account.address.state,
-                "postal_code": invoice.account.address.postal_code,
-                "country": invoice.account.address.country,
+                "line1": invoice.business_profile.address.line1,
+                "line2": invoice.business_profile.address.line2,
+                "locality": invoice.business_profile.address.locality,
+                "state": invoice.business_profile.address.state,
+                "postal_code": invoice.business_profile.address.postal_code,
+                "country": str(invoice.business_profile.address.country),
             },
-            "logo_id": None,
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
         "metadata": {},
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
@@ -146,6 +155,7 @@ def test_update_invoice_change_customer(api_client, user, account):
         f"/api/v1/invoices/{invoice.id}",
         {
             "customer_id": str(customer2.id),
+            "billing_profile_id": str(customer2.default_billing_profile.id),
             "number": invoice.effective_number,
             "numbering_system_id": None,
             "currency": invoice.currency,
@@ -160,7 +170,7 @@ def test_update_invoice_change_customer(api_client, user, account):
     assert response.status_code == 200
     invoice.refresh_from_db()
     assert invoice.customer_id == customer2.id
-    assert response.data["customer"]["id"] == str(customer2.id)
+    assert response.data["billing_profile"]["id"] == str(customer2.default_billing_profile.id)
 
 
 def test_update_invoice_add_shipping(api_client, user, account):
@@ -182,16 +192,7 @@ def test_update_invoice_add_shipping(api_client, user, account):
 
     assert response.status_code == 200
     assert response.data["shipping"] == {
-        "name": invoice.customer.name,
-        "phone": invoice.customer.phone,
-        "address": {
-            "line1": invoice.customer.address.line1,
-            "line2": invoice.customer.address.line2,
-            "locality": invoice.customer.address.locality,
-            "state": invoice.customer.address.state,
-            "postal_code": invoice.customer.address.postal_code,
-            "country": invoice.customer.address.country,
-        },
+        "profile": None,
         "amount": "20.00",
         "total_excluding_tax_amount": "18.18",
         "total_tax_amount": "1.82",
@@ -290,16 +291,7 @@ def test_update_invoice_existing_shipping(api_client, user, account):
 
     assert response.status_code == 200
     assert response.data["shipping"] == {
-        "name": invoice.customer.name,
-        "phone": invoice.customer.phone,
-        "address": {
-            "line1": invoice.customer.address.line1,
-            "line2": invoice.customer.address.line2,
-            "locality": invoice.customer.address.locality,
-            "state": invoice.customer.address.state,
-            "postal_code": invoice.customer.address.postal_code,
-            "country": invoice.customer.address.country,
-        },
+        "profile": None,
         "amount": "30.00",
         "total_excluding_tax_amount": "26.09",
         "total_tax_amount": "3.91",

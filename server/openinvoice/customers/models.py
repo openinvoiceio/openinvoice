@@ -74,6 +74,12 @@ class Customer(models.Model):
             legal_number=legal_number,
             email=email,
             phone=phone,
+            currency=self.default_billing_profile.currency,
+            language=self.default_billing_profile.language,
+            net_payment_term=self.default_billing_profile.net_payment_term,
+            invoice_numbering_system=self.default_billing_profile.invoice_numbering_system,
+            credit_note_numbering_system=self.default_billing_profile.credit_note_numbering_system,
+            address_data=None,
         )
         self.default_billing_profile.address.update(**(address_data or {}))
 

@@ -12,19 +12,6 @@ def test_update_account(api_client, user, account, account_logo):
     response = api_client.put(
         f"/api/v1/accounts/{account.id}",
         data={
-            "name": "New Account Name",
-            "legal_name": "New Legal Name",
-            "legal_number": "123456789",
-            "email": "new@example.com",
-            "phone": "123456789",
-            "address": {
-                "country": "US",
-                "line1": "New Line 1",
-                "line2": "New Line 2",
-                "locality": "New Locality",
-                "postal_code": "00-002",
-                "state": "New State",
-            },
             "country": "US",
             "default_currency": "USD",
             "language": "en-us",
@@ -40,19 +27,6 @@ def test_update_account(api_client, user, account, account_logo):
     assert response.status_code == 200
     assert response.data == {
         "id": str(account.id),
-        "name": "New Account Name",
-        "legal_name": "New Legal Name",
-        "legal_number": "123456789",
-        "email": "new@example.com",
-        "phone": "123456789",
-        "address": {
-            "country": "US",
-            "line1": "New Line 1",
-            "line2": "New Line 2",
-            "locality": "New Locality",
-            "postal_code": "00-002",
-            "state": "New State",
-        },
         "country": "US",
         "default_currency": "USD",
         "language": "en-us",
@@ -63,8 +37,26 @@ def test_update_account(api_client, user, account, account_logo):
         "metadata": {"key": "value"},
         "subscription": None,
         "logo_id": str(account_logo.id),
-        "logo_url": f"/media/{account_logo.data.name}",
-        "tax_ids": [],
+        "logo_url": f"http://testserver/media/{account_logo.data.name}",
+        "default_business_profile": {
+            "id": str(account.default_business_profile.id),
+            "name": account.default_business_profile.name,
+            "legal_name": account.default_business_profile.legal_name,
+            "legal_number": account.default_business_profile.legal_number,
+            "email": account.default_business_profile.email,
+            "phone": account.default_business_profile.phone,
+            "address": {
+                "line1": account.default_business_profile.address.line1,
+                "line2": account.default_business_profile.address.line2,
+                "locality": account.default_business_profile.address.locality,
+                "state": account.default_business_profile.address.state,
+                "postal_code": account.default_business_profile.address.postal_code,
+                "country": str(account.default_business_profile.address.country),
+            },
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
+        },
         "created_at": ANY,
         "updated_at": ANY,
     }
@@ -78,19 +70,6 @@ def test_update_account_logo_not_found(api_client, user, account):
     response = api_client.put(
         f"/api/v1/accounts/{account.id}",
         data={
-            "name": "New Account Name",
-            "legal_name": "New Legal Name",
-            "legal_number": "123456789",
-            "email": "new@example.com",
-            "phone": "123456789",
-            "address": {
-                "country": "US",
-                "line1": "New Line 1",
-                "line2": "New Line 2",
-                "locality": "New Locality",
-                "postal_code": "00-002",
-                "state": "New State",
-            },
             "country": "US",
             "default_currency": "USD",
             "invoice_footer": "New Footer",
@@ -118,7 +97,7 @@ def test_update_account_logo_not_found(api_client, user, account):
 def test_update_account_requires_authentication(api_client):
     response = api_client.put(
         f"/api/v1/accounts/{uuid.uuid4()}",
-        data={"name": "New Account Name"},
+        data={"country": "US"},
     )
 
     assert response.status_code == 403
@@ -138,7 +117,7 @@ def test_update_account_requires_account(api_client, user):
     api_client.force_login(user)
     response = api_client.put(
         f"/api/v1/accounts/{uuid.uuid4()}",
-        data={"name": "New Account Name"},
+        data={"country": "US"},
     )
 
     assert response.status_code == 403

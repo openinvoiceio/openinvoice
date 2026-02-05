@@ -28,11 +28,20 @@ class SearchAPIView(generics.GenericAPIView):
 
     def get_queryset_invoices(self):
         qs = Invoice.objects.for_account(self.request.account).eager_load()
-        return self.apply_search_filter(qs, ["id", "number", "customer__name", "customer__email"])[:5]
+        return self.apply_search_filter(qs, ["id", "number", "billing_profile__name", "billing_profile__email"])[:5]
 
     def get_queryset_customers(self):
         qs = Customer.objects.for_account(self.request.account).eager_load()
-        return self.apply_search_filter(qs, ["id", "name", "email", "phone", "description"])[:5]
+        return self.apply_search_filter(
+            qs,
+            [
+                "id",
+                "default_billing_profile__name",
+                "default_billing_profile__email",
+                "default_billing_profile__phone",
+                "description",
+            ],
+        )[:5]
 
     @extend_schema(
         operation_id="search",

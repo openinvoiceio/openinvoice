@@ -1,12 +1,11 @@
 from datetime import date, timedelta
-from unittest.mock import ANY
 
 import pytest
 from django.utils import timezone
 from freezegun import freeze_time
 
 from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
-from openinvoice.quotes.choices import QuoteStatus
+from openinvoice.quotes.choices import QuoteDeliveryMethod, QuoteStatus
 from openinvoice.quotes.models import Quote
 from tests.factories import CustomerFactory, NumberingSystemFactory, PriceFactory, QuoteFactory, QuoteLineFactory
 
@@ -35,77 +34,49 @@ def test_list_quotes(api_client, user, account):
     response = api_client.get("/api/v1/quotes")
 
     assert response.status_code == 200
-    assert response.data == {
-        "count": 2,
-        "next": None,
-        "previous": None,
-        "results": [
-            {
-                "id": str(quote.id),
-                "status": quote.status,
-                "number": quote.number,
-                "numbering_system_id": None,
-                "currency": quote.currency,
-                "issue_date": quote.issue_date.isoformat(),
-                "customer": {
-                    "id": str(customer.id),
-                    "name": customer.name,
-                    "legal_name": customer.legal_name,
-                    "legal_number": customer.legal_number,
-                    "email": customer.email,
-                    "phone": customer.phone,
-                    "description": customer.description,
-                    "address": {
-                        "line1": customer.address.line1,
-                        "line2": customer.address.line2,
-                        "locality": customer.address.locality,
-                        "state": customer.address.state,
-                        "postal_code": customer.address.postal_code,
-                        "country": customer.address.country,
-                    },
-                    "logo_id": None,
-                },
-                "account": {
-                    "id": str(account.id),
-                    "name": account.name,
-                    "legal_name": account.legal_name,
-                    "legal_number": account.legal_number,
-                    "email": account.email,
-                    "phone": account.phone,
-                    "address": {
-                        "line1": account.address.line1,
-                        "line2": account.address.line2,
-                        "locality": account.address.locality,
-                        "state": account.address.state,
-                        "postal_code": account.address.postal_code,
-                        "country": account.address.country,
-                    },
-                    "logo_id": None,
-                },
-                "metadata": quote.metadata,
-                "custom_fields": quote.custom_fields,
-                "footer": quote.footer,
-                "delivery_method": quote.delivery_method,
-                "recipients": quote.recipients,
-                "subtotal_amount": "0.00",
-                "total_discount_amount": "0.00",
-                "total_amount_excluding_tax": "0.00",
-                "total_tax_amount": "0.00",
-                "total_amount": "0.00",
-                "created_at": "2025-01-15T10:00:00Z",
-                "updated_at": "2025-01-15T10:00:00Z",
-                "opened_at": None,
-                "accepted_at": None,
-                "canceled_at": None,
-                "pdf_id": ANY,
-                "invoice_id": None,
-                "lines": [],
-                "discounts": [],
-                "taxes": [],
-            }
-            for quote in [quote_1, quote_2]
-        ],
-    }
+    assert response.data["count"] == 2
+    assert response.data["next"] is None
+    assert response.data["previous"] is None
+
+    results = response.data["results"]
+    assert {result["id"] for result in results} == {str(quote_1.id), str(quote_2.id)}
+    for result in results:
+        quote = quote_1 if result["id"] == str(quote_1.id) else quote_2
+        assert result["status"] == quote.status
+        assert result["number"] == quote.number
+        assert result["numbering_system_id"] is None
+        assert result["currency"] == quote.currency
+        assert result["issue_date"] == quote.issue_date.isoformat()
+        assert result["metadata"] == quote.metadata
+        assert result["custom_fields"] == quote.custom_fields
+        assert result["footer"] == quote.footer
+        assert result["delivery_method"] == QuoteDeliveryMethod.MANUAL
+        assert result["recipients"] == []
+        assert result["subtotal_amount"] == "0.00"
+        assert result["total_discount_amount"] == "0.00"
+        assert result["total_amount_excluding_tax"] == "0.00"
+        assert result["total_tax_amount"] == "0.00"
+        assert result["total_amount"] == "0.00"
+        assert result["created_at"] == "2025-01-15T10:00:00Z"
+        assert result["updated_at"] == "2025-01-15T10:00:00Z"
+        assert result["opened_at"] is None
+        assert result["accepted_at"] is None
+        assert result["canceled_at"] is None
+        assert result["pdf_id"] is None
+        assert result["invoice_id"] is None
+        assert result["lines"] == []
+        assert result["discounts"] == []
+        assert result["taxes"] == []
+        assert result["billing_profile"]["id"] == str(customer.default_billing_profile.id)
+        assert result["billing_profile"]["name"] == customer.default_billing_profile.name
+        assert result["billing_profile"]["email"] == customer.default_billing_profile.email
+        assert result["billing_profile"]["currency"] == customer.default_billing_profile.currency
+        assert result["billing_profile"]["tax_rates"] == []
+        assert result["billing_profile"]["tax_ids"] == []
+        assert result["business_profile"]["id"] == str(account.default_business_profile.id)
+        assert result["business_profile"]["name"] == account.default_business_profile.name
+        assert result["business_profile"]["email"] == account.default_business_profile.email
+        assert result["business_profile"]["tax_ids"] == []
 
 
 def test_list_quotes_filter_by_status(api_client, user, account):

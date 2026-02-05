@@ -2,6 +2,7 @@ from unittest.mock import ANY
 
 import pytest
 
+from openinvoice.accounts.models import Account
 from openinvoice.accounts.session import ACTIVE_ACCOUNT_SESSION_KEY
 from openinvoice.core.choices import LimitCode
 from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo, NumberingSystemResetInterval
@@ -16,29 +17,19 @@ def test_create_account(api_client, user, settings):
     response = api_client.post(
         "/api/v1/accounts",
         data={
-            "name": "Test Account",
-            "email": "test@example.com",
+            "business_profile": {
+                "name": "Test Account",
+                "email": "test@example.com",
+            },
             "country": "PL",
         },
     )
 
     assert response.status_code == 201
+    account = Account.objects.get(id=response.data["id"])
     assert ACTIVE_ACCOUNT_SESSION_KEY in api_client.session
     assert response.data == {
         "id": ANY,
-        "name": "Test Account",
-        "legal_name": None,
-        "legal_number": None,
-        "email": "test@example.com",
-        "phone": None,
-        "address": {
-            "country": None,
-            "line1": None,
-            "line2": None,
-            "locality": None,
-            "postal_code": None,
-            "state": None,
-        },
         "country": "PL",
         "default_currency": "PLN",
         "language": "en-us",
@@ -50,7 +41,25 @@ def test_create_account(api_client, user, settings):
         "subscription": None,
         "logo_id": None,
         "logo_url": None,
-        "tax_ids": [],
+        "default_business_profile": {
+            "id": str(account.default_business_profile.id),
+            "name": "Test Account",
+            "legal_name": None,
+            "legal_number": None,
+            "email": "test@example.com",
+            "phone": None,
+            "address": {
+                "line1": None,
+                "line2": None,
+                "locality": None,
+                "state": None,
+                "postal_code": None,
+                "country": None,
+            },
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
+        },
         "created_at": ANY,
         "updated_at": ANY,
     }
@@ -69,7 +78,10 @@ def test_create_account(api_client, user, settings):
 def test_create_account_requires_authentication(api_client):
     response = api_client.post(
         "/api/v1/accounts",
-        data={"name": "Test", "email": "test@example.com", "country": "PL"},
+        data={
+            "business_profile": {"name": "Test", "email": "test@example.com"},
+            "country": "PL",
+        },
     )
 
     assert response.status_code == 403
@@ -92,7 +104,10 @@ def test_create_account_limit_exceeded(api_client, user, settings):
     api_client.force_login(user)
     response = api_client.post(
         "/api/v1/accounts",
-        data={"name": "Test", "email": "test@example.com", "country": "PL"},
+        data={
+            "business_profile": {"name": "Test", "email": "test@example.com"},
+            "country": "PL",
+        },
     )
 
     assert response.status_code == 403

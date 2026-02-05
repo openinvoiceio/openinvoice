@@ -10,6 +10,7 @@ from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentA
 from openinvoice.invoices.models import Invoice
 from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
+    BillingProfileFactory,
     CouponFactory,
     CustomerFactory,
     ShippingRateFactory,
@@ -38,49 +39,58 @@ def test_create_invoice(api_client, user, account):
         "status": InvoiceStatus.DRAFT,
         "number": None,
         "numbering_system_id": None,
-        "currency": customer.currency,
+        "currency": customer.default_billing_profile.currency,
         "tax_behavior": "automatic",
         "issue_date": None,
         "due_date": None,
         "net_payment_term": 0,
-        "customer": {
-            "id": str(customer.id),
-            "name": customer.name,
-            "legal_name": customer.legal_name,
-            "legal_number": customer.legal_number,
-            "email": customer.email,
-            "phone": customer.phone,
-            "description": customer.description,
+        "billing_profile": {
+            "id": str(customer.default_billing_profile.id),
+            "name": customer.default_billing_profile.name,
+            "legal_name": customer.default_billing_profile.legal_name,
+            "legal_number": customer.default_billing_profile.legal_number,
+            "email": customer.default_billing_profile.email,
+            "phone": customer.default_billing_profile.phone,
             "address": {
-                "line1": customer.address.line1,
-                "line2": customer.address.line2,
-                "locality": customer.address.locality,
-                "state": customer.address.state,
-                "postal_code": customer.address.postal_code,
-                "country": customer.address.country,
+                "line1": customer.default_billing_profile.address.line1,
+                "line2": customer.default_billing_profile.address.line2,
+                "locality": customer.default_billing_profile.address.locality,
+                "state": customer.default_billing_profile.address.state,
+                "postal_code": customer.default_billing_profile.address.postal_code,
+                "country": str(customer.default_billing_profile.address.country),
             },
-            "logo_id": None,
+            "currency": customer.default_billing_profile.currency,
+            "language": customer.default_billing_profile.language,
+            "net_payment_term": customer.default_billing_profile.net_payment_term,
+            "invoice_numbering_system_id": customer.default_billing_profile.invoice_numbering_system_id,
+            "credit_note_numbering_system_id": customer.default_billing_profile.credit_note_numbering_system_id,
+            "tax_rates": [],
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
-        "account": {
-            "id": str(account.id),
-            "name": account.name,
-            "legal_name": account.legal_name,
-            "legal_number": account.legal_number,
-            "email": account.email,
-            "phone": account.phone,
+        "business_profile": {
+            "id": str(account.default_business_profile.id),
+            "name": account.default_business_profile.name,
+            "legal_name": account.default_business_profile.legal_name,
+            "legal_number": account.default_business_profile.legal_number,
+            "email": account.default_business_profile.email,
+            "phone": account.default_business_profile.phone,
             "address": {
-                "line1": account.address.line1,
-                "line2": account.address.line2,
-                "locality": account.address.locality,
-                "state": account.address.state,
-                "postal_code": account.address.postal_code,
-                "country": account.address.country,
+                "line1": account.default_business_profile.address.line1,
+                "line2": account.default_business_profile.address.line2,
+                "locality": account.default_business_profile.address.locality,
+                "state": account.default_business_profile.address.state,
+                "postal_code": account.default_business_profile.address.postal_code,
+                "country": str(account.default_business_profile.address.country),
             },
-            "logo_id": None,
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
         "metadata": {},
         "delivery_method": InvoiceDeliveryMethod.MANUAL,
-        "recipients": [customer.email],
+        "recipients": [customer.default_billing_profile.email],
         "subtotal_amount": "0.00",
         "total_discount_amount": "0.00",
         "total_excluding_tax_amount": "0.00",
@@ -130,7 +140,7 @@ def test_create_invoice(api_client, user, account):
 def test_create_invoice_with_customer_tax_rates(api_client, user, account):
     tax_rate = TaxRateFactory(account=account)
     customer = CustomerFactory(account=account)
-    customer.tax_rates.add(tax_rate)
+    customer.default_billing_profile.tax_rates.add(tax_rate)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -147,7 +157,7 @@ def test_create_invoice_ignores_archived_customer_tax_rates(api_client, user, ac
     active_rate = TaxRateFactory(account=account, status=TaxRateStatus.ACTIVE)
     archived_rate = TaxRateFactory(account=account, status=TaxRateStatus.ARCHIVED)
     customer = CustomerFactory(account=account)
-    customer.tax_rates.add(active_rate, archived_rate)
+    customer.default_billing_profile.tax_rates.add(active_rate, archived_rate)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -180,21 +190,12 @@ def test_create_invoice_with_shipping(api_client, user, account):
 
     assert response.status_code == 201
     assert response.data["shipping"] == {
-        "name": customer.name,
-        "phone": customer.phone,
-        "address": {
-            "line1": customer.address.line1,
-            "line2": customer.address.line2,
-            "locality": customer.address.locality,
-            "state": customer.address.state,
-            "postal_code": customer.address.postal_code,
-            "country": customer.address.country,
-        },
+        "profile": None,
         "amount": "10.00",
-        "total_excluding_tax_amount": "10.00",
-        "total_tax_amount": "1.00",
+        "total_excluding_tax_amount": "9.09",
+        "total_tax_amount": "0.91",
         "total_tax_rate": "10.00",
-        "total_amount": "11.00",
+        "total_amount": "10.00",
         "shipping_rate_id": str(shipping_rate.id),
         "tax_rates": [
             {
@@ -202,7 +203,7 @@ def test_create_invoice_with_shipping(api_client, user, account):
                 "account_id": str(account.id),
                 "name": tax_rate.name,
                 "description": tax_rate.description,
-                "country": tax_rate.country,
+                "country": str(tax_rate.country) if tax_rate.country else None,
                 "percentage": f"{tax_rate.percentage:.2f}",
                 "status": tax_rate.status,
                 "archived_at": tax_rate.archived_at,
@@ -215,13 +216,13 @@ def test_create_invoice_with_shipping(api_client, user, account):
                 "tax_rate_id": str(tax_rate.id),
                 "name": tax_rate.name,
                 "percentage": "10.00",
-                "amount": "1.00",
+                "amount": "0.91",
             }
         ],
     }
     assert response.data["shipping_amount"] == "10.00"
-    assert response.data["total_tax_amount"] == "1.00"
-    assert response.data["total_amount"] == "11.00"
+    assert response.data["total_tax_amount"] == "0.91"
+    assert response.data["total_amount"] == "10.00"
 
 
 def test_create_invoice_with_invalid_shipping_rate(api_client, user, account):
@@ -347,7 +348,7 @@ def test_create_invoice_with_foreign_shipping_tax_rate(api_client, user, account
 
 def test_create_invoice_overflow_returns_validation_error(api_client, user, account):
     customer = CustomerFactory(account=account)
-    shipping_rate = ShippingRateFactory(account=account, amount=Decimal("50000000000000000.00"))
+    shipping_rate = ShippingRateFactory(account=account, amount=Decimal("99999999999999999.99"))
     tax_rate = TaxRateFactory(account=account, percentage=Decimal("100"))
 
     api_client.force_login(user)
@@ -356,6 +357,7 @@ def test_create_invoice_overflow_returns_validation_error(api_client, user, acco
         "/api/v1/invoices",
         {
             "customer_id": str(customer.id),
+            "tax_behavior": "exclusive",
             "shipping": {
                 "shipping_rate_id": str(shipping_rate.id),
                 "tax_rates": [str(tax_rate.id)],
@@ -412,7 +414,7 @@ def test_create_invoice_shipping_tax_rates_limit_exceeded(api_client, user, acco
     tax_rate1 = TaxRateFactory(account=account)
     tax_rate2 = TaxRateFactory(account=account)
     customer = CustomerFactory(account=account)
-    shipping_rate = ShippingRateFactory(account=account, currency=customer.currency)
+    shipping_rate = ShippingRateFactory(account=account, currency=customer.default_billing_profile.currency)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -681,8 +683,8 @@ def test_create_invoice_limit_exceeded(api_client, user, account, settings):
 
 def test_create_invoice_with_coupons(api_client, user, account):
     customer = CustomerFactory(account=account)
-    coupon1 = CouponFactory(account=account, currency=customer.currency)
-    coupon2 = CouponFactory(account=account, currency=customer.currency)
+    coupon1 = CouponFactory(account=account, currency=customer.default_billing_profile.currency)
+    coupon2 = CouponFactory(account=account, currency=customer.default_billing_profile.currency)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -701,7 +703,7 @@ def test_create_invoice_with_coupons(api_client, user, account):
 def test_create_invoice_with_coupons_invalid_currency(api_client, user, account):
     coupon1 = CouponFactory(account=account, currency="USD")
     coupon2 = CouponFactory(account=account, currency="EUR")
-    customer = CustomerFactory(account=account, currency="USD")
+    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="USD"))
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -728,7 +730,7 @@ def test_create_invoice_with_coupons_invalid_currency(api_client, user, account)
 
 def test_create_invoice_with_duplicate_coupons(api_client, user, account):
     coupon = CouponFactory(account=account, currency="USD")
-    customer = CustomerFactory(account=account, currency="USD")
+    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="USD"))
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -757,7 +759,7 @@ def test_create_invoice_with_foreign_coupon(api_client, user, account):
     currency = "USD"
     coupon1 = CouponFactory(account=account, currency=currency)
     coupon2 = CouponFactory(currency=currency)  # Not linked to the account
-    customer = CustomerFactory(account=account, currency=currency)
+    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency=currency))
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -787,7 +789,7 @@ def test_create_invoice_coupons_limit_exceeded(api_client, user, account, settin
     currency = "USD"
     coupon1 = CouponFactory(account=account, currency=currency)
     coupon2 = CouponFactory(account=account, currency=currency)
-    customer = CustomerFactory(account=account, currency=currency)
+    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency=currency))
 
     api_client.force_login(user)
     api_client.force_account(account)

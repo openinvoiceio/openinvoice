@@ -19,56 +19,6 @@ from tests.factories import (
 pytestmark = pytest.mark.django_db
 
 
-def _billing_profile_response(profile):
-    return {
-        "id": str(profile.id),
-        "name": profile.name,
-        "legal_name": profile.legal_name,
-        "legal_number": profile.legal_number,
-        "email": profile.email,
-        "phone": profile.phone,
-        "address": {
-            "line1": profile.address.line1,
-            "line2": profile.address.line2,
-            "locality": profile.address.locality,
-            "state": profile.address.state,
-            "postal_code": profile.address.postal_code,
-            "country": str(profile.address.country),
-        },
-        "currency": profile.currency,
-        "language": profile.language,
-        "net_payment_term": profile.net_payment_term,
-        "invoice_numbering_system_id": None,
-        "credit_note_numbering_system_id": None,
-        "tax_rates": [],
-        "tax_ids": [],
-        "created_at": ANY,
-        "updated_at": ANY,
-    }
-
-
-def _business_profile_response(profile):
-    return {
-        "id": str(profile.id),
-        "name": profile.name,
-        "legal_name": profile.legal_name,
-        "legal_number": profile.legal_number,
-        "email": profile.email,
-        "phone": profile.phone,
-        "address": {
-            "line1": profile.address.line1,
-            "line2": profile.address.line2,
-            "locality": profile.address.locality,
-            "state": profile.address.state,
-            "postal_code": profile.address.postal_code,
-            "country": str(profile.address.country),
-        },
-        "tax_ids": [],
-        "created_at": ANY,
-        "updated_at": ANY,
-    }
-
-
 def test_list_credit_notes(api_client, user, account):
     invoice = InvoiceFactory(account=account)
     credit_note = CreditNoteFactory(
@@ -125,8 +75,50 @@ def test_list_credit_notes(api_client, user, account):
                 "issued_at": None,
                 "voided_at": None,
                 "pdf_id": None,
-                "billing_profile": _billing_profile_response(invoice.billing_profile),
-                "business_profile": _business_profile_response(invoice.business_profile),
+                "billing_profile": {
+                    "id": str(invoice.billing_profile.id),
+                    "name": invoice.billing_profile.name,
+                    "legal_name": invoice.billing_profile.legal_name,
+                    "legal_number": invoice.billing_profile.legal_number,
+                    "email": invoice.billing_profile.email,
+                    "phone": invoice.billing_profile.phone,
+                    "address": {
+                        "line1": invoice.billing_profile.address.line1,
+                        "line2": invoice.billing_profile.address.line2,
+                        "locality": invoice.billing_profile.address.locality,
+                        "state": invoice.billing_profile.address.state,
+                        "postal_code": invoice.billing_profile.address.postal_code,
+                        "country": str(invoice.billing_profile.address.country),
+                    },
+                    "currency": invoice.billing_profile.currency,
+                    "language": invoice.billing_profile.language,
+                    "net_payment_term": invoice.billing_profile.net_payment_term,
+                    "invoice_numbering_system_id": None,
+                    "credit_note_numbering_system_id": None,
+                    "tax_rates": [],
+                    "tax_ids": [],
+                    "created_at": ANY,
+                    "updated_at": ANY,
+                },
+                "business_profile": {
+                    "id": str(invoice.business_profile.id),
+                    "name": invoice.business_profile.name,
+                    "legal_name": invoice.business_profile.legal_name,
+                    "legal_number": invoice.business_profile.legal_number,
+                    "email": invoice.business_profile.email,
+                    "phone": invoice.business_profile.phone,
+                    "address": {
+                        "line1": invoice.business_profile.address.line1,
+                        "line2": invoice.business_profile.address.line2,
+                        "locality": invoice.business_profile.address.locality,
+                        "state": invoice.business_profile.address.state,
+                        "postal_code": invoice.business_profile.address.postal_code,
+                        "country": str(invoice.business_profile.address.country),
+                    },
+                    "tax_ids": [],
+                    "created_at": ANY,
+                    "updated_at": ANY,
+                },
                 "lines": [
                     {
                         "id": str(line.id),

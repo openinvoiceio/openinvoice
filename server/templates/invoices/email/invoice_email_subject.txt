@@ -1,1 +1,1 @@
-{% if invoice.previous_revision %}Corrective invoice{% else %}Invoice{% endif %} {{ invoice.effective_number }} from {{ invoice.effective_account.name }}
+{% if invoice.previous_revision %}Corrective invoice{% else %}Invoice{% endif %} {{ invoice.effective_number }} from {{ invoice.business_profile.name }}

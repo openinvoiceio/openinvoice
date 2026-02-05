@@ -12,6 +12,7 @@ from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentA
 from openinvoice.invoices.models import Invoice
 from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
+    BillingProfileFactory,
     CouponFactory,
     CustomerFactory,
     InvoiceDocumentFactory,
@@ -27,9 +28,13 @@ pytestmark = pytest.mark.django_db
 
 
 def test_clone_invoice(api_client, user, account):
-    customer = CustomerFactory(account=account, currency="USD")
+    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="USD"))
     numbering_system = NumberingSystemFactory(account=account)
-    shipping_rate = ShippingRateFactory(account=account, currency=customer.currency, amount=Decimal("10"))
+    shipping_rate = ShippingRateFactory(
+        account=account,
+        currency=customer.default_billing_profile.currency,
+        amount=Decimal("10"),
+    )
     shipping = InvoiceShippingFactory(shipping_rate=shipping_rate, amount=Decimal("10"))
     shipping_tax_rate = TaxRateFactory(account=account, percentage=Decimal("10.00"))
     shipping.set_tax_rates([shipping_tax_rate])
@@ -45,7 +50,7 @@ def test_clone_invoice(api_client, user, account):
         numbering_system=numbering_system,
         net_payment_term=10,
         delivery_method=InvoiceDeliveryMethod.MANUAL,
-        recipients=[customer.email],
+        recipients=[customer.default_billing_profile.email],
         payment_provider=PaymentProvider.STRIPE,
         payment_connection_id=payment_connection_id,
         shipping=shipping,
@@ -91,40 +96,49 @@ def test_clone_invoice(api_client, user, account):
         "issue_date": None,
         "due_date": None,
         "net_payment_term": invoice.net_payment_term,
-        "customer": {
-            "id": str(customer.id),
-            "name": customer.name,
-            "legal_name": customer.legal_name,
-            "legal_number": customer.legal_number,
-            "email": customer.email,
-            "phone": customer.phone,
-            "description": customer.description,
+        "billing_profile": {
+            "id": str(customer.default_billing_profile.id),
+            "name": customer.default_billing_profile.name,
+            "legal_name": customer.default_billing_profile.legal_name,
+            "legal_number": customer.default_billing_profile.legal_number,
+            "email": customer.default_billing_profile.email,
+            "phone": customer.default_billing_profile.phone,
             "address": {
-                "line1": customer.address.line1,
-                "line2": customer.address.line2,
-                "locality": customer.address.locality,
-                "state": customer.address.state,
-                "postal_code": customer.address.postal_code,
-                "country": customer.address.country,
+                "line1": customer.default_billing_profile.address.line1,
+                "line2": customer.default_billing_profile.address.line2,
+                "locality": customer.default_billing_profile.address.locality,
+                "state": customer.default_billing_profile.address.state,
+                "postal_code": customer.default_billing_profile.address.postal_code,
+                "country": str(customer.default_billing_profile.address.country),
             },
-            "logo_id": None,
+            "currency": customer.default_billing_profile.currency,
+            "language": customer.default_billing_profile.language,
+            "net_payment_term": customer.default_billing_profile.net_payment_term,
+            "invoice_numbering_system_id": customer.default_billing_profile.invoice_numbering_system_id,
+            "credit_note_numbering_system_id": customer.default_billing_profile.credit_note_numbering_system_id,
+            "tax_rates": [],
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
-        "account": {
-            "id": str(account.id),
-            "name": account.name,
-            "legal_name": account.legal_name,
-            "legal_number": account.legal_number,
-            "email": account.email,
-            "phone": account.phone,
+        "business_profile": {
+            "id": str(account.default_business_profile.id),
+            "name": account.default_business_profile.name,
+            "legal_name": account.default_business_profile.legal_name,
+            "legal_number": account.default_business_profile.legal_number,
+            "email": account.default_business_profile.email,
+            "phone": account.default_business_profile.phone,
             "address": {
-                "line1": account.address.line1,
-                "line2": account.address.line2,
-                "locality": account.address.locality,
-                "state": account.address.state,
-                "postal_code": account.address.postal_code,
-                "country": account.address.country,
+                "line1": account.default_business_profile.address.line1,
+                "line2": account.default_business_profile.address.line2,
+                "locality": account.default_business_profile.address.locality,
+                "state": account.default_business_profile.address.state,
+                "postal_code": account.default_business_profile.address.postal_code,
+                "country": str(account.default_business_profile.address.country),
             },
-            "logo_id": None,
+            "tax_ids": [],
+            "created_at": ANY,
+            "updated_at": ANY,
         },
         "metadata": {},
         "delivery_method": invoice.delivery_method,
@@ -290,16 +304,7 @@ def test_clone_invoice(api_client, user, account):
             },
         ],
         "shipping": {
-            "name": customer.name,
-            "phone": customer.phone,
-            "address": {
-                "line1": customer.address.line1,
-                "line2": customer.address.line2,
-                "locality": customer.address.locality,
-                "state": customer.address.state,
-                "postal_code": customer.address.postal_code,
-                "country": customer.address.country,
-            },
+            "profile": None,
             "amount": "10.00",
             "total_excluding_tax_amount": "10.00",
             "total_tax_amount": "1.00",

@@ -2,15 +2,15 @@ from unittest.mock import ANY
 
 import pytest
 
-from tests.factories import AccountFactory, MemberFactory
+from tests.factories import AccountFactory, BusinessProfileFactory, MemberFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def test_list_accounts(api_client, user):
-    account_1 = AccountFactory(name="Account 1")
-    account_2 = AccountFactory(name="Account 2")
-    AccountFactory(name="Account 3")
+    account_1 = AccountFactory(default_business_profile=BusinessProfileFactory(name="Account 1"))
+    account_2 = AccountFactory(default_business_profile=BusinessProfileFactory(name="Account 2"))
+    AccountFactory(default_business_profile=BusinessProfileFactory(name="Account 3"))
     MemberFactory(user=user, account=account_1)
     MemberFactory(user=user, account=account_2)
 
@@ -22,19 +22,6 @@ def test_list_accounts(api_client, user):
     assert response.data["results"] == [
         {
             "id": str(account.id),
-            "name": account.name,
-            "legal_name": account.legal_name,
-            "legal_number": account.legal_number,
-            "email": account.email,
-            "phone": account.phone,
-            "address": {
-                "country": account.address.country,
-                "line1": account.address.line1,
-                "line2": account.address.line2,
-                "locality": account.address.locality,
-                "postal_code": account.address.postal_code,
-                "state": account.address.state,
-            },
             "country": str(account.country),
             "default_currency": account.default_currency,
             "language": account.language,
@@ -46,7 +33,25 @@ def test_list_accounts(api_client, user):
             "subscription": None,
             "logo_id": None,
             "logo_url": None,
-            "tax_ids": [],
+            "default_business_profile": {
+                "id": str(account.default_business_profile.id),
+                "name": account.default_business_profile.name,
+                "legal_name": account.default_business_profile.legal_name,
+                "legal_number": account.default_business_profile.legal_number,
+                "email": account.default_business_profile.email,
+                "phone": account.default_business_profile.phone,
+                "address": {
+                    "line1": account.default_business_profile.address.line1,
+                    "line2": account.default_business_profile.address.line2,
+                    "locality": account.default_business_profile.address.locality,
+                    "state": account.default_business_profile.address.state,
+                    "postal_code": account.default_business_profile.address.postal_code,
+                    "country": str(account.default_business_profile.address.country),
+                },
+                "tax_ids": [],
+                "created_at": ANY,
+                "updated_at": ANY,
+            },
             "created_at": ANY,
             "updated_at": ANY,
         }

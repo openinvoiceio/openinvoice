@@ -1,12 +1,12 @@
 import pytest
 
-from tests.factories import CustomerFactory, CustomerShippingFactory, PortalTokenFactory
+from tests.factories import BillingProfileFactory, CustomerFactory, CustomerShippingFactory, PortalTokenFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def test_update_customer_via_portal(api_client, account):
-    customer = CustomerFactory(account=account, name="Old")
+    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Old"))
     token = PortalTokenFactory(customer=customer)["token"]
 
     response = api_client.put(
@@ -33,11 +33,11 @@ def test_update_customer_via_portal(api_client, account):
         "phone": "123",
         "address": {
             "line1": "New line1",
-            "line2": customer.address.line2,
-            "locality": customer.address.locality,
-            "state": customer.address.state,
-            "postal_code": customer.address.postal_code,
-            "country": customer.address.country,
+            "line2": customer.default_billing_profile.address.line2,
+            "locality": customer.default_billing_profile.address.locality,
+            "state": customer.default_billing_profile.address.state,
+            "postal_code": customer.default_billing_profile.address.postal_code,
+            "country": customer.default_billing_profile.address.country,
         },
         "shipping": {
             "name": None,
@@ -89,11 +89,11 @@ def test_update_customer_shipping_partial_update(api_client, account):
 
     assert response.status_code == 200
     customer.refresh_from_db()
-    assert customer.shipping is not None
-    assert customer.shipping.name == "Portal Ship"
-    assert customer.shipping.phone == "999"
-    assert customer.shipping.address.line1 == "Portal Line"
-    assert customer.shipping.address.line2 == customer.shipping.address.line2
+    assert customer.default_shipping_profile is not None
+    assert customer.default_shipping_profile.name == "Portal Ship"
+    assert customer.default_shipping_profile.phone == "999"
+    assert customer.default_shipping_profile.address.line1 == "Portal Line"
+    assert customer.default_shipping_profile.address.line2 == customer.default_shipping_profile.address.line2
 
 
 def test_update_customer_remover_shipping(api_client, account):
@@ -109,7 +109,7 @@ def test_update_customer_remover_shipping(api_client, account):
 
     assert response.status_code == 200
     customer.refresh_from_db()
-    assert customer.shipping is None
+    assert customer.default_shipping_profile is None
 
 
 def test_update_customer_add_shipping(api_client, account):
@@ -130,11 +130,11 @@ def test_update_customer_add_shipping(api_client, account):
 
     assert response.status_code == 200
     customer.refresh_from_db()
-    assert customer.shipping is not None
-    assert customer.shipping.name == "Portal New"
-    assert customer.shipping.phone == "333"
-    assert customer.shipping.address.line1 == "Portal New"
-    assert customer.shipping.address.country == "US"
+    assert customer.default_shipping_profile is not None
+    assert customer.default_shipping_profile.name == "Portal New"
+    assert customer.default_shipping_profile.phone == "333"
+    assert customer.default_shipping_profile.address.line1 == "Portal New"
+    assert customer.default_shipping_profile.address.country == "US"
 
 
 def test_update_customer_remove_shipping_missing(api_client, account):
@@ -149,4 +149,4 @@ def test_update_customer_remove_shipping_missing(api_client, account):
 
     assert response.status_code == 200
     customer.refresh_from_db()
-    assert customer.shipping is None
+    assert customer.default_shipping_profile is None

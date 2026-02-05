@@ -5,14 +5,14 @@ import pytest
 from django.utils import timezone
 
 from openinvoice.customers.models import Customer
-from tests.factories import CustomerFactory
+from tests.factories import BillingProfileFactory, CustomerFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def test_list_customers(api_client, user, account):
-    customer_1 = CustomerFactory(account=account, name="Customer 1")
-    customer_2 = CustomerFactory(account=account, name="Customer 2")
+    customer_1 = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Customer 1"))
+    customer_2 = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Customer 2"))
     CustomerFactory()  # another account
 
     api_client.force_login(user)
@@ -25,29 +25,34 @@ def test_list_customers(api_client, user, account):
         {
             "id": str(customer.id),
             "account_id": str(customer.account_id),
-            "name": customer.name,
-            "legal_name": customer.legal_name,
-            "legal_number": customer.legal_number,
-            "email": customer.email,
-            "phone": customer.phone,
-            "currency": customer.currency,
-            "language": customer.language,
-            "net_payment_term": customer.net_payment_term,
-            "invoice_numbering_system_id": None,
-            "credit_note_numbering_system_id": None,
             "description": customer.description,
             "metadata": customer.metadata,
-            "address": {
-                "country": customer.address.country,
-                "line1": customer.address.line1,
-                "line2": customer.address.line2,
-                "locality": customer.address.locality,
-                "postal_code": customer.address.postal_code,
-                "state": customer.address.state,
+            "default_billing_profile": {
+                "id": str(customer.default_billing_profile.id),
+                "name": customer.default_billing_profile.name,
+                "legal_name": customer.default_billing_profile.legal_name,
+                "legal_number": customer.default_billing_profile.legal_number,
+                "email": customer.default_billing_profile.email,
+                "phone": customer.default_billing_profile.phone,
+                "address": {
+                    "line1": customer.default_billing_profile.address.line1,
+                    "line2": customer.default_billing_profile.address.line2,
+                    "locality": customer.default_billing_profile.address.locality,
+                    "state": customer.default_billing_profile.address.state,
+                    "postal_code": customer.default_billing_profile.address.postal_code,
+                    "country": str(customer.default_billing_profile.address.country),
+                },
+                "currency": customer.default_billing_profile.currency,
+                "language": customer.default_billing_profile.language,
+                "net_payment_term": customer.default_billing_profile.net_payment_term,
+                "invoice_numbering_system_id": customer.default_billing_profile.invoice_numbering_system_id,
+                "credit_note_numbering_system_id": customer.default_billing_profile.credit_note_numbering_system_id,
+                "tax_rates": [],
+                "tax_ids": [],
+                "created_at": ANY,
+                "updated_at": ANY,
             },
-            "shipping": None,
-            "tax_rates": [],
-            "tax_ids": [],
+            "default_shipping_profile": None,
             "logo_id": None,
             "logo_url": None,
             "created_at": ANY,
@@ -93,9 +98,9 @@ def test_list_customers_requires_authentication(api_client, account):
 
 
 def test_list_customers_filter_by_currency(api_client, user, account):
-    usd = CustomerFactory(account=account, currency="USD")
-    CustomerFactory(account=account, currency="EUR")
-    pln = CustomerFactory(account=account, currency="PLN")
+    usd = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="USD"))
+    CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="EUR"))
+    pln = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="PLN"))
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -149,39 +154,39 @@ def test_list_customers_rejects_foreign_account(api_client, user, account):
 
 
 def test_list_customers_search_by_name(api_client, user, account):
-    CustomerFactory(account=account, name="Alice")
-    CustomerFactory(account=account, name="Bob")
+    CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Alice"))
+    CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Bob"))
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.get("/api/v1/customers", {"search": "Alice"})
 
     assert response.status_code == 200
-    assert [r["name"] for r in response.data["results"]] == ["Alice"]
+    assert [r["default_billing_profile"]["name"] for r in response.data["results"]] == ["Alice"]
 
 
 def test_list_customers_search_by_email(api_client, user, account):
-    CustomerFactory(account=account, email="a@example.com")
-    CustomerFactory(account=account, email="b@example.com")
+    CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(email="a@example.com"))
+    CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(email="b@example.com"))
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.get("/api/v1/customers", {"search": "a@example.com"})
 
     assert response.status_code == 200
-    assert [r["email"] for r in response.data["results"]] == ["a@example.com"]
+    assert [r["default_billing_profile"]["email"] for r in response.data["results"]] == ["a@example.com"]
 
 
 def test_list_customers_search_by_phone(api_client, user, account):
-    CustomerFactory(account=account, phone="111")
-    CustomerFactory(account=account, phone="222")
+    CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(phone="111"))
+    CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(phone="222"))
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.get("/api/v1/customers", {"search": "111"})
 
     assert response.status_code == 200
-    assert [r["phone"] for r in response.data["results"]] == ["111"]
+    assert [r["default_billing_profile"]["phone"] for r in response.data["results"]] == ["111"]
 
 
 def test_list_customers_search_by_description(api_client, user, account):
@@ -197,8 +202,8 @@ def test_list_customers_search_by_description(api_client, user, account):
 
 
 def test_list_customers_order_by_created_at(api_client, user, account):
-    older = CustomerFactory(account=account, name="Older")
-    newer = CustomerFactory(account=account, name="Newer")
+    older = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Older"))
+    newer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Newer"))
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -211,8 +216,8 @@ def test_list_customers_order_by_created_at(api_client, user, account):
 
 
 def test_list_customers_order_by_created_at_desc(api_client, user, account):
-    older = CustomerFactory(account=account, name="Older")
-    newer = CustomerFactory(account=account, name="Newer")
+    older = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Older"))
+    newer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Newer"))
 
     api_client.force_login(user)
     api_client.force_account(account)
