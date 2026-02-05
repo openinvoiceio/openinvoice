@@ -82,19 +82,27 @@ class AccountFactory(DjangoModelFactory):
     class Meta:
         model = "accounts.Account"
 
-    name = "Test Account"
-    legal_name = None
-    legal_number = None
-    email = "test@example.com"
-    phone = None
-    address = SubFactory(AddressFactory)
+    is_active = True
     created_by = SubFactory(UserFactory)
     country = "PL"
     default_currency = "PLN"
+    language = "en-us"
     invoice_footer = None
+    invoice_numbering_system = None
+    credit_note_numbering_system = None
     net_payment_term = 0
     metadata = {}
-    logo_id = None
+    logo = None
+    default_business_profile = SubFactory("tests.factories.BusinessProfileFactory")
+
+    @post_generation
+    def business_profiles(self, create, extracted, **_):
+        if not create:
+            return
+        if extracted is not None:
+            self.business_profiles.set(extracted)
+        else:
+            self.business_profiles.add(self.default_business_profile)
 
 
 class MemberFactory(DjangoModelFactory):
@@ -114,32 +122,85 @@ class InvitationFactory(DjangoModelFactory):
     invited_by = SubFactory(UserFactory)
 
 
-class CustomerFactory(DjangoModelFactory):
+class BusinessProfileFactory(DjangoModelFactory):
     class Meta:
-        model = "customers.Customer"
+        model = "accounts.BusinessProfile"
+
+    name = "Test Business"
+    legal_name = None
+    legal_number = None
+    email = "business@example.com"
+    phone = None
+    address = SubFactory(AddressFactory)
+
+
+class BillingProfileFactory(DjangoModelFactory):
+    class Meta:
+        model = "customers.BillingProfile"
 
     name = "Test Customer"
     legal_name = None
     legal_number = None
     email = "customer@example.com"
     phone = "123456789"
-    description = "Test customer"
-    currency = "USD"
+    address = SubFactory(AddressFactory)
+    currency = "PLN"
+    language = "en-us"
     net_payment_term = 0
+    invoice_numbering_system = None
+    credit_note_numbering_system = None
+
+
+class CustomerFactory(DjangoModelFactory):
+    class Meta:
+        model = "customers.Customer"
+
+    description = "Test customer"
     metadata = {}
     account = SubFactory(AccountFactory)
-    address = SubFactory(AddressFactory)
-    shipping = None
     logo = None
+    default_billing_profile = SubFactory("tests.factories.BillingProfileFactory")
+    default_shipping_profile = None
+
+    @post_generation
+    def billing_profiles(self, create, extracted, **_):
+        if not create:
+            return
+        if extracted is not None:
+            self.billing_profiles.set(extracted)
+        else:
+            self.billing_profiles.add(self.default_billing_profile)
+
+    @post_generation
+    def shipping_profiles(self, create, extracted, **_):
+        if not create:
+            return
+        if extracted is not None:
+            self.shipping_profiles.set(extracted)
+        elif self.default_shipping_profile:
+            self.shipping_profiles.add(self.default_shipping_profile)
+
+    @post_generation
+    def shipping(self, create, extracted, **_):
+        if not create or extracted is None:
+            return
+        if self.default_shipping_profile is None:
+            self.default_shipping_profile = extracted
+            self.save(update_fields=["default_shipping_profile"])
+        self.shipping_profiles.add(extracted)
 
 
-class CustomerShippingFactory(DjangoModelFactory):
+class ShippingProfileFactory(DjangoModelFactory):
     class Meta:
-        model = "customers.CustomerShipping"
+        model = "customers.ShippingProfile"
 
     name = "Shipping Customer"
     phone = "987654321"
     address = SubFactory(AddressFactory)
+
+
+# TODO: DELETE ME
+CustomerShippingFactory = ShippingProfileFactory
 
 
 class CouponFactory(DjangoModelFactory):
@@ -230,9 +291,11 @@ class InvoiceFactory(DjangoModelFactory):
     head = SubFactory(InvoiceHeadFactory)
     account = SubFactory(AccountFactory)
     customer = SubFactory(CustomerFactory, account=SelfAttribute("..account"))
+    billing_profile = LazyAttribute(lambda obj: obj.customer.default_billing_profile)
+    business_profile = LazyAttribute(lambda obj: obj.account.default_business_profile)
     number = Sequence(lambda n: f"INV-{n}")
     numbering_system = None
-    currency = LazyAttribute(lambda obj: obj.customer.currency or obj.account.default_currency)
+    currency = LazyAttribute(lambda obj: obj.billing_profile.currency or obj.account.default_currency)
     status = InvoiceStatus.DRAFT
     issue_date = None
     due_date = LazyFunction(lambda: timezone.now().date())
@@ -422,9 +485,11 @@ class QuoteFactory(DjangoModelFactory):
     account = SubFactory(AccountFactory)
     number = None
     numbering_system = None
-    currency = "PLN"
+    currency = LazyAttribute(lambda obj: obj.billing_profile.currency or obj.account.default_currency)
     status = QuoteStatus.DRAFT
     issue_date = LazyFunction(lambda: timezone.now().date())
+    billing_profile = LazyAttribute(lambda obj: obj.customer.default_billing_profile)
+    business_profile = LazyAttribute(lambda obj: obj.account.default_business_profile)
     subtotal_amount = Decimal("0")
     total_discount_amount = Decimal("0")
     total_amount_excluding_tax = Decimal("0")
@@ -447,6 +512,9 @@ class QuoteFactory(DjangoModelFactory):
             customer = CustomerFactory(account=account)
 
         kwargs["customer"] = customer
+        kwargs.setdefault("billing_profile", customer.default_billing_profile)
+        kwargs.setdefault("business_profile", account.default_business_profile)
+        kwargs.setdefault("currency", customer.default_billing_profile.currency or account.default_currency)
 
         return super()._create(model_class, *args, **kwargs)
 

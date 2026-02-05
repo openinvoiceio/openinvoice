@@ -2,12 +2,14 @@ from djmoney.contrib.django_rest_framework.fields import MoneyField
 from djmoney.money import Money
 from rest_framework import serializers
 
-from openinvoice.addresses.serializers import AddressSerializer
+from openinvoice.accounts.fields import BusinessProfileRelatedField
+from openinvoice.accounts.serializers import BusinessProfileSerializer
 from openinvoice.core.fields import CurrencyField, LanguageField, MetadataField
 from openinvoice.core.validators import AllOrNoneValidator, AtMostOneValidator
 from openinvoice.coupons.fields import CouponRelatedField
 from openinvoice.coupons.serializers import CouponSerializer
-from openinvoice.customers.fields import CustomerRelatedField
+from openinvoice.customers.fields import BillingProfileRelatedField, CustomerRelatedField, ShippingProfileRelatedField
+from openinvoice.customers.serializers import BillingProfileSerializer, ShippingProfileSerializer
 from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.integrations.fields import IntegrationConnectionField
 from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
@@ -28,29 +30,6 @@ from .validators import (
 )
 
 
-class InvoiceCustomerSerializer(serializers.Serializer):
-    id = serializers.UUIDField(source="customer.id")
-    name = serializers.CharField(source="effective_customer.name")
-    legal_name = serializers.CharField(allow_null=True, source="effective_customer.legal_name")
-    legal_number = serializers.CharField(allow_null=True, source="effective_customer.legal_number")
-    email = serializers.CharField(allow_null=True, source="effective_customer.email")
-    phone = serializers.CharField(allow_null=True, source="effective_customer.phone")
-    description = serializers.CharField(allow_null=True, source="effective_customer.description")
-    address = AddressSerializer(source="effective_customer.address")
-    logo_id = serializers.UUIDField(allow_null=True, source="effective_customer.logo_id")
-
-
-class InvoiceAccountSerializer(serializers.Serializer):
-    id = serializers.UUIDField(source="account.id")
-    name = serializers.CharField(source="effective_account.name")
-    legal_name = serializers.CharField(allow_null=True, source="effective_account.legal_name")
-    legal_number = serializers.CharField(allow_null=True, source="effective_account.legal_number")
-    email = serializers.CharField(allow_null=True, source="effective_account.email")
-    phone = serializers.CharField(allow_null=True, source="effective_account.phone")
-    address = AddressSerializer(source="effective_account.address")
-    logo_id = serializers.UUIDField(allow_null=True, source="effective_account.logo_id")
-
-
 class InvoiceDiscountSerializer(serializers.Serializer):
     coupon_id = serializers.UUIDField()
     name = serializers.CharField()
@@ -65,9 +44,7 @@ class InvoiceTaxSerializer(serializers.Serializer):
 
 
 class InvoiceShippingSerializer(serializers.Serializer):
-    name = serializers.CharField(source="effective_name", allow_null=True)
-    phone = serializers.CharField(source="effective_phone", allow_null=True)
-    address = AddressSerializer(source="effective_address", allow_null=True)
+    profile = ShippingProfileSerializer(allow_null=True)
     amount = MoneyField(max_digits=19, decimal_places=2)
     total_excluding_tax_amount = MoneyField(max_digits=19, decimal_places=2)
     total_tax_amount = MoneyField(max_digits=19, decimal_places=2)
@@ -128,8 +105,8 @@ class InvoiceSerializer(serializers.Serializer):
     net_payment_term = serializers.IntegerField(min_value=0)
     delivery_method = serializers.ChoiceField(choices=InvoiceDeliveryMethod.choices)
     recipients = serializers.ListField(child=serializers.EmailField(), allow_empty=True)
-    customer = InvoiceCustomerSerializer(source="*", read_only=True)
-    account = InvoiceAccountSerializer(source="*", read_only=True)
+    billing_profile = BillingProfileSerializer(read_only=True)
+    business_profile = BusinessProfileSerializer(read_only=True)
     metadata = MetadataField()
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2)
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2)
@@ -161,11 +138,14 @@ class InvoiceSerializer(serializers.Serializer):
 
 class InvoiceShippingAddSerializer(serializers.Serializer):
     shipping_rate_id = ShippingRateRelatedField(source="shipping_rate")
+    shipping_profile_id = ShippingProfileRelatedField(source="profile", required=False, allow_null=True)
     tax_rates = TaxRateRelatedField(many=True, required=False, validators=[MaxTaxRatesValidator()])
 
 
 class InvoiceCreateSerializer(serializers.Serializer):
     customer_id = CustomerRelatedField(source="customer")
+    billing_profile_id = BillingProfileRelatedField(source="billing_profile", required=False)
+    business_profile_id = BusinessProfileRelatedField(source="business_profile", required=False)
     number = serializers.CharField(allow_null=True, required=False, max_length=255)
     numbering_system_id = NumberingSystemRelatedField(
         source="numbering_system", applies_to=NumberingSystemAppliesTo.INVOICE, allow_null=True, required=False
@@ -194,7 +174,8 @@ class InvoiceCreateSerializer(serializers.Serializer):
 
     def validate(self, data):
         customer = data["customer"]
-        currency = data.get("currency") or customer.currency or customer.account.default_currency
+        billing_profile = data.get("billing_profile") or customer.default_billing_profile
+        currency = data.get("currency") or billing_profile.currency or customer.account.default_currency
 
         if data.get("coupons"):
             validate_coupons_currency(data["coupons"], currency)
@@ -208,6 +189,8 @@ class InvoiceCreateSerializer(serializers.Serializer):
 
 
 class InvoiceRevisionCreateSerializer(serializers.Serializer):
+    billing_profile_id = BillingProfileRelatedField(source="billing_profile", required=False)
+    business_profile_id = BusinessProfileRelatedField(source="business_profile", required=False)
     number = serializers.CharField(allow_null=True, required=False, max_length=255)
     numbering_system_id = NumberingSystemRelatedField(
         source="numbering_system", applies_to=NumberingSystemAppliesTo.INVOICE, allow_null=True, required=False
@@ -248,6 +231,8 @@ class InvoiceRevisionCreateSerializer(serializers.Serializer):
 
 class InvoiceUpdateSerializer(serializers.Serializer):
     customer_id = CustomerRelatedField(source="customer", required=False)
+    billing_profile_id = BillingProfileRelatedField(source="billing_profile", required=False)
+    business_profile_id = BusinessProfileRelatedField(source="business_profile", required=False)
     number = serializers.CharField(max_length=255, allow_null=True, required=False)
     numbering_system_id = NumberingSystemRelatedField(
         source="numbering_system", applies_to=NumberingSystemAppliesTo.INVOICE, allow_null=True, required=False

@@ -46,10 +46,8 @@ class QuoteListCreateAPIView(generics.ListAPIView):
     filterset_class = QuoteFilterSet
     search_fields = [
         "number",
-        "customer_on_quote__name",
-        "customer_on_quote__email",
-        "customer__name",
-        "customer__email",
+        "billing_profile__name",
+        "billing_profile__email",
         "lines__description",
     ]
     ordering_fields = ["created_at", "issue_date"]
@@ -64,7 +62,12 @@ class QuoteListCreateAPIView(generics.ListAPIView):
                     queryset=QuoteLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
                 )
             )
-            .select_related("invoice", "customer", "customer_on_quote", "account_on_quote")
+            .select_related(
+                "invoice",
+                "customer",
+                "billing_profile",
+                "business_profile",
+            )
         )
 
     @extend_schema(operation_id="create_quote", request=QuoteCreateSerializer, responses={200: QuoteSerializer})
@@ -76,6 +79,8 @@ class QuoteListCreateAPIView(generics.ListAPIView):
         quote = Quote.objects.create_draft(
             account=request.account,
             customer=data.get("customer"),
+            billing_profile=data.get("billing_profile"),
+            business_profile=data.get("business_profile"),
             number=data.get("number"),
             numbering_system=data.get("numbering_system"),
             currency=data.get("currency"),
@@ -107,7 +112,12 @@ class QuoteRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
                     queryset=QuoteLine.objects.order_by("created_at").prefetch_related("discounts", "taxes"),
                 )
             )
-            .select_related("invoice", "customer", "customer_on_quote", "account_on_quote")
+            .select_related(
+                "invoice",
+                "customer",
+                "billing_profile",
+                "business_profile",
+            )
         )
 
     @extend_schema(operation_id="update_quote", request=QuoteUpdateSerializer, responses={200: QuoteSerializer})
@@ -122,6 +132,8 @@ class QuoteRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
 
         quote.update(
             customer=data.get("customer", quote.customer),
+            billing_profile=data.get("billing_profile", quote.billing_profile),
+            business_profile=data.get("business_profile", quote.business_profile),
             number=data.get("number", quote.number),
             numbering_system=data.get("numbering_system", quote.numbering_system),
             currency=data.get("currency", quote.currency),
@@ -236,7 +248,7 @@ class QuotePreviewAPIView(generics.GenericAPIView):
     def get_queryset(self):
         return (
             Quote.objects.for_account(self.request.account)
-            .select_related("account", "customer", "customer_on_quote", "account_on_quote")
+            .select_related("account", "customer", "billing_profile", "business_profile")
             .prefetch_related("lines__discounts", "lines__taxes", "discounts", "taxes")
         )
 

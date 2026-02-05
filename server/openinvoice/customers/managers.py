@@ -4,48 +4,77 @@ from typing import TYPE_CHECKING
 
 from django.db import models
 
+from openinvoice.addresses.models import Address
+
 if TYPE_CHECKING:
     from openinvoice.accounts.models import Account
-    from openinvoice.addresses.models import Address
     from openinvoice.files.models import File
     from openinvoice.numbering_systems.models import NumberingSystem
 
-    from .models import Customer
+    from .models import BillingProfile, Customer, ShippingProfile
 
 
 class CustomerManager(models.Manager):
     def create_customer(
         self,
         account: Account,
+        default_billing_profile: BillingProfile,
+        description: str | None = None,
+        metadata: dict | None = None,
+        logo: File | None = None,
+        default_shipping_profile: ShippingProfile | None = None,
+    ) -> Customer:
+        return self.create(
+            account=account,
+            description=description,
+            metadata=metadata or {},
+            logo=logo,
+            default_billing_profile=default_billing_profile,
+            default_shipping_profile=default_shipping_profile,
+        )
+
+
+class BillingProfileManager(models.Manager):
+    def create_profile(
+        self,
         name: str,
-        address: Address,
         legal_name: str | None = None,
         legal_number: str | None = None,
         email: str | None = None,
         phone: str | None = None,
-        description: str | None = None,
+        address_data: dict | None = None,
         currency: str | None = None,
         language: str | None = None,
         net_payment_term: int | None = None,
         invoice_numbering_system: NumberingSystem | None = None,
         credit_note_numbering_system: NumberingSystem | None = None,
-        metadata: dict | None = None,
-        logo: File | None = None,
-    ) -> Customer:
+    ) -> BillingProfile:
+        address = Address.objects.create_address(**(address_data or {}))
         return self.create(
-            account=account,
             name=name,
             legal_name=legal_name,
             legal_number=legal_number,
             email=email,
             phone=phone,
-            description=description,
+            address=address,
             currency=currency,
             language=language,
             net_payment_term=net_payment_term,
             invoice_numbering_system=invoice_numbering_system,
             credit_note_numbering_system=credit_note_numbering_system,
-            metadata=metadata or {},
+        )
+
+
+class ShippingProfileManager(models.Manager):
+    def create_profile(
+        self,
+        name: str | None = None,
+        phone: str | None = None,
+        address_data: dict | None = None,
+    ) -> ShippingProfile:
+        address = Address.objects.create_address(**(address_data or {}))
+        return self.create(
+            name=name,
+            phone=phone,
             address=address,
-            logo=logo,
         )

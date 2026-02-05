@@ -20,6 +20,9 @@
 - Avoid unrelated refactors while implementing tasks.
 - Use absolute imports only where configured (`@/*` in dashboard).
 - Use `uv` for Python tooling and `pnpm` for dashboard tooling.
+- For model update methods, pass full field values and compute fallbacks in views/handlers.
+- Avoid keyword-only arguments (`*`) in managers/models; prefer positional/optional params.
+- Do not create base serializers for inheritance; define serializers explicitly per payload.
 
 ## Local Services (Docker Compose)
 - Compose file: `docker-compose.yml`.

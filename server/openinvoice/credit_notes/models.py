@@ -180,7 +180,7 @@ class CreditNote(models.Model):
         if number is None:
             resolved_numbering_system = (
                 numbering_system
-                or self.invoice.customer.credit_note_numbering_system
+                or self.invoice.billing_profile.credit_note_numbering_system
                 or self.invoice.account.credit_note_numbering_system
             )
 

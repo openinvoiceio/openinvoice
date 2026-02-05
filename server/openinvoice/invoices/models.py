@@ -18,11 +18,11 @@ from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
-from openinvoice.addresses.models import Address
+from openinvoice.accounts.models import BusinessProfile
 from openinvoice.core.calculations import aggregate_allocations, allocate_proportionally, calculate_tax_amounts, zero
 from openinvoice.coupons.models import Coupon
 from openinvoice.credit_notes.choices import CreditNoteStatus
-from openinvoice.customers.models import Customer
+from openinvoice.customers.models import BillingProfile, Customer, ShippingProfile
 from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.numbering_systems.models import NumberingSystem
 from openinvoice.payments.models import Payment
@@ -38,70 +38,13 @@ from .choices import (
     InvoiceTaxBehavior,
     InvoiceTaxSource,
 )
-from .managers import (
-    InvoiceAccountManager,
-    InvoiceCustomerManager,
-    InvoiceDocumentManager,
-    InvoiceLineManager,
-    InvoiceManager,
-)
+from .managers import InvoiceDocumentManager, InvoiceLineManager, InvoiceManager
 from .querysets import (
     InvoiceDiscountAllocationQuerySet,
     InvoiceLineQuerySet,
     InvoiceQuerySet,
     InvoiceTaxAllocationQuerySet,
 )
-
-
-class InvoiceCustomer(models.Model):
-    """Immutable customer data captured for finalized invoices."""
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255)
-    legal_name = models.CharField(max_length=255, null=True)
-    legal_number = models.CharField(max_length=255, null=True)
-    email = models.CharField(max_length=255, null=True)
-    phone = models.CharField(max_length=255, null=True)
-    description = models.CharField(max_length=255, null=True, blank=True)
-    address = models.OneToOneField(
-        "addresses.Address",
-        on_delete=models.PROTECT,
-        related_name="invoice_customer_address",
-    )
-    logo = models.ForeignKey(
-        "files.File",
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="invoice_customer_logo",
-    )
-    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="invoice_customers")
-
-    objects = InvoiceCustomerManager()
-
-
-class InvoiceAccount(models.Model):
-    """Immutable account data captured for finalized invoices."""
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255)
-    legal_name = models.CharField(max_length=255, null=True)
-    legal_number = models.CharField(max_length=255, null=True)
-    email = models.CharField(max_length=255, null=True)
-    phone = models.CharField(max_length=255, null=True)
-    address = models.OneToOneField(
-        "addresses.Address",
-        on_delete=models.PROTECT,
-        related_name="invoice_account_address",
-    )
-    logo = models.ForeignKey(
-        "files.File",
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="invoice_account_logo",
-    )
-    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="invoice_accounts")
-
-    objects = InvoiceAccountManager()
 
 
 class InvoiceHead(models.Model):
@@ -122,17 +65,15 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     issue_date = models.DateField(null=True)
     due_date = models.DateField(null=True)
     net_payment_term = models.PositiveIntegerField(default=7)
-    invoice_customer = models.OneToOneField(
-        "InvoiceCustomer",
+    billing_profile = models.ForeignKey(
+        "customers.BillingProfile",
         on_delete=models.PROTECT,
-        null=True,
-        related_name="invoice",
+        related_name="invoices",
     )
-    invoice_account = models.OneToOneField(
-        "InvoiceAccount",
+    business_profile = models.ForeignKey(
+        "accounts.BusinessProfile",
         on_delete=models.PROTECT,
-        null=True,
-        related_name="invoice",
+        related_name="invoices",
     )
     customer = models.ForeignKey("customers.Customer", on_delete=models.PROTECT, related_name="invoices")
     account = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="invoices")
@@ -217,14 +158,6 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     @property
     def is_draft(self) -> bool:
         return self.status == InvoiceStatus.DRAFT
-
-    @property
-    def effective_customer(self):
-        return self.invoice_customer or self.customer
-
-    @property
-    def effective_account(self):
-        return self.invoice_account or self.account
 
     @property
     def effective_tax_behavior(self) -> InvoiceTaxBehavior:
@@ -572,7 +505,12 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             InvoiceTaxRate(invoice=self, tax_rate=tax_rate, position=idx) for idx, tax_rate in enumerate(tax_rates)
         )
 
-    def add_shipping(self, shipping_rate: ShippingRate, tax_rates: list[TaxRate]) -> InvoiceShipping:
+    def add_shipping(
+        self,
+        shipping_rate: ShippingRate,
+        tax_rates: list[TaxRate],
+        shipping_profile: ShippingProfile | None = None,
+    ) -> InvoiceShipping:
         shipping = InvoiceShipping.objects.create(
             currency=self.currency,
             amount=shipping_rate.amount,
@@ -581,6 +519,7 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
             total_tax_rate=Decimal(0),
             total_amount=zero(self.currency),
             shipping_rate=shipping_rate,
+            profile=shipping_profile,
         )
         self.shipping = shipping
         self.save(update_fields=["shipping_id"])
@@ -594,14 +533,12 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.opened_at = timezone.now()
         self.issue_date = self.issue_date or timezone.now().date()
         self.due_date = self.due_date or timezone.now().date() + relativedelta(days=self.net_payment_term)
-        self.invoice_customer = InvoiceCustomer.objects.from_customer(self.customer)
-        self.invoice_account = InvoiceAccount.objects.from_account(self.account)
+        self.billing_profile = self.billing_profile.clone()
+        self.business_profile = self.business_profile.clone()
 
-        if self.shipping:
-            self.shipping.name = self.customer.shipping_name
-            self.shipping.phone = self.customer.shipping_phone
-            self.shipping.address = Address.objects.from_address(self.customer.shipping_address)
-            self.shipping.save(update_fields=["name", "phone", "address"])
+        if self.shipping and self.shipping.profile:
+            self.shipping.profile = self.shipping.profile.clone()
+            self.shipping.save(update_fields=["profile"])
 
         if self.number is None and self.numbering_system is not None:
             self.number = self.generate_number()
@@ -634,6 +571,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
     def update(
         self,
         customer: Customer,
+        billing_profile: BillingProfile,
+        business_profile: BusinessProfile,
         currency: str,
         net_payment_term: int,
         number: str | None = None,
@@ -648,11 +587,13 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         tax_behavior: InvoiceTaxBehavior | None = None,
     ) -> None:
         original_currency = self.currency
-        currency = currency or customer.currency or self.account.default_currency
+        currency = currency or billing_profile.currency or self.account.default_currency
         resolved_numbering_system: NumberingSystem | None = None
         if number is None:
             resolved_numbering_system = (
-                numbering_system or customer.invoice_numbering_system or customer.account.invoice_numbering_system
+                numbering_system
+                or billing_profile.invoice_numbering_system
+                or customer.account.invoice_numbering_system
             )
 
         self.number = number
@@ -665,6 +606,8 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         self.payment_provider = payment_provider
         self.payment_connection_id = payment_connection_id
         self.customer = customer
+        self.billing_profile = billing_profile
+        self.business_profile = business_profile
         self.delivery_method = delivery_method
         self.recipients = recipients
         self.tax_behavior = tax_behavior or self.tax_behavior
@@ -895,13 +838,11 @@ class InvoiceLine(models.Model):
 
 class InvoiceShipping(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255, null=True)
-    phone = models.CharField(max_length=255, null=True)
-    address = models.OneToOneField(
-        "addresses.Address",
-        on_delete=models.SET_NULL,
+    profile = models.ForeignKey(
+        "customers.ShippingProfile",
+        on_delete=models.PROTECT,
         null=True,
-        related_name="invoice_shipping_address",
+        related_name="invoice_shippings",
     )
     currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
@@ -912,18 +853,6 @@ class InvoiceShipping(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     shipping_rate = models.ForeignKey("shipping_rates.ShippingRate", on_delete=models.PROTECT)
     tax_rates = models.ManyToManyField("tax_rates.TaxRate", through="InvoiceShippingTaxRate", related_name="+")
-
-    @property
-    def effective_name(self) -> str | None:
-        return self.invoice.customer.shipping_name if self.invoice.is_draft else self.name
-
-    @property
-    def effective_phone(self) -> str | None:
-        return self.invoice.customer.shipping_phone if self.invoice.is_draft else self.phone
-
-    @property
-    def effective_address(self) -> Address | None:
-        return self.invoice.customer.shipping_address if self.invoice.is_draft else self.address
 
     @property
     def tax_multiplier(self) -> Decimal:

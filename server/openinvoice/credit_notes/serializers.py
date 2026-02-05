@@ -4,46 +4,21 @@ from djmoney.contrib.django_rest_framework import MoneyField
 from djmoney.money import Money
 from rest_framework import serializers
 
-from openinvoice.addresses.serializers import AddressSerializer
+from openinvoice.accounts.serializers import BusinessProfileSerializer
 from openinvoice.core.access import has_feature
 from openinvoice.core.choices import FeatureCode
 from openinvoice.core.fields import CurrencyField, MetadataField
+from openinvoice.customers.serializers import BillingProfileSerializer
 from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.invoices.choices import InvoiceStatus
 from openinvoice.invoices.fields import InvoiceLineRelatedField, InvoiceRelatedField
 from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
 from openinvoice.numbering_systems.fields import NumberingSystemRelatedField
-from openinvoice.tax_ids.serializers import TaxIdSerializer
 from openinvoice.tax_rates.fields import TaxRateRelatedField
 
 from .calculations import calculate_credit_note_line_amounts
 from .choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
 from .fields import CreditNoteRelatedField
-
-
-class CreditNoteCustomerSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
-    name = serializers.CharField()
-    legal_name = serializers.CharField(allow_null=True)
-    legal_number = serializers.CharField(allow_null=True)
-    email = serializers.CharField(allow_null=True)
-    phone = serializers.CharField(allow_null=True)
-    description = serializers.CharField(allow_null=True)
-    address = AddressSerializer()
-    logo_id = serializers.UUIDField(allow_null=True)
-    tax_ids = TaxIdSerializer(many=True, read_only=True)
-
-
-class CreditNoteAccountSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
-    name = serializers.CharField()
-    legal_name = serializers.CharField(allow_null=True)
-    legal_number = serializers.CharField(allow_null=True)
-    email = serializers.CharField(allow_null=True)
-    phone = serializers.CharField(allow_null=True)
-    address = AddressSerializer()
-    logo_id = serializers.UUIDField(allow_null=True)
-    tax_ids = TaxIdSerializer(many=True, read_only=True)
 
 
 class CreditNoteLineTaxSerializer(serializers.Serializer):
@@ -106,8 +81,8 @@ class CreditNoteSerializer(serializers.Serializer):
     issued_at = serializers.DateTimeField(allow_null=True)
     voided_at = serializers.DateTimeField(allow_null=True)
     pdf_id = serializers.UUIDField(allow_null=True)
-    customer = CreditNoteCustomerSerializer(source="invoice.invoice_customer", read_only=True)
-    account = CreditNoteAccountSerializer(source="invoice.invoice_account", read_only=True)
+    billing_profile = BillingProfileSerializer(source="invoice.billing_profile", read_only=True)
+    business_profile = BusinessProfileSerializer(source="invoice.business_profile", read_only=True)
     lines = CreditNoteLineSerializer(many=True, read_only=True)
     taxes = CreditNoteTaxSerializer(many=True, read_only=True)
     tax_breakdown = CreditNoteTaxBreakdownItemSerializer(source="taxes.breakdown", many=True, read_only=True)

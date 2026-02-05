@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from openinvoice.accounts.permissions import IsAccountMember
+from openinvoice.customers.models import ShippingProfile
 from openinvoice.invoices.choices import InvoiceStatus
 from openinvoice.invoices.models import Invoice
 
@@ -77,30 +78,39 @@ class PortalCustomerAPIView(generics.RetrieveAPIView):
         data = serializer.validated_data
 
         customer.update_portal_profile(
-            name=data.get("name", customer.name),
-            email=data.get("email", customer.email),
-            phone=data.get("phone", customer.phone),
-            legal_name=data.get("legal_name", customer.legal_name),
-            legal_number=data.get("legal_number", customer.legal_number),
+            name=data.get("name", customer.default_billing_profile.name),
+            email=data.get("email", customer.default_billing_profile.email),
+            phone=data.get("phone", customer.default_billing_profile.phone),
+            legal_name=data.get("legal_name", customer.default_billing_profile.legal_name),
+            legal_number=data.get("legal_number", customer.default_billing_profile.legal_number),
+            address_data=data.get("address"),
         )
-        customer.address.update(**data.get("address") or {})
 
         if "shipping" in data:
             if data["shipping"] is None:
-                if customer.shipping:
-                    customer.shipping.delete()
-            elif customer.shipping:
-                customer.shipping.update(
-                    name=data["shipping"].get("name", customer.shipping.name),
-                    phone=data["shipping"].get("phone", customer.shipping.phone),
-                    address_data=data["shipping"].get("address", {}),
+                if customer.default_shipping_profile:
+                    shipping_profile = customer.default_shipping_profile
+                    customer.default_shipping_profile = None
+                    customer.save(update_fields=["default_shipping_profile"])
+                    customer.shipping_profiles.remove(shipping_profile)
+            elif customer.default_shipping_profile:
+                shipping_profile = customer.default_shipping_profile
+                shipping_data = data["shipping"] or {}
+                customer.default_shipping_profile.update(
+                    name=shipping_data.get("name", shipping_profile.name),
+                    phone=shipping_data.get("phone", shipping_profile.phone),
+                    address_data=shipping_data.get("address"),
                 )
             else:
-                customer.add_shipping(
-                    name=data["shipping"].get("name"),
-                    phone=data["shipping"].get("phone"),
-                    address_data=data["shipping"].get("address"),
+                shipping_data = data.get("shipping") or {}
+                shipping_profile = ShippingProfile.objects.create_profile(
+                    name=shipping_data.get("name"),
+                    phone=shipping_data.get("phone"),
+                    address_data=shipping_data.get("address"),
                 )
+                customer.default_shipping_profile = shipping_profile
+                customer.shipping_profiles.add(shipping_profile)
+                customer.save(update_fields=["default_shipping_profile"])
 
         logger.info(
             "Portal customer profile updated",

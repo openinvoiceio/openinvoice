@@ -11,11 +11,12 @@ from django.utils.crypto import get_random_string
 from django_countries.fields import CountryField
 from djmoney import settings as djmoney_settings
 
+from openinvoice.addresses.models import Address
 from openinvoice.users.models import User
 
 from .choices import InvitationStatus, MemberRole
-from .managers import AccountManager
-from .querysets import AccountQuerySet, InvitationQuerySet
+from .managers import AccountManager, BusinessProfileManager
+from .querysets import AccountQuerySet, BusinessProfileQuerySet, InvitationQuerySet
 
 if TYPE_CHECKING:
     from openinvoice.files.models import File
@@ -24,20 +25,9 @@ if TYPE_CHECKING:
 
 class Account(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255)
-    legal_name = models.CharField(max_length=255, null=True)
-    legal_number = models.CharField(max_length=255, null=True)
-    email = models.EmailField()
-    phone = models.CharField(max_length=255, null=True)
     is_active = models.BooleanField(default=True)
     members = models.ManyToManyField("users.User", through="accounts.Member", related_name="accounts_member_of")
     created_by = models.ForeignKey("users.User", on_delete=models.CASCADE)
-    address = models.OneToOneField(
-        "addresses.Address",
-        on_delete=models.CASCADE,
-        related_name="account_address",
-        null=False,
-    )
     country = CountryField()
     default_currency = models.CharField(max_length=3, choices=djmoney_settings.CURRENCY_CHOICES)
     language = models.CharField(max_length=10, choices=settings.LANGUAGES)
@@ -56,8 +46,13 @@ class Account(models.Model):
     )
     net_payment_term = models.PositiveIntegerField()
     logo = models.OneToOneField("files.File", on_delete=models.SET_NULL, null=True, related_name="account_logo")
-    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="accounts")
     metadata = models.JSONField(default=dict)
+    default_business_profile = models.OneToOneField(
+        "BusinessProfile",
+        on_delete=models.PROTECT,
+        related_name="+",
+    )
+    business_profiles = models.ManyToManyField("BusinessProfile", related_name="accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -68,11 +63,6 @@ class Account(models.Model):
 
     def update(
         self,
-        name: str,
-        legal_name: str | None,
-        legal_number: str | None,
-        email: str,
-        phone: str | None,
         country: str,
         default_currency: str,
         language: str,
@@ -83,11 +73,6 @@ class Account(models.Model):
         metadata: dict,
         logo: File | None,
     ) -> None:
-        self.name = name
-        self.legal_name = legal_name
-        self.legal_number = legal_number
-        self.email = email
-        self.phone = phone
         self.country = country
         self.default_currency = default_currency
         self.language = language
@@ -116,6 +101,54 @@ class Account(models.Model):
             status=InvitationStatus.PENDING,
             invited_by=invited_by,
         )
+
+
+class BusinessProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    legal_name = models.CharField(max_length=255, null=True)
+    legal_number = models.CharField(max_length=255, null=True)
+    email = models.EmailField(max_length=255, null=True)
+    phone = models.CharField(max_length=255, null=True)
+    address = models.OneToOneField(
+        "addresses.Address",
+        on_delete=models.PROTECT,
+        related_name="business_profile_address",
+    )
+    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="business_profiles")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+
+    objects = BusinessProfileManager.from_queryset(BusinessProfileQuerySet)()
+
+    def clone(self) -> BusinessProfile:
+        new_profile = BusinessProfile.objects.create(
+            name=self.name,
+            legal_name=self.legal_name,
+            legal_number=self.legal_number,
+            email=self.email,
+            phone=self.phone,
+            address=Address.objects.from_address(self.address),
+        )
+        new_profile.tax_ids.set(self.tax_ids.clone())
+        return new_profile
+
+    def update(
+        self,
+        name: str,
+        legal_name: str | None,
+        legal_number: str | None,
+        email: str | None,
+        phone: str | None,
+        address_data: dict | None,
+    ) -> None:
+        self.name = name
+        self.legal_name = legal_name
+        self.legal_number = legal_number
+        self.email = email
+        self.phone = phone
+        self.save()
+        self.address.update(**(address_data or {}))
 
 
 class Member(models.Model):

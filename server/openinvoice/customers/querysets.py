@@ -13,6 +13,23 @@ class CustomerQuerySet(models.QuerySet):
         return self.filter(account=account)
 
     def eager_load(self):
-        return self.select_related("address", "shipping", "shipping__address", "logo").prefetch_related(
-            "tax_rates", "tax_ids"
+        return self.select_related(
+            "default_billing_profile",
+            "default_billing_profile__address",
+            "default_shipping_profile",
+            "default_shipping_profile__address",
+            "logo",
+        ).prefetch_related(
+            "default_billing_profile__tax_rates",
+            "default_billing_profile__tax_ids",
         )
+
+
+class BillingProfileQuerySet(models.QuerySet):
+    def for_account(self, account: Account):
+        return self.filter(customers__account=account).distinct()
+
+
+class ShippingProfileQuerySet(models.QuerySet):
+    def for_account(self, account: Account):
+        return self.filter(customers__account=account).distinct()

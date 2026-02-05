@@ -61,7 +61,7 @@ class StripeIntegration(PaymentProviderIntegration):
         try:
             session = client.checkout.sessions.create(
                 mode="payment",
-                customer_email=invoice.customer.email,
+                customer_email=invoice.billing_profile.email,
                 client_reference_id=str(payment_id),
                 success_url=connection.redirect_url or self.default_success_url,
                 invoice_creation={"enabled": False},

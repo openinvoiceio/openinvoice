@@ -14,14 +14,39 @@ from .choices import InvitationStatus, MemberRole
 from .models import Invitation
 
 
-class AccountSerializer(serializers.Serializer):
+class BusinessProfileSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     name = serializers.CharField()
     legal_name = serializers.CharField(allow_null=True)
     legal_number = serializers.CharField(allow_null=True)
-    email = serializers.EmailField()
+    email = serializers.EmailField(allow_null=True)
     phone = serializers.CharField(allow_null=True)
     address = AddressSerializer()
+    tax_ids = TaxIdSerializer(many=True, read_only=True)
+    created_at = serializers.DateTimeField()
+    updated_at = serializers.DateTimeField(allow_null=True)
+
+
+class BusinessProfileCreateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    legal_name = serializers.CharField(max_length=255, allow_null=True, required=False)
+    legal_number = serializers.CharField(max_length=255, allow_null=True, required=False)
+    email = serializers.EmailField(max_length=255, allow_null=True, required=False)
+    phone = serializers.CharField(max_length=255, allow_null=True, required=False)
+    address = AddressSerializer(allow_null=True, required=False)
+
+
+class BusinessProfileUpdateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255, required=False)
+    legal_name = serializers.CharField(max_length=255, allow_null=True, required=False)
+    legal_number = serializers.CharField(max_length=255, allow_null=True, required=False)
+    email = serializers.EmailField(max_length=255, allow_null=True, required=False)
+    phone = serializers.CharField(max_length=255, allow_null=True, required=False)
+    address = AddressSerializer(allow_null=True, required=False)
+
+
+class AccountSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
     country = CountryField()
     default_currency = CurrencyField()
     language = LanguageField()
@@ -33,26 +58,17 @@ class AccountSerializer(serializers.Serializer):
     subscription = StripeSubscriptionSerializer(allow_null=True, source="active_subscription")
     logo_id = serializers.UUIDField(allow_null=True)
     logo_url = serializers.FileField(use_url=True, source="logo.data", allow_null=True)
-    tax_ids = TaxIdSerializer(many=True, read_only=True)
+    default_business_profile = BusinessProfileSerializer()
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
 
 
 class AccountCreateSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=255)
-    legal_name = serializers.CharField(max_length=255, allow_null=True, required=False)
-    legal_number = serializers.CharField(max_length=255, allow_null=True, required=False)
-    email = serializers.EmailField(max_length=255)
+    business_profile = BusinessProfileCreateSerializer()
     country = CountryField()
 
 
 class AccountUpdateSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=255, required=False)
-    legal_name = serializers.CharField(max_length=255, allow_null=True, required=False)
-    legal_number = serializers.CharField(max_length=255, allow_null=True, required=False)
-    email = serializers.EmailField(max_length=255, required=False)
-    phone = serializers.CharField(max_length=255, allow_null=True, required=False)
-    address = AddressSerializer(required=False)
     country = CountryField(required=False)
     default_currency = CurrencyField(required=False)
     language = LanguageField(required=False)

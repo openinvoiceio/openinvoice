@@ -6,10 +6,9 @@ from decimal import Decimal
 from django.db import models
 from djmoney.money import Money
 
-from openinvoice.accounts.models import Account
-from openinvoice.addresses.models import Address
+from openinvoice.accounts.models import Account, BusinessProfile
 from openinvoice.core.calculations import zero
-from openinvoice.customers.models import Customer
+from openinvoice.customers.models import BillingProfile, Customer
 from openinvoice.numbering_systems.models import NumberingSystem
 from openinvoice.prices.models import Price
 
@@ -21,6 +20,8 @@ class QuoteManager(models.Manager):
         self,
         account: Account,
         customer: Customer,
+        billing_profile: BillingProfile | None = None,
+        business_profile: BusinessProfile | None = None,
         number: str | None = None,
         numbering_system: NumberingSystem | None = None,
         currency: str | None = None,
@@ -31,7 +32,9 @@ class QuoteManager(models.Manager):
         delivery_method: QuoteDeliveryMethod | None = None,
         recipients: list[str] | None = None,
     ):
-        currency = currency or customer.currency or account.default_currency
+        billing_profile = billing_profile or customer.default_billing_profile
+        business_profile = business_profile or account.default_business_profile
+        currency = currency or billing_profile.currency or account.default_currency
         resolved_numbering_system = None
 
         if number is None:
@@ -41,11 +44,13 @@ class QuoteManager(models.Manager):
         #         numbering_system or customer.invoice_numbering_system or account.invoice_numbering_system
         #     )
 
-        default_recipients = [customer.email] if customer.email else []
+        default_recipients = [billing_profile.email] if billing_profile.email else []
 
         quote = self.create(
             account=account,
             customer=customer,
+            billing_profile=billing_profile,
+            business_profile=business_profile,
             number=number,
             numbering_system=resolved_numbering_system,
             currency=currency,
@@ -63,7 +68,7 @@ class QuoteManager(models.Manager):
             recipients=recipients or default_recipients,
         )
 
-        for tax_rate in customer.tax_rates.active():
+        for tax_rate in billing_profile.tax_rates.active():
             quote.add_tax(tax_rate)
 
         return quote
@@ -99,36 +104,3 @@ class QuoteLineManager(models.Manager):
         quote_line.recalculate()
 
         return quote_line
-
-
-class QuoteCustomerManager(models.Manager):
-    def from_customer(self, customer: Customer):
-        quote_customer = self.model.objects.create(
-            customer=customer,
-            name=customer.name,
-            legal_name=customer.legal_name,
-            legal_number=customer.legal_number,
-            email=customer.email,
-            phone=customer.phone,
-            description=customer.description,
-            address=Address.objects.from_address(customer.address),
-            logo=customer.logo.clone() if customer.logo else None,
-        )
-        quote_customer.tax_ids.set(customer.tax_ids.clone())
-        return quote_customer
-
-
-class QuoteAccountManager(models.Manager):
-    def from_account(self, account: Account):
-        quote_account = self.model.objects.create(
-            account=account,
-            name=account.name,
-            legal_name=account.legal_name,
-            legal_number=account.legal_number,
-            email=account.email,
-            phone=account.phone,
-            address=Address.objects.from_address(account.address),
-            logo=account.logo.clone() if account.logo else None,
-        )
-        quote_account.tax_ids.set(account.tax_ids.clone())
-        return quote_account

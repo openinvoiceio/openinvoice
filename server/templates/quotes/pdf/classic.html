@@ -15,14 +15,14 @@
     <main>
         <header class="header">
             <h1 class="title">Quote</h1>
-            {% if quote.effective_account.logo %}
+            {% if quote.account.logo %}
                 <img
-                        src="data:{{ quote.effective_account.logo.content_type }};base64,{{ quote.effective_account.logo.base64 }}"
+                        src="data:{{ quote.account.logo.content_type }};base64,{{ quote.account.logo.base64 }}"
                         alt="logo"
                         style="max-height: 32px;"
                 />
             {% else %}
-                <div style="font-size:12px">{{ quote.effective_account.name }}</div>
+                <div style="font-size:12px">{{ quote.business_profile.name }}</div>
             {% endif %}
         </header>
 
@@ -56,20 +56,20 @@
             <section class="party party-account">
                 <h2 class="party-title">From</h2>
                 <p class="party-detail">
-                    {{ quote.effective_account.legal_name|default:quote.effective_account.name }}
+                    {{ quote.business_profile.legal_name|default:quote.business_profile.name }}
                 </p>
-                {% if quote.effective_account.legal_number %}
+                {% if quote.business_profile.legal_number %}
                     <p class="party-detail">
-                        <span>{{ quote.effective_account.legal_number }}</span>
+                        <span>{{ quote.business_profile.legal_number }}</span>
                     </p>
                 {% endif %}
                 <address class="party-detail">
-                    {% include "address.html" with address=quote.effective_account.address %}
+                    {% include "address.html" with address=quote.business_profile.address %}
                 </address>
-                {% if quote.effective_account.email %}
-                    <p class="party-detail">{{ quote.effective_account.email }}</p>
+                {% if quote.business_profile.email %}
+                    <p class="party-detail">{{ quote.business_profile.email }}</p>
                 {% endif %}
-                {% for tax_id in quote.effective_account.tax_ids.all %}
+                {% for tax_id in quote.business_profile.tax_ids.all %}
                     <p class="party-detail">
                         <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
                     </p>
@@ -79,20 +79,20 @@
             <section class="party party-customer">
                 <h2 class="party-title">Bill to</h2>
                 <p class="party-detail">
-                    {{ quote.effective_customer.legal_name|default:quote.effective_customer.name }}
+                    {{ quote.billing_profile.legal_name|default:quote.billing_profile.name }}
                 </p>
-                {% if quote.effective_customer.legal_number %}
+                {% if quote.billing_profile.legal_number %}
                     <p class="party-detail">
-                        <span>{{ quote.effective_customer.legal_number }}</span>
+                        <span>{{ quote.billing_profile.legal_number }}</span>
                     </p>
                 {% endif %}
                 <address class="party-detail">
-                    {% include "address.html" with address=quote.effective_customer.address %}
+                    {% include "address.html" with address=quote.billing_profile.address %}
                 </address>
-                {% if quote.effective_customer.email %}
-                    <p class="party-detail">{{ quote.effective_customer.email }}</p>
+                {% if quote.billing_profile.email %}
+                    <p class="party-detail">{{ quote.billing_profile.email }}</p>
                 {% endif %}
-                {% for tax_id in quote.effective_customer.tax_ids.all %}
+                {% for tax_id in quote.billing_profile.tax_ids.all %}
                     <p class="party-detail">
                         <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
                     </p>

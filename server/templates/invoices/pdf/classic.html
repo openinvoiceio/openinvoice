@@ -23,14 +23,14 @@
                     {% trans "invoice.pdf.title" %}
                 {% endif %}
             </h1>
-            {% if invoice.effective_account.logo %}
+            {% if invoice.account.logo %}
                 <img
-                        src="data:{{ invoice.effective_account.logo.content_type }};base64,{{ invoice.effective_account.logo.base64 }}"
+                        src="data:{{ invoice.account.logo.content_type }};base64,{{ invoice.account.logo.base64 }}"
                         alt="{% trans "invoice.pdf.logo_alt" %}"
                         style="max-height: 32px;"
                 />
             {% else %}
-                <div style="font-size:12px">{{ invoice.effective_account.name }}</div>
+                <div style="font-size:12px">{{ invoice.business_profile.name }}</div>
             {% endif %}
         </header>
 
@@ -73,22 +73,22 @@
             <section class="party party-account">
                 <h2 class="party-title">{% trans "invoice.pdf.from" %}</h2>
                 <p class="party-detail">
-                    {{ invoice.effective_account.legal_name|default:invoice.effective_account.name }}
+                    {{ invoice.business_profile.legal_name|default:invoice.business_profile.name }}
                 </p>
-                {% if invoice.effective_account.legal_number %}
+                {% if invoice.business_profile.legal_number %}
                     <p class="party-detail">
-                        <span>{{ invoice.effective_account.legal_number }}</span>
+                        <span>{{ invoice.business_profile.legal_number }}</span>
                     </p>
                 {% endif %}
                 <address class="party-detail">
-                    {% include "address.html" with address=invoice.effective_account.address %}
+                    {% include "address.html" with address=invoice.business_profile.address %}
                 </address>
                 <p class="party-detail">
-                    {% if invoice.effective_account.email %}
-                        <span>{{ invoice.effective_account.email }}</span>
+                    {% if invoice.business_profile.email %}
+                        <span>{{ invoice.business_profile.email }}</span>
                     {% endif %}
                 </p>
-                {% for tax_id in invoice.effective_account.tax_ids.all %}
+                {% for tax_id in invoice.business_profile.tax_ids.all %}
                     <p class="party-detail">
                         <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
                     </p>
@@ -100,22 +100,22 @@
                     <div>
                         <h2 class="party-title">{% trans "invoice.pdf.bill_to" %}</h2>
                         <p class="party-detail">
-                            {{ invoice.effective_customer.legal_name|default:invoice.effective_customer.name }}
+                            {{ invoice.billing_profile.legal_name|default:invoice.billing_profile.name }}
                         </p>
-                        {% if invoice.effective_customer.legal_number %}
+                        {% if invoice.billing_profile.legal_number %}
                             <p class="party-detail">
-                                <span>{{ invoice.effective_customer.legal_number }}</span>
+                                <span>{{ invoice.billing_profile.legal_number }}</span>
                             </p>
                         {% endif %}
                         <address class="party-detail">
-                            {% include "address.html" with address=invoice.effective_customer.address %}
+                            {% include "address.html" with address=invoice.billing_profile.address %}
                         </address>
                         <p class="party-detail">
-                            {% if invoice.effective_customer.email %}
-                                <span>{{ invoice.effective_customer.email }}</span>
+                            {% if invoice.billing_profile.email %}
+                                <span>{{ invoice.billing_profile.email }}</span>
                             {% endif %}
                         </p>
-                        {% for tax_id in invoice.effective_customer.tax_ids.all %}
+                        {% for tax_id in invoice.billing_profile.tax_ids.all %}
                             <p class="party-detail">
                                 <span>{{ tax_id.display_name }}: {{ tax_id.number }}</span>
                             </p>
@@ -124,19 +124,19 @@
                     {% if invoice.shipping %}
                         <div>
                             <h2 class="party-title">{% trans "invoice.pdf.ship_to" %}</h2>
-                            {% if invoice.shipping.effective_name %}
+                            {% if invoice.shipping.profile and invoice.shipping.profile.name %}
                                 <p class="party-detail">
-                                    {{ invoice.shipping.effective_name }}
+                                    {{ invoice.shipping.profile.name }}
                                 </p>
                             {% endif %}
-                            {% if invoice.shipping.effective_phone %}
+                            {% if invoice.shipping.profile and invoice.shipping.profile.phone %}
                                 <p class="party-detail">
-                                    <span>{{ invoice.shipping.effective_phone }}</span>
+                                    <span>{{ invoice.shipping.profile.phone }}</span>
                                 </p>
                             {% endif %}
-                            {% if invoice.shipping.effective_address %}
+                            {% if invoice.shipping.profile and invoice.shipping.profile.address %}
                                 <address class="party-detail">
-                                    {% include "address.html" with address=invoice.shipping.effective_address %}
+                                    {% include "address.html" with address=invoice.shipping.profile.address %}
                                 </address>
                             {% endif %}
                         </div>

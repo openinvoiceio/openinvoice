@@ -44,11 +44,11 @@ class CreditNoteManager(models.Manager):
         if number is None:
             resolved_numbering_system = (
                 numbering_system
-                or invoice.customer.credit_note_numbering_system
+                or invoice.billing_profile.credit_note_numbering_system
                 or invoice.account.credit_note_numbering_system
             )
 
-        default_recipients = [invoice.customer.email] if invoice.customer.email else []
+        default_recipients = [invoice.billing_profile.email] if invoice.billing_profile.email else []
 
         credit_note = self.create(
             account=account,

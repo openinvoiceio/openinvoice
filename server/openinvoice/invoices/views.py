@@ -42,10 +42,8 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
     filterset_class = InvoiceFilterSet
     search_fields = [
         "number",
-        "customer__name",
-        "customer__email",
-        "invoice_customer__name",
-        "invoice_customer__email",
+        "billing_profile__name",
+        "billing_profile__email",
         "lines__description",
     ]
     ordering_fields = ["created_at", "issue_date", "due_date"]
@@ -67,6 +65,8 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
         invoice = Invoice.objects.create_draft(
             account=request.account,
             customer=data["customer"],
+            billing_profile=data.get("billing_profile"),
+            business_profile=data.get("business_profile"),
             number=data.get("number"),
             numbering_system=data.get("numbering_system"),
             currency=data.get("currency"),
@@ -92,6 +92,7 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
             invoice.add_shipping(
                 shipping_rate=shipping["shipping_rate"],
                 tax_rates=shipping.get("tax_rates", []),
+                shipping_profile=shipping.get("profile"),
             )
 
         with numeric_overflow():
@@ -133,6 +134,8 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
 
         invoice.update(
             customer=data.get("customer", invoice.customer),
+            billing_profile=data.get("billing_profile", invoice.billing_profile),
+            business_profile=data.get("business_profile", invoice.business_profile),
             number=data.get("number", invoice.number),
             numbering_system=data.get("numbering_system", invoice.numbering_system),
             currency=data.get("currency", invoice.currency),
@@ -164,6 +167,7 @@ class InvoiceRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
                 invoice.add_shipping(
                     shipping_rate=shipping["shipping_rate"],
                     tax_rates=shipping.get("tax_rates", []),
+                    shipping_profile=shipping.get("profile"),
                 )
 
         with numeric_overflow():
@@ -249,6 +253,8 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
         invoice = Invoice.objects.create_revision(
             account=request.account,
             previous_revision=prevision_revision,
+            billing_profile=data.get("billing_profile"),
+            business_profile=data.get("business_profile"),
             number=data.get("number"),
             numbering_system=data.get("numbering_system"),
             currency=data.get("currency"),
@@ -278,6 +284,7 @@ class InvoiceRevisionsListCreateAPIView(generics.GenericAPIView):
             invoice.add_shipping(
                 shipping_rate=shipping["shipping_rate"],
                 tax_rates=shipping.get("tax_rates", []),
+                shipping_profile=shipping.get("profile"),
             )
 
         with numeric_overflow():

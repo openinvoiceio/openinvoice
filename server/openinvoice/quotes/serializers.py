@@ -2,14 +2,16 @@ from djmoney.contrib.django_rest_framework import MoneyField
 from djmoney.money import Money
 from rest_framework import serializers
 
-from openinvoice.addresses.serializers import AddressSerializer
+from openinvoice.accounts.fields import BusinessProfileRelatedField
+from openinvoice.accounts.serializers import BusinessProfileSerializer
 from openinvoice.core.access import has_feature
 from openinvoice.core.choices import FeatureCode
 from openinvoice.core.fields import CurrencyField, MetadataField
 from openinvoice.core.validators import ExactlyOneValidator
 from openinvoice.coupons.fields import CouponRelatedField
 from openinvoice.coupons.serializers import CouponSerializer
-from openinvoice.customers.fields import CustomerRelatedField
+from openinvoice.customers.fields import BillingProfileRelatedField, CustomerRelatedField
+from openinvoice.customers.serializers import BillingProfileSerializer
 from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
 from openinvoice.numbering_systems.fields import NumberingSystemRelatedField
 from openinvoice.prices.fields import PriceRelatedField
@@ -18,29 +20,6 @@ from openinvoice.tax_rates.fields import TaxRateRelatedField
 
 from .choices import QuoteDeliveryMethod, QuotePreviewFormat, QuoteStatus
 from .fields import QuoteRelatedField
-
-
-class QuoteCustomerSerializer(serializers.Serializer):
-    id = serializers.UUIDField(source="customer_id")
-    name = serializers.CharField(source="effective_customer.name")
-    legal_name = serializers.CharField(allow_null=True, source="effective_customer.legal_name")
-    legal_number = serializers.CharField(allow_null=True, source="effective_customer.legal_number")
-    email = serializers.CharField(allow_null=True, source="effective_customer.email")
-    phone = serializers.CharField(allow_null=True, source="effective_customer.phone")
-    description = serializers.CharField(allow_null=True, source="effective_customer.description")
-    address = AddressSerializer(source="effective_customer.address")
-    logo_id = serializers.UUIDField(allow_null=True, source="effective_customer.logo_id")
-
-
-class QuoteAccountSerializer(serializers.Serializer):
-    id = serializers.UUIDField(source="account.id")
-    name = serializers.CharField(source="effective_account.name")
-    legal_name = serializers.CharField(allow_null=True, source="effective_account.legal_name")
-    legal_number = serializers.CharField(allow_null=True, source="effective_account.legal_number")
-    email = serializers.CharField(allow_null=True, source="effective_account.email")
-    phone = serializers.CharField(allow_null=True, source="effective_account.phone")
-    address = AddressSerializer(source="effective_account.address")
-    logo_id = serializers.UUIDField(allow_null=True, source="effective_account.logo_id")
 
 
 class QuoteLineDiscountSerializer(serializers.Serializer):
@@ -97,8 +76,8 @@ class QuoteSerializer(serializers.Serializer):
     numbering_system_id = serializers.UUIDField(allow_null=True)
     currency = CurrencyField()
     issue_date = serializers.DateField(allow_null=True)
-    customer = QuoteCustomerSerializer(source="*", read_only=True)
-    account = QuoteAccountSerializer(source="*", read_only=True)
+    billing_profile = BillingProfileSerializer(read_only=True)
+    business_profile = BusinessProfileSerializer(read_only=True)
     metadata = MetadataField()
     custom_fields = MetadataField()
     footer = serializers.CharField(allow_null=True)
@@ -123,6 +102,8 @@ class QuoteSerializer(serializers.Serializer):
 
 class QuoteCreateSerializer(serializers.Serializer):
     customer_id = CustomerRelatedField(source="customer")
+    billing_profile_id = BillingProfileRelatedField(source="billing_profile", required=False)
+    business_profile_id = BusinessProfileRelatedField(source="business_profile", required=False)
     number = serializers.CharField(allow_null=True, required=False, max_length=255)
     numbering_system_id = NumberingSystemRelatedField(
         source="numbering_system", applies_to=NumberingSystemAppliesTo.QUOTE, allow_null=True, required=False
@@ -146,6 +127,8 @@ class QuoteCreateSerializer(serializers.Serializer):
 
 class QuoteUpdateSerializer(serializers.Serializer):
     customer_id = CustomerRelatedField(source="customer", required=False)
+    billing_profile_id = BillingProfileRelatedField(source="billing_profile", required=False)
+    business_profile_id = BusinessProfileRelatedField(source="business_profile", required=False)
     number = serializers.CharField(allow_null=True, required=False, max_length=255)
     numbering_system_id = NumberingSystemRelatedField(
         source="numbering_system", applies_to=NumberingSystemAppliesTo.QUOTE, allow_null=True, required=False

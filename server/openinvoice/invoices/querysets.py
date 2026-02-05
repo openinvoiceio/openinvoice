@@ -28,18 +28,21 @@ class InvoiceQuerySet(models.QuerySet):
 
         return self.select_related(
             "account",
-            "account__address",
-            "invoice_account",
-            "invoice_account__address",
+            "account__default_business_profile",
+            "account__default_business_profile__address",
             "customer",
-            "customer__address",
-            "invoice_customer",
-            "invoice_customer__address",
+            "customer__default_billing_profile",
+            "customer__default_billing_profile__address",
             "numbering_system",
             "previous_revision",
             "shipping",
-            "shipping__address",
+            "shipping__profile",
+            "shipping__profile__address",
             "shipping__shipping_rate",
+            "billing_profile",
+            "billing_profile__address",
+            "business_profile",
+            "business_profile__address",
         ).prefetch_related(
             Prefetch("lines", queryset=InvoiceLine.objects.eager_load().order_by("created_at")),
             Prefetch("coupons", queryset=Coupon.objects.order_by("invoice_coupons__position")),
@@ -53,6 +56,9 @@ class InvoiceQuerySet(models.QuerySet):
             Prefetch("lines__tax_allocations", queryset=InvoiceTaxAllocation.objects.annotate_position()),
             Prefetch("shipping__tax_allocations", queryset=InvoiceTaxAllocation.objects.annotate_position()),
             Prefetch("documents", queryset=InvoiceDocument.objects.select_related("file").order_by("created_at")),
+            "billing_profile__tax_ids",
+            "billing_profile__tax_rates",
+            "business_profile__tax_ids",
         )
 
     def revisions(self, head_id: UUID):

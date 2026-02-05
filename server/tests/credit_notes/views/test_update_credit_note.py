@@ -6,43 +6,63 @@ import pytest
 
 from openinvoice.core.choices import FeatureCode
 from openinvoice.credit_notes.choices import CreditNoteDeliveryMethod, CreditNoteReason, CreditNoteStatus
-from openinvoice.invoices.models import InvoiceAccount, InvoiceCustomer
-from tests.factories import (
-    AddressFactory,
-    CreditNoteFactory,
-    InvoiceFactory,
-    NumberingSystemFactory,
-)
+from tests.factories import CreditNoteFactory, InvoiceFactory, NumberingSystemFactory
 
 pytestmark = pytest.mark.django_db
 
 
-def _assign_invoice_snapshots(invoice):
-    invoice.invoice_customer = InvoiceCustomer.objects.create(
-        name=invoice.customer.name,
-        legal_name=invoice.customer.legal_name,
-        legal_number=invoice.customer.legal_number,
-        email=invoice.customer.email,
-        phone=invoice.customer.phone,
-        description=invoice.customer.description,
-        address=AddressFactory(),
-        logo=None,
-    )
-    invoice.invoice_account = InvoiceAccount.objects.create(
-        name=invoice.account.name,
-        legal_name=invoice.account.legal_name,
-        legal_number=invoice.account.legal_number,
-        email=invoice.account.email,
-        phone=invoice.account.phone,
-        address=AddressFactory(),
-        logo=None,
-    )
-    invoice.save(update_fields=["invoice_customer", "invoice_account"])
+def _billing_profile_response(profile):
+    return {
+        "id": str(profile.id),
+        "name": profile.name,
+        "legal_name": profile.legal_name,
+        "legal_number": profile.legal_number,
+        "email": profile.email,
+        "phone": profile.phone,
+        "address": {
+            "line1": profile.address.line1,
+            "line2": profile.address.line2,
+            "locality": profile.address.locality,
+            "state": profile.address.state,
+            "postal_code": profile.address.postal_code,
+            "country": str(profile.address.country),
+        },
+        "currency": profile.currency,
+        "language": profile.language,
+        "net_payment_term": profile.net_payment_term,
+        "invoice_numbering_system_id": None,
+        "credit_note_numbering_system_id": None,
+        "tax_rates": [],
+        "tax_ids": [],
+        "created_at": ANY,
+        "updated_at": ANY,
+    }
+
+
+def _business_profile_response(profile):
+    return {
+        "id": str(profile.id),
+        "name": profile.name,
+        "legal_name": profile.legal_name,
+        "legal_number": profile.legal_number,
+        "email": profile.email,
+        "phone": profile.phone,
+        "address": {
+            "line1": profile.address.line1,
+            "line2": profile.address.line2,
+            "locality": profile.address.locality,
+            "state": profile.address.state,
+            "postal_code": profile.address.postal_code,
+            "country": str(profile.address.country),
+        },
+        "tax_ids": [],
+        "created_at": ANY,
+        "updated_at": ANY,
+    }
 
 
 def test_update_credit_note(api_client, user, account):
     invoice = InvoiceFactory(account=account)
-    _assign_invoice_snapshots(invoice)
     credit_note = CreditNoteFactory(
         invoice=invoice,
         number="CN-1",
@@ -68,8 +88,6 @@ def test_update_credit_note(api_client, user, account):
     assert credit_note.number == "CN-10"
     assert credit_note.reason == CreditNoteReason.ORDER_CHANGE
     assert credit_note.metadata == {"source": "support"}
-    customer_snapshot = invoice.invoice_customer
-    account_snapshot = invoice.invoice_account
     assert response.data == {
         "id": str(credit_note.id),
         "invoice_id": str(invoice.id),
@@ -93,43 +111,8 @@ def test_update_credit_note(api_client, user, account):
         "issued_at": None,
         "voided_at": None,
         "pdf_id": None,
-        "customer": {
-            "id": str(customer_snapshot.id),
-            "name": customer_snapshot.name,
-            "legal_name": customer_snapshot.legal_name,
-            "legal_number": customer_snapshot.legal_number,
-            "email": customer_snapshot.email,
-            "phone": customer_snapshot.phone,
-            "description": customer_snapshot.description,
-            "address": {
-                "line1": customer_snapshot.address.line1,
-                "line2": customer_snapshot.address.line2,
-                "locality": customer_snapshot.address.locality,
-                "state": customer_snapshot.address.state,
-                "postal_code": customer_snapshot.address.postal_code,
-                "country": str(customer_snapshot.address.country),
-            },
-            "logo_id": None,
-            "tax_ids": [],
-        },
-        "account": {
-            "id": str(account_snapshot.id),
-            "name": account_snapshot.name,
-            "legal_name": account_snapshot.legal_name,
-            "legal_number": account_snapshot.legal_number,
-            "email": account_snapshot.email,
-            "phone": account_snapshot.phone,
-            "address": {
-                "line1": account_snapshot.address.line1,
-                "line2": account_snapshot.address.line2,
-                "locality": account_snapshot.address.locality,
-                "state": account_snapshot.address.state,
-                "postal_code": account_snapshot.address.postal_code,
-                "country": str(account_snapshot.address.country),
-            },
-            "logo_id": None,
-            "tax_ids": [],
-        },
+        "billing_profile": _billing_profile_response(invoice.billing_profile),
+        "business_profile": _business_profile_response(invoice.business_profile),
         "lines": [],
         "taxes": [],
         "tax_breakdown": [],

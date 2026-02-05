@@ -12,9 +12,8 @@ from django.db import models
 from djmoney.money import Money
 
 from openinvoice.accounts.models import Account
-from openinvoice.addresses.models import Address
 from openinvoice.core.calculations import zero
-from openinvoice.customers.models import Customer
+from openinvoice.customers.models import BillingProfile, Customer
 from openinvoice.integrations.choices import PaymentProvider
 from openinvoice.numbering_systems.models import NumberingSystem
 from openinvoice.prices.models import Price
@@ -22,40 +21,9 @@ from openinvoice.prices.models import Price
 from .choices import InvoiceDeliveryMethod, InvoiceDocumentAudience, InvoiceStatus, InvoiceTaxBehavior
 
 if TYPE_CHECKING:
-    from .models import Invoice, InvoiceAccount, InvoiceCustomer
+    from openinvoice.accounts.models import BusinessProfile
 
-
-class InvoiceCustomerManager(models.Manager):
-    def from_customer(self, customer: Customer) -> InvoiceCustomer:
-        invoice_customer = self.create(
-            name=customer.name,
-            legal_name=customer.legal_name,
-            legal_number=customer.legal_number,
-            email=customer.email,
-            phone=customer.phone,
-            description=customer.description,
-            address=Address.objects.from_address(customer.address),
-            logo=customer.logo.clone() if customer.logo else None,
-        )
-        invoice_customer.tax_ids.set(customer.tax_ids.clone())
-
-        return invoice_customer
-
-
-class InvoiceAccountManager(models.Manager):
-    def from_account(self, account: Account) -> InvoiceAccount:
-        invoice_account = self.create(
-            name=account.name,
-            legal_name=account.legal_name,
-            legal_number=account.legal_number,
-            email=account.email,
-            phone=account.phone,
-            address=Address.objects.from_address(account.address),
-            logo=account.logo.clone() if account.logo else None,
-        )
-        invoice_account.tax_ids.set(account.tax_ids.clone())
-
-        return invoice_account
+    from .models import Invoice
 
 
 class InvoiceDocumentManager(models.Manager):
@@ -83,6 +51,8 @@ class InvoiceManager(models.Manager):
         self,
         account: Account,
         customer: Customer,
+        billing_profile: BillingProfile | None = None,
+        business_profile: BusinessProfile | None = None,
         number: str | None = None,
         numbering_system: NumberingSystem | None = None,
         currency: str | None = None,
@@ -98,22 +68,26 @@ class InvoiceManager(models.Manager):
     ) -> Invoice:
         InvoiceHead = apps.get_model("invoices", "InvoiceHead")
 
-        currency = currency or customer.currency or account.default_currency
+        billing_profile = billing_profile or customer.default_billing_profile
+        business_profile = business_profile or account.default_business_profile
+        currency = currency or billing_profile.currency or account.default_currency
         resolved_numbering_system = None
         if number is None:
             resolved_numbering_system = (
-                numbering_system or customer.invoice_numbering_system or account.invoice_numbering_system
+                numbering_system or billing_profile.invoice_numbering_system or account.invoice_numbering_system
             )
 
-        net_payment_term = net_payment_term or customer.net_payment_term or account.net_payment_term
-        default_recipients = [customer.email] if customer.email else []
-        language = customer.language or account.language or settings.LANGUAGE_CODE
+        net_payment_term = net_payment_term or billing_profile.net_payment_term or account.net_payment_term
+        default_recipients = [billing_profile.email] if billing_profile.email else []
+        language = billing_profile.language or account.language or settings.LANGUAGE_CODE
 
         head = InvoiceHead.objects.create(root=None)
         invoice = self.create(
             head=head,
             account=account,
             customer=customer,
+            billing_profile=billing_profile,
+            business_profile=business_profile,
             number=number,
             numbering_system=resolved_numbering_system,
             currency=currency,
@@ -141,7 +115,7 @@ class InvoiceManager(models.Manager):
         head.root = invoice
         head.save(update_fields=["root"])
 
-        invoice.set_tax_rates(customer.tax_rates.active())
+        invoice.set_tax_rates(billing_profile.tax_rates.active())
 
         invoice.documents.create_document(
             invoice=invoice,
@@ -156,6 +130,8 @@ class InvoiceManager(models.Manager):
         self,
         account: Account,
         previous_revision: Invoice,
+        billing_profile: BillingProfile | None = None,
+        business_profile: BusinessProfile | None = None,
         number: str | None = None,
         numbering_system: NumberingSystem | None = None,
         currency: str | None = None,
@@ -171,19 +147,22 @@ class InvoiceManager(models.Manager):
     ) -> Invoice:
         InvoiceLine = apps.get_model("invoices", "InvoiceLine")
         currency = currency or previous_revision.currency
-
+        billing_profile = billing_profile or previous_revision.customer.default_billing_profile
+        business_profile = business_profile or account.default_business_profile
         resolved_numbering_system = None
         if number is None:
             resolved_numbering_system = (
                 numbering_system
                 or previous_revision.numbering_system
-                or previous_revision.customer.invoice_numbering_system
+                or billing_profile.invoice_numbering_system
                 or account.invoice_numbering_system
             )
 
         invoice = self.create(
             account=account,
             customer=previous_revision.customer,
+            billing_profile=billing_profile,
+            business_profile=business_profile,
             number=number,
             numbering_system=resolved_numbering_system,
             currency=currency,
@@ -250,6 +229,8 @@ class InvoiceManager(models.Manager):
             head=head,
             account=invoice.account,
             customer=invoice.customer,
+            billing_profile=invoice.customer.default_billing_profile,
+            business_profile=invoice.account.default_business_profile,
             number=None,
             numbering_system=invoice.numbering_system,
             currency=invoice.currency,
@@ -306,6 +287,7 @@ class InvoiceManager(models.Manager):
             new_invoice.add_shipping(
                 shipping_rate=invoice.shipping.shipping_rate,
                 tax_rates=invoice.shipping.tax_rates.active(),
+                shipping_profile=invoice.customer.default_shipping_profile,
             )
 
         new_invoice.set_coupons(invoice.coupons.active())

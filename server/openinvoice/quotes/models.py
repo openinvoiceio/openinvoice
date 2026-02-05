@@ -15,10 +15,11 @@ from djmoney import settings as djmoney_settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
+from openinvoice.accounts.models import BusinessProfile
 from openinvoice.core.calculations import calculate_percentage_amount, zero
 from openinvoice.core.pdf import generate_pdf
 from openinvoice.coupons.models import Coupon
-from openinvoice.customers.models import Customer
+from openinvoice.customers.models import BillingProfile, Customer
 from openinvoice.files.choices import FilePurpose
 from openinvoice.files.models import File
 from openinvoice.invoices.models import Invoice, InvoiceLine
@@ -27,62 +28,8 @@ from openinvoice.prices.models import Price
 from openinvoice.tax_rates.models import TaxRate
 
 from .choices import QuoteDeliveryMethod, QuoteStatus
-from .managers import (
-    QuoteAccountManager,
-    QuoteCustomerManager,
-    QuoteLineManager,
-    QuoteManager,
-)
+from .managers import QuoteLineManager, QuoteManager
 from .querysets import QuoteDiscountQuerySet, QuoteQuerySet, QuoteTaxQuerySet
-
-
-class QuoteCustomer(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    customer = models.ForeignKey("customers.Customer", on_delete=models.PROTECT, related_name="quotes_customers")
-    name = models.CharField(max_length=255)
-    legal_name = models.CharField(max_length=255, null=True)
-    legal_number = models.CharField(max_length=255, null=True)
-    email = models.CharField(max_length=255, null=True)
-    phone = models.CharField(max_length=255, null=True)
-    description = models.CharField(max_length=255, null=True, blank=True)
-    address = models.OneToOneField(
-        "addresses.Address",
-        on_delete=models.PROTECT,
-        related_name="quote_customer_address",
-    )
-    logo = models.ForeignKey(
-        "files.File",
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="quote_customer_logo",
-    )
-    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="quote_customers")
-
-    objects = QuoteCustomerManager()
-
-
-class QuoteAccount(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    account = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="quotes_accounts")
-    name = models.CharField(max_length=255)
-    legal_name = models.CharField(max_length=255, null=True)
-    legal_number = models.CharField(max_length=255, null=True)
-    email = models.CharField(max_length=255, null=True)
-    phone = models.CharField(max_length=255, null=True)
-    address = models.OneToOneField(
-        "addresses.Address",
-        on_delete=models.PROTECT,
-        related_name="quote_account_address",
-    )
-    logo = models.ForeignKey(
-        "files.File",
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="quote_account_logo",
-    )
-    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="quote_accounts")
-
-    objects = QuoteAccountManager()
 
 
 class Quote(models.Model):
@@ -99,6 +46,16 @@ class Quote(models.Model):
     issue_date = models.DateField(null=True)
     account = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="quotes")
     customer = models.ForeignKey("customers.Customer", on_delete=models.PROTECT, related_name="quotes")
+    billing_profile = models.ForeignKey(
+        "customers.BillingProfile",
+        on_delete=models.PROTECT,
+        related_name="quotes",
+    )
+    business_profile = models.ForeignKey(
+        "accounts.BusinessProfile",
+        on_delete=models.PROTECT,
+        related_name="quotes",
+    )
     footer = models.CharField(max_length=500, null=True, blank=True)
     subtotal_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
     total_discount_amount = MoneyField(max_digits=19, decimal_places=2, currency_field_name="currency")
@@ -124,18 +81,6 @@ class Quote(models.Model):
     accepted_at = models.DateTimeField(null=True)
     canceled_at = models.DateTimeField(null=True)
     pdf = models.OneToOneField("files.File", on_delete=models.SET_NULL, null=True, related_name="quotes_pdf")
-    customer_on_quote = models.OneToOneField(
-        "QuoteCustomer",
-        on_delete=models.PROTECT,
-        related_name="quote",
-        null=True,
-    )
-    account_on_quote = models.OneToOneField(
-        "QuoteAccount",
-        on_delete=models.PROTECT,
-        related_name="quote",
-        null=True,
-    )
     invoice = models.OneToOneField(
         "invoices.Invoice",
         on_delete=models.SET_NULL,
@@ -154,18 +99,6 @@ class Quote(models.Model):
                 | (Q(number__isnull=False) & ~Q(number="")),
             )
         ]
-
-    @property
-    def effective_customer(self):
-        if self.customer_on_quote_id:
-            return self.customer_on_quote
-        return self.customer
-
-    @property
-    def effective_account(self):
-        if self.account_on_quote_id:
-            return self.account_on_quote
-        return self.account
 
     @cached_property
     def effective_number(self) -> str | None:
@@ -297,8 +230,8 @@ class Quote(models.Model):
         if not self.number:
             self.number = self.generate_number()
 
-        self.customer_on_quote = QuoteCustomer.objects.from_customer(self.customer)
-        self.account_on_quote = QuoteAccount.objects.from_account(self.account)
+        self.billing_profile = self.billing_profile.clone()
+        self.business_profile = self.business_profile.clone()
 
         self.status = QuoteStatus.OPEN
         self.opened_at = timezone.now()
@@ -318,6 +251,8 @@ class Quote(models.Model):
         invoice = Invoice.objects.create_draft(
             account=self.account,
             customer=self.customer,
+            billing_profile=self.billing_profile,
+            business_profile=self.business_profile,
             number=None,
             numbering_system=self.numbering_system,
             currency=self.currency,
@@ -351,6 +286,8 @@ class Quote(models.Model):
     def update(
         self,
         customer: Customer,
+        billing_profile: BillingProfile,
+        business_profile: BusinessProfile,
         number: str | None,
         numbering_system: NumberingSystem | None,
         currency: str,
@@ -364,12 +301,14 @@ class Quote(models.Model):
         resolved_numbering_system: NumberingSystem | None = None
         if number is None:
             resolved_numbering_system = (
-                numbering_system or customer.invoice_numbering_system or self.account.invoice_numbering_system
+                numbering_system or billing_profile.invoice_numbering_system or self.account.invoice_numbering_system
             )
 
         # TODO: remove lines if customer is changed?
 
         self.customer = customer
+        self.billing_profile = billing_profile
+        self.business_profile = business_profile
         self.number = number
         self.numbering_system = resolved_numbering_system
         self.currency = currency
@@ -386,24 +325,24 @@ class Quote(models.Model):
             Quote.objects.filter(pk=self.pk)
             .select_related(
                 "account__logo",
-                "account__address",
                 "customer",
-                "customer__address",
-                "customer__shipping__address",
+                "customer__default_billing_profile",
+                "customer__default_billing_profile__address",
+                "customer__default_shipping_profile",
                 "customer__logo",
-                "customer_on_quote__address",
-                "customer_on_quote__logo",
-                "account_on_quote__address",
-                "account_on_quote__logo",
+                "billing_profile",
+                "billing_profile__address",
+                "business_profile",
+                "business_profile__address",
             )
             .prefetch_related(
                 "lines__discounts",
                 "lines__taxes",
                 "discounts",
                 "taxes",
-                "account__tax_ids",
-                "customer_on_quote__tax_ids",
-                "account_on_quote__tax_ids",
+                "account__default_business_profile__tax_ids",
+                "billing_profile__tax_ids",
+                "business_profile__tax_ids",
             )
             .get()
         )

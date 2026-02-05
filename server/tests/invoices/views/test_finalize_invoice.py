@@ -175,7 +175,7 @@ def test_finalize_invoice_clones_customer_tax_ids(api_client, user, account):
     assert response.status_code == 200
     invoice.refresh_from_db()
 
-    customer_snapshot_tax_ids = list(invoice.invoice_customer.tax_ids.all())
+    customer_snapshot_tax_ids = list(invoice.billing_profile.tax_ids.all())
     assert len(customer_snapshot_tax_ids) == 1
     customer_snapshot_tax_id = customer_snapshot_tax_ids[0]
     assert customer_snapshot_tax_id.id != customer_tax_id.id
@@ -197,7 +197,7 @@ def test_finalize_invoice_clones_account_tax_ids(api_client, user, account):
     assert response.status_code == 200
     invoice.refresh_from_db()
 
-    account_snapshot_tax_ids = list(invoice.invoice_account.tax_ids.all())
+    account_snapshot_tax_ids = list(invoice.business_profile.tax_ids.all())
     assert len(account_snapshot_tax_ids) == 1
     account_snapshot_tax_id = account_snapshot_tax_ids[0]
     assert account_snapshot_tax_id.id != account_tax_id.id

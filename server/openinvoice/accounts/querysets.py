@@ -20,7 +20,14 @@ class AccountQuerySet(models.QuerySet):
         return self.filter(is_active=True)
 
     def eager_load(self):
-        return self.select_related("address").prefetch_related("tax_ids")
+        return self.select_related("default_business_profile", "default_business_profile__address").prefetch_related(
+            "default_business_profile__tax_ids"
+        )
+
+
+class BusinessProfileQuerySet(models.QuerySet):
+    def for_account(self, account: Account):
+        return self.filter(accounts=account)
 
 
 class InvitationQuerySet(models.QuerySet):
