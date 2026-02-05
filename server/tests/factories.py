@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from decimal import Decimal
 
 from django.utils import timezone
@@ -78,9 +80,22 @@ class CommentFactory(DjangoModelFactory):
     visibility = CommentVisibility.PUBLIC
 
 
+class BusinessProfileFactory(DjangoModelFactory):
+    class Meta:
+        model = "accounts.BusinessProfile"
+
+    name = "Test Business"
+    legal_name = None
+    legal_number = None
+    email = "business@example.com"
+    phone = None
+    address = SubFactory(AddressFactory)
+
+
 class AccountFactory(DjangoModelFactory):
     class Meta:
         model = "accounts.Account"
+        skip_postgeneration_save = True
 
     is_active = True
     created_by = SubFactory(UserFactory)
@@ -93,7 +108,7 @@ class AccountFactory(DjangoModelFactory):
     net_payment_term = 0
     metadata = {}
     logo = None
-    default_business_profile = SubFactory("tests.factories.BusinessProfileFactory")
+    default_business_profile = SubFactory(BusinessProfileFactory)
 
     @post_generation
     def business_profiles(self, create, extracted, **_):
@@ -122,18 +137,6 @@ class InvitationFactory(DjangoModelFactory):
     invited_by = SubFactory(UserFactory)
 
 
-class BusinessProfileFactory(DjangoModelFactory):
-    class Meta:
-        model = "accounts.BusinessProfile"
-
-    name = "Test Business"
-    legal_name = None
-    legal_number = None
-    email = "business@example.com"
-    phone = None
-    address = SubFactory(AddressFactory)
-
-
 class BillingProfileFactory(DjangoModelFactory):
     class Meta:
         model = "customers.BillingProfile"
@@ -154,12 +157,13 @@ class BillingProfileFactory(DjangoModelFactory):
 class CustomerFactory(DjangoModelFactory):
     class Meta:
         model = "customers.Customer"
+        skip_postgeneration_save = True
 
     description = "Test customer"
     metadata = {}
     account = SubFactory(AccountFactory)
     logo = None
-    default_billing_profile = SubFactory("tests.factories.BillingProfileFactory")
+    default_billing_profile = SubFactory(BillingProfileFactory)
     default_shipping_profile = None
 
     @post_generation
@@ -429,53 +433,6 @@ class InvoiceShippingTaxRateFactory(DjangoModelFactory):
     invoice_shipping = SubFactory(InvoiceShippingFactory)
     tax_rate = SubFactory(TaxRateFactory, account=SelfAttribute("..invoice_shipping.shipping_rate.account"))
     position = Sequence(lambda n: n)
-
-
-class QuoteCustomerFactory(DjangoModelFactory):
-    class Meta:
-        model = "quotes.QuoteCustomer"
-
-    customer = SubFactory(CustomerFactory)
-    name = LazyAttribute(lambda o: o.customer.name)
-    legal_name = LazyAttribute(lambda o: o.customer.legal_name)
-    legal_number = LazyAttribute(lambda o: o.customer.legal_number)
-    email = LazyAttribute(lambda o: o.customer.email)
-    phone = LazyAttribute(lambda o: o.customer.phone)
-    description = LazyAttribute(lambda o: o.customer.description)
-    address = SubFactory(AddressFactory)
-    logo = None
-
-    @post_generation
-    def tax_ids(self, create, extracted, **_):
-        if not create:
-            return
-        if extracted is not None:
-            self.tax_ids.set(extracted)
-        else:
-            self.tax_ids.set([])
-
-
-class QuoteAccountFactory(DjangoModelFactory):
-    class Meta:
-        model = "quotes.QuoteAccount"
-
-    account = SubFactory(AccountFactory)
-    name = LazyAttribute(lambda o: o.account.name)
-    legal_name = LazyAttribute(lambda o: o.account.legal_name)
-    legal_number = LazyAttribute(lambda o: o.account.legal_number)
-    email = LazyAttribute(lambda o: o.account.email)
-    phone = LazyAttribute(lambda o: o.account.phone)
-    address = SubFactory(AddressFactory)
-    logo = None
-
-    @post_generation
-    def tax_ids(self, create, extracted, **_):
-        if not create:
-            return
-        if extracted is not None:
-            self.tax_ids.set(extracted)
-        else:
-            self.tax_ids.set([])
 
 
 class QuoteFactory(DjangoModelFactory):
