@@ -99,6 +99,10 @@ ignore = [
 "config/settings/base.py" = [
     "E501", # line too long
 ]
+"**/migrations/*.py" = [
+    "E501", # line too long
+    "RUF001", # dash
+]
 
 [tool.mypy]
 python_version = "3.12"

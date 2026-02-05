@@ -27,7 +27,7 @@ openapi:
 
 .PHONY: migrations
 migrations:
-	uv run manage.py makemigrations
+	export DJANGO_SETTINGS_MODULE=config.settings.development && uv run manage.py makemigrations
 
 .PHONY: messages
 messages:

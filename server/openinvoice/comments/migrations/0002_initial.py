@@ -9,16 +9,16 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("files", "0001_initial"),
+        ("comments", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="file",
-            name="uploader",
+            model_name="comment",
+            name="author",
             field=models.ForeignKey(
-                null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
+                on_delete=django.db.models.deletion.PROTECT, related_name="comments", to=settings.AUTH_USER_MODEL
             ),
         ),
     ]
