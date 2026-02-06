@@ -1,10 +1,9 @@
 import {
-  getBillingProfilesListQueryKey,
-  useDeleteBillingProfileTaxId,
-} from "@/api/endpoints/billing-profiles/billing-profiles";
-import { getCustomersRetrieveQueryKey } from "@/api/endpoints/customers/customers";
-import type { Customer } from "@/api/models";
-import { pushModal } from "@/components/push-modals";
+  getBusinessProfilesListQueryKey,
+  useBusinessProfilesRetrieve,
+  useDeleteBusinessProfileTaxId,
+} from "@/api/endpoints/business-profiles/business-profiles";
+import { popModal, pushModal } from "@/components/push-modals";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -13,13 +12,13 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty.tsx";
 import {
-  FormCard,
-  FormCardContent,
-  FormCardDescription,
-  FormCardFooter,
-  FormCardHeader,
-  FormCardTitle,
-} from "@/components/ui/form-card";
+  FormSheetContent,
+  FormSheetDescription,
+  FormSheetFooter,
+  FormSheetHeader,
+  FormSheetTitle,
+} from "@/components/ui/form-sheet";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -40,20 +39,23 @@ import { useQueryClient } from "@tanstack/react-query";
 import { XIcon } from "lucide-react";
 import { toast } from "sonner";
 
-export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
+export function BusinessProfileTaxIdsSheet({
+  accountId,
+  businessProfileId,
+}: {
+  accountId: string;
+  businessProfileId: string;
+}) {
   const queryClient = useQueryClient();
-  const defaultBillingProfile = customer.default_billing_profile;
-  const taxIds = defaultBillingProfile?.tax_ids ?? [];
+  const { data: profile } = useBusinessProfilesRetrieve(businessProfileId);
+  const taxIds = profile?.tax_ids ?? [];
   const limitReached = taxIds.length >= MAX_TAX_IDS;
 
-  const { isPending, mutateAsync } = useDeleteBillingProfileTaxId({
+  const { isPending, mutateAsync } = useDeleteBusinessProfileTaxId({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getBillingProfilesListQueryKey(),
-        });
-        await queryClient.invalidateQueries({
-          queryKey: getCustomersRetrieveQueryKey(customer.id),
+          queryKey: getBusinessProfilesListQueryKey(),
         });
         toast.success("Tax ID deleted");
       },
@@ -63,26 +65,33 @@ export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
       },
     },
   });
+
+  if (!profile) {
+    return (
+      <FormSheetContent>
+        <FormSheetHeader>
+          <FormSheetTitle>Tax IDs</FormSheetTitle>
+          <FormSheetDescription>
+            Loading business profile details.
+          </FormSheetDescription>
+        </FormSheetHeader>
+        <div className="flex justify-center py-8">
+          <Spinner />
+        </div>
+      </FormSheetContent>
+    );
+  }
+
   return (
-    <FormCard>
-      <FormCardHeader>
-        <FormCardTitle>Tax IDs</FormCardTitle>
-        <FormCardDescription>
-          Manage tax ids associated with this customer.
-        </FormCardDescription>
-      </FormCardHeader>
-      <FormCardContent>
-        {!defaultBillingProfile && (
-          <Empty className="border border-dashed">
-            <EmptyHeader>
-              <EmptyTitle>No default billing profile</EmptyTitle>
-              <EmptyDescription>
-                Set a default billing profile to manage tax IDs.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-        {defaultBillingProfile && taxIds.length > 0 ? (
+    <FormSheetContent>
+      <FormSheetHeader>
+        <FormSheetTitle>Tax IDs</FormSheetTitle>
+        <FormSheetDescription>
+          Manage tax IDs for {profile.legal_name || "this business profile"}.
+        </FormSheetDescription>
+      </FormSheetHeader>
+      {taxIds.length > 0 ? (
+        <div className="overflow-hidden rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -110,10 +119,9 @@ export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        defaultBillingProfile &&
                         mutateAsync({
                           id: taxId.id,
-                          billingProfileId: defaultBillingProfile.id,
+                          businessProfileId: profile.id,
                         })
                       }
                       disabled={isPending}
@@ -125,31 +133,33 @@ export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
               ))}
             </TableBody>
           </Table>
-        ) : defaultBillingProfile ? (
-          <Empty className="border border-dashed">
-            <EmptyHeader>
-              <EmptyTitle>No tax ids configured</EmptyTitle>
-              <EmptyDescription>
-                Configured tax ids will be displayed on invoices
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        ) : null}
-      </FormCardContent>
-      <FormCardFooter>
+        </div>
+      ) : (
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyTitle>No tax ids</EmptyTitle>
+            <EmptyDescription>
+              Add tax ids to appear on invoices and legal documents.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )}
+      <FormSheetFooter className="justify-between">
+        <Button type="button" variant="ghost" onClick={() => popModal()}>
+          Close
+        </Button>
         <Tooltip>
           <TooltipTrigger asChild>
             <span>
               <Button
                 type="button"
                 onClick={() =>
-                  defaultBillingProfile &&
-                  pushModal("CustomerTaxIdCreateSheet", {
-                    customerId: customer.id,
-                    billingProfileId: defaultBillingProfile.id,
+                  pushModal("BusinessProfileTaxIdCreateSheet", {
+                    accountId,
+                    businessProfileId: profile.id,
                   })
                 }
-                disabled={isPending || limitReached || !defaultBillingProfile}
+                disabled={isPending || limitReached}
               >
                 Add
               </Button>
@@ -157,11 +167,11 @@ export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
           </TooltipTrigger>
           {limitReached && (
             <TooltipContent>
-              You can add at most {MAX_TAX_IDS} tax IDs.
+              You can add at most {MAX_TAX_IDS} tax ids.
             </TooltipContent>
           )}
         </Tooltip>
-      </FormCardFooter>
-    </FormCard>
+      </FormSheetFooter>
+    </FormSheetContent>
   );
 }

@@ -1,8 +1,8 @@
 import {
-  getCustomersListQueryKey,
-  getCustomersRetrieveQueryKey,
-  useUpdateCustomer,
-} from "@/api/endpoints/customers/customers";
+  getBillingProfilesListQueryKey,
+  useUpdateBillingProfile,
+} from "@/api/endpoints/billing-profiles/billing-profiles";
+import { getCustomersRetrieveQueryKey } from "@/api/endpoints/customers/customers";
 import { getInvoicesListQueryKey } from "@/api/endpoints/invoices/invoices";
 import { CountryEnum, type Customer } from "@/api/models";
 import { AddressCountryField } from "@/components/fields/address-country-field";
@@ -47,22 +47,23 @@ export function CustomerBillingAddressCard({
   customer: Customer;
 }) {
   const queryClient = useQueryClient();
+  const billingProfile = customer.default_billing_profile;
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      line1: customer.address.line1 || "",
-      line2: customer.address.line2 || "",
-      locality: customer.address.locality || "",
-      state: customer.address.state || "",
-      postalCode: customer.address.postal_code || "",
-      country: customer.address.country || undefined,
+      line1: billingProfile.address.line1 || "",
+      line2: billingProfile.address.line2 || "",
+      locality: billingProfile.address.locality || "",
+      state: billingProfile.address.state || "",
+      postalCode: billingProfile.address.postal_code || "",
+      country: billingProfile.address.country || undefined,
     },
   });
-  const { mutateAsync, isPending } = useUpdateCustomer({
+  const { mutateAsync, isPending } = useUpdateBillingProfile({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getCustomersListQueryKey(),
+          queryKey: getBillingProfilesListQueryKey(),
         });
         await queryClient.invalidateQueries({
           queryKey: getCustomersRetrieveQueryKey(customer.id),
@@ -81,7 +82,7 @@ export function CustomerBillingAddressCard({
 
   async function onSubmit(values: FormValues) {
     await mutateAsync({
-      id: customer.id,
+      id: billingProfile.id,
       data: {
         address: {
           line1: values.line1 || null,

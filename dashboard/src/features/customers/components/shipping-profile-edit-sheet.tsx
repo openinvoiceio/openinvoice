@@ -1,24 +1,16 @@
-import { getCustomersRetrieveQueryKey } from "@/api/endpoints/customers/customers";
-import { getInvoicesListQueryKey } from "@/api/endpoints/invoices/invoices";
 import {
   getShippingProfilesListQueryKey,
   useUpdateShippingProfile,
 } from "@/api/endpoints/shipping-profiles/shipping-profiles";
-import { CountryEnum, type Customer } from "@/api/models";
+import { CountryEnum, type ShippingProfile } from "@/api/models";
 import { AddressCountryField } from "@/components/fields/address-country-field";
 import { AddressLine1Field } from "@/components/fields/address-line1-field";
 import { AddressLine2Field } from "@/components/fields/address-line2-field";
 import { AddressLocalityField } from "@/components/fields/address-locality-field";
 import { AddressPostalCodeField } from "@/components/fields/address-postal-code-field";
 import { AddressStateField } from "@/components/fields/address-state-field";
-import { pushModal } from "@/components/push-modals";
+import { popModal } from "@/components/push-modals";
 import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty.tsx";
 import {
   Form,
   FormControl,
@@ -28,19 +20,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  FormCard,
-  FormCardContent,
-  FormCardDescription,
-  FormCardFooter,
-  FormCardHeader,
-  FormCardSeparator,
-  FormCardTitle,
-} from "@/components/ui/form-card";
+  FormSheetContent,
+  FormSheetDescription,
+  FormSheetFooter,
+  FormSheetGroup,
+  FormSheetHeader,
+  FormSheetTitle,
+} from "@/components/ui/form-sheet";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { getErrorSummary } from "@/lib/api/errors";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { useId } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -60,57 +52,25 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export function CustomerShippingCard({ customer }: { customer: Customer }) {
+export function ShippingProfileEditSheet({
+  profile,
+}: {
+  profile: ShippingProfile;
+}) {
+  const formId = useId();
   const queryClient = useQueryClient();
-  const shippingProfile = customer.default_shipping_profile;
-
-  if (!shippingProfile) {
-    return (
-      <FormCard>
-        <FormCardHeader>
-          <FormCardTitle>Shipping</FormCardTitle>
-          <FormCardDescription>
-            Manage shipping contact details and address.
-          </FormCardDescription>
-        </FormCardHeader>
-        <FormCardContent>
-          <Empty className="border border-dashed">
-            <EmptyHeader>
-              <EmptyTitle>No default shipping profile</EmptyTitle>
-              <EmptyDescription>
-                Create a shipping profile and set it as default to edit shipping
-                details here.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </FormCardContent>
-        <FormCardFooter>
-          <Button
-            type="button"
-            onClick={() =>
-              pushModal("ShippingProfileCreateSheet", {
-                customerId: customer.id,
-              })
-            }
-          >
-            Create shipping profile
-          </Button>
-        </FormCardFooter>
-      </FormCard>
-    );
-  }
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: shippingProfile.name || "",
-      phone: shippingProfile.phone || "",
+      name: profile.name || "",
+      phone: profile.phone || "",
       address: {
-        line1: shippingProfile.address.line1 || "",
-        line2: shippingProfile.address.line2 || "",
-        locality: shippingProfile.address.locality || "",
-        state: shippingProfile.address.state || "",
-        postalCode: shippingProfile.address.postal_code || "",
-        country: shippingProfile.address.country || undefined,
+        line1: profile.address.line1 || "",
+        line2: profile.address.line2 || "",
+        locality: profile.address.locality || "",
+        state: profile.address.state || "",
+        postalCode: profile.address.postal_code || "",
+        country: profile.address.country || undefined,
       },
     },
   });
@@ -120,24 +80,20 @@ export function CustomerShippingCard({ customer }: { customer: Customer }) {
         await queryClient.invalidateQueries({
           queryKey: getShippingProfilesListQueryKey(),
         });
-        await queryClient.invalidateQueries({
-          queryKey: getCustomersRetrieveQueryKey(customer.id),
-        });
-        await queryClient.invalidateQueries({
-          queryKey: getInvoicesListQueryKey(),
-        });
-        toast.success("Customer updated");
+        toast.success("Shipping profile updated");
+        popModal();
       },
-      onError: async (error) => {
+      onError: (error) => {
         const { message, description } = getErrorSummary(error);
-        toast.error(message, { description: description });
+        toast.error(message, { description });
       },
     },
   });
 
   async function onSubmit(values: FormValues) {
+    if (isPending) return;
     await mutateAsync({
-      id: shippingProfile.id,
+      id: profile.id,
       data: {
         name: values.name || null,
         phone: values.phone || null,
@@ -154,16 +110,16 @@ export function CustomerShippingCard({ customer }: { customer: Customer }) {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <FormCard>
-          <FormCardHeader>
-            <FormCardTitle>Shipping</FormCardTitle>
-            <FormCardDescription>
-              Manage shipping contact details and address.
-            </FormCardDescription>
-          </FormCardHeader>
-          <FormCardContent>
+    <FormSheetContent>
+      <FormSheetHeader>
+        <FormSheetTitle>Edit shipping profile</FormSheetTitle>
+        <FormSheetDescription>
+          Update shipping details for this customer.
+        </FormSheetDescription>
+      </FormSheetHeader>
+      <Form {...form}>
+        <form id={formId} onSubmit={form.handleSubmit(onSubmit)}>
+          <FormSheetGroup>
             <FormField
               control={form.control}
               name="name"
@@ -171,7 +127,7 @@ export function CustomerShippingCard({ customer }: { customer: Customer }) {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Recipient name" {...field} />
+                    <Input placeholder="Shipping contact" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -190,33 +146,30 @@ export function CustomerShippingCard({ customer }: { customer: Customer }) {
                 </FormItem>
               )}
             />
-          </FormCardContent>
-          <FormCardSeparator />
-          <FormCardContent>
+          </FormSheetGroup>
+          <FormSheetGroup>
             <AddressLine1Field name="address.line1" />
             <AddressLine2Field name="address.line2" />
-          </FormCardContent>
-          <FormCardSeparator />
-          <FormCardContent className="grid-cols-2">
+          </FormSheetGroup>
+          <FormSheetGroup className="grid-cols-2">
             <AddressLocalityField name="address.locality" />
             <AddressPostalCodeField name="address.postalCode" />
-          </FormCardContent>
-          <FormCardSeparator />
-          <FormCardContent className="grid-cols-2">
+          </FormSheetGroup>
+          <FormSheetGroup className="grid-cols-2">
             <AddressCountryField name="address.country" />
             <AddressStateField
               name="address.state"
               countryName="address.country"
             />
-          </FormCardContent>
-          <FormCardFooter>
-            <Button type="submit" disabled={isPending}>
-              {isPending && <Spinner />}
-              Submit
-            </Button>
-          </FormCardFooter>
-        </FormCard>
-      </form>
-    </Form>
+          </FormSheetGroup>
+        </form>
+      </Form>
+      <FormSheetFooter>
+        <Button type="submit" form={formId} disabled={isPending}>
+          {isPending && <Spinner />}
+          Save changes
+        </Button>
+      </FormSheetFooter>
+    </FormSheetContent>
   );
 }

@@ -83,7 +83,11 @@ export function InvoicePreview({ invoice }: { invoice: Invoice }) {
             <Suspense fallback={<Spinner />}>
               <EmailPreview
                 invoice={invoice}
-                emailTo={invoice.customer.email ? [invoice.customer.email] : []}
+                emailTo={
+                  invoice.billing_profile.email
+                    ? [invoice.billing_profile.email]
+                    : []
+                }
               />
             </Suspense>
           </TabsContent>

@@ -8,743 +8,743 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as dashboardCouponsIndexRouteImport } from "./routes/(dashboard)/coupons/index";
-import { Route as dashboardCreditNotesIdRouteImport } from "./routes/(dashboard)/credit-notes/$id";
-import { Route as dashboardCreditNotesIdEditRouteImport } from "./routes/(dashboard)/credit-notes/$id_.edit";
-import { Route as dashboardCreditNotesIndexRouteImport } from "./routes/(dashboard)/credit-notes/index";
-import { Route as dashboardCustomersIdRouteImport } from "./routes/(dashboard)/customers/$id";
-import { Route as dashboardCustomersIdEditRouteImport } from "./routes/(dashboard)/customers/$id_.edit";
-import { Route as dashboardCustomersIndexRouteImport } from "./routes/(dashboard)/customers/index";
-import { Route as dashboardInvoicesIdRouteImport } from "./routes/(dashboard)/invoices/$id";
-import { Route as dashboardInvoicesIdEditRouteImport } from "./routes/(dashboard)/invoices/$id_.edit";
-import { Route as dashboardInvoicesIndexRouteImport } from "./routes/(dashboard)/invoices/index";
-import { Route as dashboardOnboardingRouteImport } from "./routes/(dashboard)/onboarding";
-import { Route as dashboardOverviewRouteImport } from "./routes/(dashboard)/overview";
-import { Route as dashboardProductsIdRouteImport } from "./routes/(dashboard)/products/$id";
-import { Route as dashboardProductsIndexRouteImport } from "./routes/(dashboard)/products/index";
-import { Route as dashboardQuotesIdRouteImport } from "./routes/(dashboard)/quotes/$id";
-import { Route as dashboardQuotesIdEditRouteImport } from "./routes/(dashboard)/quotes/$id_.edit";
-import { Route as dashboardQuotesIndexRouteImport } from "./routes/(dashboard)/quotes/index";
-import { Route as dashboardRouteRouteImport } from "./routes/(dashboard)/route";
-import { Route as dashboardSettingsAccountRouteImport } from "./routes/(dashboard)/settings/account";
-import { Route as dashboardSettingsBillingRouteImport } from "./routes/(dashboard)/settings/billing";
-import { Route as dashboardSettingsIndexRouteImport } from "./routes/(dashboard)/settings/index";
-import { Route as dashboardSettingsIntegrationsIndexRouteImport } from "./routes/(dashboard)/settings/integrations/index";
-import { Route as dashboardSettingsIntegrationsStripeRouteImport } from "./routes/(dashboard)/settings/integrations/stripe";
-import { Route as dashboardSettingsProfileRouteImport } from "./routes/(dashboard)/settings/profile";
-import { Route as dashboardSettingsRouteRouteImport } from "./routes/(dashboard)/settings/route";
-import { Route as dashboardShippingRatesIndexRouteImport } from "./routes/(dashboard)/shipping-rates/index";
-import { Route as dashboardTaxRatesIndexRouteImport } from "./routes/(dashboard)/tax-rates/index";
-import { Route as publicLoginRouteImport } from "./routes/(public)/login";
-import { Route as publicRecoveryRouteImport } from "./routes/(public)/recovery";
-import { Route as publicRecoveryKeyRouteImport } from "./routes/(public)/recovery_.$key";
-import { Route as publicRouteRouteImport } from "./routes/(public)/route";
-import { Route as publicSignupRouteImport } from "./routes/(public)/signup";
-import { Route as publicVerificationRouteImport } from "./routes/(public)/verification";
-import { Route as CustomerPortalTokenRouteImport } from "./routes/customer-portal/$token";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as SetupIndexRouteImport } from "./routes/setup/index";
-import { Route as SetupRouteRouteImport } from "./routes/setup/route";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as SetupRouteRouteImport } from './routes/setup/route'
+import { Route as publicRouteRouteImport } from './routes/(public)/route'
+import { Route as dashboardRouteRouteImport } from './routes/(dashboard)/route'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as SetupIndexRouteImport } from './routes/setup/index'
+import { Route as CustomerPortalTokenRouteImport } from './routes/customer-portal/$token'
+import { Route as publicVerificationRouteImport } from './routes/(public)/verification'
+import { Route as publicSignupRouteImport } from './routes/(public)/signup'
+import { Route as publicRecoveryRouteImport } from './routes/(public)/recovery'
+import { Route as publicLoginRouteImport } from './routes/(public)/login'
+import { Route as dashboardOverviewRouteImport } from './routes/(dashboard)/overview'
+import { Route as dashboardOnboardingRouteImport } from './routes/(dashboard)/onboarding'
+import { Route as dashboardSettingsRouteRouteImport } from './routes/(dashboard)/settings/route'
+import { Route as dashboardTaxRatesIndexRouteImport } from './routes/(dashboard)/tax-rates/index'
+import { Route as dashboardShippingRatesIndexRouteImport } from './routes/(dashboard)/shipping-rates/index'
+import { Route as dashboardSettingsIndexRouteImport } from './routes/(dashboard)/settings/index'
+import { Route as dashboardQuotesIndexRouteImport } from './routes/(dashboard)/quotes/index'
+import { Route as dashboardProductsIndexRouteImport } from './routes/(dashboard)/products/index'
+import { Route as dashboardInvoicesIndexRouteImport } from './routes/(dashboard)/invoices/index'
+import { Route as dashboardCustomersIndexRouteImport } from './routes/(dashboard)/customers/index'
+import { Route as dashboardCreditNotesIndexRouteImport } from './routes/(dashboard)/credit-notes/index'
+import { Route as dashboardCouponsIndexRouteImport } from './routes/(dashboard)/coupons/index'
+import { Route as publicRecoveryKeyRouteImport } from './routes/(public)/recovery_.$key'
+import { Route as dashboardSettingsProfileRouteImport } from './routes/(dashboard)/settings/profile'
+import { Route as dashboardSettingsBillingRouteImport } from './routes/(dashboard)/settings/billing'
+import { Route as dashboardSettingsAccountRouteImport } from './routes/(dashboard)/settings/account'
+import { Route as dashboardQuotesIdRouteImport } from './routes/(dashboard)/quotes/$id'
+import { Route as dashboardProductsIdRouteImport } from './routes/(dashboard)/products/$id'
+import { Route as dashboardInvoicesIdRouteImport } from './routes/(dashboard)/invoices/$id'
+import { Route as dashboardCustomersIdRouteImport } from './routes/(dashboard)/customers/$id'
+import { Route as dashboardCreditNotesIdRouteImport } from './routes/(dashboard)/credit-notes/$id'
+import { Route as dashboardSettingsIntegrationsIndexRouteImport } from './routes/(dashboard)/settings/integrations/index'
+import { Route as dashboardSettingsIntegrationsStripeRouteImport } from './routes/(dashboard)/settings/integrations/stripe'
+import { Route as dashboardQuotesIdEditRouteImport } from './routes/(dashboard)/quotes/$id_.edit'
+import { Route as dashboardInvoicesIdEditRouteImport } from './routes/(dashboard)/invoices/$id_.edit'
+import { Route as dashboardCustomersIdEditRouteImport } from './routes/(dashboard)/customers/$id_.edit'
+import { Route as dashboardCreditNotesIdEditRouteImport } from './routes/(dashboard)/credit-notes/$id_.edit'
 
 const SetupRouteRoute = SetupRouteRouteImport.update({
-  id: "/setup",
-  path: "/setup",
+  id: '/setup',
+  path: '/setup',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const publicRouteRoute = publicRouteRouteImport.update({
-  id: "/(public)",
+  id: '/(public)',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const dashboardRouteRoute = dashboardRouteRouteImport.update({
-  id: "/(dashboard)",
+  id: '/(dashboard)',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const SetupIndexRoute = SetupIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => SetupRouteRoute,
-} as any);
+} as any)
 const CustomerPortalTokenRoute = CustomerPortalTokenRouteImport.update({
-  id: "/customer-portal/$token",
-  path: "/customer-portal/$token",
+  id: '/customer-portal/$token',
+  path: '/customer-portal/$token',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const publicVerificationRoute = publicVerificationRouteImport.update({
-  id: "/verification",
-  path: "/verification",
+  id: '/verification',
+  path: '/verification',
   getParentRoute: () => publicRouteRoute,
-} as any);
+} as any)
 const publicSignupRoute = publicSignupRouteImport.update({
-  id: "/signup",
-  path: "/signup",
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => publicRouteRoute,
-} as any);
+} as any)
 const publicRecoveryRoute = publicRecoveryRouteImport.update({
-  id: "/recovery",
-  path: "/recovery",
+  id: '/recovery',
+  path: '/recovery',
   getParentRoute: () => publicRouteRoute,
-} as any);
+} as any)
 const publicLoginRoute = publicLoginRouteImport.update({
-  id: "/login",
-  path: "/login",
+  id: '/login',
+  path: '/login',
   getParentRoute: () => publicRouteRoute,
-} as any);
+} as any)
 const dashboardOverviewRoute = dashboardOverviewRouteImport.update({
-  id: "/overview",
-  path: "/overview",
+  id: '/overview',
+  path: '/overview',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardOnboardingRoute = dashboardOnboardingRouteImport.update({
-  id: "/onboarding",
-  path: "/onboarding",
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardSettingsRouteRoute = dashboardSettingsRouteRouteImport.update({
-  id: "/settings",
-  path: "/settings",
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardTaxRatesIndexRoute = dashboardTaxRatesIndexRouteImport.update({
-  id: "/tax-rates/",
-  path: "/tax-rates/",
+  id: '/tax-rates/',
+  path: '/tax-rates/',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardShippingRatesIndexRoute =
   dashboardShippingRatesIndexRouteImport.update({
-    id: "/shipping-rates/",
-    path: "/shipping-rates/",
+    id: '/shipping-rates/',
+    path: '/shipping-rates/',
     getParentRoute: () => dashboardRouteRoute,
-  } as any);
+  } as any)
 const dashboardSettingsIndexRoute = dashboardSettingsIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => dashboardSettingsRouteRoute,
-} as any);
+} as any)
 const dashboardQuotesIndexRoute = dashboardQuotesIndexRouteImport.update({
-  id: "/quotes/",
-  path: "/quotes/",
+  id: '/quotes/',
+  path: '/quotes/',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardProductsIndexRoute = dashboardProductsIndexRouteImport.update({
-  id: "/products/",
-  path: "/products/",
+  id: '/products/',
+  path: '/products/',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardInvoicesIndexRoute = dashboardInvoicesIndexRouteImport.update({
-  id: "/invoices/",
-  path: "/invoices/",
+  id: '/invoices/',
+  path: '/invoices/',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardCustomersIndexRoute = dashboardCustomersIndexRouteImport.update({
-  id: "/customers/",
-  path: "/customers/",
+  id: '/customers/',
+  path: '/customers/',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardCreditNotesIndexRoute =
   dashboardCreditNotesIndexRouteImport.update({
-    id: "/credit-notes/",
-    path: "/credit-notes/",
+    id: '/credit-notes/',
+    path: '/credit-notes/',
     getParentRoute: () => dashboardRouteRoute,
-  } as any);
+  } as any)
 const dashboardCouponsIndexRoute = dashboardCouponsIndexRouteImport.update({
-  id: "/coupons/",
-  path: "/coupons/",
+  id: '/coupons/',
+  path: '/coupons/',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const publicRecoveryKeyRoute = publicRecoveryKeyRouteImport.update({
-  id: "/recovery_/$key",
-  path: "/recovery/$key",
+  id: '/recovery_/$key',
+  path: '/recovery/$key',
   getParentRoute: () => publicRouteRoute,
-} as any);
+} as any)
 const dashboardSettingsProfileRoute =
   dashboardSettingsProfileRouteImport.update({
-    id: "/profile",
-    path: "/profile",
+    id: '/profile',
+    path: '/profile',
     getParentRoute: () => dashboardSettingsRouteRoute,
-  } as any);
+  } as any)
 const dashboardSettingsBillingRoute =
   dashboardSettingsBillingRouteImport.update({
-    id: "/billing",
-    path: "/billing",
+    id: '/billing',
+    path: '/billing',
     getParentRoute: () => dashboardSettingsRouteRoute,
-  } as any);
+  } as any)
 const dashboardSettingsAccountRoute =
   dashboardSettingsAccountRouteImport.update({
-    id: "/account",
-    path: "/account",
+    id: '/account',
+    path: '/account',
     getParentRoute: () => dashboardSettingsRouteRoute,
-  } as any);
+  } as any)
 const dashboardQuotesIdRoute = dashboardQuotesIdRouteImport.update({
-  id: "/quotes/$id",
-  path: "/quotes/$id",
+  id: '/quotes/$id',
+  path: '/quotes/$id',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardProductsIdRoute = dashboardProductsIdRouteImport.update({
-  id: "/products/$id",
-  path: "/products/$id",
+  id: '/products/$id',
+  path: '/products/$id',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardInvoicesIdRoute = dashboardInvoicesIdRouteImport.update({
-  id: "/invoices/$id",
-  path: "/invoices/$id",
+  id: '/invoices/$id',
+  path: '/invoices/$id',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardCustomersIdRoute = dashboardCustomersIdRouteImport.update({
-  id: "/customers/$id",
-  path: "/customers/$id",
+  id: '/customers/$id',
+  path: '/customers/$id',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardCreditNotesIdRoute = dashboardCreditNotesIdRouteImport.update({
-  id: "/credit-notes/$id",
-  path: "/credit-notes/$id",
+  id: '/credit-notes/$id',
+  path: '/credit-notes/$id',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardSettingsIntegrationsIndexRoute =
   dashboardSettingsIntegrationsIndexRouteImport.update({
-    id: "/integrations/",
-    path: "/integrations/",
+    id: '/integrations/',
+    path: '/integrations/',
     getParentRoute: () => dashboardSettingsRouteRoute,
-  } as any);
+  } as any)
 const dashboardSettingsIntegrationsStripeRoute =
   dashboardSettingsIntegrationsStripeRouteImport.update({
-    id: "/integrations/stripe",
-    path: "/integrations/stripe",
+    id: '/integrations/stripe',
+    path: '/integrations/stripe',
     getParentRoute: () => dashboardSettingsRouteRoute,
-  } as any);
+  } as any)
 const dashboardQuotesIdEditRoute = dashboardQuotesIdEditRouteImport.update({
-  id: "/quotes/$id_/edit",
-  path: "/quotes/$id/edit",
+  id: '/quotes/$id_/edit',
+  path: '/quotes/$id/edit',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardInvoicesIdEditRoute = dashboardInvoicesIdEditRouteImport.update({
-  id: "/invoices/$id_/edit",
-  path: "/invoices/$id/edit",
+  id: '/invoices/$id_/edit',
+  path: '/invoices/$id/edit',
   getParentRoute: () => dashboardRouteRoute,
-} as any);
+} as any)
 const dashboardCustomersIdEditRoute =
   dashboardCustomersIdEditRouteImport.update({
-    id: "/customers/$id_/edit",
-    path: "/customers/$id/edit",
+    id: '/customers/$id_/edit',
+    path: '/customers/$id/edit',
     getParentRoute: () => dashboardRouteRoute,
-  } as any);
+  } as any)
 const dashboardCreditNotesIdEditRoute =
   dashboardCreditNotesIdEditRouteImport.update({
-    id: "/credit-notes/$id_/edit",
-    path: "/credit-notes/$id/edit",
+    id: '/credit-notes/$id_/edit',
+    path: '/credit-notes/$id/edit',
     getParentRoute: () => dashboardRouteRoute,
-  } as any);
+  } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/setup": typeof SetupRouteRouteWithChildren;
-  "/settings": typeof dashboardSettingsRouteRouteWithChildren;
-  "/onboarding": typeof dashboardOnboardingRoute;
-  "/overview": typeof dashboardOverviewRoute;
-  "/login": typeof publicLoginRoute;
-  "/recovery": typeof publicRecoveryRoute;
-  "/signup": typeof publicSignupRoute;
-  "/verification": typeof publicVerificationRoute;
-  "/customer-portal/$token": typeof CustomerPortalTokenRoute;
-  "/setup/": typeof SetupIndexRoute;
-  "/credit-notes/$id": typeof dashboardCreditNotesIdRoute;
-  "/customers/$id": typeof dashboardCustomersIdRoute;
-  "/invoices/$id": typeof dashboardInvoicesIdRoute;
-  "/products/$id": typeof dashboardProductsIdRoute;
-  "/quotes/$id": typeof dashboardQuotesIdRoute;
-  "/settings/account": typeof dashboardSettingsAccountRoute;
-  "/settings/billing": typeof dashboardSettingsBillingRoute;
-  "/settings/profile": typeof dashboardSettingsProfileRoute;
-  "/recovery/$key": typeof publicRecoveryKeyRoute;
-  "/coupons": typeof dashboardCouponsIndexRoute;
-  "/credit-notes": typeof dashboardCreditNotesIndexRoute;
-  "/customers": typeof dashboardCustomersIndexRoute;
-  "/invoices": typeof dashboardInvoicesIndexRoute;
-  "/products": typeof dashboardProductsIndexRoute;
-  "/quotes": typeof dashboardQuotesIndexRoute;
-  "/settings/": typeof dashboardSettingsIndexRoute;
-  "/shipping-rates": typeof dashboardShippingRatesIndexRoute;
-  "/tax-rates": typeof dashboardTaxRatesIndexRoute;
-  "/credit-notes/$id/edit": typeof dashboardCreditNotesIdEditRoute;
-  "/customers/$id/edit": typeof dashboardCustomersIdEditRoute;
-  "/invoices/$id/edit": typeof dashboardInvoicesIdEditRoute;
-  "/quotes/$id/edit": typeof dashboardQuotesIdEditRoute;
-  "/settings/integrations/stripe": typeof dashboardSettingsIntegrationsStripeRoute;
-  "/settings/integrations": typeof dashboardSettingsIntegrationsIndexRoute;
+  '/': typeof IndexRoute
+  '/setup': typeof SetupRouteRouteWithChildren
+  '/settings': typeof dashboardSettingsRouteRouteWithChildren
+  '/onboarding': typeof dashboardOnboardingRoute
+  '/overview': typeof dashboardOverviewRoute
+  '/login': typeof publicLoginRoute
+  '/recovery': typeof publicRecoveryRoute
+  '/signup': typeof publicSignupRoute
+  '/verification': typeof publicVerificationRoute
+  '/customer-portal/$token': typeof CustomerPortalTokenRoute
+  '/setup/': typeof SetupIndexRoute
+  '/credit-notes/$id': typeof dashboardCreditNotesIdRoute
+  '/customers/$id': typeof dashboardCustomersIdRoute
+  '/invoices/$id': typeof dashboardInvoicesIdRoute
+  '/products/$id': typeof dashboardProductsIdRoute
+  '/quotes/$id': typeof dashboardQuotesIdRoute
+  '/settings/account': typeof dashboardSettingsAccountRoute
+  '/settings/billing': typeof dashboardSettingsBillingRoute
+  '/settings/profile': typeof dashboardSettingsProfileRoute
+  '/recovery/$key': typeof publicRecoveryKeyRoute
+  '/coupons': typeof dashboardCouponsIndexRoute
+  '/credit-notes': typeof dashboardCreditNotesIndexRoute
+  '/customers': typeof dashboardCustomersIndexRoute
+  '/invoices': typeof dashboardInvoicesIndexRoute
+  '/products': typeof dashboardProductsIndexRoute
+  '/quotes': typeof dashboardQuotesIndexRoute
+  '/settings/': typeof dashboardSettingsIndexRoute
+  '/shipping-rates': typeof dashboardShippingRatesIndexRoute
+  '/tax-rates': typeof dashboardTaxRatesIndexRoute
+  '/credit-notes/$id/edit': typeof dashboardCreditNotesIdEditRoute
+  '/customers/$id/edit': typeof dashboardCustomersIdEditRoute
+  '/invoices/$id/edit': typeof dashboardInvoicesIdEditRoute
+  '/quotes/$id/edit': typeof dashboardQuotesIdEditRoute
+  '/settings/integrations/stripe': typeof dashboardSettingsIntegrationsStripeRoute
+  '/settings/integrations': typeof dashboardSettingsIntegrationsIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/onboarding": typeof dashboardOnboardingRoute;
-  "/overview": typeof dashboardOverviewRoute;
-  "/login": typeof publicLoginRoute;
-  "/recovery": typeof publicRecoveryRoute;
-  "/signup": typeof publicSignupRoute;
-  "/verification": typeof publicVerificationRoute;
-  "/customer-portal/$token": typeof CustomerPortalTokenRoute;
-  "/setup": typeof SetupIndexRoute;
-  "/credit-notes/$id": typeof dashboardCreditNotesIdRoute;
-  "/customers/$id": typeof dashboardCustomersIdRoute;
-  "/invoices/$id": typeof dashboardInvoicesIdRoute;
-  "/products/$id": typeof dashboardProductsIdRoute;
-  "/quotes/$id": typeof dashboardQuotesIdRoute;
-  "/settings/account": typeof dashboardSettingsAccountRoute;
-  "/settings/billing": typeof dashboardSettingsBillingRoute;
-  "/settings/profile": typeof dashboardSettingsProfileRoute;
-  "/recovery/$key": typeof publicRecoveryKeyRoute;
-  "/coupons": typeof dashboardCouponsIndexRoute;
-  "/credit-notes": typeof dashboardCreditNotesIndexRoute;
-  "/customers": typeof dashboardCustomersIndexRoute;
-  "/invoices": typeof dashboardInvoicesIndexRoute;
-  "/products": typeof dashboardProductsIndexRoute;
-  "/quotes": typeof dashboardQuotesIndexRoute;
-  "/settings": typeof dashboardSettingsIndexRoute;
-  "/shipping-rates": typeof dashboardShippingRatesIndexRoute;
-  "/tax-rates": typeof dashboardTaxRatesIndexRoute;
-  "/credit-notes/$id/edit": typeof dashboardCreditNotesIdEditRoute;
-  "/customers/$id/edit": typeof dashboardCustomersIdEditRoute;
-  "/invoices/$id/edit": typeof dashboardInvoicesIdEditRoute;
-  "/quotes/$id/edit": typeof dashboardQuotesIdEditRoute;
-  "/settings/integrations/stripe": typeof dashboardSettingsIntegrationsStripeRoute;
-  "/settings/integrations": typeof dashboardSettingsIntegrationsIndexRoute;
+  '/': typeof IndexRoute
+  '/onboarding': typeof dashboardOnboardingRoute
+  '/overview': typeof dashboardOverviewRoute
+  '/login': typeof publicLoginRoute
+  '/recovery': typeof publicRecoveryRoute
+  '/signup': typeof publicSignupRoute
+  '/verification': typeof publicVerificationRoute
+  '/customer-portal/$token': typeof CustomerPortalTokenRoute
+  '/setup': typeof SetupIndexRoute
+  '/credit-notes/$id': typeof dashboardCreditNotesIdRoute
+  '/customers/$id': typeof dashboardCustomersIdRoute
+  '/invoices/$id': typeof dashboardInvoicesIdRoute
+  '/products/$id': typeof dashboardProductsIdRoute
+  '/quotes/$id': typeof dashboardQuotesIdRoute
+  '/settings/account': typeof dashboardSettingsAccountRoute
+  '/settings/billing': typeof dashboardSettingsBillingRoute
+  '/settings/profile': typeof dashboardSettingsProfileRoute
+  '/recovery/$key': typeof publicRecoveryKeyRoute
+  '/coupons': typeof dashboardCouponsIndexRoute
+  '/credit-notes': typeof dashboardCreditNotesIndexRoute
+  '/customers': typeof dashboardCustomersIndexRoute
+  '/invoices': typeof dashboardInvoicesIndexRoute
+  '/products': typeof dashboardProductsIndexRoute
+  '/quotes': typeof dashboardQuotesIndexRoute
+  '/settings': typeof dashboardSettingsIndexRoute
+  '/shipping-rates': typeof dashboardShippingRatesIndexRoute
+  '/tax-rates': typeof dashboardTaxRatesIndexRoute
+  '/credit-notes/$id/edit': typeof dashboardCreditNotesIdEditRoute
+  '/customers/$id/edit': typeof dashboardCustomersIdEditRoute
+  '/invoices/$id/edit': typeof dashboardInvoicesIdEditRoute
+  '/quotes/$id/edit': typeof dashboardQuotesIdEditRoute
+  '/settings/integrations/stripe': typeof dashboardSettingsIntegrationsStripeRoute
+  '/settings/integrations': typeof dashboardSettingsIntegrationsIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/(dashboard)": typeof dashboardRouteRouteWithChildren;
-  "/(public)": typeof publicRouteRouteWithChildren;
-  "/setup": typeof SetupRouteRouteWithChildren;
-  "/(dashboard)/settings": typeof dashboardSettingsRouteRouteWithChildren;
-  "/(dashboard)/onboarding": typeof dashboardOnboardingRoute;
-  "/(dashboard)/overview": typeof dashboardOverviewRoute;
-  "/(public)/login": typeof publicLoginRoute;
-  "/(public)/recovery": typeof publicRecoveryRoute;
-  "/(public)/signup": typeof publicSignupRoute;
-  "/(public)/verification": typeof publicVerificationRoute;
-  "/customer-portal/$token": typeof CustomerPortalTokenRoute;
-  "/setup/": typeof SetupIndexRoute;
-  "/(dashboard)/credit-notes/$id": typeof dashboardCreditNotesIdRoute;
-  "/(dashboard)/customers/$id": typeof dashboardCustomersIdRoute;
-  "/(dashboard)/invoices/$id": typeof dashboardInvoicesIdRoute;
-  "/(dashboard)/products/$id": typeof dashboardProductsIdRoute;
-  "/(dashboard)/quotes/$id": typeof dashboardQuotesIdRoute;
-  "/(dashboard)/settings/account": typeof dashboardSettingsAccountRoute;
-  "/(dashboard)/settings/billing": typeof dashboardSettingsBillingRoute;
-  "/(dashboard)/settings/profile": typeof dashboardSettingsProfileRoute;
-  "/(public)/recovery_/$key": typeof publicRecoveryKeyRoute;
-  "/(dashboard)/coupons/": typeof dashboardCouponsIndexRoute;
-  "/(dashboard)/credit-notes/": typeof dashboardCreditNotesIndexRoute;
-  "/(dashboard)/customers/": typeof dashboardCustomersIndexRoute;
-  "/(dashboard)/invoices/": typeof dashboardInvoicesIndexRoute;
-  "/(dashboard)/products/": typeof dashboardProductsIndexRoute;
-  "/(dashboard)/quotes/": typeof dashboardQuotesIndexRoute;
-  "/(dashboard)/settings/": typeof dashboardSettingsIndexRoute;
-  "/(dashboard)/shipping-rates/": typeof dashboardShippingRatesIndexRoute;
-  "/(dashboard)/tax-rates/": typeof dashboardTaxRatesIndexRoute;
-  "/(dashboard)/credit-notes/$id_/edit": typeof dashboardCreditNotesIdEditRoute;
-  "/(dashboard)/customers/$id_/edit": typeof dashboardCustomersIdEditRoute;
-  "/(dashboard)/invoices/$id_/edit": typeof dashboardInvoicesIdEditRoute;
-  "/(dashboard)/quotes/$id_/edit": typeof dashboardQuotesIdEditRoute;
-  "/(dashboard)/settings/integrations/stripe": typeof dashboardSettingsIntegrationsStripeRoute;
-  "/(dashboard)/settings/integrations/": typeof dashboardSettingsIntegrationsIndexRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/(dashboard)': typeof dashboardRouteRouteWithChildren
+  '/(public)': typeof publicRouteRouteWithChildren
+  '/setup': typeof SetupRouteRouteWithChildren
+  '/(dashboard)/settings': typeof dashboardSettingsRouteRouteWithChildren
+  '/(dashboard)/onboarding': typeof dashboardOnboardingRoute
+  '/(dashboard)/overview': typeof dashboardOverviewRoute
+  '/(public)/login': typeof publicLoginRoute
+  '/(public)/recovery': typeof publicRecoveryRoute
+  '/(public)/signup': typeof publicSignupRoute
+  '/(public)/verification': typeof publicVerificationRoute
+  '/customer-portal/$token': typeof CustomerPortalTokenRoute
+  '/setup/': typeof SetupIndexRoute
+  '/(dashboard)/credit-notes/$id': typeof dashboardCreditNotesIdRoute
+  '/(dashboard)/customers/$id': typeof dashboardCustomersIdRoute
+  '/(dashboard)/invoices/$id': typeof dashboardInvoicesIdRoute
+  '/(dashboard)/products/$id': typeof dashboardProductsIdRoute
+  '/(dashboard)/quotes/$id': typeof dashboardQuotesIdRoute
+  '/(dashboard)/settings/account': typeof dashboardSettingsAccountRoute
+  '/(dashboard)/settings/billing': typeof dashboardSettingsBillingRoute
+  '/(dashboard)/settings/profile': typeof dashboardSettingsProfileRoute
+  '/(public)/recovery_/$key': typeof publicRecoveryKeyRoute
+  '/(dashboard)/coupons/': typeof dashboardCouponsIndexRoute
+  '/(dashboard)/credit-notes/': typeof dashboardCreditNotesIndexRoute
+  '/(dashboard)/customers/': typeof dashboardCustomersIndexRoute
+  '/(dashboard)/invoices/': typeof dashboardInvoicesIndexRoute
+  '/(dashboard)/products/': typeof dashboardProductsIndexRoute
+  '/(dashboard)/quotes/': typeof dashboardQuotesIndexRoute
+  '/(dashboard)/settings/': typeof dashboardSettingsIndexRoute
+  '/(dashboard)/shipping-rates/': typeof dashboardShippingRatesIndexRoute
+  '/(dashboard)/tax-rates/': typeof dashboardTaxRatesIndexRoute
+  '/(dashboard)/credit-notes/$id_/edit': typeof dashboardCreditNotesIdEditRoute
+  '/(dashboard)/customers/$id_/edit': typeof dashboardCustomersIdEditRoute
+  '/(dashboard)/invoices/$id_/edit': typeof dashboardInvoicesIdEditRoute
+  '/(dashboard)/quotes/$id_/edit': typeof dashboardQuotesIdEditRoute
+  '/(dashboard)/settings/integrations/stripe': typeof dashboardSettingsIntegrationsStripeRoute
+  '/(dashboard)/settings/integrations/': typeof dashboardSettingsIntegrationsIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/setup"
-    | "/settings"
-    | "/onboarding"
-    | "/overview"
-    | "/login"
-    | "/recovery"
-    | "/signup"
-    | "/verification"
-    | "/customer-portal/$token"
-    | "/setup/"
-    | "/credit-notes/$id"
-    | "/customers/$id"
-    | "/invoices/$id"
-    | "/products/$id"
-    | "/quotes/$id"
-    | "/settings/account"
-    | "/settings/billing"
-    | "/settings/profile"
-    | "/recovery/$key"
-    | "/coupons"
-    | "/credit-notes"
-    | "/customers"
-    | "/invoices"
-    | "/products"
-    | "/quotes"
-    | "/settings/"
-    | "/shipping-rates"
-    | "/tax-rates"
-    | "/credit-notes/$id/edit"
-    | "/customers/$id/edit"
-    | "/invoices/$id/edit"
-    | "/quotes/$id/edit"
-    | "/settings/integrations/stripe"
-    | "/settings/integrations";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/setup'
+    | '/settings'
+    | '/onboarding'
+    | '/overview'
+    | '/login'
+    | '/recovery'
+    | '/signup'
+    | '/verification'
+    | '/customer-portal/$token'
+    | '/setup/'
+    | '/credit-notes/$id'
+    | '/customers/$id'
+    | '/invoices/$id'
+    | '/products/$id'
+    | '/quotes/$id'
+    | '/settings/account'
+    | '/settings/billing'
+    | '/settings/profile'
+    | '/recovery/$key'
+    | '/coupons'
+    | '/credit-notes'
+    | '/customers'
+    | '/invoices'
+    | '/products'
+    | '/quotes'
+    | '/settings/'
+    | '/shipping-rates'
+    | '/tax-rates'
+    | '/credit-notes/$id/edit'
+    | '/customers/$id/edit'
+    | '/invoices/$id/edit'
+    | '/quotes/$id/edit'
+    | '/settings/integrations/stripe'
+    | '/settings/integrations'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/onboarding"
-    | "/overview"
-    | "/login"
-    | "/recovery"
-    | "/signup"
-    | "/verification"
-    | "/customer-portal/$token"
-    | "/setup"
-    | "/credit-notes/$id"
-    | "/customers/$id"
-    | "/invoices/$id"
-    | "/products/$id"
-    | "/quotes/$id"
-    | "/settings/account"
-    | "/settings/billing"
-    | "/settings/profile"
-    | "/recovery/$key"
-    | "/coupons"
-    | "/credit-notes"
-    | "/customers"
-    | "/invoices"
-    | "/products"
-    | "/quotes"
-    | "/settings"
-    | "/shipping-rates"
-    | "/tax-rates"
-    | "/credit-notes/$id/edit"
-    | "/customers/$id/edit"
-    | "/invoices/$id/edit"
-    | "/quotes/$id/edit"
-    | "/settings/integrations/stripe"
-    | "/settings/integrations";
+    | '/'
+    | '/onboarding'
+    | '/overview'
+    | '/login'
+    | '/recovery'
+    | '/signup'
+    | '/verification'
+    | '/customer-portal/$token'
+    | '/setup'
+    | '/credit-notes/$id'
+    | '/customers/$id'
+    | '/invoices/$id'
+    | '/products/$id'
+    | '/quotes/$id'
+    | '/settings/account'
+    | '/settings/billing'
+    | '/settings/profile'
+    | '/recovery/$key'
+    | '/coupons'
+    | '/credit-notes'
+    | '/customers'
+    | '/invoices'
+    | '/products'
+    | '/quotes'
+    | '/settings'
+    | '/shipping-rates'
+    | '/tax-rates'
+    | '/credit-notes/$id/edit'
+    | '/customers/$id/edit'
+    | '/invoices/$id/edit'
+    | '/quotes/$id/edit'
+    | '/settings/integrations/stripe'
+    | '/settings/integrations'
   id:
-    | "__root__"
-    | "/"
-    | "/(dashboard)"
-    | "/(public)"
-    | "/setup"
-    | "/(dashboard)/settings"
-    | "/(dashboard)/onboarding"
-    | "/(dashboard)/overview"
-    | "/(public)/login"
-    | "/(public)/recovery"
-    | "/(public)/signup"
-    | "/(public)/verification"
-    | "/customer-portal/$token"
-    | "/setup/"
-    | "/(dashboard)/credit-notes/$id"
-    | "/(dashboard)/customers/$id"
-    | "/(dashboard)/invoices/$id"
-    | "/(dashboard)/products/$id"
-    | "/(dashboard)/quotes/$id"
-    | "/(dashboard)/settings/account"
-    | "/(dashboard)/settings/billing"
-    | "/(dashboard)/settings/profile"
-    | "/(public)/recovery_/$key"
-    | "/(dashboard)/coupons/"
-    | "/(dashboard)/credit-notes/"
-    | "/(dashboard)/customers/"
-    | "/(dashboard)/invoices/"
-    | "/(dashboard)/products/"
-    | "/(dashboard)/quotes/"
-    | "/(dashboard)/settings/"
-    | "/(dashboard)/shipping-rates/"
-    | "/(dashboard)/tax-rates/"
-    | "/(dashboard)/credit-notes/$id_/edit"
-    | "/(dashboard)/customers/$id_/edit"
-    | "/(dashboard)/invoices/$id_/edit"
-    | "/(dashboard)/quotes/$id_/edit"
-    | "/(dashboard)/settings/integrations/stripe"
-    | "/(dashboard)/settings/integrations/";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/(dashboard)'
+    | '/(public)'
+    | '/setup'
+    | '/(dashboard)/settings'
+    | '/(dashboard)/onboarding'
+    | '/(dashboard)/overview'
+    | '/(public)/login'
+    | '/(public)/recovery'
+    | '/(public)/signup'
+    | '/(public)/verification'
+    | '/customer-portal/$token'
+    | '/setup/'
+    | '/(dashboard)/credit-notes/$id'
+    | '/(dashboard)/customers/$id'
+    | '/(dashboard)/invoices/$id'
+    | '/(dashboard)/products/$id'
+    | '/(dashboard)/quotes/$id'
+    | '/(dashboard)/settings/account'
+    | '/(dashboard)/settings/billing'
+    | '/(dashboard)/settings/profile'
+    | '/(public)/recovery_/$key'
+    | '/(dashboard)/coupons/'
+    | '/(dashboard)/credit-notes/'
+    | '/(dashboard)/customers/'
+    | '/(dashboard)/invoices/'
+    | '/(dashboard)/products/'
+    | '/(dashboard)/quotes/'
+    | '/(dashboard)/settings/'
+    | '/(dashboard)/shipping-rates/'
+    | '/(dashboard)/tax-rates/'
+    | '/(dashboard)/credit-notes/$id_/edit'
+    | '/(dashboard)/customers/$id_/edit'
+    | '/(dashboard)/invoices/$id_/edit'
+    | '/(dashboard)/quotes/$id_/edit'
+    | '/(dashboard)/settings/integrations/stripe'
+    | '/(dashboard)/settings/integrations/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  dashboardRouteRoute: typeof dashboardRouteRouteWithChildren;
-  publicRouteRoute: typeof publicRouteRouteWithChildren;
-  SetupRouteRoute: typeof SetupRouteRouteWithChildren;
-  CustomerPortalTokenRoute: typeof CustomerPortalTokenRoute;
+  IndexRoute: typeof IndexRoute
+  dashboardRouteRoute: typeof dashboardRouteRouteWithChildren
+  publicRouteRoute: typeof publicRouteRouteWithChildren
+  SetupRouteRoute: typeof SetupRouteRouteWithChildren
+  CustomerPortalTokenRoute: typeof CustomerPortalTokenRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/setup": {
-      id: "/setup";
-      path: "/setup";
-      fullPath: "/setup";
-      preLoaderRoute: typeof SetupRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/(public)": {
-      id: "/(public)";
-      path: "";
-      fullPath: "";
-      preLoaderRoute: typeof publicRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/(dashboard)": {
-      id: "/(dashboard)";
-      path: "";
-      fullPath: "";
-      preLoaderRoute: typeof dashboardRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/setup/": {
-      id: "/setup/";
-      path: "/";
-      fullPath: "/setup/";
-      preLoaderRoute: typeof SetupIndexRouteImport;
-      parentRoute: typeof SetupRouteRoute;
-    };
-    "/customer-portal/$token": {
-      id: "/customer-portal/$token";
-      path: "/customer-portal/$token";
-      fullPath: "/customer-portal/$token";
-      preLoaderRoute: typeof CustomerPortalTokenRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/(public)/verification": {
-      id: "/(public)/verification";
-      path: "/verification";
-      fullPath: "/verification";
-      preLoaderRoute: typeof publicVerificationRouteImport;
-      parentRoute: typeof publicRouteRoute;
-    };
-    "/(public)/signup": {
-      id: "/(public)/signup";
-      path: "/signup";
-      fullPath: "/signup";
-      preLoaderRoute: typeof publicSignupRouteImport;
-      parentRoute: typeof publicRouteRoute;
-    };
-    "/(public)/recovery": {
-      id: "/(public)/recovery";
-      path: "/recovery";
-      fullPath: "/recovery";
-      preLoaderRoute: typeof publicRecoveryRouteImport;
-      parentRoute: typeof publicRouteRoute;
-    };
-    "/(public)/login": {
-      id: "/(public)/login";
-      path: "/login";
-      fullPath: "/login";
-      preLoaderRoute: typeof publicLoginRouteImport;
-      parentRoute: typeof publicRouteRoute;
-    };
-    "/(dashboard)/overview": {
-      id: "/(dashboard)/overview";
-      path: "/overview";
-      fullPath: "/overview";
-      preLoaderRoute: typeof dashboardOverviewRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/onboarding": {
-      id: "/(dashboard)/onboarding";
-      path: "/onboarding";
-      fullPath: "/onboarding";
-      preLoaderRoute: typeof dashboardOnboardingRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/settings": {
-      id: "/(dashboard)/settings";
-      path: "/settings";
-      fullPath: "/settings";
-      preLoaderRoute: typeof dashboardSettingsRouteRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/tax-rates/": {
-      id: "/(dashboard)/tax-rates/";
-      path: "/tax-rates";
-      fullPath: "/tax-rates";
-      preLoaderRoute: typeof dashboardTaxRatesIndexRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/shipping-rates/": {
-      id: "/(dashboard)/shipping-rates/";
-      path: "/shipping-rates";
-      fullPath: "/shipping-rates";
-      preLoaderRoute: typeof dashboardShippingRatesIndexRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/settings/": {
-      id: "/(dashboard)/settings/";
-      path: "/";
-      fullPath: "/settings/";
-      preLoaderRoute: typeof dashboardSettingsIndexRouteImport;
-      parentRoute: typeof dashboardSettingsRouteRoute;
-    };
-    "/(dashboard)/quotes/": {
-      id: "/(dashboard)/quotes/";
-      path: "/quotes";
-      fullPath: "/quotes";
-      preLoaderRoute: typeof dashboardQuotesIndexRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/products/": {
-      id: "/(dashboard)/products/";
-      path: "/products";
-      fullPath: "/products";
-      preLoaderRoute: typeof dashboardProductsIndexRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/invoices/": {
-      id: "/(dashboard)/invoices/";
-      path: "/invoices";
-      fullPath: "/invoices";
-      preLoaderRoute: typeof dashboardInvoicesIndexRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/customers/": {
-      id: "/(dashboard)/customers/";
-      path: "/customers";
-      fullPath: "/customers";
-      preLoaderRoute: typeof dashboardCustomersIndexRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/credit-notes/": {
-      id: "/(dashboard)/credit-notes/";
-      path: "/credit-notes";
-      fullPath: "/credit-notes";
-      preLoaderRoute: typeof dashboardCreditNotesIndexRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/coupons/": {
-      id: "/(dashboard)/coupons/";
-      path: "/coupons";
-      fullPath: "/coupons";
-      preLoaderRoute: typeof dashboardCouponsIndexRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(public)/recovery_/$key": {
-      id: "/(public)/recovery_/$key";
-      path: "/recovery/$key";
-      fullPath: "/recovery/$key";
-      preLoaderRoute: typeof publicRecoveryKeyRouteImport;
-      parentRoute: typeof publicRouteRoute;
-    };
-    "/(dashboard)/settings/profile": {
-      id: "/(dashboard)/settings/profile";
-      path: "/profile";
-      fullPath: "/settings/profile";
-      preLoaderRoute: typeof dashboardSettingsProfileRouteImport;
-      parentRoute: typeof dashboardSettingsRouteRoute;
-    };
-    "/(dashboard)/settings/billing": {
-      id: "/(dashboard)/settings/billing";
-      path: "/billing";
-      fullPath: "/settings/billing";
-      preLoaderRoute: typeof dashboardSettingsBillingRouteImport;
-      parentRoute: typeof dashboardSettingsRouteRoute;
-    };
-    "/(dashboard)/settings/account": {
-      id: "/(dashboard)/settings/account";
-      path: "/account";
-      fullPath: "/settings/account";
-      preLoaderRoute: typeof dashboardSettingsAccountRouteImport;
-      parentRoute: typeof dashboardSettingsRouteRoute;
-    };
-    "/(dashboard)/quotes/$id": {
-      id: "/(dashboard)/quotes/$id";
-      path: "/quotes/$id";
-      fullPath: "/quotes/$id";
-      preLoaderRoute: typeof dashboardQuotesIdRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/products/$id": {
-      id: "/(dashboard)/products/$id";
-      path: "/products/$id";
-      fullPath: "/products/$id";
-      preLoaderRoute: typeof dashboardProductsIdRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/invoices/$id": {
-      id: "/(dashboard)/invoices/$id";
-      path: "/invoices/$id";
-      fullPath: "/invoices/$id";
-      preLoaderRoute: typeof dashboardInvoicesIdRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/customers/$id": {
-      id: "/(dashboard)/customers/$id";
-      path: "/customers/$id";
-      fullPath: "/customers/$id";
-      preLoaderRoute: typeof dashboardCustomersIdRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/credit-notes/$id": {
-      id: "/(dashboard)/credit-notes/$id";
-      path: "/credit-notes/$id";
-      fullPath: "/credit-notes/$id";
-      preLoaderRoute: typeof dashboardCreditNotesIdRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/settings/integrations/": {
-      id: "/(dashboard)/settings/integrations/";
-      path: "/integrations";
-      fullPath: "/settings/integrations";
-      preLoaderRoute: typeof dashboardSettingsIntegrationsIndexRouteImport;
-      parentRoute: typeof dashboardSettingsRouteRoute;
-    };
-    "/(dashboard)/settings/integrations/stripe": {
-      id: "/(dashboard)/settings/integrations/stripe";
-      path: "/integrations/stripe";
-      fullPath: "/settings/integrations/stripe";
-      preLoaderRoute: typeof dashboardSettingsIntegrationsStripeRouteImport;
-      parentRoute: typeof dashboardSettingsRouteRoute;
-    };
-    "/(dashboard)/quotes/$id_/edit": {
-      id: "/(dashboard)/quotes/$id_/edit";
-      path: "/quotes/$id/edit";
-      fullPath: "/quotes/$id/edit";
-      preLoaderRoute: typeof dashboardQuotesIdEditRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/invoices/$id_/edit": {
-      id: "/(dashboard)/invoices/$id_/edit";
-      path: "/invoices/$id/edit";
-      fullPath: "/invoices/$id/edit";
-      preLoaderRoute: typeof dashboardInvoicesIdEditRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/customers/$id_/edit": {
-      id: "/(dashboard)/customers/$id_/edit";
-      path: "/customers/$id/edit";
-      fullPath: "/customers/$id/edit";
-      preLoaderRoute: typeof dashboardCustomersIdEditRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
-    "/(dashboard)/credit-notes/$id_/edit": {
-      id: "/(dashboard)/credit-notes/$id_/edit";
-      path: "/credit-notes/$id/edit";
-      fullPath: "/credit-notes/$id/edit";
-      preLoaderRoute: typeof dashboardCreditNotesIdEditRouteImport;
-      parentRoute: typeof dashboardRouteRoute;
-    };
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(public)': {
+      id: '/(public)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof publicRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(dashboard)': {
+      id: '/(dashboard)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof dashboardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup/': {
+      id: '/setup/'
+      path: '/'
+      fullPath: '/setup/'
+      preLoaderRoute: typeof SetupIndexRouteImport
+      parentRoute: typeof SetupRouteRoute
+    }
+    '/customer-portal/$token': {
+      id: '/customer-portal/$token'
+      path: '/customer-portal/$token'
+      fullPath: '/customer-portal/$token'
+      preLoaderRoute: typeof CustomerPortalTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(public)/verification': {
+      id: '/(public)/verification'
+      path: '/verification'
+      fullPath: '/verification'
+      preLoaderRoute: typeof publicVerificationRouteImport
+      parentRoute: typeof publicRouteRoute
+    }
+    '/(public)/signup': {
+      id: '/(public)/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof publicSignupRouteImport
+      parentRoute: typeof publicRouteRoute
+    }
+    '/(public)/recovery': {
+      id: '/(public)/recovery'
+      path: '/recovery'
+      fullPath: '/recovery'
+      preLoaderRoute: typeof publicRecoveryRouteImport
+      parentRoute: typeof publicRouteRoute
+    }
+    '/(public)/login': {
+      id: '/(public)/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof publicLoginRouteImport
+      parentRoute: typeof publicRouteRoute
+    }
+    '/(dashboard)/overview': {
+      id: '/(dashboard)/overview'
+      path: '/overview'
+      fullPath: '/overview'
+      preLoaderRoute: typeof dashboardOverviewRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/onboarding': {
+      id: '/(dashboard)/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof dashboardOnboardingRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/settings': {
+      id: '/(dashboard)/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof dashboardSettingsRouteRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/tax-rates/': {
+      id: '/(dashboard)/tax-rates/'
+      path: '/tax-rates'
+      fullPath: '/tax-rates'
+      preLoaderRoute: typeof dashboardTaxRatesIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/shipping-rates/': {
+      id: '/(dashboard)/shipping-rates/'
+      path: '/shipping-rates'
+      fullPath: '/shipping-rates'
+      preLoaderRoute: typeof dashboardShippingRatesIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/settings/': {
+      id: '/(dashboard)/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof dashboardSettingsIndexRouteImport
+      parentRoute: typeof dashboardSettingsRouteRoute
+    }
+    '/(dashboard)/quotes/': {
+      id: '/(dashboard)/quotes/'
+      path: '/quotes'
+      fullPath: '/quotes'
+      preLoaderRoute: typeof dashboardQuotesIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/products/': {
+      id: '/(dashboard)/products/'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof dashboardProductsIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/invoices/': {
+      id: '/(dashboard)/invoices/'
+      path: '/invoices'
+      fullPath: '/invoices'
+      preLoaderRoute: typeof dashboardInvoicesIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/customers/': {
+      id: '/(dashboard)/customers/'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof dashboardCustomersIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/credit-notes/': {
+      id: '/(dashboard)/credit-notes/'
+      path: '/credit-notes'
+      fullPath: '/credit-notes'
+      preLoaderRoute: typeof dashboardCreditNotesIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/coupons/': {
+      id: '/(dashboard)/coupons/'
+      path: '/coupons'
+      fullPath: '/coupons'
+      preLoaderRoute: typeof dashboardCouponsIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(public)/recovery_/$key': {
+      id: '/(public)/recovery_/$key'
+      path: '/recovery/$key'
+      fullPath: '/recovery/$key'
+      preLoaderRoute: typeof publicRecoveryKeyRouteImport
+      parentRoute: typeof publicRouteRoute
+    }
+    '/(dashboard)/settings/profile': {
+      id: '/(dashboard)/settings/profile'
+      path: '/profile'
+      fullPath: '/settings/profile'
+      preLoaderRoute: typeof dashboardSettingsProfileRouteImport
+      parentRoute: typeof dashboardSettingsRouteRoute
+    }
+    '/(dashboard)/settings/billing': {
+      id: '/(dashboard)/settings/billing'
+      path: '/billing'
+      fullPath: '/settings/billing'
+      preLoaderRoute: typeof dashboardSettingsBillingRouteImport
+      parentRoute: typeof dashboardSettingsRouteRoute
+    }
+    '/(dashboard)/settings/account': {
+      id: '/(dashboard)/settings/account'
+      path: '/account'
+      fullPath: '/settings/account'
+      preLoaderRoute: typeof dashboardSettingsAccountRouteImport
+      parentRoute: typeof dashboardSettingsRouteRoute
+    }
+    '/(dashboard)/quotes/$id': {
+      id: '/(dashboard)/quotes/$id'
+      path: '/quotes/$id'
+      fullPath: '/quotes/$id'
+      preLoaderRoute: typeof dashboardQuotesIdRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/products/$id': {
+      id: '/(dashboard)/products/$id'
+      path: '/products/$id'
+      fullPath: '/products/$id'
+      preLoaderRoute: typeof dashboardProductsIdRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/invoices/$id': {
+      id: '/(dashboard)/invoices/$id'
+      path: '/invoices/$id'
+      fullPath: '/invoices/$id'
+      preLoaderRoute: typeof dashboardInvoicesIdRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/customers/$id': {
+      id: '/(dashboard)/customers/$id'
+      path: '/customers/$id'
+      fullPath: '/customers/$id'
+      preLoaderRoute: typeof dashboardCustomersIdRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/credit-notes/$id': {
+      id: '/(dashboard)/credit-notes/$id'
+      path: '/credit-notes/$id'
+      fullPath: '/credit-notes/$id'
+      preLoaderRoute: typeof dashboardCreditNotesIdRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/settings/integrations/': {
+      id: '/(dashboard)/settings/integrations/'
+      path: '/integrations'
+      fullPath: '/settings/integrations'
+      preLoaderRoute: typeof dashboardSettingsIntegrationsIndexRouteImport
+      parentRoute: typeof dashboardSettingsRouteRoute
+    }
+    '/(dashboard)/settings/integrations/stripe': {
+      id: '/(dashboard)/settings/integrations/stripe'
+      path: '/integrations/stripe'
+      fullPath: '/settings/integrations/stripe'
+      preLoaderRoute: typeof dashboardSettingsIntegrationsStripeRouteImport
+      parentRoute: typeof dashboardSettingsRouteRoute
+    }
+    '/(dashboard)/quotes/$id_/edit': {
+      id: '/(dashboard)/quotes/$id_/edit'
+      path: '/quotes/$id/edit'
+      fullPath: '/quotes/$id/edit'
+      preLoaderRoute: typeof dashboardQuotesIdEditRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/invoices/$id_/edit': {
+      id: '/(dashboard)/invoices/$id_/edit'
+      path: '/invoices/$id/edit'
+      fullPath: '/invoices/$id/edit'
+      preLoaderRoute: typeof dashboardInvoicesIdEditRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/customers/$id_/edit': {
+      id: '/(dashboard)/customers/$id_/edit'
+      path: '/customers/$id/edit'
+      fullPath: '/customers/$id/edit'
+      preLoaderRoute: typeof dashboardCustomersIdEditRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/credit-notes/$id_/edit': {
+      id: '/(dashboard)/credit-notes/$id_/edit'
+      path: '/credit-notes/$id/edit'
+      fullPath: '/credit-notes/$id/edit'
+      preLoaderRoute: typeof dashboardCreditNotesIdEditRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
   }
 }
 
 interface dashboardSettingsRouteRouteChildren {
-  dashboardSettingsAccountRoute: typeof dashboardSettingsAccountRoute;
-  dashboardSettingsBillingRoute: typeof dashboardSettingsBillingRoute;
-  dashboardSettingsProfileRoute: typeof dashboardSettingsProfileRoute;
-  dashboardSettingsIndexRoute: typeof dashboardSettingsIndexRoute;
-  dashboardSettingsIntegrationsStripeRoute: typeof dashboardSettingsIntegrationsStripeRoute;
-  dashboardSettingsIntegrationsIndexRoute: typeof dashboardSettingsIntegrationsIndexRoute;
+  dashboardSettingsAccountRoute: typeof dashboardSettingsAccountRoute
+  dashboardSettingsBillingRoute: typeof dashboardSettingsBillingRoute
+  dashboardSettingsProfileRoute: typeof dashboardSettingsProfileRoute
+  dashboardSettingsIndexRoute: typeof dashboardSettingsIndexRoute
+  dashboardSettingsIntegrationsStripeRoute: typeof dashboardSettingsIntegrationsStripeRoute
+  dashboardSettingsIntegrationsIndexRoute: typeof dashboardSettingsIntegrationsIndexRoute
 }
 
 const dashboardSettingsRouteRouteChildren: dashboardSettingsRouteRouteChildren =
@@ -757,34 +757,34 @@ const dashboardSettingsRouteRouteChildren: dashboardSettingsRouteRouteChildren =
       dashboardSettingsIntegrationsStripeRoute,
     dashboardSettingsIntegrationsIndexRoute:
       dashboardSettingsIntegrationsIndexRoute,
-  };
+  }
 
 const dashboardSettingsRouteRouteWithChildren =
   dashboardSettingsRouteRoute._addFileChildren(
     dashboardSettingsRouteRouteChildren,
-  );
+  )
 
 interface dashboardRouteRouteChildren {
-  dashboardSettingsRouteRoute: typeof dashboardSettingsRouteRouteWithChildren;
-  dashboardOnboardingRoute: typeof dashboardOnboardingRoute;
-  dashboardOverviewRoute: typeof dashboardOverviewRoute;
-  dashboardCreditNotesIdRoute: typeof dashboardCreditNotesIdRoute;
-  dashboardCustomersIdRoute: typeof dashboardCustomersIdRoute;
-  dashboardInvoicesIdRoute: typeof dashboardInvoicesIdRoute;
-  dashboardProductsIdRoute: typeof dashboardProductsIdRoute;
-  dashboardQuotesIdRoute: typeof dashboardQuotesIdRoute;
-  dashboardCouponsIndexRoute: typeof dashboardCouponsIndexRoute;
-  dashboardCreditNotesIndexRoute: typeof dashboardCreditNotesIndexRoute;
-  dashboardCustomersIndexRoute: typeof dashboardCustomersIndexRoute;
-  dashboardInvoicesIndexRoute: typeof dashboardInvoicesIndexRoute;
-  dashboardProductsIndexRoute: typeof dashboardProductsIndexRoute;
-  dashboardQuotesIndexRoute: typeof dashboardQuotesIndexRoute;
-  dashboardShippingRatesIndexRoute: typeof dashboardShippingRatesIndexRoute;
-  dashboardTaxRatesIndexRoute: typeof dashboardTaxRatesIndexRoute;
-  dashboardCreditNotesIdEditRoute: typeof dashboardCreditNotesIdEditRoute;
-  dashboardCustomersIdEditRoute: typeof dashboardCustomersIdEditRoute;
-  dashboardInvoicesIdEditRoute: typeof dashboardInvoicesIdEditRoute;
-  dashboardQuotesIdEditRoute: typeof dashboardQuotesIdEditRoute;
+  dashboardSettingsRouteRoute: typeof dashboardSettingsRouteRouteWithChildren
+  dashboardOnboardingRoute: typeof dashboardOnboardingRoute
+  dashboardOverviewRoute: typeof dashboardOverviewRoute
+  dashboardCreditNotesIdRoute: typeof dashboardCreditNotesIdRoute
+  dashboardCustomersIdRoute: typeof dashboardCustomersIdRoute
+  dashboardInvoicesIdRoute: typeof dashboardInvoicesIdRoute
+  dashboardProductsIdRoute: typeof dashboardProductsIdRoute
+  dashboardQuotesIdRoute: typeof dashboardQuotesIdRoute
+  dashboardCouponsIndexRoute: typeof dashboardCouponsIndexRoute
+  dashboardCreditNotesIndexRoute: typeof dashboardCreditNotesIndexRoute
+  dashboardCustomersIndexRoute: typeof dashboardCustomersIndexRoute
+  dashboardInvoicesIndexRoute: typeof dashboardInvoicesIndexRoute
+  dashboardProductsIndexRoute: typeof dashboardProductsIndexRoute
+  dashboardQuotesIndexRoute: typeof dashboardQuotesIndexRoute
+  dashboardShippingRatesIndexRoute: typeof dashboardShippingRatesIndexRoute
+  dashboardTaxRatesIndexRoute: typeof dashboardTaxRatesIndexRoute
+  dashboardCreditNotesIdEditRoute: typeof dashboardCreditNotesIdEditRoute
+  dashboardCustomersIdEditRoute: typeof dashboardCustomersIdEditRoute
+  dashboardInvoicesIdEditRoute: typeof dashboardInvoicesIdEditRoute
+  dashboardQuotesIdEditRoute: typeof dashboardQuotesIdEditRoute
 }
 
 const dashboardRouteRouteChildren: dashboardRouteRouteChildren = {
@@ -808,18 +808,18 @@ const dashboardRouteRouteChildren: dashboardRouteRouteChildren = {
   dashboardCustomersIdEditRoute: dashboardCustomersIdEditRoute,
   dashboardInvoicesIdEditRoute: dashboardInvoicesIdEditRoute,
   dashboardQuotesIdEditRoute: dashboardQuotesIdEditRoute,
-};
+}
 
 const dashboardRouteRouteWithChildren = dashboardRouteRoute._addFileChildren(
   dashboardRouteRouteChildren,
-);
+)
 
 interface publicRouteRouteChildren {
-  publicLoginRoute: typeof publicLoginRoute;
-  publicRecoveryRoute: typeof publicRecoveryRoute;
-  publicSignupRoute: typeof publicSignupRoute;
-  publicVerificationRoute: typeof publicVerificationRoute;
-  publicRecoveryKeyRoute: typeof publicRecoveryKeyRoute;
+  publicLoginRoute: typeof publicLoginRoute
+  publicRecoveryRoute: typeof publicRecoveryRoute
+  publicSignupRoute: typeof publicSignupRoute
+  publicVerificationRoute: typeof publicVerificationRoute
+  publicRecoveryKeyRoute: typeof publicRecoveryKeyRoute
 }
 
 const publicRouteRouteChildren: publicRouteRouteChildren = {
@@ -828,23 +828,23 @@ const publicRouteRouteChildren: publicRouteRouteChildren = {
   publicSignupRoute: publicSignupRoute,
   publicVerificationRoute: publicVerificationRoute,
   publicRecoveryKeyRoute: publicRecoveryKeyRoute,
-};
+}
 
 const publicRouteRouteWithChildren = publicRouteRoute._addFileChildren(
   publicRouteRouteChildren,
-);
+)
 
 interface SetupRouteRouteChildren {
-  SetupIndexRoute: typeof SetupIndexRoute;
+  SetupIndexRoute: typeof SetupIndexRoute
 }
 
 const SetupRouteRouteChildren: SetupRouteRouteChildren = {
   SetupIndexRoute: SetupIndexRoute,
-};
+}
 
 const SetupRouteRouteWithChildren = SetupRouteRoute._addFileChildren(
   SetupRouteRouteChildren,
-);
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -852,7 +852,7 @@ const rootRouteChildren: RootRouteChildren = {
   publicRouteRoute: publicRouteRouteWithChildren,
   SetupRouteRoute: SetupRouteRouteWithChildren,
   CustomerPortalTokenRoute: CustomerPortalTokenRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()

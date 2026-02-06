@@ -2,6 +2,7 @@ import {
   useGetGrossRevenue,
   useGetOverdueBalance,
 } from "@/api/endpoints/analytics/analytics";
+import { useBillingProfilesList } from "@/api/endpoints/billing-profiles/billing-profiles";
 import {
   getCustomersListQueryKey,
   getCustomersRetrieveQueryKey,
@@ -14,6 +15,7 @@ import {
 } from "@/api/endpoints/invoices/invoices";
 import { useNumberingSystemsRetrieve } from "@/api/endpoints/numbering-systems/numbering-systems";
 import { useCreatePortalSession } from "@/api/endpoints/portal/portal";
+import { useShippingProfilesList } from "@/api/endpoints/shipping-profiles/shipping-profiles";
 import { AddressView } from "@/components/address-view";
 import {
   AppHeader,
@@ -26,6 +28,7 @@ import { NavBreadcrumb } from "@/components/nav-breadcrumb";
 import { pushModal } from "@/components/push-modals.tsx";
 import { SearchCommand } from "@/components/search-command.tsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -83,7 +86,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { BillingProfileDropdown } from "@/features/customers/components/billing-profile-dropdown";
 import { CustomerDropdown } from "@/features/customers/components/customer-dropdown";
+import { ShippingProfileDropdown } from "@/features/customers/components/shipping-profile-dropdown";
 import { columns } from "@/features/invoices/tables/columns";
 import { NumberingSystemView } from "@/features/settings/components/numbering-system-view";
 import { useDataTable } from "@/hooks/use-data-table";
@@ -140,6 +145,24 @@ function RouteComponent() {
     customer_id: id,
     ordering: "-created_at",
   });
+  const { data: billingProfilesData } = useBillingProfilesList(
+    {
+      customer_id: id,
+      ordering: "-created_at",
+      page_size: 20,
+    },
+    { query: { enabled: !!customer } },
+  );
+  const { data: shippingProfilesData } = useShippingProfilesList(
+    {
+      customer_id: id,
+      ordering: "-created_at",
+      page_size: 20,
+    },
+    { query: { enabled: !!customer } },
+  );
+  const billingProfiles = billingProfilesData?.results ?? [];
+  const shippingProfiles = shippingProfilesData?.results ?? [];
   const { table } = useDataTable({
     data: invoices?.results || [],
     columns,
@@ -197,6 +220,13 @@ function RouteComponent() {
   });
 
   if (!customer) return;
+
+  const defaultBillingProfileId = customer.default_billing_profile?.id ?? null;
+  const defaultShippingProfileId =
+    customer.default_shipping_profile?.id ?? null;
+  const defaultBillingProfile = customer.default_billing_profile;
+  const defaultBillingTaxRates = defaultBillingProfile?.tax_rates ?? [];
+  const defaultBillingTaxIds = defaultBillingProfile?.tax_ids ?? [];
 
   return (
     <SidebarProvider>
@@ -474,9 +504,171 @@ function RouteComponent() {
               </Section>
               <Section>
                 <SectionHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <SectionTitle>Billing profiles</SectionTitle>
+                      <SectionDescription>
+                        Billing profiles associated with {customer.name}
+                      </SectionDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-fit"
+                      onClick={() =>
+                        pushModal("BillingProfileCreateSheet", {
+                          customerId: customer.id,
+                        })
+                      }
+                    >
+                      <PlusIcon />
+                      Add profile
+                    </Button>
+                  </div>
+                </SectionHeader>
+                {billingProfiles.length > 0 ? (
+                  <div className="overflow-hidden rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>
+                            <span className="sr-only">Actions</span>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {billingProfiles.map((profile) => (
+                          <TableRow key={profile.id}>
+                            <TableCell className="space-x-2 font-medium">
+                              <span>{profile.legal_name || "Untitled"}</span>
+                              {profile.id === defaultBillingProfileId && (
+                                <Badge>Default</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>{profile.email || "-"}</TableCell>
+                            <TableCell>{profile.phone || "-"}</TableCell>
+                            <TableCell className="text-right">
+                              <BillingProfileDropdown
+                                profile={profile}
+                                customerId={customer.id}
+                                defaultProfileId={defaultBillingProfileId}
+                              >
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="data-[state=open]:bg-accent size-7"
+                                >
+                                  <MoreHorizontalIcon />
+                                </Button>
+                              </BillingProfileDropdown>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <Empty className="border">
+                    <EmptyHeader>
+                      <EmptyTitle>No billing profiles</EmptyTitle>
+                      <EmptyDescription>
+                        Add a billing profile to store customer billing details.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                )}
+              </Section>
+              <Section>
+                <SectionHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <SectionTitle>Shipping profiles</SectionTitle>
+                      <SectionDescription>
+                        Shipping profiles associated with {customer.name}
+                      </SectionDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-fit"
+                      onClick={() =>
+                        pushModal("ShippingProfileCreateSheet", {
+                          customerId: customer.id,
+                        })
+                      }
+                    >
+                      <PlusIcon />
+                      Add profile
+                    </Button>
+                  </div>
+                </SectionHeader>
+                {shippingProfiles.length > 0 ? (
+                  <div className="overflow-hidden rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Address</TableHead>
+                          <TableHead>
+                            <span className="sr-only">Actions</span>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {shippingProfiles.map((profile) => (
+                          <TableRow key={profile.id}>
+                            <TableCell className="space-x-2 font-medium">
+                              <span>{profile.name || "Untitled"}</span>
+                              {profile.id === defaultShippingProfileId && (
+                                <Badge>Default</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>{profile.phone || "-"}</TableCell>
+                            <TableCell>
+                              <AddressView address={profile.address} />
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <ShippingProfileDropdown
+                                profile={profile}
+                                customerId={customer.id}
+                                defaultProfileId={defaultShippingProfileId}
+                              >
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="data-[state=open]:bg-accent size-7"
+                                >
+                                  <MoreHorizontalIcon />
+                                </Button>
+                              </ShippingProfileDropdown>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <Empty className="border">
+                    <EmptyHeader>
+                      <EmptyTitle>No shipping profiles</EmptyTitle>
+                      <EmptyDescription>
+                        Add a shipping profile for delivery contacts.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                )}
+              </Section>
+              <Section>
+                <SectionHeader>
                   <SectionTitle>Tax rates</SectionTitle>
                 </SectionHeader>
-                {customer.tax_rates.length !== 0 ? (
+                {defaultBillingTaxRates.length !== 0 ? (
                   <div className="overflow-hidden rounded-md border">
                     <Table>
                       <TableHeader>
@@ -487,7 +679,7 @@ function RouteComponent() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {customer.tax_rates.map((taxRate) => (
+                        {defaultBillingTaxRates.map((taxRate) => (
                           <TableRow key={taxRate.id}>
                             <TableCell className="font-medium">
                               {taxRate.name}
@@ -521,7 +713,7 @@ function RouteComponent() {
                 <SectionHeader>
                   <SectionTitle>Tax IDs</SectionTitle>
                 </SectionHeader>
-                {customer.tax_ids.length !== 0 ? (
+                {defaultBillingTaxIds.length !== 0 ? (
                   <div className="overflow-hidden rounded-md border">
                     <Table>
                       <TableHeader>
@@ -532,7 +724,7 @@ function RouteComponent() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {customer.tax_ids.map((taxId) => (
+                        {defaultBillingTaxIds.map((taxId) => (
                           <TableRow key={taxId.id}>
                             <TableCell className="font-medium">
                               {formatTaxIdType(taxId.type)}

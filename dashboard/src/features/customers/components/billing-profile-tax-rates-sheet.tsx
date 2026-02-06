@@ -1,9 +1,9 @@
 import {
   getBillingProfilesListQueryKey,
+  useBillingProfilesRetrieve,
   useUpdateBillingProfile,
 } from "@/api/endpoints/billing-profiles/billing-profiles";
-import { getCustomersRetrieveQueryKey } from "@/api/endpoints/customers/customers";
-import { TaxRatesListStatus, type Customer } from "@/api/models";
+import { popModal } from "@/components/push-modals";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -12,13 +12,13 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty.tsx";
 import {
-  FormCard,
-  FormCardContent,
-  FormCardDescription,
-  FormCardFooter,
-  FormCardHeader,
-  FormCardTitle,
-} from "@/components/ui/form-card";
+  FormSheetContent,
+  FormSheetDescription,
+  FormSheetFooter,
+  FormSheetHeader,
+  FormSheetTitle,
+} from "@/components/ui/form-sheet";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -32,22 +32,22 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { MAX_CUSTOMER_TAX_RATES } from "@/config/customers";
-import { TaxRateCombobox } from "@/features/tax-rates/components/tax-rate-combobox.tsx";
+import { MAX_CUSTOMER_TAX_RATES } from "@/config/customers.ts";
+import { TaxRateCombobox } from "@/features/tax-rates/components/tax-rate-combobox";
 import { getErrorSummary } from "@/lib/api/errors";
-import { formatCountry, formatPercentage } from "@/lib/formatters";
+import { formatPercentage } from "@/lib/formatters";
 import { useQueryClient } from "@tanstack/react-query";
 import { XIcon } from "lucide-react";
-import React from "react";
 import { toast } from "sonner";
 
-export function CustomerTaxRatesCard({
-  customer,
-  ...props
-}: React.ComponentProps<typeof FormCard> & { customer: Customer }) {
+export function BillingProfileTaxRatesSheet({
+  billingProfileId,
+}: {
+  billingProfileId: string;
+}) {
   const queryClient = useQueryClient();
-  const defaultBillingProfile = customer.default_billing_profile;
-  const taxRates = defaultBillingProfile?.tax_rates ?? [];
+  const { data: profile } = useBillingProfilesRetrieve(billingProfileId);
+  const taxRates = profile?.tax_rates ?? [];
   const limitReached = taxRates.length >= MAX_CUSTOMER_TAX_RATES;
 
   const updateBillingProfile = useUpdateBillingProfile({
@@ -55,9 +55,6 @@ export function CustomerTaxRatesCard({
       onSuccess: async () => {
         await queryClient.invalidateQueries({
           queryKey: getBillingProfilesListQueryKey(),
-        });
-        await queryClient.invalidateQueries({
-          queryKey: getCustomersRetrieveQueryKey(customer.id),
         });
         toast.success("Billing profile updated");
       },
@@ -67,34 +64,38 @@ export function CustomerTaxRatesCard({
       },
     },
   });
-  const isPending = updateBillingProfile.isPending;
+
+  if (!profile) {
+    return (
+      <FormSheetContent>
+        <FormSheetHeader>
+          <FormSheetTitle>Tax rates</FormSheetTitle>
+          <FormSheetDescription>
+            Loading billing profile details.
+          </FormSheetDescription>
+        </FormSheetHeader>
+        <div className="flex justify-center py-8">
+          <Spinner />
+        </div>
+      </FormSheetContent>
+    );
+  }
 
   return (
-    <FormCard {...props}>
-      <FormCardHeader>
-        <FormCardTitle>Tax rates</FormCardTitle>
-        <FormCardDescription>
-          Manage default tax rates applied to this customer.
-        </FormCardDescription>
-      </FormCardHeader>
-      <FormCardContent>
-        {!defaultBillingProfile && (
-          <Empty className="border border-dashed">
-            <EmptyHeader>
-              <EmptyTitle>No default billing profile</EmptyTitle>
-              <EmptyDescription>
-                Set a default billing profile to manage tax rates.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-        {defaultBillingProfile && taxRates.length > 0 ? (
+    <FormSheetContent>
+      <FormSheetHeader>
+        <FormSheetTitle>Tax rates</FormSheetTitle>
+        <FormSheetDescription>
+          Manage tax rates for {profile.legal_name || "this billing profile"}.
+        </FormSheetDescription>
+      </FormSheetHeader>
+      {taxRates.length > 0 ? (
+        <div className="overflow-hidden rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Percentage</TableHead>
-                <TableHead>Country</TableHead>
                 <TableHead>
                   <span className="sr-only">Remove</span>
                 </TableHead>
@@ -105,18 +106,14 @@ export function CustomerTaxRatesCard({
                 <TableRow key={taxRate.id}>
                   <TableCell className="font-medium">{taxRate.name}</TableCell>
                   <TableCell>{formatPercentage(taxRate.percentage)}</TableCell>
-                  <TableCell>
-                    {taxRate.country ? formatCountry(taxRate.country) : "-"}
-                  </TableCell>
                   <TableCell className="flex justify-end">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        defaultBillingProfile &&
                         updateBillingProfile.mutateAsync({
-                          id: defaultBillingProfile.id,
+                          id: profile.id,
                           data: {
                             tax_rates: taxRates
                               .filter((rate) => rate.id !== taxRate.id)
@@ -124,7 +121,7 @@ export function CustomerTaxRatesCard({
                           },
                         })
                       }
-                      disabled={isPending}
+                      disabled={updateBillingProfile.isPending}
                     >
                       <XIcon />
                     </Button>
@@ -133,28 +130,30 @@ export function CustomerTaxRatesCard({
               ))}
             </TableBody>
           </Table>
-        ) : defaultBillingProfile ? (
-          <Empty className="border border-dashed">
-            <EmptyHeader>
-              <EmptyTitle>No tax rates assigned</EmptyTitle>
-              <EmptyDescription>
-                Assigned tax rates will be applied to invoices by default
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        ) : null}
-      </FormCardContent>
-      <FormCardFooter>
+        </div>
+      ) : (
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyTitle>No tax rates assigned</EmptyTitle>
+            <EmptyDescription>
+              Assign tax rates to apply them by default to invoices.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )}
+      <FormSheetFooter className="justify-between">
+        <Button type="button" variant="ghost" onClick={() => popModal()}>
+          Close
+        </Button>
         <Tooltip>
           <TooltipTrigger asChild>
             <span>
               <TaxRateCombobox
                 align="end"
-                status={TaxRatesListStatus.active}
                 onSelect={async (taxRate) => {
-                  if (!taxRate || !defaultBillingProfile) return;
+                  if (!taxRate) return;
                   await updateBillingProfile.mutateAsync({
-                    id: defaultBillingProfile.id,
+                    id: profile.id,
                     data: {
                       tax_rates: [
                         ...taxRates.map((rate) => rate.id),
@@ -166,7 +165,7 @@ export function CustomerTaxRatesCard({
               >
                 <Button
                   type="button"
-                  disabled={isPending || limitReached || !defaultBillingProfile}
+                  disabled={updateBillingProfile.isPending || limitReached}
                 >
                   Assign
                 </Button>
@@ -175,11 +174,11 @@ export function CustomerTaxRatesCard({
           </TooltipTrigger>
           {limitReached && (
             <TooltipContent>
-              You can assign at most {MAX_CUSTOMER_TAX_RATES} tax rates.
+              You can add at most {MAX_CUSTOMER_TAX_RATES} tax rates.
             </TooltipContent>
           )}
         </Tooltip>
-      </FormCardFooter>
-    </FormCard>
+      </FormSheetFooter>
+    </FormSheetContent>
   );
 }

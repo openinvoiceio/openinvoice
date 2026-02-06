@@ -1,8 +1,8 @@
 import {
-  getCustomersListQueryKey,
-  getCustomersRetrieveQueryKey,
-  useCreateCustomerTaxId,
-} from "@/api/endpoints/customers/customers";
+  getBillingProfilesListQueryKey,
+  useCreateBillingProfileTaxId,
+} from "@/api/endpoints/billing-profiles/billing-profiles";
+import { getCustomersRetrieveQueryKey } from "@/api/endpoints/customers/customers";
 import { CountryEnum, type TaxId } from "@/api/models";
 import { CountryCombobox } from "@/components/country-combobox.tsx";
 import { popModal } from "@/components/push-modals";
@@ -52,9 +52,11 @@ export type TaxIdFormValues = z.infer<typeof schema>;
 
 export function CustomerTaxIdCreateSheet({
   customerId,
+  billingProfileId,
   onSuccess,
 }: {
   customerId: string;
+  billingProfileId: string;
   onSuccess?: (taxId: TaxId) => void;
 }) {
   const formId = useId();
@@ -70,11 +72,11 @@ export function CustomerTaxIdCreateSheet({
 
   const selectedType = form.watch("type");
 
-  const { isPending, mutateAsync } = useCreateCustomerTaxId({
+  const { isPending, mutateAsync } = useCreateBillingProfileTaxId({
     mutation: {
       onSuccess: async (taxId) => {
         await queryClient.invalidateQueries({
-          queryKey: getCustomersListQueryKey(),
+          queryKey: getBillingProfilesListQueryKey(),
         });
         await queryClient.invalidateQueries({
           queryKey: getCustomersRetrieveQueryKey(customerId),
@@ -93,7 +95,7 @@ export function CustomerTaxIdCreateSheet({
   async function onSubmit(values: TaxIdFormValues) {
     if (isPending) return;
     await mutateAsync({
-      id: customerId,
+      id: billingProfileId,
       data: {
         type: values.type,
         number: values.number,

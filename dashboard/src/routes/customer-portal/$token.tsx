@@ -116,15 +116,17 @@ function RouteComponent() {
                     <DataListValue>{customer.legal_number}</DataListValue>
                   </DataListItem>
                 )}
-                {customer.tax_ids?.length > 0 && (
+                {customer.default_billing_profile?.tax_ids?.length > 0 && (
                   <DataListItem>
                     <DataListLabel>Tax IDs</DataListLabel>
                     <DataListValue>
-                      {customer.tax_ids?.map((taxId) => (
-                        <div key={taxId.id}>
-                          {formatTaxIdType(taxId.type)} {taxId.number}
-                        </div>
-                      ))}
+                      {customer.default_billing_profile?.tax_ids?.map(
+                        (taxId) => (
+                          <div key={taxId.id}>
+                            {formatTaxIdType(taxId.type)} {taxId.number}
+                          </div>
+                        ),
+                      )}
                     </DataListValue>
                   </DataListItem>
                 )}

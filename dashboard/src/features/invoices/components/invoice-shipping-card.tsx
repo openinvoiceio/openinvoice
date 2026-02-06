@@ -33,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { MAX_TAXES } from "@/config/invoices";
+import { ShippingProfileCombobox } from "@/features/customers/components/shipping-profile-combobox";
 import { ShippingRateCombobox } from "@/features/shipping-rates/components/shipping-rate-combobox";
 import { TaxRateCombobox } from "@/features/tax-rates/components/tax-rate-combobox";
 import { getErrorSummary } from "@/lib/api/errors";
@@ -43,8 +44,11 @@ import { toast } from "sonner";
 
 export function InvoiceShippingCard({ invoice }: { invoice: Invoice }) {
   const queryClient = useQueryClient();
+  const customerId = (invoice as { customer_id?: string }).customer_id;
   const shippingRateId = invoice.shipping?.shipping_rate_id;
   const taxRates = invoice.shipping?.tax_rates ?? [];
+  const shippingProfile = invoice.shipping?.profile ?? null;
+  const shippingProfileId = shippingProfile?.id ?? null;
   const limitReached = taxRates.length >= MAX_TAXES;
 
   const { data: shippingRate } = useShippingRatesRetrieve(
@@ -84,43 +88,77 @@ export function InvoiceShippingCard({ invoice }: { invoice: Invoice }) {
         <>
           <FormCardContent>
             <div className="grid gap-3">
-              <div className="grid gap-2">
-                <div className="text-sm font-medium">Shipping rate</div>
-                <ShippingRateCombobox
-                  selected={shippingRate}
-                  align="start"
-                  status={ShippingRatesListStatus.active}
-                  onSelect={async (selected) => {
-                    if (!selected) return;
-                    await updateInvoice.mutateAsync({
-                      id: invoice.id,
-                      data: {
-                        shipping: {
-                          shipping_rate_id: selected.id,
-                          tax_rates: taxRates.map((rate) => rate.id),
+              <div className="grid gap-2 md:grid-cols-2">
+                <div className="grid gap-2">
+                  <div className="text-sm font-medium">Shipping profile</div>
+                  <ShippingProfileCombobox
+                    customerId={customerId}
+                    selected={shippingProfile}
+                    align="start"
+                    onSelect={async (selected) => {
+                      if (!selected || !shippingRateId || !customerId) return;
+                      await updateInvoice.mutateAsync({
+                        id: invoice.id,
+                        data: {
+                          shipping: {
+                            shipping_rate_id: shippingRateId,
+                            shipping_profile_id: selected.id,
+                            tax_rates: taxRates.map((rate) => rate.id),
+                          },
                         },
-                      },
-                    });
-                  }}
-                >
-                  <ComboboxButton>
-                    {shippingRate ? (
-                      <div className="flex items-center gap-2">
-                        <span>
-                          {formatAmount(
-                            invoice.shipping_amount,
-                            invoice.currency,
-                          )}
-                        </span>
+                      });
+                    }}
+                  >
+                    <ComboboxButton>
+                      {shippingProfile ? (
+                        <span>{shippingProfile.name || "Untitled"}</span>
+                      ) : (
                         <span className="text-muted-foreground">
-                          {shippingRate.name}
+                          Select shipping profile
                         </span>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </ComboboxButton>
-                </ShippingRateCombobox>
+                      )}
+                    </ComboboxButton>
+                  </ShippingProfileCombobox>
+                </div>
+                <div className="grid gap-2">
+                  <div className="text-sm font-medium">Shipping rate</div>
+                  <ShippingRateCombobox
+                    selected={shippingRate}
+                    align="start"
+                    status={ShippingRatesListStatus.active}
+                    onSelect={async (selected) => {
+                      if (!selected) return;
+                      await updateInvoice.mutateAsync({
+                        id: invoice.id,
+                        data: {
+                          shipping: {
+                            shipping_rate_id: selected.id,
+                            shipping_profile_id: shippingProfileId,
+                            tax_rates: taxRates.map((rate) => rate.id),
+                          },
+                        },
+                      });
+                    }}
+                  >
+                    <ComboboxButton>
+                      {shippingRate ? (
+                        <div className="flex items-center gap-2">
+                          <span>
+                            {formatAmount(
+                              invoice.shipping_amount,
+                              invoice.currency,
+                            )}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {shippingRate.name}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </ComboboxButton>
+                  </ShippingRateCombobox>
+                </div>
               </div>
               <div className="grid gap-2">
                 {taxRates.length > 0 && (
@@ -147,6 +185,7 @@ export function InvoiceShippingCard({ invoice }: { invoice: Invoice }) {
                           data: {
                             shipping: {
                               shipping_rate_id: shippingRateId,
+                              shipping_profile_id: shippingProfileId,
                               tax_rates: taxRates
                                 .filter((rate) => rate.id !== taxRate.id)
                                 .map((rate) => rate.id),
@@ -172,6 +211,7 @@ export function InvoiceShippingCard({ invoice }: { invoice: Invoice }) {
                             data: {
                               shipping: {
                                 shipping_rate_id: shippingRateId,
+                                shipping_profile_id: shippingProfileId,
                                 tax_rates: [
                                   ...taxRates.map((rate) => rate.id),
                                   selected.id,

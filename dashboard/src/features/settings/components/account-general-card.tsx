@@ -40,8 +40,6 @@ import { z } from "zod";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
-  legal_name: z.string().optional(),
-  legal_number: z.string().optional(),
   email: z.email("Invalid email address"),
   country: z.string().min(1).max(2),
   logo: z
@@ -59,8 +57,6 @@ export function AccountGeneralCard({ account }: { account: Account }) {
     resolver: zodResolver(schema),
     defaultValues: {
       name: account.name,
-      legal_name: account.legal_name || "",
-      legal_number: account.legal_number || "",
       email: account.email,
       country: account.country,
     },
@@ -109,11 +105,9 @@ export function AccountGeneralCard({ account }: { account: Account }) {
       id: account.id,
       data: {
         name: values.name,
-        legal_name: values.legal_name || null,
-        legal_number: values.legal_number || null,
         email: values.email,
         country: values.country as CountryEnum,
-        logo_id: logoId,
+        ...(logoId && { logo_id: logoId }),
       },
     });
   }
@@ -141,38 +135,6 @@ export function AccountGeneralCard({ account }: { account: Account }) {
                   <FormMessage />
                   <FormDescription>
                     Display name of your company
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="legal_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Legal name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Acme Corporation LLC" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    Registered legal name of your company
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="legal_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Legal number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Business ID" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    Government-issued registration number
                   </FormDescription>
                 </FormItem>
               )}

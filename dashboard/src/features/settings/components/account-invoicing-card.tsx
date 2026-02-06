@@ -6,10 +6,12 @@ import {
 import { useNumberingSystemsRetrieve } from "@/api/endpoints/numbering-systems/numbering-systems";
 import {
   CurrencyEnum,
+  LanguageEnum,
   NumberingSystemAppliesToEnum,
   type Account,
 } from "@/api/models";
 import { CurrencyCombobox } from "@/components/currency-combobox.tsx";
+import { LanguageCombobox } from "@/components/language-combobox";
 import { Button } from "@/components/ui/button";
 import { ComboboxButton } from "@/components/ui/combobox-button.tsx";
 import {
@@ -43,6 +45,7 @@ import z from "zod";
 
 const schema = z.object({
   defaultCurrency: z.enum(CurrencyEnum),
+  language: z.enum(LanguageEnum),
   invoiceFooter: z.string().max(500).optional(),
   invoiceNumberingSystemId: z.string().uuid().nullable(),
   creditNoteNumberingSystemId: z.string().uuid().nullable(),
@@ -61,6 +64,7 @@ export function AccountInvoicingCard({ account }: { account: Account }) {
     resolver: zodResolver(schema),
     defaultValues: {
       defaultCurrency: account.default_currency,
+      language: account.language,
       invoiceFooter: account.invoice_footer || "",
       invoiceNumberingSystemId: account.invoice_numbering_system_id || null,
       creditNoteNumberingSystemId:
@@ -102,6 +106,7 @@ export function AccountInvoicingCard({ account }: { account: Account }) {
       id: account.id,
       data: {
         default_currency: values.defaultCurrency,
+        language: values.language,
         invoice_footer: values.invoiceFooter || null,
         invoice_numbering_system_id: values.invoiceNumberingSystemId || null,
         credit_note_numbering_system_id:
@@ -149,6 +154,35 @@ export function AccountInvoicingCard({ account }: { account: Account }) {
                   <FormDescription>
                     The default currency for your invoices. This will be used
                     for all operations unless specified otherwise.
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="language"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Language</FormLabel>
+                  <FormControl>
+                    <LanguageCombobox
+                      selected={field.value}
+                      onSelect={async (value) => field.onChange(value ?? "")}
+                    >
+                      <ComboboxButton>
+                        {field.value ? (
+                          <span>{field.value}</span>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            Select language
+                          </span>
+                        )}
+                      </ComboboxButton>
+                    </LanguageCombobox>
+                  </FormControl>
+                  <FormMessage />
+                  <FormDescription>
+                    Default language used when generating invoices.
                   </FormDescription>
                 </FormItem>
               )}

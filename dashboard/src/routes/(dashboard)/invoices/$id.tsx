@@ -216,6 +216,7 @@ function RouteComponent() {
   });
 
   if (!invoice) return null;
+  const customerId = (invoice as { customer_id?: string }).customer_id;
 
   const hasLineTaxes = invoice.lines.some((line) => line.taxes.length > 0);
   const summaryColSpan = hasLineTaxes ? 4 : 3;
@@ -296,14 +297,17 @@ function RouteComponent() {
                   </div>
                   <SectionDescription>
                     <span>Billed to </span>
-                    <Link
-                      to="/customers/$id"
-                      params={{ id: invoice.customer.id }}
-                    >
-                      <span className="text-primary underline-offset-4 hover:underline">
-                        {invoice.customer.name}
+                    {customerId ? (
+                      <Link to="/customers/$id" params={{ id: customerId }}>
+                        <span className="text-primary underline-offset-4 hover:underline">
+                          {invoice.billing_profile.legal_name || "Customer"}
+                        </span>
+                      </Link>
+                    ) : (
+                      <span>
+                        {invoice.billing_profile.legal_name || "Customer"}
                       </span>
-                    </Link>
+                    )}
                     <span> - </span>
                     <span>
                       {formatAmount(invoice.total_amount, invoice.currency)}
@@ -328,16 +332,24 @@ function RouteComponent() {
                         </Avatar>
                         <div className="flex flex-col self-start">
                           <div className="w-fit underline-offset-4 hover:underline">
-                            <Link
-                              to="/customers/$id"
-                              params={{ id: invoice.customer.id }}
-                            >
-                              {invoice.customer.name}
-                            </Link>
+                            {customerId ? (
+                              <Link
+                                to="/customers/$id"
+                                params={{ id: customerId }}
+                              >
+                                {invoice.billing_profile.legal_name ||
+                                  "Customer"}
+                              </Link>
+                            ) : (
+                              <span>
+                                {invoice.billing_profile.legal_name ||
+                                  "Customer"}
+                              </span>
+                            )}
                           </div>
-                          {invoice.customer.email && (
+                          {invoice.billing_profile.email && (
                             <span className="text-muted-foreground">
-                              {invoice.customer.email}
+                              {invoice.billing_profile.email}
                             </span>
                           )}
                         </div>
@@ -347,7 +359,9 @@ function RouteComponent() {
                     <DataListItem>
                       <DataListLabel>Billing address</DataListLabel>
                       <DataListValue>
-                        <AddressView address={invoice.customer.address} />
+                        <AddressView
+                          address={invoice.billing_profile.address}
+                        />
                       </DataListValue>
                     </DataListItem>
                     {invoice?.shipping && (

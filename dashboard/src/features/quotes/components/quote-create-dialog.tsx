@@ -148,7 +148,10 @@ export function QuoteCreateDialog({
     form.setValue("customer_id", customer.id);
     form.setValue("currency", customer.currency || account.default_currency);
     form.setValue("numbering_system_id", null);
-    form.setValue("tax_rate_id", customer.tax_rates[0]?.id || null);
+    form.setValue(
+      "tax_rate_id",
+      customer.default_billing_profile?.tax_rates?.[0]?.id || null,
+    );
     form.setValue(
       "net_payment_term",
       customer.net_payment_term !== null

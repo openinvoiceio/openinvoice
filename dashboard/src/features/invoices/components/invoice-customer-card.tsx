@@ -1,3 +1,4 @@
+import { useBillingProfilesRetrieve } from "@/api/endpoints/billing-profiles/billing-profiles";
 import { useCustomersRetrieve } from "@/api/endpoints/customers/customers";
 import {
   getInvoicesListQueryKey,
@@ -16,6 +17,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import {
@@ -25,6 +27,7 @@ import {
   FormCardHeader,
   FormCardTitle,
 } from "@/components/ui/form-card";
+import { BillingProfileCombobox } from "@/features/customers/components/billing-profile-combobox";
 import { CustomerCombobox } from "@/features/customers/components/customer-combobox.tsx";
 import { CustomerDropdown } from "@/features/customers/components/customer-dropdown";
 import { getErrorSummary } from "@/lib/api/errors";
@@ -36,7 +39,8 @@ import { toast } from "sonner";
 import z from "zod";
 
 const schema = z.object({
-  customer_id: z.uuid(),
+  customer_id: z.string().uuid().nullable().optional(),
+  billing_profile_id: z.string().uuid().nullable().optional(),
 });
 
 type FormValuesInput = z.input<typeof schema>;
@@ -44,14 +48,23 @@ type FormValuesOutput = z.output<typeof schema>;
 
 export function InvoiceCustomerCard({ invoice }: { invoice: Invoice }) {
   const queryClient = useQueryClient();
+  const invoiceCustomerId = (invoice as { customer_id?: string }).customer_id;
   const form = useForm<FormValuesInput, any, FormValuesOutput>({
     resolver: zodResolver(schema),
     defaultValues: {
-      customer_id: invoice.customer.id,
+      customer_id: invoiceCustomerId ?? null,
+      billing_profile_id: invoice.billing_profile?.id ?? null,
     },
   });
   const customerId = form.watch("customer_id");
-  const { data: customer } = useCustomersRetrieve(customerId);
+  const billingProfileId = form.watch("billing_profile_id");
+  const { data: customer } = useCustomersRetrieve(customerId || "", {
+    query: { enabled: !!customerId },
+  });
+  const { data: billingProfile } = useBillingProfilesRetrieve(
+    billingProfileId || "",
+    { query: { enabled: !!billingProfileId } },
+  );
   const isRevision = !!invoice.previous_revision_id;
 
   const { isPending, mutateAsync } = useUpdateInvoice({
@@ -80,7 +93,8 @@ export function InvoiceCustomerCard({ invoice }: { invoice: Invoice }) {
     await mutateAsync({
       id: invoice.id,
       data: {
-        customer_id: values.customer_id,
+        ...(values.customer_id ? { customer_id: values.customer_id } : {}),
+        billing_profile_id: values.billing_profile_id || undefined,
       },
     });
   }
@@ -103,6 +117,7 @@ export function InvoiceCustomerCard({ invoice }: { invoice: Invoice }) {
               name="customer_id"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel>Customer</FormLabel>
                   <FormControl>
                     <CustomerCombobox
                       selected={customer}
@@ -112,6 +127,7 @@ export function InvoiceCustomerCard({ invoice }: { invoice: Invoice }) {
                           : async (selected) => {
                               if (!selected) return;
                               field.onChange(selected.id);
+                              form.setValue("billing_profile_id", null);
                               await submit();
                             }
                       }
@@ -120,7 +136,9 @@ export function InvoiceCustomerCard({ invoice }: { invoice: Invoice }) {
                         <ComboboxButtonAvatar src={customer?.logo_url}>
                           <UserIcon />
                         </ComboboxButtonAvatar>
-                        <span>{customer?.name}</span>
+                        <span>
+                          {customer?.name || invoice.billing_profile.legal_name}
+                        </span>
                       </ComboboxButton>
                     </CustomerCombobox>
                   </FormControl>
@@ -135,6 +153,37 @@ export function InvoiceCustomerCard({ invoice }: { invoice: Invoice }) {
                 </Button>
               </CustomerDropdown>
             )}
+            <FormField
+              control={form.control}
+              name="billing_profile_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Billing profile</FormLabel>
+                  <FormControl>
+                    <BillingProfileCombobox
+                      customerId={customerId || undefined}
+                      selected={billingProfile ?? null}
+                      onSelect={async (selected) => {
+                        if (!selected) return;
+                        field.onChange(selected.id);
+                        await submit();
+                      }}
+                    >
+                      <ComboboxButton>
+                        {billingProfile ? (
+                          <span>{billingProfile.legal_name || "Untitled"}</span>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            Select billing profile
+                          </span>
+                        )}
+                      </ComboboxButton>
+                    </BillingProfileCombobox>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </FormCardContent>
         </FormCard>
       </form>

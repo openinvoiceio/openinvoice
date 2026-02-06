@@ -40,10 +40,6 @@ import { z } from "zod";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
-  legal_name: z.string().optional(),
-  legal_number: z.string().optional(),
-  email: z.email("Invalid email address").optional(),
-  phone: z.string().optional(),
   description: z.string().optional(),
   logo: z
     .file()
@@ -65,10 +61,6 @@ export function CustomerGeneralCard({
     resolver: zodResolver(schema),
     defaultValues: {
       name: customer.name,
-      legal_name: customer.legal_name || "",
-      legal_number: customer.legal_number || "",
-      email: customer.email || "",
-      phone: customer.phone || "",
       description: customer.description || "",
     },
   });
@@ -116,10 +108,6 @@ export function CustomerGeneralCard({
       id: customer.id,
       data: {
         name: values.name,
-        legal_name: values.legal_name || null,
-        legal_number: values.legal_number || null,
-        email: values.email || null,
-        phone: values.phone || null,
         description: values.description || null,
         ...(logoId && { logo_id: logoId }),
       },
@@ -155,39 +143,6 @@ export function CustomerGeneralCard({
               )}
             />
             <FormField
-              control={form.control}
-              name="legal_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Legal name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Acme Corporation LLC" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    Registered legal name of the customer
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="legal_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Legal number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Registration ID" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    Government-issued registration number of the customer
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="logo"
               render={({ field: { value, onChange, ...fieldProps } }) => (
                 <FormItem>
@@ -209,46 +164,6 @@ export function CustomerGeneralCard({
                         }
                       />
                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </FormCardContent>
-          <FormCardSeparator />
-          <FormCardContent>
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="name@example.com"
-                      type="email"
-                      autoCapitalize="none"
-                      autoComplete="email"
-                      autoCorrect="off"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    Primary email address for the customer. This will be used
-                    for communication and invoicing.
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+1234567890" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
