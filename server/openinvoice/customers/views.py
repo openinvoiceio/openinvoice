@@ -161,7 +161,7 @@ class BillingProfileListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return BillingProfile.objects.for_account(self.request.account)
+        return BillingProfile.objects.for_account(self.request.account).order_by("-created_at")
 
     @extend_schema(
         operation_id="create_billing_profile",
@@ -257,7 +257,7 @@ class ShippingProfileListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return ShippingProfile.objects.for_account(self.request.account)
+        return ShippingProfile.objects.for_account(self.request.account).order_by("-created_at")
 
     @extend_schema(
         operation_id="create_shipping_profile",

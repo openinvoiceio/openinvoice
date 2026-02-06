@@ -3,6 +3,8 @@ from unittest.mock import ANY
 
 import pytest
 
+from tests.factories import AccountFactory, BusinessProfileFactory
+
 pytestmark = pytest.mark.django_db
 
 
@@ -60,6 +62,72 @@ def test_update_account(api_client, user, account, account_logo):
         },
         "created_at": ANY,
         "updated_at": ANY,
+    }
+
+
+def test_update_account_default_business_profile(api_client, user, account):
+    profile = BusinessProfileFactory(legal_name="Secondary")
+    account.business_profiles.add(profile)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/accounts/{account.id}",
+        data={
+            "default_business_profile_id": str(profile.id),
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.data["default_business_profile"]["id"] == str(profile.id)
+    account.refresh_from_db()
+    assert account.default_business_profile_id == profile.id
+
+
+def test_update_account_default_business_profile_not_found(api_client, user, account):
+    profile_id = uuid.uuid4()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/accounts/{account.id}",
+        data={"default_business_profile_id": str(profile_id)},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "default_business_profile_id",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{profile_id}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_update_account_default_business_profile_foreign_account(api_client, user, account):
+    other_account = AccountFactory()
+    profile = other_account.default_business_profile
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/accounts/{account.id}",
+        data={"default_business_profile_id": str(profile.id)},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "default_business_profile_id",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{profile.id}" - object does not exist.',
+            }
+        ],
     }
 
 

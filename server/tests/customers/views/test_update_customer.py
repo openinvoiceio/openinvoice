@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from tests.factories import CustomerFactory
+from tests.factories import BillingProfileFactory, CustomerFactory, ShippingProfileFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -156,6 +156,131 @@ def test_update_customer_rejects_foreign_account(api_client, user, account):
                 "attr": None,
                 "code": "not_found",
                 "detail": "Not found.",
+            }
+        ],
+    }
+
+
+def test_update_customer_default_profiles(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    other_customer = CustomerFactory(account=account)
+    billing_profile = BillingProfileFactory(legal_name="New Billing")
+    shipping_profile = ShippingProfileFactory(name="New Shipping")
+    other_customer.billing_profiles.add(billing_profile)
+    other_customer.shipping_profiles.add(shipping_profile)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/customers/{customer.id}",
+        data={
+            "default_billing_profile_id": str(billing_profile.id),
+            "default_shipping_profile_id": str(shipping_profile.id),
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.data["default_billing_profile"]["id"] == str(billing_profile.id)
+    assert response.data["default_shipping_profile"]["id"] == str(shipping_profile.id)
+    customer.refresh_from_db()
+    assert customer.default_billing_profile_id == billing_profile.id
+    assert customer.default_shipping_profile_id == shipping_profile.id
+
+
+def test_update_customer_default_billing_profile_not_found(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    profile_id = uuid.uuid4()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/customers/{customer.id}",
+        data={"default_billing_profile_id": str(profile_id)},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "default_billing_profile_id",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{profile_id}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_update_customer_default_billing_profile_foreign_account(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    other_customer = CustomerFactory()
+    billing_profile = other_customer.default_billing_profile
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/customers/{customer.id}",
+        data={"default_billing_profile_id": str(billing_profile.id)},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "default_billing_profile_id",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{billing_profile.id}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_update_customer_default_shipping_profile_not_found(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    profile_id = uuid.uuid4()
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/customers/{customer.id}",
+        data={"default_shipping_profile_id": str(profile_id)},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "default_shipping_profile_id",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{profile_id}" - object does not exist.',
+            }
+        ],
+    }
+
+
+def test_update_customer_default_shipping_profile_foreign_account(api_client, user, account):
+    customer = CustomerFactory(account=account)
+    other_customer = CustomerFactory()
+    shipping_profile = ShippingProfileFactory()
+    other_customer.shipping_profiles.add(shipping_profile)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/customers/{customer.id}",
+        data={"default_shipping_profile_id": str(shipping_profile.id)},
+    )
+
+    assert response.status_code == 400
+    assert response.data == {
+        "type": "validation_error",
+        "errors": [
+            {
+                "attr": "default_shipping_profile_id",
+                "code": "does_not_exist",
+                "detail": f'Invalid pk "{shipping_profile.id}" - object does not exist.',
             }
         ],
     }

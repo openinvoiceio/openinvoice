@@ -157,7 +157,7 @@ class BusinessProfileListCreateAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return BusinessProfile.objects.for_account(self.request.account)
+        return BusinessProfile.objects.for_account(self.request.account).order_by("-created_at")
 
     @extend_schema(
         operation_id="create_business_profile",
