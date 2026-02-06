@@ -43,6 +43,7 @@ class Customer(models.Model):
     )
     billing_profiles = models.ManyToManyField("BillingProfile", related_name="customers")
     shipping_profiles = models.ManyToManyField("ShippingProfile", related_name="customers")
+    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="customers")
 
     objects = CustomerManager.from_queryset(CustomerQuerySet)()
 

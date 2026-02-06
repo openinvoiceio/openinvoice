@@ -5,6 +5,7 @@ from openinvoice.core.fields import CurrencyField, LanguageField, MetadataField
 from openinvoice.files.fields import FileRelatedField
 from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
 from openinvoice.numbering_systems.fields import NumberingSystemRelatedField
+from openinvoice.tax_ids.fields import CustomerTaxIdRelatedField
 from openinvoice.tax_ids.serializers import TaxIdSerializer
 from openinvoice.tax_rates.fields import TaxRateRelatedField
 from openinvoice.tax_rates.serializers import TaxRateSerializer
@@ -53,6 +54,7 @@ class BillingProfileCreateSerializer(serializers.Serializer):
         required=False,
     )
     tax_rates = TaxRateRelatedField(many=True, required=False)
+    tax_ids = CustomerTaxIdRelatedField(many=True, required=False)
 
 
 class CustomerBillingProfileCreateSerializer(serializers.Serializer):
@@ -101,6 +103,7 @@ class BillingProfileUpdateSerializer(serializers.Serializer):
         required=False,
     )
     tax_rates = TaxRateRelatedField(many=True, required=False)
+    tax_ids = CustomerTaxIdRelatedField(many=True, required=False)
 
 
 class ShippingProfileSerializer(serializers.Serializer):
@@ -141,6 +144,7 @@ class CustomerSerializer(serializers.Serializer):
     default_shipping_profile = ShippingProfileSerializer(allow_null=True)
     logo_id = serializers.UUIDField(allow_null=True)
     logo_url = serializers.FileField(allow_null=True, use_url=True, source="logo.data")
+    tax_ids = TaxIdSerializer(many=True, read_only=True)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
 

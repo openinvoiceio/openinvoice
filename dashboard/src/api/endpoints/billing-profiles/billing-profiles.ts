@@ -30,8 +30,6 @@ import type {
   BillingProfilesListParams,
   BillingProfileUpdate,
   PaginatedBillingProfileList,
-  TaxId,
-  TaxIdCreate,
 } from "../../models";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -408,88 +406,6 @@ export const useCreateBillingProfile = <
   TContext
 > => {
   const mutationOptions = getCreateBillingProfileMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-export const deleteBillingProfileTaxId = (
-  billingProfileId: string,
-  id: string,
-  options?: SecondParameter<typeof axiosInstance>,
-) => {
-  return axiosInstance<void>(
-    {
-      url: `/api/v1/billing-profiles/${billingProfileId}/tax-ids/${id}`,
-      method: "DELETE",
-    },
-    options,
-  );
-};
-
-export const getDeleteBillingProfileTaxIdMutationOptions = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteBillingProfileTaxId>>,
-    TError,
-    { billingProfileId: string; id: string },
-    TContext
-  >;
-  request?: SecondParameter<typeof axiosInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof deleteBillingProfileTaxId>>,
-  TError,
-  { billingProfileId: string; id: string },
-  TContext
-> => {
-  const mutationKey = ["deleteBillingProfileTaxId"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteBillingProfileTaxId>>,
-    { billingProfileId: string; id: string }
-  > = (props) => {
-    const { billingProfileId, id } = props ?? {};
-
-    return deleteBillingProfileTaxId(billingProfileId, id, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type DeleteBillingProfileTaxIdMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteBillingProfileTaxId>>
->;
-
-export type DeleteBillingProfileTaxIdMutationError = ErrorType<unknown>;
-
-export const useDeleteBillingProfileTaxId = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof deleteBillingProfileTaxId>>,
-      TError,
-      { billingProfileId: string; id: string },
-      TContext
-    >;
-    request?: SecondParameter<typeof axiosInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof deleteBillingProfileTaxId>>,
-  TError,
-  { billingProfileId: string; id: string },
-  TContext
-> => {
-  const mutationOptions = getDeleteBillingProfileTaxIdMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
@@ -945,92 +861,6 @@ export const useDeleteBillingProfile = <
   TContext
 > => {
   const mutationOptions = getDeleteBillingProfileMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-export const createBillingProfileTaxId = (
-  id: string,
-  taxIdCreate: TaxIdCreate,
-  options?: SecondParameter<typeof axiosInstance>,
-  signal?: AbortSignal,
-) => {
-  return axiosInstance<TaxId>(
-    {
-      url: `/api/v1/billing-profiles/${id}/tax-ids`,
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      data: taxIdCreate,
-      signal,
-    },
-    options,
-  );
-};
-
-export const getCreateBillingProfileTaxIdMutationOptions = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createBillingProfileTaxId>>,
-    TError,
-    { id: string; data: TaxIdCreate },
-    TContext
-  >;
-  request?: SecondParameter<typeof axiosInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof createBillingProfileTaxId>>,
-  TError,
-  { id: string; data: TaxIdCreate },
-  TContext
-> => {
-  const mutationKey = ["createBillingProfileTaxId"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createBillingProfileTaxId>>,
-    { id: string; data: TaxIdCreate }
-  > = (props) => {
-    const { id, data } = props ?? {};
-
-    return createBillingProfileTaxId(id, data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type CreateBillingProfileTaxIdMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createBillingProfileTaxId>>
->;
-export type CreateBillingProfileTaxIdMutationBody = TaxIdCreate;
-export type CreateBillingProfileTaxIdMutationError = ErrorType<unknown>;
-
-export const useCreateBillingProfileTaxId = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof createBillingProfileTaxId>>,
-      TError,
-      { id: string; data: TaxIdCreate },
-      TContext
-    >;
-    request?: SecondParameter<typeof axiosInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof createBillingProfileTaxId>>,
-  TError,
-  { id: string; data: TaxIdCreate },
-  TContext
-> => {
-  const mutationOptions = getCreateBillingProfileTaxIdMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

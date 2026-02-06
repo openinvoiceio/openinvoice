@@ -95,6 +95,7 @@ class InvoiceDocumentSerializer(serializers.Serializer):
 
 class InvoiceSerializer(serializers.Serializer):
     id = serializers.UUIDField()
+    customer_id = serializers.UUIDField()
     status = serializers.ChoiceField(choices=InvoiceStatus.choices)
     number = serializers.CharField(allow_null=True, source="effective_number", read_only=True)
     numbering_system_id = serializers.UUIDField(allow_null=True)

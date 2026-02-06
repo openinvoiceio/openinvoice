@@ -64,7 +64,7 @@ class PortalCustomerSerializer(serializers.Serializer):
     phone = serializers.CharField(allow_null=True, source="default_billing_profile.phone")
     address = AddressSerializer(source="default_billing_profile.address")
     shipping = PortalCustomerShippingSerializer(allow_null=True, source="default_shipping_profile")
-    tax_ids = TaxIdSerializer(many=True, source="default_billing_profile.tax_ids")
+    tax_ids = TaxIdSerializer(many=True)
 
 
 class PortalCustomerUpdateSerializer(serializers.Serializer):

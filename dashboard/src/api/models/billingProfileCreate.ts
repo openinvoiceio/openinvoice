@@ -47,4 +47,5 @@ export interface BillingProfileCreate {
   /** @nullable */
   credit_note_numbering_system_id?: string | null;
   tax_rates?: string[];
+  tax_ids?: string[];
 }

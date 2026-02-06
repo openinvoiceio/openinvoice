@@ -20,6 +20,7 @@ class CustomerQuerySet(models.QuerySet):
             "default_shipping_profile__address",
             "logo",
         ).prefetch_related(
+            "tax_ids",
             "default_billing_profile__tax_rates",
             "default_billing_profile__tax_ids",
         )

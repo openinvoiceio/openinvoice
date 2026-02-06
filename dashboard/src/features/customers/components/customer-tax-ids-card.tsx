@@ -1,8 +1,7 @@
 import {
-  getBillingProfilesListQueryKey,
-  useDeleteBillingProfileTaxId,
-} from "@/api/endpoints/billing-profiles/billing-profiles";
-import { getCustomersRetrieveQueryKey } from "@/api/endpoints/customers/customers";
+  getCustomersRetrieveQueryKey,
+  useDeleteCustomerTaxId,
+} from "@/api/endpoints/customers/customers";
 import type { Customer } from "@/api/models";
 import { pushModal } from "@/components/push-modals";
 import { Button } from "@/components/ui/button";
@@ -42,16 +41,12 @@ import { toast } from "sonner";
 
 export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
   const queryClient = useQueryClient();
-  const defaultBillingProfile = customer.default_billing_profile;
-  const taxIds = defaultBillingProfile?.tax_ids ?? [];
+  const taxIds = customer.tax_ids ?? [];
   const limitReached = taxIds.length >= MAX_TAX_IDS;
 
-  const { isPending, mutateAsync } = useDeleteBillingProfileTaxId({
+  const { isPending, mutateAsync } = useDeleteCustomerTaxId({
     mutation: {
       onSuccess: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: getBillingProfilesListQueryKey(),
-        });
         await queryClient.invalidateQueries({
           queryKey: getCustomersRetrieveQueryKey(customer.id),
         });
@@ -72,17 +67,7 @@ export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
         </FormCardDescription>
       </FormCardHeader>
       <FormCardContent>
-        {!defaultBillingProfile && (
-          <Empty className="border border-dashed">
-            <EmptyHeader>
-              <EmptyTitle>No default billing profile</EmptyTitle>
-              <EmptyDescription>
-                Set a default billing profile to manage tax IDs.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-        {defaultBillingProfile && taxIds.length > 0 ? (
+        {taxIds.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -110,10 +95,9 @@ export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        defaultBillingProfile &&
                         mutateAsync({
                           id: taxId.id,
-                          billingProfileId: defaultBillingProfile.id,
+                          customerId: customer.id,
                         })
                       }
                       disabled={isPending}
@@ -125,7 +109,7 @@ export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
               ))}
             </TableBody>
           </Table>
-        ) : defaultBillingProfile ? (
+        ) : (
           <Empty className="border border-dashed">
             <EmptyHeader>
               <EmptyTitle>No tax ids configured</EmptyTitle>
@@ -134,7 +118,7 @@ export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
-        ) : null}
+        )}
       </FormCardContent>
       <FormCardFooter>
         <Tooltip>
@@ -143,13 +127,11 @@ export function CustomerTaxIdsCard({ customer }: { customer: Customer }) {
               <Button
                 type="button"
                 onClick={() =>
-                  defaultBillingProfile &&
                   pushModal("CustomerTaxIdCreateSheet", {
                     customerId: customer.id,
-                    billingProfileId: defaultBillingProfile.id,
                   })
                 }
-                disabled={isPending || limitReached || !defaultBillingProfile}
+                disabled={isPending || limitReached}
               >
                 Add
               </Button>

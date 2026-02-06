@@ -75,16 +75,26 @@ export const columns: ColumnDef<Invoice>[] = [
     id: "customer",
     header: "Customer",
     accessorKey: "customer",
-    cell: ({ row }) => (
-      <Link
-        to="/customers/$id"
-        params={{ id: row.original.customer.id }}
-        className={cn("group/link flex items-center gap-1")}
-      >
-        <div className="truncate font-medium">{row.original.customer.name}</div>
-        <ChevronRight className="text-muted-foreground group-hover/link:text-foreground ml-auto size-3" />
-      </Link>
-    ),
+    cell: ({ row }) => {
+      const invoice = row.original as Invoice & { customer_id?: string };
+      const customerId = invoice.customer_id;
+      const billingProfile = invoice.billing_profile;
+      const label =
+        billingProfile.legal_name || billingProfile.email || "Unnamed customer";
+      if (!customerId) {
+        return <div className="text-muted-foreground">{label}</div>;
+      }
+      return (
+        <Link
+          to="/customers/$id"
+          params={{ id: customerId }}
+          className={cn("group/link flex items-center gap-1")}
+        >
+          <div className="truncate font-medium">{label}</div>
+          <ChevronRight className="text-muted-foreground group-hover/link:text-foreground ml-auto size-3" />
+        </Link>
+      );
+    },
     meta: {
       label: "Customer",
       variant: "customer",
@@ -438,7 +448,7 @@ export const columns: ColumnDef<Invoice>[] = [
   {
     id: "customer_email",
     header: "Customer email",
-    accessorFn: (row) => row.customer.email,
+    accessorFn: (row) => row.billing_profile.email,
     cell: ({ row }) => {
       const value: string | null = row.getValue("customer_email");
       return (

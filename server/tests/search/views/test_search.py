@@ -93,6 +93,7 @@ def test_search_all(api_client, user, account):
                 "name": customer_alpha.name,
                 "description": customer_alpha.description,
                 "metadata": customer_alpha.metadata,
+                "tax_ids": [],
                 "default_billing_profile": {
                     "id": str(customer_alpha.default_billing_profile.id),
                     "legal_name": customer_alpha.default_billing_profile.legal_name,

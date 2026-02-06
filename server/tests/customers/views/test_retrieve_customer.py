@@ -22,6 +22,7 @@ def test_retrieve_customer(api_client, user, account):
         "name": customer.name,
         "description": customer.description,
         "metadata": customer.metadata,
+        "tax_ids": [],
         "default_billing_profile": {
             "id": str(customer.default_billing_profile.id),
             "legal_name": customer.default_billing_profile.legal_name,

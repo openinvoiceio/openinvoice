@@ -7,6 +7,7 @@
  */
 import type { BillingProfile } from "./billingProfile";
 import type { CustomerDefaultShippingProfile } from "./customerDefaultShippingProfile";
+import type { TaxId } from "./taxId";
 
 export interface Customer {
   id: string;
@@ -22,6 +23,7 @@ export interface Customer {
   logo_id: string | null;
   /** @nullable */
   logo_url: string | null;
+  readonly tax_ids: readonly TaxId[];
   created_at: string;
   /** @nullable */
   updated_at: string | null;

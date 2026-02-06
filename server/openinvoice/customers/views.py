@@ -3,6 +3,7 @@ from django.conf import settings
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -169,10 +170,12 @@ class BillingProfileListCreateAPIView(generics.ListAPIView):
         responses={201: BillingProfileSerializer},
     )
     def post(self, request):
-        serializer = BillingProfileCreateSerializer(
-            data=request.data,
-            context=self.get_serializer_context(),
+        context = self.get_serializer_context()
+        customer_id = request.data.get("customer_id")
+        context["customer"] = (
+            Customer.objects.filter(account=request.account, id=customer_id).first() if customer_id else None
         )
+        serializer = BillingProfileCreateSerializer(data=request.data, context=context)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
@@ -190,6 +193,7 @@ class BillingProfileListCreateAPIView(generics.ListAPIView):
             credit_note_numbering_system=data.get("credit_note_numbering_system"),
         )
         billing_profile.tax_rates.set(data.get("tax_rates", []))
+        billing_profile.tax_ids.set(data.get("tax_ids", []))
         customer.billing_profiles.add(billing_profile)
         logger.info("Billing profile created", billing_profile_id=billing_profile.id)
 
@@ -213,7 +217,9 @@ class BillingProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     )
     def put(self, request, **_):
         profile = self.get_object()
-        serializer = BillingProfileUpdateSerializer(data=request.data, context=self.get_serializer_context())
+        context = self.get_serializer_context()
+        context["customer"] = profile.customers.filter(account=request.account).first()
+        serializer = BillingProfileUpdateSerializer(data=request.data, context=context)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
@@ -231,6 +237,8 @@ class BillingProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         )
         if "tax_rates" in data:
             profile.tax_rates.set(data["tax_rates"])
+        if "tax_ids" in data:
+            profile.tax_ids.set(data["tax_ids"])
         logger.info("Billing profile updated", billing_profile_id=profile.id)
 
         serializer = self.get_serializer(profile)
@@ -328,38 +336,45 @@ class ShippingProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class BillingProfileTaxIdCreateAPIView(generics.GenericAPIView):
-    queryset = BillingProfile.objects.none()
+class CustomerTaxIdCreateAPIView(generics.GenericAPIView):
+    queryset = TaxId.objects.none()
     permission_classes = [IsAuthenticated, IsAccountMember]
+    lookup_url_kwarg = "customer_id"
+
+    def get_customer(self):
+        return get_object_or_404(
+            Customer.objects.for_account(self.request.account),
+            id=self.kwargs["customer_id"],
+        )
 
     def get_queryset(self):
-        return BillingProfile.objects.for_account(self.request.account)
+        return TaxId.objects.for_account(self.request.account)
 
     @extend_schema(
-        operation_id="create_billing_profile_tax_id",
+        operation_id="create_customer_tax_id",
         request=TaxIdCreateSerializer,
         responses={201: TaxIdSerializer},
     )
     def post(self, request, *_, **__):
-        profile = self.get_object()
+        customer = self.get_customer()
         serializer = TaxIdCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        if profile.tax_ids.count() >= settings.MAX_TAX_IDS:
-            raise ValidationError(f"You can add at most {settings.MAX_TAX_IDS} tax IDs to a billing profile.")
+        if customer.tax_ids.count() >= settings.MAX_TAX_IDS:
+            raise ValidationError(f"You can add at most {settings.MAX_TAX_IDS} tax IDs to a customer.")
 
         tax_id = TaxId.objects.create_tax_id(
             type_=data["type"],
             number=data["number"],
             country=data.get("country"),
         )
-        profile.tax_ids.add(tax_id)
+        customer.tax_ids.add(tax_id)
 
         logger.info(
-            "Billing profile tax ID created",
+            "Customer tax ID created",
             account_id=request.account.id,
-            billing_profile_id=profile.id,
+            customer_id=customer.id,
             tax_id_id=tax_id.id,
         )
 
@@ -367,26 +382,27 @@ class BillingProfileTaxIdCreateAPIView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class BillingProfileTaxIdDestroyAPIView(generics.GenericAPIView):
+class CustomerTaxIdDestroyAPIView(generics.GenericAPIView):
     queryset = TaxId.objects.none()
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_queryset(self):
-        return TaxId.objects.filter(
-            billing_profiles__customers__account_id=self.request.account.id,
-            billing_profiles__id=self.kwargs["billing_profile_id"],
+        customer = get_object_or_404(
+            Customer.objects.for_account(self.request.account),
+            id=self.kwargs["customer_id"],
         )
+        return TaxId.objects.for_customer(customer)
 
-    @extend_schema(operation_id="delete_billing_profile_tax_id", request=None, responses={204: None})
+    @extend_schema(operation_id="delete_customer_tax_id", request=None, responses={204: None})
     def delete(self, request, *_, **__):
         tax_id = self.get_object()
 
         tax_id.delete()
 
         logger.info(
-            "Billing profile tax ID deleted",
+            "Customer tax ID deleted",
             account_id=request.account.id,
-            billing_profile_id=self.kwargs["billing_profile_id"],
+            customer_id=self.kwargs["customer_id"],
             tax_id_id=tax_id.id,
         )
 

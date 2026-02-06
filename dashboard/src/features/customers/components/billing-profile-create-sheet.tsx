@@ -40,7 +40,11 @@ import {
 } from "@/components/ui/form-sheet";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { MAX_CUSTOMER_TAX_RATES } from "@/config/customers";
+import { MAX_TAX_IDS } from "@/config/tax-ids";
+import { CustomerTaxIdsCombobox } from "@/features/customers/components/customer-tax-ids-combobox";
 import { NumberingSystemCombobox } from "@/features/settings/components/numbering-system-combobox";
+import { TaxRateCombobox } from "@/features/tax-rates/components/tax-rate-combobox";
 import { getErrorSummary } from "@/lib/api/errors";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
@@ -66,6 +70,8 @@ const schema = z.object({
     .pipe(z.number().int().min(0).max(365).nullable()),
   invoice_numbering_system_id: z.string().uuid().nullable().optional(),
   credit_note_numbering_system_id: z.string().uuid().nullable().optional(),
+  tax_ids: z.array(z.string()).optional(),
+  tax_rates: z.array(z.string()).optional(),
   address: z.object({
     line1: z.string().optional(),
     line2: z.string().optional(),
@@ -99,6 +105,8 @@ export function BillingProfileCreateSheet({
       net_payment_term: 0,
       invoice_numbering_system_id: null,
       credit_note_numbering_system_id: null,
+      tax_ids: [],
+      tax_rates: [],
       address: {
         line1: "",
         line2: "",
@@ -113,6 +121,11 @@ export function BillingProfileCreateSheet({
   const creditNoteNumberingSystemId = form.watch(
     "credit_note_numbering_system_id",
   );
+  const selectedTaxRates = form.watch("tax_rates") ?? [];
+  const selectedTaxIds = form.watch("tax_ids") ?? [];
+  const taxRatesLimitReached =
+    selectedTaxRates.length >= MAX_CUSTOMER_TAX_RATES;
+  const taxIdsLimitReached = selectedTaxIds.length >= MAX_TAX_IDS;
   const { data: invoiceNumberingSystem } = useNumberingSystemsRetrieve(
     invoiceNumberingSystemId || "",
     { query: { enabled: !!invoiceNumberingSystemId } },
@@ -153,6 +166,8 @@ export function BillingProfileCreateSheet({
         invoice_numbering_system_id: values.invoice_numbering_system_id || null,
         credit_note_numbering_system_id:
           values.credit_note_numbering_system_id || null,
+        tax_ids: values.tax_ids ?? [],
+        tax_rates: values.tax_rates ?? [],
         address: {
           line1: values.address.line1 || null,
           line2: values.address.line2 || null,
@@ -291,6 +306,59 @@ export function BillingProfileCreateSheet({
                       </ComboboxButton>
                     </LanguageCombobox>
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </FormSheetGroup>
+          <FormSheetGroup className="grid-cols-2">
+            <FormField
+              control={form.control}
+              name="tax_ids"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tax IDs</FormLabel>
+                  <FormControl>
+                    <CustomerTaxIdsCombobox
+                      customerId={customerId}
+                      value={field.value ?? []}
+                      onChange={field.onChange}
+                      multiple
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {taxIdsLimitReached
+                      ? `Limit reached (${MAX_TAX_IDS} tax ids).`
+                      : "Select tax IDs to apply by default."}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="tax_rates"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tax rates</FormLabel>
+                  <FormControl>
+                    <TaxRateCombobox
+                      multiple
+                      value={field.value ?? []}
+                      onChange={field.onChange}
+                    >
+                      <ComboboxButton className="w-full justify-between gap-2">
+                        {selectedTaxRates.length === 0
+                          ? "Select tax rates"
+                          : `${selectedTaxRates.length} tax rates selected`}
+                      </ComboboxButton>
+                    </TaxRateCombobox>
+                  </FormControl>
+                  <FormDescription>
+                    {taxRatesLimitReached
+                      ? `Limit reached (${MAX_CUSTOMER_TAX_RATES} tax rates).`
+                      : "Select default tax rates for this billing profile."}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

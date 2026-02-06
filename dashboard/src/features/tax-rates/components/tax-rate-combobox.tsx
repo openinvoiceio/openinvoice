@@ -22,18 +22,36 @@ import { cn } from "@/lib/utils";
 import { CheckIcon, PlusIcon } from "lucide-react";
 import React, { useState } from "react";
 
+type TaxRateComboboxSingleProps = {
+  selected?: TaxRate | null;
+  onSelect?: (taxRate: TaxRate | null) => Promise<void>;
+  multiple?: false;
+  value?: never;
+  onChange?: never;
+  status?: TaxRatesListStatus;
+};
+
+type TaxRateComboboxMultiProps = {
+  multiple: true;
+  value: string[];
+  onChange: (value: string[]) => void;
+  selected?: never;
+  onSelect?: never;
+  status?: TaxRatesListStatus;
+};
+
 export function TaxRateCombobox({
   selected,
   onSelect,
   status,
   className,
   children,
+  multiple,
+  value,
+  onChange,
   ...props
-}: Omit<React.ComponentProps<typeof PopoverContent>, "onSelect"> & {
-  selected?: TaxRate | null;
-  onSelect?: (taxRate: TaxRate | null) => Promise<void>;
-  status?: TaxRatesListStatus;
-}) {
+}: Omit<React.ComponentProps<typeof PopoverContent>, "onSelect"> &
+  (TaxRateComboboxSingleProps | TaxRateComboboxMultiProps)) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const debounce = useDebounce(search, 400);
@@ -66,22 +84,34 @@ export function TaxRateCombobox({
           <CommandList>
             <CommandEmpty>No tax rate found</CommandEmpty>
             <CommandGroup>
-              {data?.results.map((tax) => (
-                <CommandItem
-                  key={tax.id}
-                  value={tax.id}
-                  onSelect={async (value) => {
-                    setOpen(false);
-                    await onSelect?.(selected?.id === value ? null : tax);
-                  }}
-                >
-                  <span>{tax.name}</span>
-                  <span className="text-muted-foreground">
-                    {formatPercentage(tax.percentage)}
-                  </span>
-                  {tax.id === selected?.id && <CheckIcon className="ml-auto" />}
-                </CommandItem>
-              ))}
+              {data?.results.map((tax) => {
+                const isSelected = multiple
+                  ? value?.includes(tax.id)
+                  : tax.id === selected?.id;
+                return (
+                  <CommandItem
+                    key={tax.id}
+                    value={tax.id}
+                    onSelect={async (value) => {
+                      if (multiple) {
+                        const next = isSelected
+                          ? (value?.filter((id) => id !== tax.id) ?? [])
+                          : [...(value ?? []), tax.id];
+                        onChange?.(next);
+                        return;
+                      }
+                      setOpen(false);
+                      await onSelect?.(selected?.id === value ? null : tax);
+                    }}
+                  >
+                    <span>{tax.name}</span>
+                    <span className="text-muted-foreground">
+                      {formatPercentage(tax.percentage)}
+                    </span>
+                    {isSelected && <CheckIcon className="ml-auto" />}
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
             <CommandSeparator alwaysRender={true} />
             <CommandGroup>
@@ -89,7 +119,16 @@ export function TaxRateCombobox({
                 onClick={() =>
                   pushModal("TaxRateCreateSheet", {
                     name: search,
-                    onSuccess: (tax: TaxRate) => onSelect?.(tax),
+                    onSuccess: (tax: TaxRate) => {
+                      if (multiple) {
+                        const next = (value ?? []).includes(tax.id)
+                          ? (value ?? [])
+                          : [...(value ?? []), tax.id];
+                        onChange?.(next);
+                        return;
+                      }
+                      void onSelect?.(tax);
+                    },
                   })
                 }
               >

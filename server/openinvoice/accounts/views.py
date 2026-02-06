@@ -188,8 +188,11 @@ class AccountTaxIdDestroyAPIView(generics.GenericAPIView):
     queryset = TaxId.objects.none()
     permission_classes = [IsAuthenticated, IsAccountMember]
 
+    def get_account(self):
+        return get_object_or_404(self.request.accounts, id=self.kwargs["account_id"])
+
     def get_queryset(self):
-        return TaxId.objects.filter(accounts__id=self.kwargs["account_id"], accounts__in=self.request.accounts)
+        return TaxId.objects.for_account(self.get_account())
 
     @extend_schema(operation_id="delete_account_tax_id", request=None, responses={204: None})
     def delete(self, _request, *_, **__):

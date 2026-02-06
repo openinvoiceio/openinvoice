@@ -16,52 +16,22 @@ import {
 } from "@/components/ui/action-dropdown";
 import { getErrorSummary } from "@/lib/api/errors";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  HashIcon,
-  PencilIcon,
-  PercentIcon,
-  StarIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { PencilIcon, StarIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 
-function useEditBillingProfileAction(): DropdownAction<BillingProfile> {
+function useEditBillingProfileAction({
+  customerId,
+}: {
+  customerId: string;
+}): DropdownAction<BillingProfile> {
   return {
     key: "edit",
     label: "Edit",
     icon: PencilIcon,
     shortcut: "E",
     hotkey: "e",
-    onSelect: (profile) => pushModal("BillingProfileEditSheet", { profile }),
-  };
-}
-
-function useManageTaxIdsAction({
-  customerId,
-}: {
-  customerId: string;
-}): DropdownAction<BillingProfile> {
-  return {
-    key: "tax-ids",
-    label: "Tax IDs",
-    icon: HashIcon,
     onSelect: (profile) =>
-      pushModal("BillingProfileTaxIdsSheet", {
-        customerId,
-        billingProfileId: profile.id,
-      }),
-  };
-}
-
-function useManageTaxRatesAction(): DropdownAction<BillingProfile> {
-  return {
-    key: "tax-rates",
-    label: "Tax rates",
-    icon: PercentIcon,
-    onSelect: (profile) =>
-      pushModal("BillingProfileTaxRatesSheet", {
-        billingProfileId: profile.id,
-      }),
+      pushModal("BillingProfileEditSheet", { profile, customerId }),
   };
 }
 
@@ -152,12 +122,7 @@ function useDeleteBillingProfileAction({
   };
 }
 
-export type BillingProfileActionKey =
-  | "edit"
-  | "tax-ids"
-  | "tax-rates"
-  | "set-default"
-  | "delete";
+export type BillingProfileActionKey = "edit" | "set-default" | "delete";
 
 export function BillingProfileDropdown({
   profile,
@@ -182,11 +147,7 @@ export function BillingProfileDropdown({
       actions={actions}
       sections={[
         {
-          items: [
-            useEditBillingProfileAction(),
-            useManageTaxIdsAction({ customerId }),
-            useManageTaxRatesAction(),
-          ],
+          items: [useEditBillingProfileAction({ customerId })],
         },
         {
           items: [

@@ -88,6 +88,7 @@ import {
 } from "@/components/ui/tooltip";
 import { BillingProfileDropdown } from "@/features/customers/components/billing-profile-dropdown";
 import { CustomerDropdown } from "@/features/customers/components/customer-dropdown";
+import { CustomerTaxIdDropdown } from "@/features/customers/components/customer-tax-id-dropdown";
 import { ShippingProfileDropdown } from "@/features/customers/components/shipping-profile-dropdown";
 import { columns } from "@/features/invoices/tables/columns";
 import { NumberingSystemView } from "@/features/settings/components/numbering-system-view";
@@ -226,7 +227,7 @@ function RouteComponent() {
     customer.default_shipping_profile?.id ?? null;
   const defaultBillingProfile = customer.default_billing_profile;
   const defaultBillingTaxRates = defaultBillingProfile?.tax_rates ?? [];
-  const defaultBillingTaxIds = defaultBillingProfile?.tax_ids ?? [];
+  const customerTaxIds = customer.tax_ids ?? [];
 
   return (
     <SidebarProvider>
@@ -676,6 +677,9 @@ function RouteComponent() {
                           <TableHead>Name</TableHead>
                           <TableHead>Percentage</TableHead>
                           <TableHead>Country</TableHead>
+                          <TableHead>
+                            <span className="sr-only">Actions</span>
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -711,9 +715,24 @@ function RouteComponent() {
               </Section>
               <Section>
                 <SectionHeader>
-                  <SectionTitle>Tax IDs</SectionTitle>
+                  <div className="flex items-center justify-between">
+                    <SectionTitle>Tax IDs</SectionTitle>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-fit"
+                      onClick={() =>
+                        pushModal("CustomerTaxIdCreateSheet", {
+                          customerId: customer.id,
+                        })
+                      }
+                    >
+                      <PlusIcon />
+                      Add tax id
+                    </Button>
+                  </div>
                 </SectionHeader>
-                {defaultBillingTaxIds.length !== 0 ? (
+                {customerTaxIds.length !== 0 ? (
                   <div className="overflow-hidden rounded-md border">
                     <Table>
                       <TableHeader>
@@ -724,7 +743,7 @@ function RouteComponent() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {defaultBillingTaxIds.map((taxId) => (
+                        {customerTaxIds.map((taxId) => (
                           <TableRow key={taxId.id}>
                             <TableCell className="font-medium">
                               {formatTaxIdType(taxId.type)}
@@ -734,6 +753,21 @@ function RouteComponent() {
                               {taxId.country
                                 ? formatCountry(taxId.country)
                                 : "-"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <CustomerTaxIdDropdown
+                                taxId={taxId}
+                                customerId={customer.id}
+                              >
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="data-[state=open]:bg-accent size-7"
+                                >
+                                  <MoreHorizontalIcon />
+                                </Button>
+                              </CustomerTaxIdDropdown>
                             </TableCell>
                           </TableRow>
                         ))}

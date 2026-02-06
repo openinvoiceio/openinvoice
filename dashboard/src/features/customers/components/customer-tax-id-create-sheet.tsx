@@ -1,8 +1,8 @@
 import {
-  getBillingProfilesListQueryKey,
-  useCreateBillingProfileTaxId,
-} from "@/api/endpoints/billing-profiles/billing-profiles";
-import { getCustomersRetrieveQueryKey } from "@/api/endpoints/customers/customers";
+  getCustomersRetrieveQueryKey,
+  useCreateCustomerTaxId,
+  useDeleteCustomerTaxId,
+} from "@/api/endpoints/customers/customers";
 import { CountryEnum, type TaxId } from "@/api/models";
 import { CountryCombobox } from "@/components/country-combobox.tsx";
 import { popModal } from "@/components/push-modals";
@@ -52,37 +52,44 @@ export type TaxIdFormValues = z.infer<typeof schema>;
 
 export function CustomerTaxIdCreateSheet({
   customerId,
-  billingProfileId,
+  taxId,
   onSuccess,
 }: {
   customerId: string;
-  billingProfileId: string;
+  taxId?: TaxId;
   onSuccess?: (taxId: TaxId) => void;
 }) {
   const formId = useId();
   const queryClient = useQueryClient();
+  const isEdit = Boolean(taxId);
   const form = useForm<TaxIdFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      type: undefined,
-      number: "",
-      country: undefined,
+      type: taxId?.type,
+      number: taxId?.number ?? "",
+      country: taxId?.country ?? undefined,
     },
   });
 
   const selectedType = form.watch("type");
 
-  const { isPending, mutateAsync } = useCreateBillingProfileTaxId({
+  const deleteTaxId = useDeleteCustomerTaxId({
     mutation: {
-      onSuccess: async (taxId) => {
-        await queryClient.invalidateQueries({
-          queryKey: getBillingProfilesListQueryKey(),
-        });
+      onError: (error) => {
+        const { message, description } = getErrorSummary(error);
+        toast.error(message, { description });
+      },
+    },
+  });
+
+  const { isPending, mutateAsync } = useCreateCustomerTaxId({
+    mutation: {
+      onSuccess: async (taxIdResponse) => {
         await queryClient.invalidateQueries({
           queryKey: getCustomersRetrieveQueryKey(customerId),
         });
-        onSuccess?.(taxId);
-        toast.success("Tax ID created");
+        onSuccess?.(taxIdResponse);
+        toast.success(isEdit ? "Tax ID updated" : "Tax ID created");
         popModal();
       },
       onError: (error) => {
@@ -94,8 +101,14 @@ export function CustomerTaxIdCreateSheet({
 
   async function onSubmit(values: TaxIdFormValues) {
     if (isPending) return;
+    if (taxId) {
+      await deleteTaxId.mutateAsync({
+        customerId,
+        id: taxId.id,
+      });
+    }
     await mutateAsync({
-      id: billingProfileId,
+      customerId,
       data: {
         type: values.type,
         number: values.number,
@@ -107,7 +120,9 @@ export function CustomerTaxIdCreateSheet({
   return (
     <FormSheetContent>
       <FormSheetHeader>
-        <FormSheetTitle>Create Tax ID</FormSheetTitle>
+        <FormSheetTitle>
+          {isEdit ? "Edit tax ID" : "Create tax ID"}
+        </FormSheetTitle>
       </FormSheetHeader>
       <Form {...form}>
         <form id={formId} onSubmit={form.handleSubmit(onSubmit)}>
@@ -190,7 +205,7 @@ export function CustomerTaxIdCreateSheet({
       <FormSheetFooter>
         <Button type="submit" form={formId} disabled={isPending}>
           {isPending && <Spinner />}
-          Submit
+          {isEdit ? "Save" : "Submit"}
         </Button>
       </FormSheetFooter>
     </FormSheetContent>

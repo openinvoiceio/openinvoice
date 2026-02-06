@@ -7,7 +7,6 @@ import {
   useUpdateInvoice,
 } from "@/api/endpoints/invoices/invoices";
 import { type Invoice } from "@/api/models";
-import { Button } from "@/components/ui/button";
 import {
   ComboboxButton,
   ComboboxButtonAvatar,
@@ -29,11 +28,10 @@ import {
 } from "@/components/ui/form-card";
 import { BillingProfileCombobox } from "@/features/customers/components/billing-profile-combobox";
 import { CustomerCombobox } from "@/features/customers/components/customer-combobox.tsx";
-import { CustomerDropdown } from "@/features/customers/components/customer-dropdown";
 import { getErrorSummary } from "@/lib/api/errors";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { MoreHorizontalIcon, UserIcon } from "lucide-react";
+import { UserIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
@@ -146,13 +144,6 @@ export function InvoiceCustomerCard({ invoice }: { invoice: Invoice }) {
                 </FormItem>
               )}
             />
-            {customer && (
-              <CustomerDropdown customer={customer} actions={{ delete: false }}>
-                <Button size="icon" variant="ghost">
-                  <MoreHorizontalIcon />
-                </Button>
-              </CustomerDropdown>
-            )}
             <FormField
               control={form.control}
               name="billing_profile_id"

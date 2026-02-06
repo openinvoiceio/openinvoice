@@ -174,6 +174,7 @@ def test_finalize_invoice_clones_customer_tax_ids(api_client, user, account):
     invoice = InvoiceFactory(account=account)
     InvoiceDocumentFactory(invoice=invoice, audience=[InvoiceDocumentAudience.CUSTOMER])
     customer_tax_id = TaxIdFactory()
+    invoice.customer.tax_ids.add(customer_tax_id)
     invoice.customer.default_billing_profile.tax_ids.add(customer_tax_id)
 
     api_client.force_login(user)

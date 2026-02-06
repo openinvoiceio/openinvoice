@@ -29,6 +29,7 @@ def test_update_customer(api_client, user, account):
         "name": customer.name,
         "description": "New description",
         "metadata": {"key": "value"},
+        "tax_ids": [],
         "default_billing_profile": {
             "id": str(customer.default_billing_profile.id),
             "legal_name": customer.default_billing_profile.legal_name,

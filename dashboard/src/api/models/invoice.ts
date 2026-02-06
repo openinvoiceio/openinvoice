@@ -22,6 +22,7 @@ import type { TaxRate } from "./taxRate";
 
 export interface Invoice {
   id: string;
+  customer_id: string;
   status: InvoiceStatusEnum;
   /** @nullable */
   readonly number: string | null;

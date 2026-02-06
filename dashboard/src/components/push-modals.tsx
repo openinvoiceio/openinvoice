@@ -5,9 +5,6 @@ import { CouponEditSheet } from "@/features/coupons/components/coupon-edit-sheet
 import { CreditNotePreviewDialog } from "@/features/credit-notes/components/credit-note-preview-dialog";
 import { BillingProfileCreateSheet } from "@/features/customers/components/billing-profile-create-sheet";
 import { BillingProfileEditSheet } from "@/features/customers/components/billing-profile-edit-sheet";
-import { BillingProfileTaxIdCreateSheet } from "@/features/customers/components/billing-profile-tax-id-create-sheet";
-import { BillingProfileTaxIdsSheet } from "@/features/customers/components/billing-profile-tax-ids-sheet";
-import { BillingProfileTaxRatesSheet } from "@/features/customers/components/billing-profile-tax-rates-sheet";
 import { CustomerCreateSheet } from "@/features/customers/components/customer-create-sheet";
 import { CustomerPortalEditSheet } from "@/features/customers/components/customer-portal-edit-sheet";
 import { CustomerTaxIdCreateSheet } from "@/features/customers/components/customer-tax-id-create-sheet";
@@ -42,9 +39,6 @@ export const { pushModal, popModal, ModalProvider } = createPushModal({
     CreditNotePreviewDialog,
     BillingProfileCreateSheet,
     BillingProfileEditSheet,
-    BillingProfileTaxIdCreateSheet,
-    BillingProfileTaxIdsSheet,
-    BillingProfileTaxRatesSheet,
     CustomerCreateSheet,
     CustomerPortalEditSheet,
     CustomerTaxIdCreateSheet,

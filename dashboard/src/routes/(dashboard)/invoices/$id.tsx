@@ -1,4 +1,5 @@
 import { useCreditNotesList } from "@/api/endpoints/credit-notes/credit-notes";
+import { useCustomersRetrieve } from "@/api/endpoints/customers/customers.ts";
 import { useFilesRetrieve } from "@/api/endpoints/files/files";
 import {
   getInvoicesCommentsListQueryKey,
@@ -125,8 +126,11 @@ function RouteComponent() {
     invoice?.numbering_system_id || "",
     { query: { enabled: !!invoice?.numbering_system_id } },
   );
-  const { data: logo } = useFilesRetrieve(invoice?.customer.logo_id || "", {
-    query: { enabled: !!invoice?.customer?.logo_id },
+  const { data: customer } = useCustomersRetrieve(invoice?.customer_id || "", {
+    query: { enabled: !!invoice?.customer_id },
+  });
+  const { data: logo } = useFilesRetrieve(customer?.logo_id || "", {
+    query: { enabled: !!customer?.logo_id },
   });
   const payments = usePaymentsList({ invoice_id: id });
   const creditNotes = useCreditNotesList({ invoice_id: id });
@@ -364,19 +368,17 @@ function RouteComponent() {
                         />
                       </DataListValue>
                     </DataListItem>
-                    {invoice?.shipping && (
+                    {invoice?.shipping && invoice.shipping.profile && (
                       <DataListItem>
                         <DataListLabel>Ship to</DataListLabel>
                         <DataListValue>
                           <div className="flex flex-col gap-1">
-                            {invoice.shipping?.name && (
-                              <span>{invoice.shipping.name}</span>
-                            )}
-                            {invoice.shipping?.phone && (
-                              <span>{invoice.shipping.phone}</span>
-                            )}
+                            <span>{invoice.shipping.profile.name}</span>
+                            <span>{invoice.shipping.profile.phone}</span>
                             <AddressView
-                              address={invoice.shipping?.address || undefined}
+                              address={
+                                invoice.shipping.profile.address || undefined
+                              }
                             />
                           </div>
                         </DataListValue>

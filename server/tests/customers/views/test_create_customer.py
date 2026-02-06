@@ -46,6 +46,7 @@ def test_create_customer(api_client, user, account):
         "name": "Customer 1",
         "description": "Important customer",
         "metadata": {"note": "value"},
+        "tax_ids": [],
         "default_billing_profile": {
             "id": str(customer.default_billing_profile.id),
             "legal_name": "Customer One LLC",
