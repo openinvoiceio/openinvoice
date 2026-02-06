@@ -16,34 +16,22 @@ import {
 } from "@/components/ui/action-dropdown";
 import { getErrorSummary } from "@/lib/api/errors";
 import { useQueryClient } from "@tanstack/react-query";
-import { HashIcon, PencilIcon, StarIcon, Trash2Icon } from "lucide-react";
+import { PencilIcon, StarIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 
-function useEditBusinessProfileAction(): DropdownAction<BusinessProfile> {
+function useEditBusinessProfileAction({
+  accountId,
+}: {
+  accountId: string;
+}): DropdownAction<BusinessProfile> {
   return {
     key: "edit",
     label: "Edit",
     icon: PencilIcon,
     shortcut: "E",
     hotkey: "e",
-    onSelect: (profile) => pushModal("BusinessProfileEditSheet", { profile }),
-  };
-}
-
-function useManageTaxIdsAction({
-  accountId,
-}: {
-  accountId: string;
-}): DropdownAction<BusinessProfile> {
-  return {
-    key: "tax-ids",
-    label: "Tax IDs",
-    icon: HashIcon,
     onSelect: (profile) =>
-      pushModal("BusinessProfileTaxIdsSheet", {
-        accountId,
-        businessProfileId: profile.id,
-      }),
+      pushModal("BusinessProfileEditSheet", { profile, accountId }),
   };
 }
 
@@ -134,11 +122,7 @@ function useDeleteBusinessProfileAction({
   };
 }
 
-export type BusinessProfileActionKey =
-  | "edit"
-  | "tax-ids"
-  | "set-default"
-  | "delete";
+export type BusinessProfileActionKey = "edit" | "set-default" | "delete";
 
 export function BusinessProfileDropdown({
   profile,
@@ -163,10 +147,7 @@ export function BusinessProfileDropdown({
       actions={actions}
       sections={[
         {
-          items: [
-            useEditBusinessProfileAction(),
-            useManageTaxIdsAction({ accountId }),
-          ],
+          items: [useEditBusinessProfileAction({ accountId })],
         },
         {
           items: [

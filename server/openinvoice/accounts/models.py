@@ -54,6 +54,7 @@ class Account(models.Model):
         on_delete=models.PROTECT,
         related_name="+",
     )
+    tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="accounts")
     business_profiles = models.ManyToManyField("BusinessProfile", related_name="accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

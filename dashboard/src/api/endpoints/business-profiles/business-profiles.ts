@@ -30,8 +30,6 @@ import type {
   BusinessProfilesListParams,
   BusinessProfileUpdate,
   PaginatedBusinessProfileList,
-  TaxId,
-  TaxIdCreate,
 } from "../../models";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -408,88 +406,6 @@ export const useCreateBusinessProfile = <
   TContext
 > => {
   const mutationOptions = getCreateBusinessProfileMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-export const deleteBusinessProfileTaxId = (
-  businessProfileId: string,
-  id: string,
-  options?: SecondParameter<typeof axiosInstance>,
-) => {
-  return axiosInstance<void>(
-    {
-      url: `/api/v1/business-profiles/${businessProfileId}/tax-ids/${id}`,
-      method: "DELETE",
-    },
-    options,
-  );
-};
-
-export const getDeleteBusinessProfileTaxIdMutationOptions = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteBusinessProfileTaxId>>,
-    TError,
-    { businessProfileId: string; id: string },
-    TContext
-  >;
-  request?: SecondParameter<typeof axiosInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof deleteBusinessProfileTaxId>>,
-  TError,
-  { businessProfileId: string; id: string },
-  TContext
-> => {
-  const mutationKey = ["deleteBusinessProfileTaxId"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteBusinessProfileTaxId>>,
-    { businessProfileId: string; id: string }
-  > = (props) => {
-    const { businessProfileId, id } = props ?? {};
-
-    return deleteBusinessProfileTaxId(businessProfileId, id, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type DeleteBusinessProfileTaxIdMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteBusinessProfileTaxId>>
->;
-
-export type DeleteBusinessProfileTaxIdMutationError = ErrorType<unknown>;
-
-export const useDeleteBusinessProfileTaxId = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof deleteBusinessProfileTaxId>>,
-      TError,
-      { businessProfileId: string; id: string },
-      TContext
-    >;
-    request?: SecondParameter<typeof axiosInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof deleteBusinessProfileTaxId>>,
-  TError,
-  { businessProfileId: string; id: string },
-  TContext
-> => {
-  const mutationOptions = getDeleteBusinessProfileTaxIdMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
@@ -945,92 +861,6 @@ export const useDeleteBusinessProfile = <
   TContext
 > => {
   const mutationOptions = getDeleteBusinessProfileMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-export const createBusinessProfileTaxId = (
-  id: string,
-  taxIdCreate: TaxIdCreate,
-  options?: SecondParameter<typeof axiosInstance>,
-  signal?: AbortSignal,
-) => {
-  return axiosInstance<TaxId>(
-    {
-      url: `/api/v1/business-profiles/${id}/tax-ids`,
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      data: taxIdCreate,
-      signal,
-    },
-    options,
-  );
-};
-
-export const getCreateBusinessProfileTaxIdMutationOptions = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createBusinessProfileTaxId>>,
-    TError,
-    { id: string; data: TaxIdCreate },
-    TContext
-  >;
-  request?: SecondParameter<typeof axiosInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof createBusinessProfileTaxId>>,
-  TError,
-  { id: string; data: TaxIdCreate },
-  TContext
-> => {
-  const mutationKey = ["createBusinessProfileTaxId"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createBusinessProfileTaxId>>,
-    { id: string; data: TaxIdCreate }
-  > = (props) => {
-    const { id, data } = props ?? {};
-
-    return createBusinessProfileTaxId(id, data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type CreateBusinessProfileTaxIdMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createBusinessProfileTaxId>>
->;
-export type CreateBusinessProfileTaxIdMutationBody = TaxIdCreate;
-export type CreateBusinessProfileTaxIdMutationError = ErrorType<unknown>;
-
-export const useCreateBusinessProfileTaxId = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof createBusinessProfileTaxId>>,
-      TError,
-      { id: string; data: TaxIdCreate },
-      TContext
-    >;
-    request?: SecondParameter<typeof axiosInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof createBusinessProfileTaxId>>,
-  TError,
-  { id: string; data: TaxIdCreate },
-  TContext
-> => {
-  const mutationOptions = getCreateBusinessProfileTaxIdMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

@@ -10,6 +10,7 @@ import type { BusinessProfile } from "./businessProfile";
 import type { CountryEnum } from "./countryEnum";
 import type { CurrencyEnum } from "./currencyEnum";
 import type { LanguageEnum } from "./languageEnum";
+import type { TaxId } from "./taxId";
 
 export interface Account {
   id: string;
@@ -33,6 +34,7 @@ export interface Account {
   logo_id: string | null;
   /** @nullable */
   logo_url: string | null;
+  readonly tax_ids: readonly TaxId[];
   default_business_profile: BusinessProfile;
   created_at: string;
   /** @nullable */

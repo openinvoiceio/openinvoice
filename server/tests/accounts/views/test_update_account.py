@@ -42,6 +42,7 @@ def test_update_account(api_client, user, account, account_logo):
         "subscription": None,
         "logo_id": str(account_logo.id),
         "logo_url": f"http://testserver/media/{account_logo.data.name}",
+        "tax_ids": [],
         "default_business_profile": {
             "id": str(account.default_business_profile.id),
             "legal_name": account.default_business_profile.legal_name,

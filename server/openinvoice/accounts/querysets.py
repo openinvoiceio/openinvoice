@@ -21,7 +21,8 @@ class AccountQuerySet(models.QuerySet):
 
     def eager_load(self):
         return self.select_related("default_business_profile", "default_business_profile__address").prefetch_related(
-            "default_business_profile__tax_ids"
+            "default_business_profile__tax_ids",
+            "tax_ids",
         )
 
 

@@ -26,8 +26,6 @@ import { AccountCreateDialog } from "@/features/settings/components/account-crea
 import { AccountTaxIdCreateSheet } from "@/features/settings/components/account-tax-id-create-sheet";
 import { BusinessProfileCreateSheet } from "@/features/settings/components/business-profile-create-sheet";
 import { BusinessProfileEditSheet } from "@/features/settings/components/business-profile-edit-sheet";
-import { BusinessProfileTaxIdCreateSheet } from "@/features/settings/components/business-profile-tax-id-create-sheet";
-import { BusinessProfileTaxIdsSheet } from "@/features/settings/components/business-profile-tax-ids-sheet";
 import { NumberingSystemCreateSheet } from "@/features/settings/components/numbering-system-create-sheet";
 import { ShippingRateCreateSheet } from "@/features/shipping-rates/components/shipping-rate-create-sheet.tsx";
 import { ShippingRateEditSheet } from "@/features/shipping-rates/components/shipping-rate-edit-sheet.tsx";
@@ -63,8 +61,6 @@ export const { pushModal, popModal, ModalProvider } = createPushModal({
     QuotePreviewDialog,
     BusinessProfileCreateSheet,
     BusinessProfileEditSheet,
-    BusinessProfileTaxIdCreateSheet,
-    BusinessProfileTaxIdsSheet,
     ShippingRateCreateSheet,
     ShippingRateEditSheet,
     ShippingProfileCreateSheet,

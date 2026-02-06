@@ -7,6 +7,7 @@ from openinvoice.files.fields import FileRelatedField
 from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
 from openinvoice.numbering_systems.fields import NumberingSystemRelatedField
 from openinvoice.stripe.serializers import StripeSubscriptionSerializer
+from openinvoice.tax_ids.fields import TaxIdRelatedField
 from openinvoice.tax_ids.serializers import TaxIdSerializer
 from openinvoice.users.serializers import UserSerializer
 
@@ -33,6 +34,7 @@ class BusinessProfileCreateSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
     phone = serializers.CharField(max_length=255, allow_null=True, required=False)
     address = AddressSerializer(allow_null=True, required=False)
+    tax_ids = TaxIdRelatedField(many=True, required=False)
 
 
 class BusinessProfileUpdateSerializer(serializers.Serializer):
@@ -41,6 +43,7 @@ class BusinessProfileUpdateSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
     phone = serializers.CharField(max_length=255, allow_null=True, required=False)
     address = AddressSerializer(allow_null=True, required=False)
+    tax_ids = TaxIdRelatedField(many=True, required=False)
 
 
 class AccountSerializer(serializers.Serializer):
@@ -58,6 +61,7 @@ class AccountSerializer(serializers.Serializer):
     subscription = StripeSubscriptionSerializer(allow_null=True, source="active_subscription")
     logo_id = serializers.UUIDField(allow_null=True)
     logo_url = serializers.FileField(use_url=True, source="logo.data", allow_null=True)
+    tax_ids = TaxIdSerializer(many=True, read_only=True)
     default_business_profile = BusinessProfileSerializer()
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)

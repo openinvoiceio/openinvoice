@@ -1,8 +1,7 @@
-import { getAccountsRetrieveQueryKey } from "@/api/endpoints/accounts/accounts";
 import {
-  getBusinessProfilesListQueryKey,
-  useCreateBusinessProfileTaxId,
-} from "@/api/endpoints/business-profiles/business-profiles";
+  getAccountsRetrieveQueryKey,
+  useCreateAccountTaxId,
+} from "@/api/endpoints/accounts/accounts";
 import { CountryEnum, type TaxId } from "@/api/models";
 import { CountryCombobox } from "@/components/country-combobox.tsx";
 import { popModal } from "@/components/push-modals";
@@ -52,11 +51,9 @@ export type TaxIdFormValues = z.infer<typeof schema>;
 
 export function AccountTaxIdCreateSheet({
   accountId,
-  businessProfileId,
   onSuccess,
 }: {
   accountId: string;
-  businessProfileId: string;
   onSuccess?: (taxId: TaxId) => void;
 }) {
   const formId = useId();
@@ -72,12 +69,9 @@ export function AccountTaxIdCreateSheet({
 
   const selectedType = form.watch("type");
 
-  const { isPending, mutateAsync } = useCreateBusinessProfileTaxId({
+  const { isPending, mutateAsync } = useCreateAccountTaxId({
     mutation: {
       onSuccess: async (taxId) => {
-        await queryClient.invalidateQueries({
-          queryKey: getBusinessProfilesListQueryKey(),
-        });
         await queryClient.invalidateQueries({
           queryKey: getAccountsRetrieveQueryKey(accountId),
         });
@@ -95,7 +89,7 @@ export function AccountTaxIdCreateSheet({
   async function onSubmit(values: TaxIdFormValues) {
     if (isPending) return;
     await mutateAsync({
-      id: businessProfileId,
+      accountId,
       data: {
         type: values.type,
         number: values.number,

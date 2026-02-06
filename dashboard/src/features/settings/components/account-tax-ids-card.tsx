@@ -1,8 +1,8 @@
-import { getAccountsRetrieveQueryKey } from "@/api/endpoints/accounts/accounts";
 import {
-  getBusinessProfilesListQueryKey,
-  useDeleteBusinessProfileTaxId,
-} from "@/api/endpoints/business-profiles/business-profiles";
+  getAccountsRetrieveQueryKey,
+  useDeleteAccountTaxId,
+} from "@/api/endpoints/accounts/accounts";
+import { getBusinessProfilesListQueryKey } from "@/api/endpoints/business-profiles/business-profiles";
 import type { Account } from "@/api/models";
 import { pushModal } from "@/components/push-modals";
 import { Button } from "@/components/ui/button";
@@ -42,11 +42,10 @@ import { toast } from "sonner";
 
 export function AccountTaxIdsCard({ account }: { account: Account }) {
   const queryClient = useQueryClient();
-  const defaultBusinessProfile = account.default_business_profile;
-  const taxIds = defaultBusinessProfile?.tax_ids ?? [];
+  const taxIds = account.tax_ids ?? [];
   const limitReached = taxIds.length >= MAX_TAX_IDS;
 
-  const { isPending, mutateAsync } = useDeleteBusinessProfileTaxId({
+  const { isPending, mutateAsync } = useDeleteAccountTaxId({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
@@ -73,17 +72,7 @@ export function AccountTaxIdsCard({ account }: { account: Account }) {
         </FormCardDescription>
       </FormCardHeader>
       <FormCardContent>
-        {!defaultBusinessProfile && (
-          <Empty className="border border-dashed">
-            <EmptyHeader>
-              <EmptyTitle>No default business profile</EmptyTitle>
-              <EmptyDescription>
-                Set a default business profile to manage tax IDs.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-        {defaultBusinessProfile && taxIds.length === 0 ? (
+        {taxIds.length === 0 ? (
           <Empty className="border border-dashed">
             <EmptyHeader>
               <EmptyTitle>No tax ids</EmptyTitle>
@@ -92,7 +81,7 @@ export function AccountTaxIdsCard({ account }: { account: Account }) {
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
-        ) : defaultBusinessProfile ? (
+        ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -120,10 +109,9 @@ export function AccountTaxIdsCard({ account }: { account: Account }) {
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        defaultBusinessProfile &&
                         mutateAsync({
                           id: taxId.id,
-                          businessProfileId: defaultBusinessProfile.id,
+                          accountId: account.id,
                         })
                       }
                       disabled={isPending}
@@ -135,7 +123,7 @@ export function AccountTaxIdsCard({ account }: { account: Account }) {
               ))}
             </TableBody>
           </Table>
-        ) : null}
+        )}
       </FormCardContent>
       <FormCardFooter>
         <Tooltip>
@@ -143,13 +131,11 @@ export function AccountTaxIdsCard({ account }: { account: Account }) {
             <Button
               type="button"
               onClick={() =>
-                defaultBusinessProfile &&
                 pushModal("AccountTaxIdCreateSheet", {
                   accountId: account.id,
-                  businessProfileId: defaultBusinessProfile.id,
                 })
               }
-              disabled={isPending || limitReached || !defaultBusinessProfile}
+              disabled={isPending || limitReached}
             >
               Add
             </Button>

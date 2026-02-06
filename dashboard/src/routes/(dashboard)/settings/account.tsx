@@ -11,6 +11,7 @@ import { AccountGeneralCard } from "@/features/settings/components/account-gener
 import { AccountInvoicingCard } from "@/features/settings/components/account-invoicing-card";
 import { AccountMembersCard } from "@/features/settings/components/account-members-card";
 import { AccountNumberingSystemsCard } from "@/features/settings/components/account-numbering-systems-card";
+import { AccountTaxIdsCard } from "@/features/settings/components/account-tax-ids-card";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/(dashboard)/settings/account")({
@@ -31,6 +32,7 @@ function RouteComponent() {
         <FormCardGroup>
           <AccountGeneralCard account={account} />
           <AccountInvoicingCard account={account} />
+          <AccountTaxIdsCard account={account} />
           <AccountBusinessProfilesCard account={account} />
           <AccountNumberingSystemsCard account={account} />
           <AccountMembersCard isLocked={!account.subscription} />

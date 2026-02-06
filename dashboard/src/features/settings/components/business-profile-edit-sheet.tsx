@@ -1,3 +1,4 @@
+import { useAccountsRetrieve } from "@/api/endpoints/accounts/accounts";
 import {
   getBusinessProfilesListQueryKey,
   useUpdateBusinessProfile,
@@ -30,6 +31,7 @@ import {
 } from "@/components/ui/form-sheet";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { AccountTaxIdsCombobox } from "@/features/settings/components/account-tax-ids-combobox";
 import { getErrorSummary } from "@/lib/api/errors";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
@@ -51,17 +53,23 @@ const schema = z.object({
     postalCode: z.string().optional(),
     country: z.enum(CountryEnum).optional(),
   }),
+  tax_ids: z.array(z.string()).optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
 
 export function BusinessProfileEditSheet({
   profile,
+  accountId,
 }: {
   profile: BusinessProfile;
+  accountId: string;
 }) {
   const formId = useId();
   const queryClient = useQueryClient();
+  const { data: account } = useAccountsRetrieve(accountId, {
+    query: { enabled: !!accountId },
+  });
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -77,6 +85,7 @@ export function BusinessProfileEditSheet({
         postalCode: profile.address.postal_code || "",
         country: profile.address.country || undefined,
       },
+      tax_ids: profile.tax_ids?.map((taxId) => taxId.id) ?? [],
     },
   });
   const { mutateAsync, isPending } = useUpdateBusinessProfile({
@@ -112,6 +121,7 @@ export function BusinessProfileEditSheet({
           postal_code: values.address.postalCode || null,
           country: values.address.country || null,
         },
+        tax_ids: values.tax_ids ?? [],
       },
     });
   }
@@ -200,6 +210,29 @@ export function BusinessProfileEditSheet({
             <AddressStateField
               name="address.state"
               countryName="address.country"
+            />
+          </FormSheetGroup>
+          <FormSheetGroup>
+            <FormSheetGroupTitle>Tax IDs</FormSheetGroupTitle>
+            <FormField
+              control={form.control}
+              name="tax_ids"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tax IDs</FormLabel>
+                  <FormControl>
+                    <AccountTaxIdsCombobox
+                      taxIds={account?.tax_ids ?? []}
+                      value={field.value ?? []}
+                      onChange={field.onChange}
+                      placeholder="Select tax ids"
+                      multiple
+                      disabled={!account || account.tax_ids.length === 0}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </FormSheetGroup>
         </form>

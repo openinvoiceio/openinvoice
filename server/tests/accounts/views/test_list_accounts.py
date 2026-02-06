@@ -35,6 +35,7 @@ def test_list_accounts(api_client, user):
             "subscription": None,
             "logo_id": None,
             "logo_url": None,
+            "tax_ids": [],
             "default_business_profile": {
                 "id": str(account.default_business_profile.id),
                 "legal_name": account.default_business_profile.legal_name,

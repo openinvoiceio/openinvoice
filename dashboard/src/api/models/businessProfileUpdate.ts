@@ -30,4 +30,5 @@ export interface BusinessProfileUpdate {
   phone?: string | null;
   /** @nullable */
   address?: BusinessProfileUpdateAddress;
+  tax_ids?: string[];
 }

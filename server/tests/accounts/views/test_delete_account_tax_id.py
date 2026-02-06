@@ -7,25 +7,23 @@ from tests.factories import TaxIdFactory
 pytestmark = pytest.mark.django_db
 
 
-def test_delete_business_profile_tax_id(api_client, user, account):
-    business_profile = account.default_business_profile
+def test_delete_account_tax_id(api_client, user, account):
     tax_id = TaxIdFactory()
-    business_profile.tax_ids.add(tax_id)
+    account.tax_ids.add(tax_id)
     api_client.force_login(user)
     api_client.force_account(account)
 
-    response = api_client.delete(f"/api/v1/business-profiles/{business_profile.id}/tax-ids/{tax_id.id}")
+    response = api_client.delete(f"/api/v1/accounts/{account.id}/tax-ids/{tax_id.id}")
 
     assert response.status_code == 204
-    assert business_profile.tax_ids.count() == 0
+    assert account.tax_ids.count() == 0
 
 
-def test_delete_business_profile_tax_id_not_found(api_client, user, account):
-    business_profile = account.default_business_profile
+def test_delete_account_tax_id_not_found(api_client, user, account):
     api_client.force_login(user)
     api_client.force_account(account)
 
-    response = api_client.delete(f"/api/v1/business-profiles/{business_profile.id}/tax-ids/{uuid.uuid4()}")
+    response = api_client.delete(f"/api/v1/accounts/{account.id}/tax-ids/{uuid.uuid4()}")
 
     assert response.status_code == 404
     assert response.data == {
@@ -40,8 +38,8 @@ def test_delete_business_profile_tax_id_not_found(api_client, user, account):
     }
 
 
-def test_delete_business_profile_tax_id_requires_authentication(api_client):
-    response = api_client.delete(f"/api/v1/business-profiles/{uuid.uuid4()}/tax-ids/{uuid.uuid4()}")
+def test_delete_account_tax_id_requires_authentication(api_client):
+    response = api_client.delete(f"/api/v1/accounts/{uuid.uuid4()}/tax-ids/{uuid.uuid4()}")
 
     assert response.status_code == 403
     assert response.data == {
@@ -56,9 +54,9 @@ def test_delete_business_profile_tax_id_requires_authentication(api_client):
     }
 
 
-def test_delete_business_profile_tax_id_requires_account(api_client, user):
+def test_delete_account_tax_id_requires_account(api_client, user):
     api_client.force_login(user)
-    response = api_client.delete(f"/api/v1/business-profiles/{uuid.uuid4()}/tax-ids/{uuid.uuid4()}")
+    response = api_client.delete(f"/api/v1/accounts/{uuid.uuid4()}/tax-ids/{uuid.uuid4()}")
 
     assert response.status_code == 403
     assert response.data == {

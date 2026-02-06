@@ -150,6 +150,56 @@ class AccountSwitchAPIView(generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class AccountTaxIdCreateAPIView(generics.GenericAPIView):
+    queryset = Account.objects.none()
+    permission_classes = [IsAuthenticated, IsAccountMember]
+    lookup_url_kwarg = "account_id"
+
+    def get_queryset(self):
+        return self.request.accounts
+
+    @extend_schema(
+        operation_id="create_account_tax_id",
+        request=TaxIdCreateSerializer,
+        responses={201: TaxIdSerializer},
+    )
+    def post(self, request, *_, **__):
+        account = self.get_object()
+        serializer = TaxIdCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        if account.tax_ids.count() >= settings.MAX_TAX_IDS:
+            raise ValidationError(f"You can add at most {settings.MAX_TAX_IDS} tax IDs to an account.")
+
+        tax_id = TaxId.objects.create_tax_id(
+            type_=data["type"],
+            number=data["number"],
+            country=data.get("country"),
+        )
+        account.tax_ids.add(tax_id)
+        logger.info("Account tax ID created", account_id=account.id, tax_id_id=tax_id.id)
+
+        serializer = TaxIdSerializer(tax_id)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class AccountTaxIdDestroyAPIView(generics.GenericAPIView):
+    queryset = TaxId.objects.none()
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_queryset(self):
+        return TaxId.objects.filter(accounts__id=self.kwargs["account_id"], accounts__in=self.request.accounts)
+
+    @extend_schema(operation_id="delete_account_tax_id", request=None, responses={204: None})
+    def delete(self, _request, *_, **__):
+        tax_id = self.get_object()
+        tax_id.delete()
+
+        logger.info("Account tax ID deleted", account_id=self.kwargs["account_id"], tax_id_id=tax_id.id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 @extend_schema_view(list=extend_schema(operation_id="list_business_profiles"))
 class BusinessProfileListCreateAPIView(generics.ListAPIView):
     queryset = BusinessProfile.objects.none()
@@ -177,6 +227,8 @@ class BusinessProfileListCreateAPIView(generics.ListAPIView):
             address_data=data.get("address"),
         )
         request.account.business_profiles.add(profile)
+        if "tax_ids" in data:
+            profile.tax_ids.set(data["tax_ids"])
         logger.info("Business profile created", business_profile_id=profile.id)
 
         serializer = self.get_serializer(profile)
@@ -210,6 +262,8 @@ class BusinessProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             phone=data.get("phone", profile.phone),
             address_data=data.get("address"),
         )
+        if "tax_ids" in data:
+            profile.tax_ids.set(data["tax_ids"])
         logger.info("Business profile updated", business_profile_id=profile.id)
 
         serializer = self.get_serializer(profile)
@@ -225,67 +279,6 @@ class BusinessProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         profile.delete()
         logger.info("Business profile deleted", business_profile_id=pk)
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class BusinessProfileTaxIdCreateAPIView(generics.GenericAPIView):
-    queryset = BusinessProfile.objects.none()
-    permission_classes = [IsAuthenticated, IsAccountMember]
-
-    def get_queryset(self):
-        return BusinessProfile.objects.for_account(self.request.account)
-
-    @extend_schema(
-        operation_id="create_business_profile_tax_id",
-        request=TaxIdCreateSerializer,
-        responses={201: TaxIdSerializer},
-    )
-    def post(self, request, *_, **__):
-        profile = self.get_object()
-        serializer = TaxIdCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-
-        if profile.tax_ids.count() >= settings.MAX_TAX_IDS:
-            raise ValidationError(f"You can add at most {settings.MAX_TAX_IDS} tax IDs to a business profile.")
-
-        tax_id = TaxId.objects.create_tax_id(
-            type_=data["type"],
-            number=data["number"],
-            country=data.get("country"),
-        )
-        profile.tax_ids.add(tax_id)
-        logger.info(
-            "Business profile tax ID created",
-            business_profile_id=profile.id,
-            tax_id_id=tax_id.id,
-        )
-
-        serializer = TaxIdSerializer(tax_id)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class BusinessProfileTaxIdDestroyAPIView(generics.GenericAPIView):
-    queryset = TaxId.objects.none()
-    permission_classes = [IsAuthenticated, IsAccountMember]
-
-    def get_queryset(self):
-        return TaxId.objects.filter(
-            business_profiles__accounts__id=self.request.account.id,
-            business_profiles__id=self.kwargs["business_profile_id"],
-        )
-
-    @extend_schema(operation_id="delete_business_profile_tax_id", request=None, responses={204: None})
-    def delete(self, _request, *_, **__):
-        tax_id = self.get_object()
-
-        tax_id.delete()
-
-        logger.info(
-            "Business profile tax ID deleted",
-            business_profile_id=self.kwargs["business_profile_id"],
-            tax_id_id=tax_id.id,
-        )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

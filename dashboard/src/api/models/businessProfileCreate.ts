@@ -30,4 +30,5 @@ export interface BusinessProfileCreate {
   phone?: string | null;
   /** @nullable */
   address?: BusinessProfileCreateAddress;
+  tax_ids?: string[];
 }

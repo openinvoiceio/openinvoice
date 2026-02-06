@@ -159,6 +159,58 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/accounts/{account_id}/tax-ids:
+    post:
+      operationId: create_account_tax_id
+      parameters:
+      - in: path
+        name: account_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxIdCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxId'
+          description: ''
+  /api/v1/accounts/{account_id}/tax-ids/{id}:
+    delete:
+      operationId: delete_account_tax_id
+      parameters:
+      - in: path
+        name: account_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - accounts
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/accounts/{id}:
     get:
       operationId: accounts_retrieve
@@ -1819,30 +1871,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/BusinessProfile'
           description: ''
-  /api/v1/business-profiles/{business_profile_id}/tax-ids/{id}:
-    delete:
-      operationId: delete_business_profile_tax_id
-      parameters:
-      - in: path
-        name: business_profile_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - business-profiles
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/business-profiles/{id}:
     get:
       operationId: business_profiles_retrieve
@@ -1908,34 +1936,6 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/v1/business-profiles/{id}/tax-ids:
-    post:
-      operationId: create_business_profile_tax_id
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - business-profiles
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TaxIdCreate'
-        required: true
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TaxId'
-          description: ''
   /api/v1/config:
     get:
       operationId: get_config
@@ -6530,6 +6530,11 @@ components:
           type: string
           format: uri
           nullable: true
+        tax_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxId'
+          readOnly: true
         default_business_profile:
           $ref: '#/components/schemas/BusinessProfile'
         created_at:
@@ -6556,6 +6561,7 @@ components:
       - name
       - net_payment_term
       - subscription
+      - tax_ids
       - updated_at
     AccountCreate:
       type: object
@@ -6885,6 +6891,11 @@ components:
           allOf:
           - $ref: '#/components/schemas/Address'
           nullable: true
+        tax_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
     BusinessProfileUpdate:
       type: object
       properties:
@@ -6909,6 +6920,11 @@ components:
           allOf:
           - $ref: '#/components/schemas/Address'
           nullable: true
+        tax_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
     ClientErrorEnum:
       type: string
       enum:

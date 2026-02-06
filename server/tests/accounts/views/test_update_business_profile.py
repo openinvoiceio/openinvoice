@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from tests.factories import AccountFactory, BusinessProfileFactory
+from tests.factories import AccountFactory, BusinessProfileFactory, TaxIdFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -47,6 +47,51 @@ def test_update_business_profile(api_client, user, account):
             "country": "US",
         },
         "tax_ids": [],
+        "created_at": ANY,
+        "updated_at": ANY,
+    }
+
+
+def test_update_business_profile_tax_ids(api_client, user, account):
+    profile = BusinessProfileFactory()
+    account.business_profiles.add(profile)
+    tax_id = TaxIdFactory()
+    account.tax_ids.add(tax_id)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/business-profiles/{profile.id}",
+        {
+            "tax_ids": [str(tax_id.id)],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.data == {
+        "id": str(profile.id),
+        "legal_name": profile.legal_name,
+        "legal_number": profile.legal_number,
+        "email": profile.email,
+        "phone": profile.phone,
+        "address": {
+            "line1": profile.address.line1,
+            "line2": profile.address.line2,
+            "locality": profile.address.locality,
+            "state": profile.address.state,
+            "postal_code": profile.address.postal_code,
+            "country": str(profile.address.country),
+        },
+        "tax_ids": [
+            {
+                "id": str(tax_id.id),
+                "type": tax_id.type,
+                "number": tax_id.number,
+                "country": tax_id.country,
+                "created_at": ANY,
+                "updated_at": ANY,
+            }
+        ],
         "created_at": ANY,
         "updated_at": ANY,
     }
