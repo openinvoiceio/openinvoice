@@ -57,7 +57,7 @@ class PortalCustomerShippingUpdateSerializer(serializers.Serializer):
 
 class PortalCustomerSerializer(serializers.Serializer):
     id = serializers.UUIDField()
-    name = serializers.CharField(allow_null=True, source="default_billing_profile.name")
+    name = serializers.CharField()
     legal_name = serializers.CharField(allow_null=True, source="default_billing_profile.legal_name")
     legal_number = serializers.CharField(allow_null=True, source="default_billing_profile.legal_number")
     email = serializers.EmailField(allow_null=True, source="default_billing_profile.email")

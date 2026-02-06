@@ -6,7 +6,11 @@ pytestmark = pytest.mark.django_db
 
 
 def test_update_customer_via_portal(api_client, account):
-    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Old"))
+    customer = CustomerFactory(
+        account=account,
+        name="Old",
+        default_billing_profile=BillingProfileFactory(legal_name="Old"),
+    )
     token = PortalTokenFactory(customer=customer)["token"]
 
     response = api_client.put(

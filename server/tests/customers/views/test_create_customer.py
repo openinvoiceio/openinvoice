@@ -15,8 +15,8 @@ def test_create_customer(api_client, user, account):
     response = api_client.post(
         "/api/v1/customers",
         data={
+            "name": "Customer 1",
             "billing_profile": {
-                "name": "Customer 1",
                 "legal_name": "Customer One LLC",
                 "legal_number": "CUST-001",
                 "email": "customer1@example.com",
@@ -43,11 +43,11 @@ def test_create_customer(api_client, user, account):
     assert response.data == {
         "id": ANY,
         "account_id": str(account.id),
+        "name": "Customer 1",
         "description": "Important customer",
         "metadata": {"note": "value"},
         "default_billing_profile": {
             "id": str(customer.default_billing_profile.id),
-            "name": "Customer 1",
             "legal_name": "Customer One LLC",
             "legal_number": "CUST-001",
             "email": "customer1@example.com",
@@ -100,7 +100,8 @@ def test_create_customer_logo_not_found(api_client, user, account):
     response = api_client.post(
         "/api/v1/customers",
         data={
-            "billing_profile": {"name": "Customer 1"},
+            "name": "Customer 1",
+            "billing_profile": {"legal_name": "Customer 1"},
             "logo_id": str(logo_id),
         },
     )
@@ -127,7 +128,7 @@ def test_create_customer_limit_exceeded(api_client, user, account, settings):
 
     response = api_client.post(
         "/api/v1/customers",
-        data={"billing_profile": {"name": "Another"}},
+        data={"name": "Another"},
     )
 
     assert response.status_code == 403
@@ -147,7 +148,7 @@ def test_create_customer_requires_account(api_client, user):
     api_client.force_login(user)
     response = api_client.post(
         "/api/v1/customers",
-        data={"billing_profile": {"name": "NoAccount"}},
+        data={"name": "NoAccount"},
     )
 
     assert response.status_code == 403
@@ -166,7 +167,7 @@ def test_create_customer_requires_account(api_client, user):
 def test_create_customer_requires_authentication(api_client):
     response = api_client.post(
         "/api/v1/customers",
-        data={"billing_profile": {"name": "Customer"}},
+        data={"name": "Customer"},
     )
 
     assert response.status_code == 403

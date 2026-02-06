@@ -60,7 +60,6 @@ def test_finalize_invoice(api_client, user, account):
         "recipients": invoice.recipients,
         "billing_profile": {
             "id": str(invoice.billing_profile.id),
-            "name": invoice.billing_profile.name,
             "legal_name": invoice.billing_profile.legal_name,
             "legal_number": invoice.billing_profile.legal_number,
             "email": invoice.billing_profile.email,
@@ -85,7 +84,6 @@ def test_finalize_invoice(api_client, user, account):
         },
         "business_profile": {
             "id": str(invoice.business_profile.id),
-            "name": invoice.business_profile.name,
             "legal_name": invoice.business_profile.legal_name,
             "legal_number": invoice.business_profile.legal_number,
             "email": invoice.business_profile.email,
@@ -221,7 +219,8 @@ def test_finalize_invoice_with_shipping_uses_customer_shipping_snapshot(api_clie
     customer_shipping = CustomerShippingFactory(name="Ship to", phone="555", address=shipping_address)
     customer = CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Bill to", phone="111"),
+        name="Bill to",
+        default_billing_profile=BillingProfileFactory(legal_name="Bill to", phone="111"),
         shipping=customer_shipping,
     )
     invoice = InvoiceFactory(account=account, customer=customer, total_amount=Decimal("0.00"))
@@ -249,7 +248,8 @@ def test_finalize_invoice_with_shipping_uses_customer_shipping_snapshot(api_clie
 def test_finalize_invoice_with_shipping_uses_customer_fallback(api_client, user, account):
     customer = CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Bill to", phone="111"),
+        name="Bill to",
+        default_billing_profile=BillingProfileFactory(legal_name="Bill to", phone="111"),
         shipping=None,
     )
     invoice = InvoiceFactory(account=account, customer=customer, total_amount=Decimal("0.00"))
@@ -292,7 +292,6 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
         "recipients": invoice.recipients,
         "billing_profile": {
             "id": str(invoice.billing_profile.id),
-            "name": invoice.billing_profile.name,
             "legal_name": invoice.billing_profile.legal_name,
             "legal_number": invoice.billing_profile.legal_number,
             "email": invoice.billing_profile.email,
@@ -317,7 +316,6 @@ def test_finalize_invoice_with_zero_outstanding_amount(api_client, user, account
         },
         "business_profile": {
             "id": str(invoice.business_profile.id),
-            "name": invoice.business_profile.name,
             "legal_name": invoice.business_profile.legal_name,
             "legal_number": invoice.business_profile.legal_number,
             "email": invoice.business_profile.email,
@@ -507,7 +505,7 @@ def test_finalize_invoice_with_automatic_delivery_method(api_client, user, accou
     assert response.status_code == 200
     assert len(mailoutbox) == 1
     email = mailoutbox[0]
-    assert email.subject == f"Invoice {invoice.effective_number} from {invoice.account.default_business_profile.name}"
+    assert email.subject == f"Invoice {invoice.effective_number} from {invoice.account.name}"
     assert email.to == ["test@example.com"]
 
 

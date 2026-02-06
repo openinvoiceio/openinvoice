@@ -47,7 +47,6 @@ def test_update_quote(api_client, user, account):
         "issue_date": "2025-03-05",
         "billing_profile": {
             "id": str(customer.default_billing_profile.id),
-            "name": customer.default_billing_profile.name,
             "legal_name": customer.default_billing_profile.legal_name,
             "legal_number": customer.default_billing_profile.legal_number,
             "email": customer.default_billing_profile.email,
@@ -72,7 +71,6 @@ def test_update_quote(api_client, user, account):
         },
         "business_profile": {
             "id": str(account.default_business_profile.id),
-            "name": account.default_business_profile.name,
             "legal_name": account.default_business_profile.legal_name,
             "legal_number": account.default_business_profile.legal_number,
             "email": account.default_business_profile.email,

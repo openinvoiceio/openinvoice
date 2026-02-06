@@ -56,7 +56,7 @@
                 <section class="party party-account">
                     <h2 class="party-title">From</h2>
                     <p class="party-detail">
-                        {{ account.legal_name|default:account.name }}
+                        {{ account.legal_name|default:credit_note.account.name }}
                     </p>
                     {% if account.legal_number %}
                         <p class="party-detail">
@@ -83,7 +83,7 @@
                 <section class="party party-customer">
                     <h2 class="party-title">Credit to</h2>
                     <p class="party-detail">
-                        {{ customer.legal_name|default:customer.name }}
+                        {{ customer.legal_name|default:credit_note.customer.name }}
                     </p>
                     {% if customer.legal_number %}
                         <p class="party-detail">

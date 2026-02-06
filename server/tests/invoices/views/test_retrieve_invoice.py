@@ -43,7 +43,6 @@ def test_retrieve_invoice(api_client, user, account):
         "net_payment_term": invoice.net_payment_term,
         "billing_profile": {
             "id": str(invoice.billing_profile.id),
-            "name": invoice.billing_profile.name,
             "legal_name": invoice.billing_profile.legal_name,
             "legal_number": invoice.billing_profile.legal_number,
             "email": invoice.billing_profile.email,
@@ -68,7 +67,6 @@ def test_retrieve_invoice(api_client, user, account):
         },
         "business_profile": {
             "id": str(invoice.business_profile.id),
-            "name": invoice.business_profile.name,
             "legal_name": invoice.business_profile.legal_name,
             "legal_number": invoice.business_profile.legal_number,
             "email": invoice.business_profile.email,
@@ -358,24 +356,24 @@ def test_retrieve_finalized_invoice_returns_snapshot(
     account,
 ):
     invoice = InvoiceFactory(account=account)
-    original_account_name = invoice.account.default_business_profile.name
-    original_customer_name = invoice.customer.default_billing_profile.name
+    original_business_legal_name = invoice.business_profile.legal_name
+    original_billing_legal_name = invoice.billing_profile.legal_name
 
     api_client.force_login(user)
     api_client.force_account(account)
     send_response = api_client.post(f"/api/v1/invoices/{invoice.id}/finalize")
     assert send_response.status_code == 200
 
-    invoice.account.default_business_profile.name = "Updated account"
-    invoice.account.default_business_profile.save(update_fields=["name"])
-    invoice.customer.default_billing_profile.name = "Updated customer"
-    invoice.customer.default_billing_profile.save(update_fields=["name"])
+    invoice.account.default_business_profile.legal_name = "Updated account"
+    invoice.account.default_business_profile.save(update_fields=["legal_name"])
+    invoice.customer.default_billing_profile.legal_name = "Updated customer"
+    invoice.customer.default_billing_profile.save(update_fields=["legal_name"])
 
     response = api_client.get(f"/api/v1/invoices/{invoice.id}")
 
     assert response.status_code == 200
-    assert response.data["business_profile"]["name"] == original_account_name
-    assert response.data["billing_profile"]["name"] == original_customer_name
+    assert response.data["business_profile"]["legal_name"] == original_business_legal_name
+    assert response.data["billing_profile"]["legal_name"] == original_billing_legal_name
 
 
 def test_retrieve_draft_invoice_shipping_uses_customer_shipping(api_client, user, account):
@@ -383,7 +381,8 @@ def test_retrieve_draft_invoice_shipping_uses_customer_shipping(api_client, user
     customer_shipping = CustomerShippingFactory(name="Ship Draft", phone="111", address=shipping_address)
     customer = CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Bill Draft", phone="222"),
+        name="Bill Draft",
+        default_billing_profile=BillingProfileFactory(legal_name="Bill Draft", phone="222"),
         shipping=customer_shipping,
     )
     invoice = InvoiceFactory(account=account, customer=customer)
@@ -416,7 +415,8 @@ def test_retrieve_finalized_invoice_shipping_uses_snapshot(api_client, user, acc
     customer_shipping = CustomerShippingFactory(name="Ship Final", phone="222", address=shipping_address)
     customer = CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Bill Final", phone="333"),
+        name="Bill Final",
+        default_billing_profile=BillingProfileFactory(legal_name="Bill Final", phone="333"),
         shipping=customer_shipping,
     )
     invoice = InvoiceFactory(account=account, customer=customer)
@@ -429,7 +429,7 @@ def test_retrieve_finalized_invoice_shipping_uses_snapshot(api_client, user, acc
     invoice.recalculate()
     invoice.finalize()
 
-    customer.default_billing_profile.name = "Updated Final"
+    customer.default_billing_profile.legal_name = "Updated Final"
     customer.default_billing_profile.phone = "444"
     customer.default_billing_profile.address = AddressFactory(line1="Bill Line 2", country="US")
     customer.default_billing_profile.save()

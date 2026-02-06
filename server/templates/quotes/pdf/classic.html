@@ -22,7 +22,7 @@
                         style="max-height: 32px;"
                 />
             {% else %}
-                <div style="font-size:12px">{{ quote.business_profile.name }}</div>
+                <div style="font-size:12px">{{ quote.account.name }}</div>
             {% endif %}
         </header>
 
@@ -56,7 +56,7 @@
             <section class="party party-account">
                 <h2 class="party-title">From</h2>
                 <p class="party-detail">
-                    {{ quote.business_profile.legal_name|default:quote.business_profile.name }}
+                    {{ quote.business_profile.legal_name|default:quote.account.name }}
                 </p>
                 {% if quote.business_profile.legal_number %}
                     <p class="party-detail">
@@ -79,7 +79,7 @@
             <section class="party party-customer">
                 <h2 class="party-title">Bill to</h2>
                 <p class="party-detail">
-                    {{ quote.billing_profile.legal_name|default:quote.billing_profile.name }}
+                    {{ quote.billing_profile.legal_name|default:quote.customer.name }}
                 </p>
                 {% if quote.billing_profile.legal_number %}
                     <p class="party-detail">

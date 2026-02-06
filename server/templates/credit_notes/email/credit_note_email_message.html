@@ -73,15 +73,13 @@
     </style>
 {% endblock extra_css %}
 
-{% with account=credit_note.invoice.business_profile|default:credit_note.account.default_business_profile %}
-{% block header %}Credit note {{ credit_note.effective_number }} from {{ account.name }}{% endblock header %}
-{% endwith %}
+{% block header %}Credit note {{ credit_note.effective_number }} from {{ credit_note.account.name }}{% endblock header %}
 
 {% block content %}
-    {% with customer=credit_note.invoice.billing_profile|default:credit_note.customer.default_billing_profile account=credit_note.invoice.business_profile|default:credit_note.account.default_business_profile %}
+    {% with customer=credit_note.customer %}
         <p>Hi {{ customer.name }}</p>
 
-        <p>{{ account.name }} has issued you a credit note {{ credit_note.effective_number }}.</p>
+        <p>{{ credit_note.account.name }} has issued you a credit note {{ credit_note.effective_number }}.</p>
 
         <p>Please review the details below.</p>
 

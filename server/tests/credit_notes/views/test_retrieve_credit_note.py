@@ -62,7 +62,6 @@ def test_retrieve_credit_note(api_client, user, account):
         "pdf_id": None,
         "billing_profile": {
             "id": str(invoice.billing_profile.id),
-            "name": invoice.billing_profile.name,
             "legal_name": invoice.billing_profile.legal_name,
             "legal_number": invoice.billing_profile.legal_number,
             "email": invoice.billing_profile.email,
@@ -87,7 +86,6 @@ def test_retrieve_credit_note(api_client, user, account):
         },
         "business_profile": {
             "id": str(invoice.business_profile.id),
-            "name": invoice.business_profile.name,
             "legal_name": invoice.business_profile.legal_name,
             "legal_number": invoice.business_profile.legal_number,
             "email": invoice.business_profile.email,

@@ -22,7 +22,8 @@ pytestmark = pytest.mark.django_db
 def test_accept_quote(api_client, user, account):
     customer = CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Acme Corp", currency="USD"),
+        name="Acme Corp",
+        default_billing_profile=BillingProfileFactory(legal_name="Acme Corp", currency="USD"),
     )
     price = PriceFactory(account=account, amount=Decimal("120.00"), currency="USD")
 
@@ -60,7 +61,6 @@ def test_accept_quote(api_client, user, account):
         "issue_date": "2024-07-01",
         "billing_profile": {
             "id": str(customer.default_billing_profile.id),
-            "name": customer.default_billing_profile.name,
             "legal_name": customer.default_billing_profile.legal_name,
             "legal_number": customer.default_billing_profile.legal_number,
             "email": customer.default_billing_profile.email,
@@ -85,7 +85,6 @@ def test_accept_quote(api_client, user, account):
         },
         "business_profile": {
             "id": str(account.default_business_profile.id),
-            "name": account.default_business_profile.name,
             "legal_name": account.default_business_profile.legal_name,
             "legal_number": account.default_business_profile.legal_number,
             "email": account.default_business_profile.email,

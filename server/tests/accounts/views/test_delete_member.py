@@ -10,7 +10,7 @@ pytestmark = pytest.mark.django_db
 def test_delete_member(api_client, user, account):
     email = "test@example.com"
     user_2 = UserFactory(email=email, username=email, name="Test User")
-    account_2 = AccountFactory(default_business_profile=BusinessProfileFactory(name="Test Account 2"))
+    account_2 = AccountFactory(default_business_profile=BusinessProfileFactory(legal_name="Test Account 2"))
     member_1 = MemberFactory(user=user_2, account=account, role=MemberRole.MEMBER)
     MemberFactory(user=user_2, account=account_2, role=MemberRole.OWNER)
 

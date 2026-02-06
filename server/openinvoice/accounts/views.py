@@ -48,15 +48,20 @@ class AccountListCreateAPIView(generics.ListAPIView):
         serializer = AccountCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+        business_data = data.get("business_profile") or {}
 
+        business_profile = BusinessProfile.objects.create_profile(
+            legal_name=business_data.get("legal_name", data["name"]),
+            legal_number=business_data.get("legal_number"),
+            email=business_data.get("email", data["email"]),
+            phone=business_data.get("phone"),
+            address_data=business_data.get("address"),
+        )
         account = Account.objects.create_account(
-            name=data["business_profile"]["name"],
-            legal_name=data["business_profile"].get("legal_name"),
-            legal_number=data["business_profile"].get("legal_number"),
-            email=data["business_profile"].get("email"),
-            phone=data["business_profile"].get("phone"),
-            address_data=data["business_profile"].get("address"),
+            name=data["name"],
+            email=data["email"],
             country=data["country"],
+            business_profile=business_profile,
             created_by=request.user,
         )
         set_active_account_session(request, account)
@@ -64,7 +69,6 @@ class AccountListCreateAPIView(generics.ListAPIView):
             "Account created",
             account_id=account.id,
             created_by=request.user.id,
-            email=account.default_business_profile.email,
         )
 
         serializer = self.get_serializer(account)
@@ -92,6 +96,8 @@ class AccountRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         data = serializer.validated_data
 
         account.update(
+            name=data.get("name", account.name),
+            email=data.get("email", account.email),
             country=data.get("country", account.country),
             default_currency=data.get("default_currency", account.default_currency),
             language=data.get("language", account.language),
@@ -101,6 +107,7 @@ class AccountRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             net_payment_term=data.get("net_payment_term", account.net_payment_term),
             metadata=data.get("metadata", account.metadata),
             logo=data.get("logo", account.logo),
+            default_business_profile=data.get("default_business_profile", account.default_business_profile),
         )
         logger.info("Account updated", account_id=account.id)
 
@@ -163,7 +170,6 @@ class BusinessProfileListCreateAPIView(generics.ListAPIView):
         data = serializer.validated_data
 
         profile = BusinessProfile.objects.create_profile(
-            name=data["name"],
             legal_name=data.get("legal_name"),
             legal_number=data.get("legal_number"),
             email=data.get("email"),
@@ -198,7 +204,6 @@ class BusinessProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         data = serializer.validated_data
 
         profile.update(
-            name=data.get("name", profile.name),
             legal_name=data.get("legal_name", profile.legal_name),
             legal_number=data.get("legal_number", profile.legal_number),
             email=data.get("email", profile.email),

@@ -46,7 +46,7 @@ class QuoteListCreateAPIView(generics.ListAPIView):
     filterset_class = QuoteFilterSet
     search_fields = [
         "number",
-        "billing_profile__name",
+        "customer__name",
         "billing_profile__email",
         "lines__description",
     ]

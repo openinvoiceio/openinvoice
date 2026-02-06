@@ -53,13 +53,13 @@ def test_finalize_quote(api_client, user, account, pdf_generator):
     assert response.data["discounts"] == []
     assert response.data["taxes"] == []
     assert response.data["billing_profile"]["id"] != str(customer.default_billing_profile.id)
-    assert response.data["billing_profile"]["name"] == customer.default_billing_profile.name
+    assert response.data["billing_profile"]["legal_name"] == customer.default_billing_profile.legal_name
     assert response.data["billing_profile"]["email"] == customer.default_billing_profile.email
     assert response.data["billing_profile"]["currency"] == customer.default_billing_profile.currency
     assert response.data["billing_profile"]["tax_rates"] == []
     assert response.data["billing_profile"]["tax_ids"] == []
     assert response.data["business_profile"]["id"] != str(account.default_business_profile.id)
-    assert response.data["business_profile"]["name"] == account.default_business_profile.name
+    assert response.data["business_profile"]["legal_name"] == account.default_business_profile.legal_name
     assert response.data["business_profile"]["email"] == account.default_business_profile.email
     assert response.data["business_profile"]["tax_ids"] == []
     assert len(pdf_generator.requests) == 1
@@ -83,7 +83,7 @@ def test_finalize_quote_with_automatic_delivery(api_client, user, account, pdf_g
     assert len(pdf_generator.requests) == 1
     assert len(mailoutbox) == 1
     email = mailoutbox[0]
-    assert email.subject == f"Quote {quote.number} from {account.default_business_profile.name}"
+    assert email.subject == f"Quote {quote.number} from {account.name}"
     assert email.to == ["test@example.com"]
 
 

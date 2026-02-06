@@ -78,7 +78,7 @@ class PortalCustomerAPIView(generics.RetrieveAPIView):
         data = serializer.validated_data
 
         customer.update_portal_profile(
-            name=data.get("name", customer.default_billing_profile.name),
+            name=data.get("name", customer.name),
             email=data.get("email", customer.default_billing_profile.email),
             phone=data.get("phone", customer.default_billing_profile.phone),
             legal_name=data.get("legal_name", customer.default_billing_profile.legal_name),

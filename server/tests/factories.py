@@ -84,8 +84,7 @@ class BusinessProfileFactory(DjangoModelFactory):
     class Meta:
         model = "accounts.BusinessProfile"
 
-    name = "Test Business"
-    legal_name = None
+    legal_name = "Test Business"
     legal_number = None
     email = "business@example.com"
     phone = None
@@ -97,6 +96,8 @@ class AccountFactory(DjangoModelFactory):
         model = "accounts.Account"
         skip_postgeneration_save = True
 
+    name = "Test Business"
+    email = "business@example.com"
     is_active = True
     created_by = SubFactory(UserFactory)
     country = "PL"
@@ -141,8 +142,7 @@ class BillingProfileFactory(DjangoModelFactory):
     class Meta:
         model = "customers.BillingProfile"
 
-    name = "Test Customer"
-    legal_name = None
+    legal_name = "Test Customer"
     legal_number = None
     email = "customer@example.com"
     phone = "123456789"
@@ -159,6 +159,7 @@ class CustomerFactory(DjangoModelFactory):
         model = "customers.Customer"
         skip_postgeneration_save = True
 
+    name = "Test Customer"
     description = "Test customer"
     metadata = {}
     account = SubFactory(AccountFactory)

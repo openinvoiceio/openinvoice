@@ -11,12 +11,12 @@ from openinvoice.tax_ids.serializers import TaxIdSerializer
 from openinvoice.users.serializers import UserSerializer
 
 from .choices import InvitationStatus, MemberRole
+from .fields import BusinessProfileRelatedField
 from .models import Invitation
 
 
 class BusinessProfileSerializer(serializers.Serializer):
     id = serializers.UUIDField()
-    name = serializers.CharField()
     legal_name = serializers.CharField(allow_null=True)
     legal_number = serializers.CharField(allow_null=True)
     email = serializers.EmailField(allow_null=True)
@@ -28,7 +28,6 @@ class BusinessProfileSerializer(serializers.Serializer):
 
 
 class BusinessProfileCreateSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=255)
     legal_name = serializers.CharField(max_length=255, allow_null=True, required=False)
     legal_number = serializers.CharField(max_length=255, allow_null=True, required=False)
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
@@ -37,7 +36,6 @@ class BusinessProfileCreateSerializer(serializers.Serializer):
 
 
 class BusinessProfileUpdateSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=255, required=False)
     legal_name = serializers.CharField(max_length=255, allow_null=True, required=False)
     legal_number = serializers.CharField(max_length=255, allow_null=True, required=False)
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
@@ -47,6 +45,8 @@ class BusinessProfileUpdateSerializer(serializers.Serializer):
 
 class AccountSerializer(serializers.Serializer):
     id = serializers.UUIDField()
+    name = serializers.CharField()
+    email = serializers.EmailField()
     country = CountryField()
     default_currency = CurrencyField()
     language = LanguageField()
@@ -64,11 +64,15 @@ class AccountSerializer(serializers.Serializer):
 
 
 class AccountCreateSerializer(serializers.Serializer):
-    business_profile = BusinessProfileCreateSerializer()
+    name = serializers.CharField(max_length=255)
+    email = serializers.EmailField(max_length=255)
     country = CountryField()
+    business_profile = BusinessProfileCreateSerializer(required=False)
 
 
 class AccountUpdateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255, required=False)
+    email = serializers.EmailField(max_length=255, required=False)
     country = CountryField(required=False)
     default_currency = CurrencyField(required=False)
     language = LanguageField(required=False)
@@ -85,6 +89,10 @@ class AccountUpdateSerializer(serializers.Serializer):
     net_payment_term = serializers.IntegerField(min_value=0, required=False)
     metadata = MetadataField(required=False)
     logo_id = FileRelatedField(source="logo", allow_null=True, required=False)
+    default_business_profile_id = BusinessProfileRelatedField(
+        source="default_business_profile",
+        required=False,
+    )
 
 
 class InvitationSerializer(serializers.Serializer):

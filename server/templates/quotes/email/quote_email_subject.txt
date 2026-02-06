@@ -1,1 +1,1 @@
-Quote {{ quote.effective_number }} from {{ quote.business_profile.name }}
+Quote {{ quote.effective_number }} from {{ quote.account.name }}

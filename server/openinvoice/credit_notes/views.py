@@ -42,7 +42,7 @@ class CreditNoteListCreateAPIView(generics.ListAPIView):
     search_fields = [
         "number",
         "invoice__number",
-        "invoice__billing_profile__name",
+        "invoice__customer__name",
         "invoice__billing_profile__email",
     ]
     ordering_fields = ["created_at", "issue_date", "total_amount"]

@@ -49,7 +49,7 @@ def test_preview_invoice_format_email(api_client, user, account):
 
     assert response.status_code == 200
     assert response["Content-Type"] == "text/html; charset=utf-8"
-    assert f"Hi {invoice.billing_profile.name}" in response.content.decode()
+    assert f"Hi {invoice.customer.name}" in response.content.decode()
 
 
 def test_preview_invoice_format_pdf(api_client, user, account):
@@ -95,7 +95,7 @@ def test_preview_invoice_format_email_without_documents(api_client, user, accoun
 
     assert response.status_code == 200
     assert response["Content-Type"] == "text/html; charset=utf-8"
-    assert f"Hi {invoice.billing_profile.name}" in response.content.decode()
+    assert f"Hi {invoice.customer.name}" in response.content.decode()
 
 
 def test_preview_invoice_requires_authentication(api_client):

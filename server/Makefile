@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := all
 
 settings:
-	export DJANGO_SETTINGS_MODULE = config.settings.development
+	export DJANGO_SETTINGS_MODULE=config.settings.development
 
 .PHONY: install
 install:

@@ -5,10 +5,10 @@
 {% endblock header %}
 
 {% block content %}
-    <p>Hi {{ quote.billing_profile.name }},</p>
+    <p>Hi {{ quote.customer.name }},</p>
 
     <p>
-        {{ quote.business_profile.name }} has prepared a new quote
+        {{ quote.account.name }} has prepared a new quote
         <strong>{{ quote.effective_number }}</strong> for you.
     </p>
 
@@ -18,5 +18,5 @@
         <p><strong>Total:</strong> {{ quote.total_amount }}</p>
     {% endif %}
 
-    <p>Thanks,<br/>{{ quote.business_profile.name }}</p>
+    <p>Thanks,<br/>{{ quote.account.name }}</p>
 {% endblock content %}

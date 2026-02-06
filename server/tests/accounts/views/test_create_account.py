@@ -17,10 +17,8 @@ def test_create_account(api_client, user, settings):
     response = api_client.post(
         "/api/v1/accounts",
         data={
-            "business_profile": {
-                "name": "Test Account",
-                "email": "test@example.com",
-            },
+            "name": "Test Account",
+            "email": "test@example.com",
             "country": "PL",
         },
     )
@@ -30,6 +28,8 @@ def test_create_account(api_client, user, settings):
     assert ACTIVE_ACCOUNT_SESSION_KEY in api_client.session
     assert response.data == {
         "id": ANY,
+        "name": "Test Account",
+        "email": "test@example.com",
         "country": "PL",
         "default_currency": "PLN",
         "language": "en-us",
@@ -43,8 +43,7 @@ def test_create_account(api_client, user, settings):
         "logo_url": None,
         "default_business_profile": {
             "id": str(account.default_business_profile.id),
-            "name": "Test Account",
-            "legal_name": None,
+            "legal_name": "Test Account",
             "legal_number": None,
             "email": "test@example.com",
             "phone": None,
@@ -79,7 +78,8 @@ def test_create_account_requires_authentication(api_client):
     response = api_client.post(
         "/api/v1/accounts",
         data={
-            "business_profile": {"name": "Test", "email": "test@example.com"},
+            "name": "Test",
+            "email": "test@example.com",
             "country": "PL",
         },
     )
@@ -105,7 +105,8 @@ def test_create_account_limit_exceeded(api_client, user, settings):
     response = api_client.post(
         "/api/v1/accounts",
         data={
-            "business_profile": {"name": "Test", "email": "test@example.com"},
+            "name": "Test",
+            "email": "test@example.com",
             "country": "PL",
         },
     )

@@ -19,7 +19,8 @@ def test_search_all(api_client, user, account):
     product_alpha = ProductFactory(account=account, name="Alpha Product")
     customer_alpha = CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Alpha Customer", email="alpha@example.com"),
+        name="Alpha Customer",
+        default_billing_profile=BillingProfileFactory(legal_name="Alpha Customer", email="alpha@example.com"),
     )
     invoice_alpha = InvoiceFactory(
         account=account,
@@ -32,13 +33,15 @@ def test_search_all(api_client, user, account):
     ProductFactory(account=account, name="Beta Product")
     CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Beta Customer", email="beta@example.com"),
+        name="Beta Customer",
+        default_billing_profile=BillingProfileFactory(legal_name="Beta Customer", email="beta@example.com"),
     )
     invoice_beta = InvoiceFactory(
         account=account,
         customer=CustomerFactory(
             account=account,
-            default_billing_profile=BillingProfileFactory(name="Beta Customer", email="beta@example.com"),
+            name="Beta Customer",
+            default_billing_profile=BillingProfileFactory(legal_name="Beta Customer", email="beta@example.com"),
         ),
         number="INV-BETA",
     )
@@ -47,13 +50,15 @@ def test_search_all(api_client, user, account):
     ProductFactory(account=other_account, name="Alpha Product")
     CustomerFactory(
         account=other_account,
-        default_billing_profile=BillingProfileFactory(name="Alpha Customer", email="alpha@example.com"),
+        name="Alpha Customer",
+        default_billing_profile=BillingProfileFactory(legal_name="Alpha Customer", email="alpha@example.com"),
     )
     InvoiceFactory(
         account=other_account,
         customer=CustomerFactory(
             account=other_account,
-            default_billing_profile=BillingProfileFactory(name="Alpha Customer", email="alpha@example.com"),
+            name="Alpha Customer",
+            default_billing_profile=BillingProfileFactory(legal_name="Alpha Customer", email="alpha@example.com"),
         ),
         number="INV-ALPHA",
     )
@@ -85,11 +90,11 @@ def test_search_all(api_client, user, account):
             {
                 "id": str(customer_alpha.id),
                 "account_id": str(customer_alpha.account_id),
+                "name": customer_alpha.name,
                 "description": customer_alpha.description,
                 "metadata": customer_alpha.metadata,
                 "default_billing_profile": {
                     "id": str(customer_alpha.default_billing_profile.id),
-                    "name": customer_alpha.default_billing_profile.name,
                     "legal_name": customer_alpha.default_billing_profile.legal_name,
                     "legal_number": customer_alpha.default_billing_profile.legal_number,
                     "email": customer_alpha.default_billing_profile.email,
@@ -134,7 +139,6 @@ def test_search_all(api_client, user, account):
                 "net_payment_term": invoice_alpha.net_payment_term,
                 "billing_profile": {
                     "id": str(invoice_alpha.billing_profile.id),
-                    "name": invoice_alpha.billing_profile.name,
                     "legal_name": invoice_alpha.billing_profile.legal_name,
                     "legal_number": invoice_alpha.billing_profile.legal_number,
                     "email": invoice_alpha.billing_profile.email,
@@ -159,7 +163,6 @@ def test_search_all(api_client, user, account):
                 },
                 "business_profile": {
                     "id": str(invoice_alpha.business_profile.id),
-                    "name": invoice_alpha.business_profile.name,
                     "legal_name": invoice_alpha.business_profile.legal_name,
                     "legal_number": invoice_alpha.business_profile.legal_number,
                     "email": invoice_alpha.business_profile.email,
@@ -277,11 +280,13 @@ def test_search_customers_by_id(api_client, user, account):
 def test_search_customers_by_name(api_client, user, account):
     customer = CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Delta"),
+        name="Delta",
+        default_billing_profile=BillingProfileFactory(legal_name="Delta"),
     )
     CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Epsilon"),
+        name="Epsilon",
+        default_billing_profile=BillingProfileFactory(legal_name="Epsilon"),
     )
 
     api_client.force_login(user)
@@ -373,14 +378,16 @@ def test_search_invoices_by_number(api_client, user, account):
 def test_search_invoices_by_customer_name(api_client, user, account):
     customer = CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Zeta"),
+        name="Zeta",
+        default_billing_profile=BillingProfileFactory(legal_name="Zeta"),
     )
     invoice = InvoiceFactory(account=account, customer=customer)
     InvoiceFactory(
         account=account,
         customer=CustomerFactory(
             account=account,
-            default_billing_profile=BillingProfileFactory(name="Eta"),
+            name="Eta",
+            default_billing_profile=BillingProfileFactory(legal_name="Eta"),
         ),
     )
 
@@ -421,9 +428,10 @@ def test_search_result_limited(api_client, user, account):
         customer = CustomerFactory(
             account=account,
             default_billing_profile=BillingProfileFactory(
-                name=f"Alpha Customer {i}",
+                legal_name=f"Alpha Customer {i}",
                 email=f"alpha{i}@example.com",
             ),
+            name=f"Alpha Customer {i}",
         )
         ProductFactory(account=account, name=f"Alpha Product {i}")
         InvoiceFactory(
@@ -444,7 +452,8 @@ def test_search_result_limited(api_client, user, account):
 def test_search_returns_empty(api_client, user, account):
     CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Existing", email="exist@example.com"),
+        name="Existing",
+        default_billing_profile=BillingProfileFactory(legal_name="Existing", email="exist@example.com"),
     )
     ProductFactory(account=account, name="Existing")
     InvoiceFactory(
@@ -452,7 +461,8 @@ def test_search_returns_empty(api_client, user, account):
         number="INV-EXISTING",
         customer=CustomerFactory(
             account=account,
-            default_billing_profile=BillingProfileFactory(name="Existing", email="exist2@example.com"),
+            name="Existing",
+            default_billing_profile=BillingProfileFactory(legal_name="Existing", email="exist2@example.com"),
         ),
     )
 

@@ -9,12 +9,11 @@ from openinvoice.tax_ids.serializers import TaxIdSerializer
 from openinvoice.tax_rates.fields import TaxRateRelatedField
 from openinvoice.tax_rates.serializers import TaxRateSerializer
 
-from .fields import CustomerRelatedField
+from .fields import BillingProfileRelatedField, CustomerRelatedField, ShippingProfileRelatedField
 
 
 class BillingProfileSerializer(serializers.Serializer):
     id = serializers.UUIDField()
-    name = serializers.CharField()
     legal_name = serializers.CharField(allow_null=True)
     legal_number = serializers.CharField(allow_null=True)
     email = serializers.EmailField(allow_null=True)
@@ -33,7 +32,6 @@ class BillingProfileSerializer(serializers.Serializer):
 
 class BillingProfileCreateSerializer(serializers.Serializer):
     customer_id = CustomerRelatedField(source="customer")
-    name = serializers.CharField(max_length=255)
     legal_name = serializers.CharField(max_length=255, allow_null=True, required=False)
     legal_number = serializers.CharField(max_length=255, allow_null=True, required=False)
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
@@ -58,7 +56,6 @@ class BillingProfileCreateSerializer(serializers.Serializer):
 
 
 class CustomerBillingProfileCreateSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=255)
     legal_name = serializers.CharField(max_length=255, allow_null=True, required=False)
     legal_number = serializers.CharField(max_length=255, allow_null=True, required=False)
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
@@ -83,7 +80,6 @@ class CustomerBillingProfileCreateSerializer(serializers.Serializer):
 
 
 class BillingProfileUpdateSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=255, required=False)
     legal_name = serializers.CharField(max_length=255, allow_null=True, required=False)
     legal_number = serializers.CharField(max_length=255, allow_null=True, required=False)
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
@@ -138,6 +134,7 @@ class ShippingProfileUpdateSerializer(serializers.Serializer):
 class CustomerSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     account_id = serializers.UUIDField()
+    name = serializers.CharField()
     description = serializers.CharField(allow_null=True)
     metadata = MetadataField()
     default_billing_profile = BillingProfileSerializer()
@@ -149,7 +146,8 @@ class CustomerSerializer(serializers.Serializer):
 
 
 class CustomerCreateSerializer(serializers.Serializer):
-    billing_profile = CustomerBillingProfileCreateSerializer()
+    name = serializers.CharField(max_length=255)
+    billing_profile = CustomerBillingProfileCreateSerializer(required=False)
     shipping_profile = CustomerShippingProfileCreateSerializer(allow_null=True, required=False)
     description = serializers.CharField(max_length=600, allow_null=True, required=False)
     metadata = MetadataField(required=False)
@@ -157,9 +155,18 @@ class CustomerCreateSerializer(serializers.Serializer):
 
 
 class CustomerUpdateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255, required=False)
     description = serializers.CharField(max_length=600, allow_null=True, required=False)
     metadata = MetadataField(required=False)
     logo_id = FileRelatedField(source="logo", allow_null=True, required=False)
+    default_billing_profile_id = BillingProfileRelatedField(
+        source="default_billing_profile",
+        required=False,
+    )
+    default_shipping_profile_id = ShippingProfileRelatedField(
+        source="default_shipping_profile",
+        required=False,
+    )
 
 
 class CustomerTaxRateAssignSerializer(serializers.Serializer):

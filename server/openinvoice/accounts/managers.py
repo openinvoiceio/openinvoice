@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from django.apps import apps
+from typing import TYPE_CHECKING
+
 from django.conf import settings
 from django.db import models
 
@@ -11,31 +12,23 @@ from openinvoice.users.models import User
 
 from .choices import MemberRole
 
+if TYPE_CHECKING:
+    from .models import BusinessProfile
+
 
 class AccountManager(models.Manager):
     def create_account(
         self,
         name: str,
-        country: str,
         email: str,
+        country: str,
+        business_profile: BusinessProfile,
         created_by: User,
-        legal_name: str | None = None,
-        legal_number: str | None = None,
-        phone: str | None = None,
-        address_data: dict | None = None,
         is_active: bool = True,
     ):
-        BusinessProfile = apps.get_model("accounts", "BusinessProfile")
-        business_profile = BusinessProfile.objects.create_profile(
-            name=name,
-            legal_name=legal_name,
-            legal_number=legal_number,
-            email=email,
-            phone=phone,
-            address_data=address_data,
-        )
-
         account = self.create(
+            name=name,
+            email=email,
             country=country,
             default_currency=country_to_currency(country),
             language=settings.LANGUAGE_CODE,
@@ -45,7 +38,6 @@ class AccountManager(models.Manager):
             default_business_profile=business_profile,
         )
         account.business_profiles.add(business_profile)
-
         account.members.add(created_by, through_defaults={"role": MemberRole.OWNER})
 
         invoice_numbering_system = NumberingSystem.objects.create_default_invoice_numbering_system(
@@ -65,7 +57,6 @@ class AccountManager(models.Manager):
 class BusinessProfileManager(models.Manager):
     def create_profile(
         self,
-        name: str,
         legal_name: str | None = None,
         legal_number: str | None = None,
         email: str | None = None,
@@ -74,7 +65,6 @@ class BusinessProfileManager(models.Manager):
     ):
         address = Address.objects.create_address(**(address_data or {}))
         return self.create(
-            name=name,
             legal_name=legal_name,
             legal_number=legal_number,
             email=email,

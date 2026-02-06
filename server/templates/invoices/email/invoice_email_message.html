@@ -75,14 +75,14 @@
 
 {% block header %}
     {% if invoice.previous_revision %}Corrective invoice{% else %}Invoice{% endif %}
-    {{ invoice.effective_number }} from {{ invoice.business_profile.name }}
+    {{ invoice.effective_number }} from {{ invoice.account.name }}
 {% endblock header %}
 
 {% block content %}
-    <p>Hi {{ invoice.billing_profile.name }}</p>
+    <p>Hi {{ invoice.customer.name }}</p>
 
     <p>
-        {{ invoice.business_profile.name }} has issued you a
+        {{ invoice.account.name }} has issued you a
         {% if invoice.previous_revision %}corrective invoice{% else %}new invoice{% endif %}
         {{ invoice.effective_number }}.
     </p>

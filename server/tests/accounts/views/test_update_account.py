@@ -27,6 +27,8 @@ def test_update_account(api_client, user, account, account_logo):
     assert response.status_code == 200
     assert response.data == {
         "id": str(account.id),
+        "name": account.name,
+        "email": account.email,
         "country": "US",
         "default_currency": "USD",
         "language": "en-us",
@@ -40,7 +42,6 @@ def test_update_account(api_client, user, account, account_logo):
         "logo_url": f"http://testserver/media/{account_logo.data.name}",
         "default_business_profile": {
             "id": str(account.default_business_profile.id),
-            "name": account.default_business_profile.name,
             "legal_name": account.default_business_profile.legal_name,
             "legal_number": account.default_business_profile.legal_number,
             "email": account.default_business_profile.email,

@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 def send_invitation_email(invitation: Invitation) -> None:
     context = {
-        "account_name": invitation.account.default_business_profile.name,
+        "account_name": invitation.account.name,
         "invitation_url": settings.INVITATION_URL.format(code=invitation.code),
         "invitee_email": invitation.invited_by.email,
     }

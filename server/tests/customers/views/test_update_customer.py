@@ -26,11 +26,11 @@ def test_update_customer(api_client, user, account):
     assert response.data == {
         "id": str(customer.id),
         "account_id": str(customer.account_id),
+        "name": customer.name,
         "description": "New description",
         "metadata": {"key": "value"},
         "default_billing_profile": {
             "id": str(customer.default_billing_profile.id),
-            "name": customer.default_billing_profile.name,
             "legal_name": customer.default_billing_profile.legal_name,
             "legal_number": customer.default_billing_profile.legal_number,
             "email": customer.default_billing_profile.email,

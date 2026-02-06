@@ -11,8 +11,16 @@ pytestmark = pytest.mark.django_db
 
 
 def test_list_customers(api_client, user, account):
-    customer_1 = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Customer 1"))
-    customer_2 = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Customer 2"))
+    customer_1 = CustomerFactory(
+        account=account,
+        name="Customer 1",
+        default_billing_profile=BillingProfileFactory(legal_name="Customer 1"),
+    )
+    customer_2 = CustomerFactory(
+        account=account,
+        name="Customer 2",
+        default_billing_profile=BillingProfileFactory(legal_name="Customer 2"),
+    )
     CustomerFactory()  # another account
 
     api_client.force_login(user)
@@ -25,11 +33,11 @@ def test_list_customers(api_client, user, account):
         {
             "id": str(customer.id),
             "account_id": str(customer.account_id),
+            "name": customer.name,
             "description": customer.description,
             "metadata": customer.metadata,
             "default_billing_profile": {
                 "id": str(customer.default_billing_profile.id),
-                "name": customer.default_billing_profile.name,
                 "legal_name": customer.default_billing_profile.legal_name,
                 "legal_number": customer.default_billing_profile.legal_number,
                 "email": customer.default_billing_profile.email,
@@ -154,15 +162,15 @@ def test_list_customers_rejects_foreign_account(api_client, user, account):
 
 
 def test_list_customers_search_by_name(api_client, user, account):
-    CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Alice"))
-    CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Bob"))
+    CustomerFactory(account=account, name="Alice", default_billing_profile=BillingProfileFactory(legal_name="Alice"))
+    CustomerFactory(account=account, name="Bob", default_billing_profile=BillingProfileFactory(legal_name="Bob"))
 
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.get("/api/v1/customers", {"search": "Alice"})
 
     assert response.status_code == 200
-    assert [r["default_billing_profile"]["name"] for r in response.data["results"]] == ["Alice"]
+    assert [r["name"] for r in response.data["results"]] == ["Alice"]
 
 
 def test_list_customers_search_by_email(api_client, user, account):
@@ -202,8 +210,12 @@ def test_list_customers_search_by_description(api_client, user, account):
 
 
 def test_list_customers_order_by_created_at(api_client, user, account):
-    older = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Older"))
-    newer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Newer"))
+    older = CustomerFactory(
+        account=account, name="Older", default_billing_profile=BillingProfileFactory(legal_name="Older")
+    )
+    newer = CustomerFactory(
+        account=account, name="Newer", default_billing_profile=BillingProfileFactory(legal_name="Newer")
+    )
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -216,8 +228,12 @@ def test_list_customers_order_by_created_at(api_client, user, account):
 
 
 def test_list_customers_order_by_created_at_desc(api_client, user, account):
-    older = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Older"))
-    newer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(name="Newer"))
+    older = CustomerFactory(
+        account=account, name="Older", default_billing_profile=BillingProfileFactory(legal_name="Older")
+    )
+    newer = CustomerFactory(
+        account=account, name="Newer", default_billing_profile=BillingProfileFactory(legal_name="Newer")
+    )
 
     api_client.force_login(user)
     api_client.force_account(account)

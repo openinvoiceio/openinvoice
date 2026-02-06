@@ -24,7 +24,7 @@ def test_invoice_email_subject_template():
     invoice = InvoiceFactory()
     context = {"invoice": invoice}
     subject = render_to_string("invoices/email/invoice_email_subject.txt", context).strip()
-    assert subject == f"Invoice {invoice.effective_number} from {invoice.account.default_business_profile.name}"
+    assert subject == f"Invoice {invoice.effective_number} from {invoice.account.name}"
 
 
 def test_invoice_email_message_text_template():
@@ -39,8 +39,8 @@ def test_invoice_email_message_html_template():
     context = {"invoice": invoice}
     body = render_to_string("invoices/email/invoice_email_message.html", context)
     assert invoice.effective_number in body
-    assert invoice.account.default_business_profile.name in body
-    assert invoice.billing_profile.name in body
+    assert invoice.account.name in body
+    assert invoice.customer.name in body
 
 
 def test_invoice_email_message_text_template_with_payment_url():

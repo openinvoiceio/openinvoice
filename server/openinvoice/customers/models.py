@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 
 class Customer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
     description = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
@@ -50,13 +51,19 @@ class Customer(models.Model):
 
     def update(
         self,
+        name: str,
         description: str | None,
         metadata: dict,
         logo: File | None,
+        default_billing_profile: BillingProfile,
+        default_shipping_profile: ShippingProfile | None,
     ) -> None:
+        self.name = name
         self.description = description
         self.metadata = metadata
         self.logo = logo
+        self.default_billing_profile = default_billing_profile
+        self.default_shipping_profile = default_shipping_profile
         self.save()
 
     def update_portal_profile(
@@ -68,8 +75,9 @@ class Customer(models.Model):
         legal_number: str | None,
         address_data: dict | None,
     ) -> None:
+        self.name = name
+        self.save(update_fields=["name", "updated_at"])
         self.default_billing_profile.update(
-            name=name,
             legal_name=legal_name,
             legal_number=legal_number,
             email=email,
@@ -86,7 +94,6 @@ class Customer(models.Model):
 
 class BillingProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255)
     legal_name = models.CharField(max_length=255, null=True)
     legal_number = models.CharField(max_length=255, null=True)
     email = models.EmailField(max_length=255, null=True)
@@ -124,7 +131,6 @@ class BillingProfile(models.Model):
 
     def clone(self) -> BillingProfile:
         new_profile = BillingProfile.objects.create(
-            name=self.name,
             legal_name=self.legal_name,
             legal_number=self.legal_number,
             email=self.email,
@@ -142,7 +148,6 @@ class BillingProfile(models.Model):
 
     def update(
         self,
-        name: str,
         legal_name: str | None,
         legal_number: str | None,
         email: str | None,
@@ -154,7 +159,6 @@ class BillingProfile(models.Model):
         credit_note_numbering_system: NumberingSystem | None,
         address_data: dict | None,
     ) -> None:
-        self.name = name
         self.legal_name = legal_name
         self.legal_number = legal_number
         self.email = email

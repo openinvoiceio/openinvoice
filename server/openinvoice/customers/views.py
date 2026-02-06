@@ -34,7 +34,7 @@ class CustomerListCreateAPIView(generics.ListAPIView):
     serializer_class = CustomerSerializer
     filterset_class = CustomerFilterSet
     search_fields = [
-        "default_billing_profile__name",
+        "name",
         "default_billing_profile__email",
         "default_billing_profile__phone",
         "description",
@@ -54,11 +54,10 @@ class CustomerListCreateAPIView(generics.ListAPIView):
         serializer = CustomerCreateSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+        billing_data = data.get("billing_profile") or {}
 
-        billing_data = data["billing_profile"]
         billing_profile = BillingProfile.objects.create_profile(
-            name=billing_data["name"],
-            legal_name=billing_data.get("legal_name"),
+            legal_name=billing_data.get("legal_name", data["name"]),
             legal_number=billing_data.get("legal_number"),
             email=billing_data.get("email"),
             phone=billing_data.get("phone"),
@@ -82,6 +81,7 @@ class CustomerListCreateAPIView(generics.ListAPIView):
 
         customer = Customer.objects.create_customer(
             account=request.account,
+            name=data["name"],
             description=data.get("description"),
             metadata=data.get("metadata"),
             logo=data.get("logo"),
@@ -123,11 +123,13 @@ class CustomerRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         data = serializer.validated_data
 
         customer.update(
+            name=data.get("name", customer.name),
             description=data.get("description", customer.description),
             metadata=data.get("metadata", customer.metadata),
             logo=data.get("logo", customer.logo),
+            default_billing_profile=data.get("default_billing_profile", customer.default_billing_profile),
+            default_shipping_profile=data.get("default_shipping_profile", customer.default_shipping_profile),
         )
-
         logger.info("Customer updated", account_id=request.account.id, customer_id=customer.id)
 
         serializer = self.get_serializer(customer)
@@ -176,7 +178,6 @@ class BillingProfileListCreateAPIView(generics.ListAPIView):
 
         customer = data["customer"]
         billing_profile = BillingProfile.objects.create_profile(
-            name=data["name"],
             legal_name=data.get("legal_name"),
             legal_number=data.get("legal_number"),
             email=data.get("email"),
@@ -217,7 +218,6 @@ class BillingProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         data = serializer.validated_data
 
         profile.update(
-            name=data.get("name", profile.name),
             legal_name=data.get("legal_name", profile.legal_name),
             legal_number=data.get("legal_number", profile.legal_number),
             email=data.get("email", profile.email),

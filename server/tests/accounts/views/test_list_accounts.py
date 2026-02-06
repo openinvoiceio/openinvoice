@@ -8,9 +8,9 @@ pytestmark = pytest.mark.django_db
 
 
 def test_list_accounts(api_client, user):
-    account_1 = AccountFactory(default_business_profile=BusinessProfileFactory(name="Account 1"))
-    account_2 = AccountFactory(default_business_profile=BusinessProfileFactory(name="Account 2"))
-    AccountFactory(default_business_profile=BusinessProfileFactory(name="Account 3"))
+    account_1 = AccountFactory(default_business_profile=BusinessProfileFactory(legal_name="Account 1"))
+    account_2 = AccountFactory(default_business_profile=BusinessProfileFactory(legal_name="Account 2"))
+    AccountFactory(default_business_profile=BusinessProfileFactory(legal_name="Account 3"))
     MemberFactory(user=user, account=account_1)
     MemberFactory(user=user, account=account_2)
 
@@ -22,6 +22,8 @@ def test_list_accounts(api_client, user):
     assert response.data["results"] == [
         {
             "id": str(account.id),
+            "name": account.name,
+            "email": account.email,
             "country": str(account.country),
             "default_currency": account.default_currency,
             "language": account.language,
@@ -35,7 +37,6 @@ def test_list_accounts(api_client, user):
             "logo_url": None,
             "default_business_profile": {
                 "id": str(account.default_business_profile.id),
-                "name": account.default_business_profile.name,
                 "legal_name": account.default_business_profile.legal_name,
                 "legal_number": account.default_business_profile.legal_number,
                 "email": account.default_business_profile.email,

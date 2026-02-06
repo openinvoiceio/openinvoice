@@ -25,6 +25,8 @@ if TYPE_CHECKING:
 
 class Account(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
     is_active = models.BooleanField(default=True)
     members = models.ManyToManyField("users.User", through="accounts.Member", related_name="accounts_member_of")
     created_by = models.ForeignKey("users.User", on_delete=models.CASCADE)
@@ -63,6 +65,8 @@ class Account(models.Model):
 
     def update(
         self,
+        name: str,
+        email: str,
         country: str,
         default_currency: str,
         language: str,
@@ -72,7 +76,10 @@ class Account(models.Model):
         net_payment_term: int,
         metadata: dict,
         logo: File | None,
+        default_business_profile: BusinessProfile,
     ) -> None:
+        self.name = name
+        self.email = email
         self.country = country
         self.default_currency = default_currency
         self.language = language
@@ -82,7 +89,7 @@ class Account(models.Model):
         self.net_payment_term = net_payment_term
         self.metadata = metadata
         self.logo = logo
-
+        self.default_business_profile = default_business_profile
         self.save()
 
     def deactivate(self) -> None:
@@ -105,7 +112,6 @@ class Account(models.Model):
 
 class BusinessProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255)
     legal_name = models.CharField(max_length=255, null=True)
     legal_number = models.CharField(max_length=255, null=True)
     email = models.EmailField(max_length=255, null=True)
@@ -123,7 +129,6 @@ class BusinessProfile(models.Model):
 
     def clone(self) -> BusinessProfile:
         new_profile = BusinessProfile.objects.create(
-            name=self.name,
             legal_name=self.legal_name,
             legal_number=self.legal_number,
             email=self.email,
@@ -135,14 +140,12 @@ class BusinessProfile(models.Model):
 
     def update(
         self,
-        name: str,
         legal_name: str | None,
         legal_number: str | None,
         email: str | None,
         phone: str | None,
         address_data: dict | None,
     ) -> None:
-        self.name = name
         self.legal_name = legal_name
         self.legal_number = legal_number
         self.email = email

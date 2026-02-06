@@ -30,7 +30,7 @@
                         style="max-height: 32px;"
                 />
             {% else %}
-                <div style="font-size:12px">{{ invoice.business_profile.name }}</div>
+                <div style="font-size:12px">{{ invoice.account.name }}</div>
             {% endif %}
         </header>
 
@@ -73,7 +73,7 @@
             <section class="party party-account">
                 <h2 class="party-title">{% trans "invoice.pdf.from" %}</h2>
                 <p class="party-detail">
-                    {{ invoice.business_profile.legal_name|default:invoice.business_profile.name }}
+                    {{ invoice.business_profile.legal_name|default:invoice.account.name }}
                 </p>
                 {% if invoice.business_profile.legal_number %}
                     <p class="party-detail">
@@ -100,7 +100,7 @@
                     <div>
                         <h2 class="party-title">{% trans "invoice.pdf.bill_to" %}</h2>
                         <p class="party-detail">
-                            {{ invoice.billing_profile.legal_name|default:invoice.billing_profile.name }}
+                            {{ invoice.billing_profile.legal_name|default:invoice.customer.name }}
                         </p>
                         {% if invoice.billing_profile.legal_number %}
                             <p class="party-detail">

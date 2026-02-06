@@ -78,7 +78,7 @@ def test_list_members_requires_account(api_client, user):
 
 def test_list_members_from_other_account(api_client, user, account):
     other_user = UserFactory(email="other@example.com", username="other")
-    other_account = AccountFactory(default_business_profile=BusinessProfileFactory(name="Other Account"))
+    other_account = AccountFactory(default_business_profile=BusinessProfileFactory(legal_name="Other Account"))
     other_member = MemberFactory(account=other_account, user=other_user)
 
     api_client.force_login(user)

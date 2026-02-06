@@ -9,7 +9,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_retrieve_account(api_client, user):
-    account = AccountFactory(default_business_profile=BusinessProfileFactory(name="Test Account"))
+    account = AccountFactory(default_business_profile=BusinessProfileFactory(legal_name="Test Account"))
     MemberFactory(user=user, account=account)
 
     api_client.force_login(user)
@@ -18,6 +18,8 @@ def test_retrieve_account(api_client, user):
     assert response.status_code == 200
     assert response.data == {
         "id": str(account.id),
+        "name": account.name,
+        "email": account.email,
         "country": str(account.country),
         "default_currency": account.default_currency,
         "language": account.language,
@@ -31,7 +33,6 @@ def test_retrieve_account(api_client, user):
         "logo_url": None,
         "default_business_profile": {
             "id": str(account.default_business_profile.id),
-            "name": account.default_business_profile.name,
             "legal_name": account.default_business_profile.legal_name,
             "legal_number": account.default_business_profile.legal_number,
             "email": account.default_business_profile.email,

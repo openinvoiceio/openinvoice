@@ -17,8 +17,8 @@ class StripeCustomerManager(models.Manager):
             return self.get(account=account)
         except self.model.DoesNotExist:
             stripe_customer = stripe.Customer.create(
-                email=account.default_business_profile.email,
-                name=account.default_business_profile.name,
+                email=account.email,
+                name=account.name,
                 metadata={"account_id": str(account.id)},
             )
             return self.create(customer_id=stripe_customer.id, account=account)

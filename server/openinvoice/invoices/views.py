@@ -42,7 +42,7 @@ class InvoiceListCreateAPIView(generics.ListAPIView):
     filterset_class = InvoiceFilterSet
     search_fields = [
         "number",
-        "billing_profile__name",
+        "customer__name",
         "billing_profile__email",
         "lines__description",
     ]

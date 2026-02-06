@@ -18,6 +18,7 @@ class CustomerManager(models.Manager):
     def create_customer(
         self,
         account: Account,
+        name: str,
         default_billing_profile: BillingProfile,
         description: str | None = None,
         metadata: dict | None = None,
@@ -26,6 +27,7 @@ class CustomerManager(models.Manager):
     ) -> Customer:
         return self.create(
             account=account,
+            name=name,
             description=description,
             metadata=metadata or {},
             logo=logo,
@@ -37,7 +39,6 @@ class CustomerManager(models.Manager):
 class BillingProfileManager(models.Manager):
     def create_profile(
         self,
-        name: str,
         legal_name: str | None = None,
         legal_number: str | None = None,
         email: str | None = None,
@@ -51,7 +52,6 @@ class BillingProfileManager(models.Manager):
     ) -> BillingProfile:
         address = Address.objects.create_address(**(address_data or {}))
         return self.create(
-            name=name,
             legal_name=legal_name,
             legal_number=legal_number,
             email=email,

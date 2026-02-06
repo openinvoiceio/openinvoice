@@ -17,7 +17,6 @@ def test_create_billing_profile_with_tax_rates(api_client, user, account):
         "/api/v1/billing-profiles",
         {
             "customer_id": str(customer.id),
-            "name": "Billing",
             "currency": "USD",
             "tax_rates": [str(tax_rate.id)],
         },
@@ -26,7 +25,6 @@ def test_create_billing_profile_with_tax_rates(api_client, user, account):
     assert response.status_code == 201
     assert response.data == {
         "id": ANY,
-        "name": "Billing",
         "legal_name": None,
         "legal_number": None,
         "email": None,

@@ -11,7 +11,8 @@ def test_retrieve_customer_via_portal(api_client, account):
     shipping = CustomerShippingFactory()
     customer = CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(name="Old"),
+        name="Old",
+        default_billing_profile=BillingProfileFactory(legal_name="Old"),
         shipping=shipping,
     )
     token = PortalTokenFactory(customer=customer)["token"]
@@ -21,7 +22,7 @@ def test_retrieve_customer_via_portal(api_client, account):
     assert response.status_code == 200
     assert response.data == {
         "id": str(customer.id),
-        "name": customer.default_billing_profile.name,
+        "name": customer.name,
         "legal_name": customer.default_billing_profile.legal_name,
         "legal_number": customer.default_billing_profile.legal_number,
         "email": customer.default_billing_profile.email,

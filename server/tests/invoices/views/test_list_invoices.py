@@ -40,7 +40,6 @@ def test_list_invoices(api_client, user, account):
                 "net_payment_term": invoice.net_payment_term,
                 "billing_profile": {
                     "id": str(invoice.billing_profile.id),
-                    "name": invoice.billing_profile.name,
                     "legal_name": invoice.billing_profile.legal_name,
                     "legal_number": invoice.billing_profile.legal_number,
                     "email": invoice.billing_profile.email,
@@ -65,7 +64,6 @@ def test_list_invoices(api_client, user, account):
                 },
                 "business_profile": {
                     "id": str(invoice.business_profile.id),
-                    "name": invoice.business_profile.name,
                     "legal_name": invoice.business_profile.legal_name,
                     "legal_number": invoice.business_profile.legal_number,
                     "email": invoice.business_profile.email,
