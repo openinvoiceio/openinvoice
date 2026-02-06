@@ -1,8 +1,8 @@
-import { useAccountsRetrieve } from "@/api/endpoints/accounts/accounts";
 import {
-  getBusinessProfilesListQueryKey,
+  getAccountsBusinessProfilesListQueryKey,
+  useAccountsRetrieve,
   useUpdateBusinessProfile,
-} from "@/api/endpoints/business-profiles/business-profiles";
+} from "@/api/endpoints/accounts/accounts";
 import { CountryEnum, type BusinessProfile } from "@/api/models";
 import { AddressCountryField } from "@/components/fields/address-country-field";
 import { AddressLine1Field } from "@/components/fields/address-line1-field";
@@ -92,7 +92,7 @@ export function BusinessProfileEditSheet({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getBusinessProfilesListQueryKey(),
+          queryKey: getAccountsBusinessProfilesListQueryKey(accountId),
         });
         toast.success("Business profile updated");
         popModal();
@@ -107,6 +107,7 @@ export function BusinessProfileEditSheet({
   async function onSubmit(values: FormValues) {
     if (isPending) return;
     await mutateAsync({
+      accountId,
       id: profile.id,
       data: {
         legal_name: values.legal_name || null,

@@ -1,4 +1,4 @@
-import { useBusinessProfilesList } from "@/api/endpoints/business-profiles/business-profiles";
+import { useAccountsBusinessProfilesList } from "@/api/endpoints/accounts/accounts";
 import type { BusinessProfile } from "@/api/models";
 import {
   Command,
@@ -27,19 +27,22 @@ function getProfileHint(profile: BusinessProfile) {
 }
 
 export function BusinessProfileCombobox({
+  accountId,
   selected,
   onSelect,
   className,
   children,
   ...props
 }: Omit<React.ComponentProps<typeof PopoverContent>, "onSelect"> & {
+  accountId: string;
   selected?: BusinessProfile | null;
   onSelect?: (profile: BusinessProfile | null) => Promise<void> | void;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const debounce = useDebounce(search, 400);
-  const { data } = useBusinessProfilesList(
+  const { data } = useAccountsBusinessProfilesList(
+    accountId,
     {
       page_size: 8,
       ordering: "-created_at",

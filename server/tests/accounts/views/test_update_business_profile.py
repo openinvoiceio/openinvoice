@@ -17,7 +17,7 @@ def test_update_business_profile(api_client, user, account):
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.put(
-        f"/api/v1/business-profiles/{profile.id}",
+        f"/api/v1/accounts/{account.id}/business-profiles/{profile.id}",
         {
             "legal_name": "New",
             "email": "info@example.com",
@@ -61,7 +61,7 @@ def test_update_business_profile_tax_ids(api_client, user, account):
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.put(
-        f"/api/v1/business-profiles/{profile.id}",
+        f"/api/v1/accounts/{account.id}/business-profiles/{profile.id}",
         {
             "tax_ids": [str(tax_id.id)],
         },
@@ -99,7 +99,7 @@ def test_update_business_profile_tax_ids(api_client, user, account):
 
 def test_update_business_profile_requires_authentication(api_client):
     response = api_client.put(
-        f"/api/v1/business-profiles/{uuid.uuid4()}",
+        f"/api/v1/accounts/{uuid.uuid4()}/business-profiles/{uuid.uuid4()}",
         {"legal_name": "New"},
     )
 
@@ -119,7 +119,7 @@ def test_update_business_profile_requires_authentication(api_client):
 def test_update_business_profile_requires_account(api_client, user):
     api_client.force_login(user)
     response = api_client.put(
-        f"/api/v1/business-profiles/{uuid.uuid4()}",
+        f"/api/v1/accounts/{uuid.uuid4()}/business-profiles/{uuid.uuid4()}",
         {"legal_name": "New"},
     )
 
@@ -143,7 +143,7 @@ def test_update_business_profile_rejects_foreign_account(api_client, user, accou
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.put(
-        f"/api/v1/business-profiles/{profile.id}",
+        f"/api/v1/accounts/{other_account.id}/business-profiles/{profile.id}",
         {"legal_name": "New"},
     )
 

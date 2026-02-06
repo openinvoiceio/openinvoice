@@ -1,4 +1,4 @@
-import { useBusinessProfilesList } from "@/api/endpoints/business-profiles/business-profiles";
+import { useAccountsBusinessProfilesList } from "@/api/endpoints/accounts/accounts";
 import type { Account } from "@/api/models";
 import { pushModal } from "@/components/push-modals";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,7 @@ import { BusinessProfileDropdown } from "@/features/settings/components/business
 import { MoreHorizontalIcon } from "lucide-react";
 
 export function AccountBusinessProfilesCard({ account }: { account: Account }) {
-  const { data } = useBusinessProfilesList({
+  const { data } = useAccountsBusinessProfilesList(account.id, {
     ordering: "-created_at",
     page_size: 20,
   });
@@ -104,7 +104,9 @@ export function AccountBusinessProfilesCard({ account }: { account: Account }) {
       <FormCardFooter>
         <Button
           type="button"
-          onClick={() => pushModal("BusinessProfileCreateSheet")}
+          onClick={() =>
+            pushModal("BusinessProfileCreateSheet", { accountId: account.id })
+          }
         >
           Add
         </Button>

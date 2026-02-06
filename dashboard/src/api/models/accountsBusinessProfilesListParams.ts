@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type BusinessProfilesListParams = {
+export type AccountsBusinessProfilesListParams = {
   /**
    * Which field to use when ordering the results.
    */

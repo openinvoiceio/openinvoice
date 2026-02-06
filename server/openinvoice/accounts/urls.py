@@ -24,8 +24,11 @@ urlpatterns = [
         "accounts/<uuid:account_id>/tax-ids/<uuid:pk>",
         AccountTaxIdDestroyAPIView.as_view(),
     ),
-    path("business-profiles", BusinessProfileListCreateAPIView.as_view()),
-    path("business-profiles/<uuid:pk>", BusinessProfileRetrieveUpdateDestroyAPIView.as_view()),
+    path("accounts/<uuid:account_id>/business-profiles", BusinessProfileListCreateAPIView.as_view()),
+    path(
+        "accounts/<uuid:account_id>/business-profiles/<uuid:pk>",
+        BusinessProfileRetrieveUpdateDestroyAPIView.as_view(),
+    ),
     path("accounts/<uuid:account_id>/members", MemberListAPIView.as_view()),
     path("accounts/<uuid:account_id>/members/<int:pk>", MemberRetrieveDestroyAPIView.as_view()),
     path("invitations", InvitationListCreateAPIView.as_view()),

@@ -1,12 +1,10 @@
 import {
+  getAccountsBusinessProfilesListQueryKey,
   getAccountsListQueryKey,
   getAccountsRetrieveQueryKey,
+  useDeleteBusinessProfile,
   useUpdateAccount,
 } from "@/api/endpoints/accounts/accounts";
-import {
-  getBusinessProfilesListQueryKey,
-  useDeleteBusinessProfile,
-} from "@/api/endpoints/business-profiles/business-profiles";
 import type { BusinessProfile } from "@/api/models";
 import { popModal, pushModal } from "@/components/push-modals";
 import {
@@ -54,7 +52,7 @@ function useSetDefaultBusinessProfileAction({
             queryKey: getAccountsRetrieveQueryKey(accountId),
           }),
           queryClient.invalidateQueries({
-            queryKey: getBusinessProfilesListQueryKey(),
+            queryKey: getAccountsBusinessProfilesListQueryKey(accountId),
           }),
         ]);
         toast.success("Business profile set as default");
@@ -82,8 +80,10 @@ function useSetDefaultBusinessProfileAction({
 }
 
 function useDeleteBusinessProfileAction({
+  accountId,
   defaultProfileId,
 }: {
+  accountId: string;
   defaultProfileId: string | null;
 }): DropdownAction<BusinessProfile> {
   const queryClient = useQueryClient();
@@ -91,7 +91,7 @@ function useDeleteBusinessProfileAction({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getBusinessProfilesListQueryKey(),
+          queryKey: getAccountsBusinessProfilesListQueryKey(accountId),
         });
         toast.success("Business profile deleted");
         popModal();
@@ -117,7 +117,7 @@ function useDeleteBusinessProfileAction({
     onSelect: (profile) =>
       pushModal("DestructiveDialog", {
         entity: profile.legal_name || profile.email || "Business profile",
-        onConfirm: () => void mutateAsync({ id: profile.id }),
+        onConfirm: () => void mutateAsync({ accountId, id: profile.id }),
       }),
   };
 }
@@ -158,7 +158,9 @@ export function BusinessProfileDropdown({
           ],
         },
         {
-          items: [useDeleteBusinessProfileAction({ defaultProfileId })],
+          items: [
+            useDeleteBusinessProfileAction({ accountId, defaultProfileId }),
+          ],
           danger: true,
         },
       ]}

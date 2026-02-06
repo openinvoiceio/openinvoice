@@ -1,7 +1,7 @@
 import {
-  getBusinessProfilesListQueryKey,
+  getAccountsBusinessProfilesListQueryKey,
   useCreateBusinessProfile,
-} from "@/api/endpoints/business-profiles/business-profiles";
+} from "@/api/endpoints/accounts/accounts";
 import { CountryEnum, type BusinessProfile } from "@/api/models";
 import { AddressCountryField } from "@/components/fields/address-country-field";
 import { AddressLine1Field } from "@/components/fields/address-line1-field";
@@ -56,8 +56,10 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export function BusinessProfileCreateSheet({
+  accountId,
   onSuccess,
 }: {
+  accountId: string;
   onSuccess?: (profile: BusinessProfile) => void;
 }) {
   const formId = useId();
@@ -83,7 +85,7 @@ export function BusinessProfileCreateSheet({
     mutation: {
       onSuccess: async (profile) => {
         await queryClient.invalidateQueries({
-          queryKey: getBusinessProfilesListQueryKey(),
+          queryKey: getAccountsBusinessProfilesListQueryKey(accountId),
         });
         onSuccess?.(profile);
         toast.success("Business profile created");
@@ -99,6 +101,7 @@ export function BusinessProfileCreateSheet({
   async function onSubmit(values: FormValues) {
     if (isPending) return;
     await mutateAsync({
+      accountId,
       data: {
         legal_name: values.legal_name || null,
         legal_number: values.legal_number || null,

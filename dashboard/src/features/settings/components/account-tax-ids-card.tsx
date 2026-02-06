@@ -1,8 +1,8 @@
 import {
+  getAccountsBusinessProfilesListQueryKey,
   getAccountsRetrieveQueryKey,
   useDeleteAccountTaxId,
 } from "@/api/endpoints/accounts/accounts";
-import { getBusinessProfilesListQueryKey } from "@/api/endpoints/business-profiles/business-profiles";
 import type { Account } from "@/api/models";
 import { pushModal } from "@/components/push-modals";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ export function AccountTaxIdsCard({ account }: { account: Account }) {
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getBusinessProfilesListQueryKey(),
+          queryKey: getAccountsBusinessProfilesListQueryKey(account.id),
         });
         await queryClient.invalidateQueries({
           queryKey: getAccountsRetrieveQueryKey(account.id),

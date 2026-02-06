@@ -44,7 +44,7 @@ class AccountListCreateAPIView(generics.ListAPIView):
         request=AccountCreateSerializer,
         responses={201: AccountSerializer},
     )
-    def post(self, request):
+    def post(self, request, **_):
         serializer = AccountCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -206,15 +206,20 @@ class BusinessProfileListCreateAPIView(generics.ListAPIView):
     serializer_class = BusinessProfileSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
 
+    def get_account(self):
+        return get_object_or_404(self.request.accounts, id=self.kwargs["account_id"])
+
     def get_queryset(self):
-        return BusinessProfile.objects.for_account(self.request.account).order_by("-created_at")
+        account = self.get_account()
+        return BusinessProfile.objects.for_account(account).order_by("-created_at")
 
     @extend_schema(
         operation_id="create_business_profile",
         request=BusinessProfileCreateSerializer,
         responses={201: BusinessProfileSerializer},
     )
-    def post(self, request):
+    def post(self, request, **_):
+        account = self.get_account()
         serializer = BusinessProfileCreateSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -226,7 +231,7 @@ class BusinessProfileListCreateAPIView(generics.ListAPIView):
             phone=data.get("phone"),
             address_data=data.get("address"),
         )
-        request.account.business_profiles.add(profile)
+        account.business_profiles.add(profile)
         if "tax_ids" in data:
             profile.tax_ids.set(data["tax_ids"])
         logger.info("Business profile created", business_profile_id=profile.id)
@@ -241,8 +246,12 @@ class BusinessProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     serializer_class = BusinessProfileSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
 
+    def get_account(self):
+        return get_object_or_404(self.request.accounts, id=self.kwargs["account_id"])
+
     def get_queryset(self):
-        return BusinessProfile.objects.for_account(self.request.account)
+        account = self.get_account()
+        return BusinessProfile.objects.for_account(account)
 
     @extend_schema(
         operation_id="update_business_profile",
@@ -270,7 +279,7 @@ class BusinessProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         return Response(serializer.data)
 
     @extend_schema(operation_id="delete_business_profile", request=None, responses={204: None})
-    def delete(self, _request, pk):
+    def delete(self, _request, pk, **_):
         profile = self.get_object()
 
         if Account.objects.filter(default_business_profile=profile).exists():

@@ -1,3 +1,4 @@
+import uuid
 from unittest.mock import ANY
 
 import pytest
@@ -17,7 +18,7 @@ def test_list_business_profiles(api_client, user, account):
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get("/api/v1/business-profiles")
+    response = api_client.get(f"/api/v1/accounts/{account.id}/business-profiles")
 
     assert response.status_code == 200
     assert response.data == {
@@ -49,7 +50,7 @@ def test_list_business_profiles(api_client, user, account):
 
 
 def test_list_business_profiles_requires_authentication(api_client):
-    response = api_client.get("/api/v1/business-profiles")
+    response = api_client.get(f"/api/v1/accounts/{uuid.uuid4()}/business-profiles")
 
     assert response.status_code == 403
     assert response.data == {
@@ -66,7 +67,7 @@ def test_list_business_profiles_requires_authentication(api_client):
 
 def test_list_business_profiles_requires_account(api_client, user):
     api_client.force_login(user)
-    response = api_client.get("/api/v1/business-profiles")
+    response = api_client.get(f"/api/v1/accounts/{uuid.uuid4()}/business-profiles")
 
     assert response.status_code == 403
     assert response.data == {

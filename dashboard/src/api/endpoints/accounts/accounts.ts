@@ -27,11 +27,16 @@ import type { ErrorType } from "../../../lib/api/client";
 import type {
   Account,
   AccountCreate,
+  AccountsBusinessProfilesListParams,
   AccountsListParams,
   AccountsMembersListParams,
   AccountUpdate,
+  BusinessProfile,
+  BusinessProfileCreate,
+  BusinessProfileUpdate,
   Member,
   PaginatedAccountList,
+  PaginatedBusinessProfileList,
   PaginatedMemberList,
   TaxId,
   TaxIdCreate,
@@ -384,6 +389,904 @@ export const useCreateAccount = <
   TContext
 > => {
   const mutationOptions = getCreateAccountMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const accountsBusinessProfilesList = (
+  accountId: string,
+  params?: AccountsBusinessProfilesListParams,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<PaginatedBusinessProfileList>(
+    {
+      url: `/api/v1/accounts/${accountId}/business-profiles`,
+      method: "GET",
+      params,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getAccountsBusinessProfilesListQueryKey = (
+  accountId?: string,
+  params?: AccountsBusinessProfilesListParams,
+) => {
+  return [
+    `/api/v1/accounts/${accountId}/business-profiles`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getAccountsBusinessProfilesListQueryOptions = <
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsBusinessProfilesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAccountsBusinessProfilesListQueryKey(accountId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof accountsBusinessProfilesList>>
+  > = ({ signal }) =>
+    accountsBusinessProfilesList(accountId, params, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!accountId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AccountsBusinessProfilesListQueryResult = NonNullable<
+  Awaited<ReturnType<typeof accountsBusinessProfilesList>>
+>;
+export type AccountsBusinessProfilesListQueryError = ErrorType<unknown>;
+
+export function useAccountsBusinessProfilesList<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params: undefined | AccountsBusinessProfilesListParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+          TError,
+          Awaited<ReturnType<typeof accountsBusinessProfilesList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsBusinessProfilesList<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsBusinessProfilesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+          TError,
+          Awaited<ReturnType<typeof accountsBusinessProfilesList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsBusinessProfilesList<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsBusinessProfilesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useAccountsBusinessProfilesList<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsBusinessProfilesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAccountsBusinessProfilesListQueryOptions(
+    accountId,
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getAccountsBusinessProfilesListSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsBusinessProfilesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAccountsBusinessProfilesListQueryKey(accountId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof accountsBusinessProfilesList>>
+  > = ({ signal }) =>
+    accountsBusinessProfilesList(accountId, params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AccountsBusinessProfilesListSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof accountsBusinessProfilesList>>
+>;
+export type AccountsBusinessProfilesListSuspenseQueryError = ErrorType<unknown>;
+
+export function useAccountsBusinessProfilesListSuspense<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params: undefined | AccountsBusinessProfilesListParams,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsBusinessProfilesListSuspense<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsBusinessProfilesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsBusinessProfilesListSuspense<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsBusinessProfilesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useAccountsBusinessProfilesListSuspense<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsBusinessProfilesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAccountsBusinessProfilesListSuspenseQueryOptions(
+    accountId,
+    params,
+    options,
+  );
+
+  const query = useSuspenseQuery(
+    queryOptions,
+    queryClient,
+  ) as UseSuspenseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const createBusinessProfile = (
+  accountId: string,
+  businessProfileCreate: BusinessProfileCreate,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<BusinessProfile>(
+    {
+      url: `/api/v1/accounts/${accountId}/business-profiles`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: businessProfileCreate,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getCreateBusinessProfileMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createBusinessProfile>>,
+    TError,
+    { accountId: string; data: BusinessProfileCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createBusinessProfile>>,
+  TError,
+  { accountId: string; data: BusinessProfileCreate },
+  TContext
+> => {
+  const mutationKey = ["createBusinessProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createBusinessProfile>>,
+    { accountId: string; data: BusinessProfileCreate }
+  > = (props) => {
+    const { accountId, data } = props ?? {};
+
+    return createBusinessProfile(accountId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateBusinessProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createBusinessProfile>>
+>;
+export type CreateBusinessProfileMutationBody = BusinessProfileCreate;
+export type CreateBusinessProfileMutationError = ErrorType<unknown>;
+
+export const useCreateBusinessProfile = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createBusinessProfile>>,
+      TError,
+      { accountId: string; data: BusinessProfileCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createBusinessProfile>>,
+  TError,
+  { accountId: string; data: BusinessProfileCreate },
+  TContext
+> => {
+  const mutationOptions = getCreateBusinessProfileMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const accountsBusinessProfilesRetrieve = (
+  accountId: string,
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<BusinessProfile>(
+    {
+      url: `/api/v1/accounts/${accountId}/business-profiles/${id}`,
+      method: "GET",
+      signal,
+    },
+    options,
+  );
+};
+
+export const getAccountsBusinessProfilesRetrieveQueryKey = (
+  accountId?: string,
+  id?: string,
+) => {
+  return [`/api/v1/accounts/${accountId}/business-profiles/${id}`] as const;
+};
+
+export const getAccountsBusinessProfilesRetrieveQueryOptions = <
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAccountsBusinessProfilesRetrieveQueryKey(accountId, id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>
+  > = ({ signal }) =>
+    accountsBusinessProfilesRetrieve(accountId, id, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!(accountId && id),
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AccountsBusinessProfilesRetrieveQueryResult = NonNullable<
+  Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>
+>;
+export type AccountsBusinessProfilesRetrieveQueryError = ErrorType<unknown>;
+
+export function useAccountsBusinessProfilesRetrieve<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+          TError,
+          Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsBusinessProfilesRetrieve<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+          TError,
+          Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsBusinessProfilesRetrieve<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useAccountsBusinessProfilesRetrieve<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAccountsBusinessProfilesRetrieveQueryOptions(
+    accountId,
+    id,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getAccountsBusinessProfilesRetrieveSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAccountsBusinessProfilesRetrieveQueryKey(accountId, id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>
+  > = ({ signal }) =>
+    accountsBusinessProfilesRetrieve(accountId, id, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AccountsBusinessProfilesRetrieveSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>
+>;
+export type AccountsBusinessProfilesRetrieveSuspenseQueryError =
+  ErrorType<unknown>;
+
+export function useAccountsBusinessProfilesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsBusinessProfilesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsBusinessProfilesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useAccountsBusinessProfilesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsBusinessProfilesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAccountsBusinessProfilesRetrieveSuspenseQueryOptions(
+    accountId,
+    id,
+    options,
+  );
+
+  const query = useSuspenseQuery(
+    queryOptions,
+    queryClient,
+  ) as UseSuspenseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const updateBusinessProfile = (
+  accountId: string,
+  id: string,
+  businessProfileUpdate: BusinessProfileUpdate,
+  options?: SecondParameter<typeof axiosInstance>,
+) => {
+  return axiosInstance<BusinessProfile>(
+    {
+      url: `/api/v1/accounts/${accountId}/business-profiles/${id}`,
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      data: businessProfileUpdate,
+    },
+    options,
+  );
+};
+
+export const getUpdateBusinessProfileMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateBusinessProfile>>,
+    TError,
+    { accountId: string; id: string; data: BusinessProfileUpdate },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateBusinessProfile>>,
+  TError,
+  { accountId: string; id: string; data: BusinessProfileUpdate },
+  TContext
+> => {
+  const mutationKey = ["updateBusinessProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateBusinessProfile>>,
+    { accountId: string; id: string; data: BusinessProfileUpdate }
+  > = (props) => {
+    const { accountId, id, data } = props ?? {};
+
+    return updateBusinessProfile(accountId, id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateBusinessProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateBusinessProfile>>
+>;
+export type UpdateBusinessProfileMutationBody = BusinessProfileUpdate;
+export type UpdateBusinessProfileMutationError = ErrorType<unknown>;
+
+export const useUpdateBusinessProfile = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateBusinessProfile>>,
+      TError,
+      { accountId: string; id: string; data: BusinessProfileUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateBusinessProfile>>,
+  TError,
+  { accountId: string; id: string; data: BusinessProfileUpdate },
+  TContext
+> => {
+  const mutationOptions = getUpdateBusinessProfileMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const deleteBusinessProfile = (
+  accountId: string,
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+) => {
+  return axiosInstance<void>(
+    {
+      url: `/api/v1/accounts/${accountId}/business-profiles/${id}`,
+      method: "DELETE",
+    },
+    options,
+  );
+};
+
+export const getDeleteBusinessProfileMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteBusinessProfile>>,
+    TError,
+    { accountId: string; id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteBusinessProfile>>,
+  TError,
+  { accountId: string; id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteBusinessProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteBusinessProfile>>,
+    { accountId: string; id: string }
+  > = (props) => {
+    const { accountId, id } = props ?? {};
+
+    return deleteBusinessProfile(accountId, id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteBusinessProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteBusinessProfile>>
+>;
+
+export type DeleteBusinessProfileMutationError = ErrorType<unknown>;
+
+export const useDeleteBusinessProfile = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteBusinessProfile>>,
+      TError,
+      { accountId: string; id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteBusinessProfile>>,
+  TError,
+  { accountId: string; id: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteBusinessProfileMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

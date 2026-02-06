@@ -13,7 +13,7 @@ def test_retrieve_business_profile(api_client, user, account):
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get(f"/api/v1/business-profiles/{profile.id}")
+    response = api_client.get(f"/api/v1/accounts/{account.id}/business-profiles/{profile.id}")
 
     assert response.status_code == 200
     assert response.data == {
@@ -39,7 +39,7 @@ def test_retrieve_business_profile(api_client, user, account):
 def test_retrieve_business_profile_not_found(api_client, user, account):
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get(f"/api/v1/business-profiles/{uuid.uuid4()}")
+    response = api_client.get(f"/api/v1/accounts/{account.id}/business-profiles/{uuid.uuid4()}")
 
     assert response.status_code == 404
     assert response.data == {
@@ -57,7 +57,7 @@ def test_retrieve_business_profile_not_found(api_client, user, account):
 def test_retrieve_business_profile_requires_authentication(api_client, account):
     profile = account.default_business_profile
 
-    response = api_client.get(f"/api/v1/business-profiles/{profile.id}")
+    response = api_client.get(f"/api/v1/accounts/{account.id}/business-profiles/{profile.id}")
 
     assert response.status_code == 403
     assert response.data == {
@@ -77,7 +77,7 @@ def test_retrieve_business_profile_requires_account(api_client, user):
     profile = account.default_business_profile
 
     api_client.force_login(user)
-    response = api_client.get(f"/api/v1/business-profiles/{profile.id}")
+    response = api_client.get(f"/api/v1/accounts/{account.id}/business-profiles/{profile.id}")
 
     assert response.status_code == 403
     assert response.data == {
@@ -98,7 +98,7 @@ def test_retrieve_business_profile_rejects_foreign_account(api_client, user, acc
 
     api_client.force_login(user)
     api_client.force_account(account)
-    response = api_client.get(f"/api/v1/business-profiles/{profile.id}")
+    response = api_client.get(f"/api/v1/accounts/{other_account.id}/business-profiles/{profile.id}")
 
     assert response.status_code == 404
     assert response.data == {

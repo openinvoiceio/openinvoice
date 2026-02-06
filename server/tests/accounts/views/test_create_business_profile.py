@@ -1,3 +1,4 @@
+import uuid
 from unittest.mock import ANY
 
 import pytest
@@ -11,7 +12,7 @@ def test_create_business_profile(api_client, user, account):
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.post(
-        "/api/v1/business-profiles",
+        f"/api/v1/accounts/{account.id}/business-profiles",
         {
             "legal_name": "New Business",
             "email": "info@example.com",
@@ -43,7 +44,7 @@ def test_create_business_profile(api_client, user, account):
 
 def test_create_business_profile_requires_authentication(api_client):
     response = api_client.post(
-        "/api/v1/business-profiles",
+        f"/api/v1/accounts/{uuid.uuid4()}/business-profiles",
         {"legal_name": "New"},
     )
 
@@ -63,7 +64,7 @@ def test_create_business_profile_requires_authentication(api_client):
 def test_create_business_profile_requires_account(api_client, user):
     api_client.force_login(user)
     response = api_client.post(
-        "/api/v1/business-profiles",
+        f"/api/v1/accounts/{uuid.uuid4()}/business-profiles",
         {"legal_name": "New"},
     )
 
@@ -80,24 +81,24 @@ def test_create_business_profile_requires_account(api_client, user):
     }
 
 
-def test_create_business_profile_rejects_foreign_account(api_client, user):
+def test_create_business_profile_rejects_foreign_account(api_client, user, account):
     other_account = AccountFactory()
 
     api_client.force_login(user)
-    api_client.force_account(other_account)
+    api_client.force_account(account)
     response = api_client.post(
-        "/api/v1/business-profiles",
+        f"/api/v1/accounts/{other_account.id}/business-profiles",
         {"legal_name": "New"},
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 404
     assert response.data == {
         "type": "client_error",
         "errors": [
             {
                 "attr": None,
-                "code": "permission_denied",
-                "detail": "You do not have permission to perform this action.",
+                "code": "not_found",
+                "detail": "Not found.",
             }
         ],
     }
