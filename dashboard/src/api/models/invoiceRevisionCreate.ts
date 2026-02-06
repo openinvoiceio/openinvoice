@@ -13,6 +13,8 @@ import type { InvoiceRevisionCreateShipping } from "./invoiceRevisionCreateShipp
 import type { TaxBehaviorEnum } from "./taxBehaviorEnum";
 
 export interface InvoiceRevisionCreate {
+  billing_profile_id?: string;
+  business_profile_id?: string;
   /**
    * @maxLength 255
    * @nullable

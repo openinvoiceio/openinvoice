@@ -12,6 +12,8 @@ import type { QuoteUpdateMetadata } from "./quoteUpdateMetadata";
 
 export interface QuoteUpdate {
   customer_id?: string;
+  billing_profile_id?: string;
+  business_profile_id?: string;
   /**
    * @maxLength 255
    * @nullable

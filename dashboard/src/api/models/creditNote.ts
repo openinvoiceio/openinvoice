@@ -5,8 +5,8 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { CreditNoteAccount } from "./creditNoteAccount";
-import type { CreditNoteCustomer } from "./creditNoteCustomer";
+import type { BillingProfile } from "./billingProfile";
+import type { BusinessProfile } from "./businessProfile";
 import type { CreditNoteLine } from "./creditNoteLine";
 import type { CreditNotePaymentProvider } from "./creditNotePaymentProvider";
 import type { CreditNoteReasonEnum } from "./creditNoteReasonEnum";
@@ -52,8 +52,8 @@ export interface CreditNote {
   voided_at: string | null;
   /** @nullable */
   pdf_id: string | null;
-  readonly customer: CreditNoteCustomer;
-  readonly account: CreditNoteAccount;
+  readonly billing_profile: BillingProfile;
+  readonly business_profile: BusinessProfile;
   readonly lines: readonly CreditNoteLine[];
   readonly taxes: readonly CreditNoteTax[];
   readonly tax_breakdown: readonly CreditNoteTaxBreakdownItem[];

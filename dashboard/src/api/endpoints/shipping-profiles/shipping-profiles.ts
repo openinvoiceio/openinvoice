@@ -25,76 +25,87 @@ import type {
 import { axiosInstance } from "../../../lib/api/client";
 import type { ErrorType } from "../../../lib/api/client";
 import type {
-  Customer,
-  CustomerCreate,
-  CustomersListParams,
-  CustomerUpdate,
-  PaginatedCustomerList,
+  PaginatedShippingProfileList,
+  ShippingProfile,
+  ShippingProfileCreate,
+  ShippingProfilesListParams,
+  ShippingProfileUpdate,
 } from "../../models";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
-export const customersList = (
-  params?: CustomersListParams,
+export const shippingProfilesList = (
+  params?: ShippingProfilesListParams,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return axiosInstance<PaginatedCustomerList>(
-    { url: `/api/v1/customers`, method: "GET", params, signal },
+  return axiosInstance<PaginatedShippingProfileList>(
+    { url: `/api/v1/shipping-profiles`, method: "GET", params, signal },
     options,
   );
 };
 
-export const getCustomersListQueryKey = (params?: CustomersListParams) => {
-  return [`/api/v1/customers`, ...(params ? [params] : [])] as const;
+export const getShippingProfilesListQueryKey = (
+  params?: ShippingProfilesListParams,
+) => {
+  return [`/api/v1/shipping-profiles`, ...(params ? [params] : [])] as const;
 };
 
-export const getCustomersListQueryOptions = <
-  TData = Awaited<ReturnType<typeof customersList>>,
+export const getShippingProfilesListQueryOptions = <
+  TData = Awaited<ReturnType<typeof shippingProfilesList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: CustomersListParams,
+  params?: ShippingProfilesListParams,
   options?: {
     query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof customersList>>, TError, TData>
+      UseQueryOptions<
+        Awaited<ReturnType<typeof shippingProfilesList>>,
+        TError,
+        TData
+      >
     >;
     request?: SecondParameter<typeof axiosInstance>;
   },
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getCustomersListQueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ?? getShippingProfilesListQueryKey(params);
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof customersList>>> = ({
-    signal,
-  }) => customersList(params, requestOptions, signal);
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof shippingProfilesList>>
+  > = ({ signal }) => shippingProfilesList(params, requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof customersList>>,
+    Awaited<ReturnType<typeof shippingProfilesList>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type CustomersListQueryResult = NonNullable<
-  Awaited<ReturnType<typeof customersList>>
+export type ShippingProfilesListQueryResult = NonNullable<
+  Awaited<ReturnType<typeof shippingProfilesList>>
 >;
-export type CustomersListQueryError = ErrorType<unknown>;
+export type ShippingProfilesListQueryError = ErrorType<unknown>;
 
-export function useCustomersList<
-  TData = Awaited<ReturnType<typeof customersList>>,
+export function useShippingProfilesList<
+  TData = Awaited<ReturnType<typeof shippingProfilesList>>,
   TError = ErrorType<unknown>,
 >(
-  params: undefined | CustomersListParams,
+  params: undefined | ShippingProfilesListParams,
   options: {
     query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof customersList>>, TError, TData>
+      UseQueryOptions<
+        Awaited<ReturnType<typeof shippingProfilesList>>,
+        TError,
+        TData
+      >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof customersList>>,
+          Awaited<ReturnType<typeof shippingProfilesList>>,
           TError,
-          Awaited<ReturnType<typeof customersList>>
+          Awaited<ReturnType<typeof shippingProfilesList>>
         >,
         "initialData"
       >;
@@ -104,20 +115,24 @@ export function useCustomersList<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCustomersList<
-  TData = Awaited<ReturnType<typeof customersList>>,
+export function useShippingProfilesList<
+  TData = Awaited<ReturnType<typeof shippingProfilesList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: CustomersListParams,
+  params?: ShippingProfilesListParams,
   options?: {
     query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof customersList>>, TError, TData>
+      UseQueryOptions<
+        Awaited<ReturnType<typeof shippingProfilesList>>,
+        TError,
+        TData
+      >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof customersList>>,
+          Awaited<ReturnType<typeof shippingProfilesList>>,
           TError,
-          Awaited<ReturnType<typeof customersList>>
+          Awaited<ReturnType<typeof shippingProfilesList>>
         >,
         "initialData"
       >;
@@ -127,14 +142,18 @@ export function useCustomersList<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCustomersList<
-  TData = Awaited<ReturnType<typeof customersList>>,
+export function useShippingProfilesList<
+  TData = Awaited<ReturnType<typeof shippingProfilesList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: CustomersListParams,
+  params?: ShippingProfilesListParams,
   options?: {
     query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof customersList>>, TError, TData>
+      UseQueryOptions<
+        Awaited<ReturnType<typeof shippingProfilesList>>,
+        TError,
+        TData
+      >
     >;
     request?: SecondParameter<typeof axiosInstance>;
   },
@@ -143,14 +162,18 @@ export function useCustomersList<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useCustomersList<
-  TData = Awaited<ReturnType<typeof customersList>>,
+export function useShippingProfilesList<
+  TData = Awaited<ReturnType<typeof shippingProfilesList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: CustomersListParams,
+  params?: ShippingProfilesListParams,
   options?: {
     query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof customersList>>, TError, TData>
+      UseQueryOptions<
+        Awaited<ReturnType<typeof shippingProfilesList>>,
+        TError,
+        TData
+      >
     >;
     request?: SecondParameter<typeof axiosInstance>;
   },
@@ -158,7 +181,7 @@ export function useCustomersList<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getCustomersListQueryOptions(params, options);
+  const queryOptions = getShippingProfilesListQueryOptions(params, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -170,15 +193,15 @@ export function useCustomersList<
   return query;
 }
 
-export const getCustomersListSuspenseQueryOptions = <
-  TData = Awaited<ReturnType<typeof customersList>>,
+export const getShippingProfilesListSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof shippingProfilesList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: CustomersListParams,
+  params?: ShippingProfilesListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof customersList>>,
+        Awaited<ReturnType<typeof shippingProfilesList>>,
         TError,
         TData
       >
@@ -188,33 +211,34 @@ export const getCustomersListSuspenseQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getCustomersListQueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ?? getShippingProfilesListQueryKey(params);
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof customersList>>> = ({
-    signal,
-  }) => customersList(params, requestOptions, signal);
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof shippingProfilesList>>
+  > = ({ signal }) => shippingProfilesList(params, requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
-    Awaited<ReturnType<typeof customersList>>,
+    Awaited<ReturnType<typeof shippingProfilesList>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type CustomersListSuspenseQueryResult = NonNullable<
-  Awaited<ReturnType<typeof customersList>>
+export type ShippingProfilesListSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof shippingProfilesList>>
 >;
-export type CustomersListSuspenseQueryError = ErrorType<unknown>;
+export type ShippingProfilesListSuspenseQueryError = ErrorType<unknown>;
 
-export function useCustomersListSuspense<
-  TData = Awaited<ReturnType<typeof customersList>>,
+export function useShippingProfilesListSuspense<
+  TData = Awaited<ReturnType<typeof shippingProfilesList>>,
   TError = ErrorType<unknown>,
 >(
-  params: undefined | CustomersListParams,
+  params: undefined | ShippingProfilesListParams,
   options: {
     query: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof customersList>>,
+        Awaited<ReturnType<typeof shippingProfilesList>>,
         TError,
         TData
       >
@@ -225,15 +249,15 @@ export function useCustomersListSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCustomersListSuspense<
-  TData = Awaited<ReturnType<typeof customersList>>,
+export function useShippingProfilesListSuspense<
+  TData = Awaited<ReturnType<typeof shippingProfilesList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: CustomersListParams,
+  params?: ShippingProfilesListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof customersList>>,
+        Awaited<ReturnType<typeof shippingProfilesList>>,
         TError,
         TData
       >
@@ -244,15 +268,15 @@ export function useCustomersListSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCustomersListSuspense<
-  TData = Awaited<ReturnType<typeof customersList>>,
+export function useShippingProfilesListSuspense<
+  TData = Awaited<ReturnType<typeof shippingProfilesList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: CustomersListParams,
+  params?: ShippingProfilesListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof customersList>>,
+        Awaited<ReturnType<typeof shippingProfilesList>>,
         TError,
         TData
       >
@@ -264,15 +288,15 @@ export function useCustomersListSuspense<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useCustomersListSuspense<
-  TData = Awaited<ReturnType<typeof customersList>>,
+export function useShippingProfilesListSuspense<
+  TData = Awaited<ReturnType<typeof shippingProfilesList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: CustomersListParams,
+  params?: ShippingProfilesListParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof customersList>>,
+        Awaited<ReturnType<typeof shippingProfilesList>>,
         TError,
         TData
       >
@@ -283,7 +307,10 @@ export function useCustomersListSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getCustomersListSuspenseQueryOptions(params, options);
+  const queryOptions = getShippingProfilesListSuspenseQueryOptions(
+    params,
+    options,
+  );
 
   const query = useSuspenseQuery(
     queryOptions,
@@ -297,41 +324,41 @@ export function useCustomersListSuspense<
   return query;
 }
 
-export const createCustomer = (
-  customerCreate: CustomerCreate,
+export const createShippingProfile = (
+  shippingProfileCreate: ShippingProfileCreate,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return axiosInstance<Customer>(
+  return axiosInstance<ShippingProfile>(
     {
-      url: `/api/v1/customers`,
+      url: `/api/v1/shipping-profiles`,
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      data: customerCreate,
+      data: shippingProfileCreate,
       signal,
     },
     options,
   );
 };
 
-export const getCreateCustomerMutationOptions = <
+export const getCreateShippingProfileMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createCustomer>>,
+    Awaited<ReturnType<typeof createShippingProfile>>,
     TError,
-    { data: CustomerCreate },
+    { data: ShippingProfileCreate },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof createCustomer>>,
+  Awaited<ReturnType<typeof createShippingProfile>>,
   TError,
-  { data: CustomerCreate },
+  { data: ShippingProfileCreate },
   TContext
 > => {
-  const mutationKey = ["createCustomer"];
+  const mutationKey = ["createShippingProfile"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -341,71 +368,71 @@ export const getCreateCustomerMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createCustomer>>,
-    { data: CustomerCreate }
+    Awaited<ReturnType<typeof createShippingProfile>>,
+    { data: ShippingProfileCreate }
   > = (props) => {
     const { data } = props ?? {};
 
-    return createCustomer(data, requestOptions);
+    return createShippingProfile(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type CreateCustomerMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createCustomer>>
+export type CreateShippingProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createShippingProfile>>
 >;
-export type CreateCustomerMutationBody = CustomerCreate;
-export type CreateCustomerMutationError = ErrorType<unknown>;
+export type CreateShippingProfileMutationBody = ShippingProfileCreate;
+export type CreateShippingProfileMutationError = ErrorType<unknown>;
 
-export const useCreateCustomer = <
+export const useCreateShippingProfile = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof createCustomer>>,
+      Awaited<ReturnType<typeof createShippingProfile>>,
       TError,
-      { data: CustomerCreate },
+      { data: ShippingProfileCreate },
       TContext
     >;
     request?: SecondParameter<typeof axiosInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof createCustomer>>,
+  Awaited<ReturnType<typeof createShippingProfile>>,
   TError,
-  { data: CustomerCreate },
+  { data: ShippingProfileCreate },
   TContext
 > => {
-  const mutationOptions = getCreateCustomerMutationOptions(options);
+  const mutationOptions = getCreateShippingProfileMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
-export const customersRetrieve = (
+export const shippingProfilesRetrieve = (
   id: string,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return axiosInstance<Customer>(
-    { url: `/api/v1/customers/${id}`, method: "GET", signal },
+  return axiosInstance<ShippingProfile>(
+    { url: `/api/v1/shipping-profiles/${id}`, method: "GET", signal },
     options,
   );
 };
 
-export const getCustomersRetrieveQueryKey = (id?: string) => {
-  return [`/api/v1/customers/${id}`] as const;
+export const getShippingProfilesRetrieveQueryKey = (id?: string) => {
+  return [`/api/v1/shipping-profiles/${id}`] as const;
 };
 
-export const getCustomersRetrieveQueryOptions = <
-  TData = Awaited<ReturnType<typeof customersRetrieve>>,
+export const getShippingProfilesRetrieveQueryOptions = <
+  TData = Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
   TError = ErrorType<unknown>,
 >(
   id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof customersRetrieve>>,
+        Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
         TError,
         TData
       >
@@ -415,11 +442,12 @@ export const getCustomersRetrieveQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getCustomersRetrieveQueryKey(id);
+  const queryKey =
+    queryOptions?.queryKey ?? getShippingProfilesRetrieveQueryKey(id);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof customersRetrieve>>
-  > = ({ signal }) => customersRetrieve(id, requestOptions, signal);
+    Awaited<ReturnType<typeof shippingProfilesRetrieve>>
+  > = ({ signal }) => shippingProfilesRetrieve(id, requestOptions, signal);
 
   return {
     queryKey,
@@ -427,35 +455,35 @@ export const getCustomersRetrieveQueryOptions = <
     enabled: !!id,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof customersRetrieve>>,
+    Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type CustomersRetrieveQueryResult = NonNullable<
-  Awaited<ReturnType<typeof customersRetrieve>>
+export type ShippingProfilesRetrieveQueryResult = NonNullable<
+  Awaited<ReturnType<typeof shippingProfilesRetrieve>>
 >;
-export type CustomersRetrieveQueryError = ErrorType<unknown>;
+export type ShippingProfilesRetrieveQueryError = ErrorType<unknown>;
 
-export function useCustomersRetrieve<
-  TData = Awaited<ReturnType<typeof customersRetrieve>>,
+export function useShippingProfilesRetrieve<
+  TData = Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
   TError = ErrorType<unknown>,
 >(
   id: string,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof customersRetrieve>>,
+        Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof customersRetrieve>>,
+          Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
           TError,
-          Awaited<ReturnType<typeof customersRetrieve>>
+          Awaited<ReturnType<typeof shippingProfilesRetrieve>>
         >,
         "initialData"
       >;
@@ -465,24 +493,24 @@ export function useCustomersRetrieve<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCustomersRetrieve<
-  TData = Awaited<ReturnType<typeof customersRetrieve>>,
+export function useShippingProfilesRetrieve<
+  TData = Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
   TError = ErrorType<unknown>,
 >(
   id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof customersRetrieve>>,
+        Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof customersRetrieve>>,
+          Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
           TError,
-          Awaited<ReturnType<typeof customersRetrieve>>
+          Awaited<ReturnType<typeof shippingProfilesRetrieve>>
         >,
         "initialData"
       >;
@@ -492,15 +520,15 @@ export function useCustomersRetrieve<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCustomersRetrieve<
-  TData = Awaited<ReturnType<typeof customersRetrieve>>,
+export function useShippingProfilesRetrieve<
+  TData = Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
   TError = ErrorType<unknown>,
 >(
   id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof customersRetrieve>>,
+        Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
         TError,
         TData
       >
@@ -512,15 +540,15 @@ export function useCustomersRetrieve<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useCustomersRetrieve<
-  TData = Awaited<ReturnType<typeof customersRetrieve>>,
+export function useShippingProfilesRetrieve<
+  TData = Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
   TError = ErrorType<unknown>,
 >(
   id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof customersRetrieve>>,
+        Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
         TError,
         TData
       >
@@ -531,7 +559,7 @@ export function useCustomersRetrieve<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getCustomersRetrieveQueryOptions(id, options);
+  const queryOptions = getShippingProfilesRetrieveQueryOptions(id, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -543,15 +571,15 @@ export function useCustomersRetrieve<
   return query;
 }
 
-export const getCustomersRetrieveSuspenseQueryOptions = <
-  TData = Awaited<ReturnType<typeof customersRetrieve>>,
+export const getShippingProfilesRetrieveSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
   TError = ErrorType<unknown>,
 >(
   id: string,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof customersRetrieve>>,
+        Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
         TError,
         TData
       >
@@ -561,33 +589,34 @@ export const getCustomersRetrieveSuspenseQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getCustomersRetrieveQueryKey(id);
+  const queryKey =
+    queryOptions?.queryKey ?? getShippingProfilesRetrieveQueryKey(id);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof customersRetrieve>>
-  > = ({ signal }) => customersRetrieve(id, requestOptions, signal);
+    Awaited<ReturnType<typeof shippingProfilesRetrieve>>
+  > = ({ signal }) => shippingProfilesRetrieve(id, requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
-    Awaited<ReturnType<typeof customersRetrieve>>,
+    Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type CustomersRetrieveSuspenseQueryResult = NonNullable<
-  Awaited<ReturnType<typeof customersRetrieve>>
+export type ShippingProfilesRetrieveSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof shippingProfilesRetrieve>>
 >;
-export type CustomersRetrieveSuspenseQueryError = ErrorType<unknown>;
+export type ShippingProfilesRetrieveSuspenseQueryError = ErrorType<unknown>;
 
-export function useCustomersRetrieveSuspense<
-  TData = Awaited<ReturnType<typeof customersRetrieve>>,
+export function useShippingProfilesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
   TError = ErrorType<unknown>,
 >(
   id: string,
   options: {
     query: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof customersRetrieve>>,
+        Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
         TError,
         TData
       >
@@ -598,15 +627,15 @@ export function useCustomersRetrieveSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCustomersRetrieveSuspense<
-  TData = Awaited<ReturnType<typeof customersRetrieve>>,
+export function useShippingProfilesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
   TError = ErrorType<unknown>,
 >(
   id: string,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof customersRetrieve>>,
+        Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
         TError,
         TData
       >
@@ -617,15 +646,15 @@ export function useCustomersRetrieveSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useCustomersRetrieveSuspense<
-  TData = Awaited<ReturnType<typeof customersRetrieve>>,
+export function useShippingProfilesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
   TError = ErrorType<unknown>,
 >(
   id: string,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof customersRetrieve>>,
+        Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
         TError,
         TData
       >
@@ -637,15 +666,15 @@ export function useCustomersRetrieveSuspense<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useCustomersRetrieveSuspense<
-  TData = Awaited<ReturnType<typeof customersRetrieve>>,
+export function useShippingProfilesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
   TError = ErrorType<unknown>,
 >(
   id: string,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof customersRetrieve>>,
+        Awaited<ReturnType<typeof shippingProfilesRetrieve>>,
         TError,
         TData
       >
@@ -656,7 +685,10 @@ export function useCustomersRetrieveSuspense<
 ): UseSuspenseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getCustomersRetrieveSuspenseQueryOptions(id, options);
+  const queryOptions = getShippingProfilesRetrieveSuspenseQueryOptions(
+    id,
+    options,
+  );
 
   const query = useSuspenseQuery(
     queryOptions,
@@ -670,40 +702,40 @@ export function useCustomersRetrieveSuspense<
   return query;
 }
 
-export const updateCustomer = (
+export const updateShippingProfile = (
   id: string,
-  customerUpdate: CustomerUpdate,
+  shippingProfileUpdate: ShippingProfileUpdate,
   options?: SecondParameter<typeof axiosInstance>,
 ) => {
-  return axiosInstance<Customer>(
+  return axiosInstance<ShippingProfile>(
     {
-      url: `/api/v1/customers/${id}`,
+      url: `/api/v1/shipping-profiles/${id}`,
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      data: customerUpdate,
+      data: shippingProfileUpdate,
     },
     options,
   );
 };
 
-export const getUpdateCustomerMutationOptions = <
+export const getUpdateShippingProfileMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateCustomer>>,
+    Awaited<ReturnType<typeof updateShippingProfile>>,
     TError,
-    { id: string; data: CustomerUpdate },
+    { id: string; data: ShippingProfileUpdate },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof updateCustomer>>,
+  Awaited<ReturnType<typeof updateShippingProfile>>,
   TError,
-  { id: string; data: CustomerUpdate },
+  { id: string; data: ShippingProfileUpdate },
   TContext
 > => {
-  const mutationKey = ["updateCustomer"];
+  const mutationKey = ["updateShippingProfile"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -713,75 +745,75 @@ export const getUpdateCustomerMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof updateCustomer>>,
-    { id: string; data: CustomerUpdate }
+    Awaited<ReturnType<typeof updateShippingProfile>>,
+    { id: string; data: ShippingProfileUpdate }
   > = (props) => {
     const { id, data } = props ?? {};
 
-    return updateCustomer(id, data, requestOptions);
+    return updateShippingProfile(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type UpdateCustomerMutationResult = NonNullable<
-  Awaited<ReturnType<typeof updateCustomer>>
+export type UpdateShippingProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateShippingProfile>>
 >;
-export type UpdateCustomerMutationBody = CustomerUpdate;
-export type UpdateCustomerMutationError = ErrorType<unknown>;
+export type UpdateShippingProfileMutationBody = ShippingProfileUpdate;
+export type UpdateShippingProfileMutationError = ErrorType<unknown>;
 
-export const useUpdateCustomer = <
+export const useUpdateShippingProfile = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof updateCustomer>>,
+      Awaited<ReturnType<typeof updateShippingProfile>>,
       TError,
-      { id: string; data: CustomerUpdate },
+      { id: string; data: ShippingProfileUpdate },
       TContext
     >;
     request?: SecondParameter<typeof axiosInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof updateCustomer>>,
+  Awaited<ReturnType<typeof updateShippingProfile>>,
   TError,
-  { id: string; data: CustomerUpdate },
+  { id: string; data: ShippingProfileUpdate },
   TContext
 > => {
-  const mutationOptions = getUpdateCustomerMutationOptions(options);
+  const mutationOptions = getUpdateShippingProfileMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
-export const deleteCustomer = (
+export const deleteShippingProfile = (
   id: string,
   options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<void>(
-    { url: `/api/v1/customers/${id}`, method: "DELETE" },
+    { url: `/api/v1/shipping-profiles/${id}`, method: "DELETE" },
     options,
   );
 };
 
-export const getDeleteCustomerMutationOptions = <
+export const getDeleteShippingProfileMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteCustomer>>,
+    Awaited<ReturnType<typeof deleteShippingProfile>>,
     TError,
     { id: string },
     TContext
   >;
   request?: SecondParameter<typeof axiosInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof deleteCustomer>>,
+  Awaited<ReturnType<typeof deleteShippingProfile>>,
   TError,
   { id: string },
   TContext
 > => {
-  const mutationKey = ["deleteCustomer"];
+  const mutationKey = ["deleteShippingProfile"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -791,30 +823,30 @@ export const getDeleteCustomerMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteCustomer>>,
+    Awaited<ReturnType<typeof deleteShippingProfile>>,
     { id: string }
   > = (props) => {
     const { id } = props ?? {};
 
-    return deleteCustomer(id, requestOptions);
+    return deleteShippingProfile(id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type DeleteCustomerMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteCustomer>>
+export type DeleteShippingProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteShippingProfile>>
 >;
 
-export type DeleteCustomerMutationError = ErrorType<unknown>;
+export type DeleteShippingProfileMutationError = ErrorType<unknown>;
 
-export const useDeleteCustomer = <
+export const useDeleteShippingProfile = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof deleteCustomer>>,
+      Awaited<ReturnType<typeof deleteShippingProfile>>,
       TError,
       { id: string },
       TContext
@@ -823,12 +855,12 @@ export const useDeleteCustomer = <
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof deleteCustomer>>,
+  Awaited<ReturnType<typeof deleteShippingProfile>>,
   TError,
   { id: string },
   TContext
 > => {
-  const mutationOptions = getDeleteCustomerMutationOptions(options);
+  const mutationOptions = getDeleteShippingProfileMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

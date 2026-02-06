@@ -5,57 +5,21 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { CustomerCreateAddress } from "./customerCreateAddress";
-import type { CustomerCreateCurrency } from "./customerCreateCurrency";
-import type { CustomerCreateLanguage } from "./customerCreateLanguage";
-import type { CustomerCreateShipping } from "./customerCreateShipping";
+import type { CustomerBillingProfileCreate } from "./customerBillingProfileCreate";
+import type { CustomerCreateShippingProfile } from "./customerCreateShippingProfile";
 
 export interface CustomerCreate {
   /** @maxLength 255 */
   name: string;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  legal_name?: string | null;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  legal_number?: string | null;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  email?: string | null;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  phone?: string | null;
+  billing_profile?: CustomerBillingProfileCreate;
+  /** @nullable */
+  shipping_profile?: CustomerCreateShippingProfile;
   /**
    * @maxLength 600
    * @nullable
    */
   description?: string | null;
-  /** @nullable */
-  currency?: CustomerCreateCurrency;
-  /** @nullable */
-  language?: CustomerCreateLanguage;
-  /**
-   * @minimum 0
-   * @nullable
-   */
-  net_payment_term?: number | null;
-  /** @nullable */
-  invoice_numbering_system_id?: string | null;
-  /** @nullable */
-  credit_note_numbering_system_id?: string | null;
   metadata?: unknown;
-  /** @nullable */
-  address?: CustomerCreateAddress;
-  /** @nullable */
-  shipping?: CustomerCreateShipping;
   /** @nullable */
   logo_id?: string | null;
 }

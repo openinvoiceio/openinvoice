@@ -5,17 +5,13 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { InvoiceShippingAddress } from "./invoiceShippingAddress";
+import type { InvoiceShippingProfile } from "./invoiceShippingProfile";
 import type { InvoiceTax } from "./invoiceTax";
 import type { TaxRate } from "./taxRate";
 
 export interface InvoiceShipping {
   /** @nullable */
-  name: string | null;
-  /** @nullable */
-  phone: string | null;
-  /** @nullable */
-  address: InvoiceShippingAddress;
+  profile: InvoiceShippingProfile;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   amount: string;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */

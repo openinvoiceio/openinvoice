@@ -159,30 +159,6 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/v1/accounts/{account_id}/tax-ids/{id}:
-    delete:
-      operationId: delete_account_tax_id
-      parameters:
-      - in: path
-        name: account_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - accounts
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/accounts/{id}:
     get:
       operationId: accounts_retrieve
@@ -270,34 +246,6 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/v1/accounts/{id}/tax-ids:
-    post:
-      operationId: create_account_tax_id
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - accounts
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TaxIdCreate'
-        required: true
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TaxId'
-          description: ''
   /api/v1/analytics/gross-revenue:
     get:
       operationId: get_gross_revenue
@@ -1630,6 +1578,364 @@ paths:
                 items:
                   $ref: '#/components/schemas/OverdueBalance'
           description: ''
+  /api/v1/billing-profiles:
+    get:
+      operationId: billing_profiles_list
+      parameters:
+      - in: query
+        name: customer_id
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - billing-profiles
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBillingProfileList'
+          description: ''
+    post:
+      operationId: create_billing_profile
+      tags:
+      - billing-profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillingProfileCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingProfile'
+          description: ''
+  /api/v1/billing-profiles/{billing_profile_id}/tax-ids/{id}:
+    delete:
+      operationId: delete_billing_profile_tax_id
+      parameters:
+      - in: path
+        name: billing_profile_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - billing-profiles
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/billing-profiles/{id}:
+    get:
+      operationId: billing_profiles_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - billing-profiles
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingProfile'
+          description: ''
+    put:
+      operationId: update_billing_profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - billing-profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillingProfileUpdate'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingProfile'
+          description: ''
+    delete:
+      operationId: delete_billing_profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - billing-profiles
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/billing-profiles/{id}/tax-ids:
+    post:
+      operationId: create_billing_profile_tax_id
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - billing-profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxIdCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxId'
+          description: ''
+  /api/v1/business-profiles:
+    get:
+      operationId: business_profiles_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - business-profiles
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBusinessProfileList'
+          description: ''
+    post:
+      operationId: create_business_profile
+      tags:
+      - business-profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusinessProfileCreate'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessProfile'
+          description: ''
+  /api/v1/business-profiles/{business_profile_id}/tax-ids/{id}:
+    delete:
+      operationId: delete_business_profile_tax_id
+      parameters:
+      - in: path
+        name: business_profile_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business-profiles
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/business-profiles/{id}:
+    get:
+      operationId: business_profiles_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business-profiles
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessProfile'
+          description: ''
+    put:
+      operationId: update_business_profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business-profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusinessProfileUpdate'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessProfile'
+          description: ''
+    delete:
+      operationId: delete_business_profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business-profiles
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/business-profiles/{id}/tax-ids:
+    post:
+      operationId: create_business_profile_tax_id
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business-profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxIdCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxId'
+          description: ''
   /api/v1/config:
     get:
       operationId: get_config
@@ -2385,30 +2691,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Customer'
           description: ''
-  /api/v1/customers/{customer_id}/tax-ids/{id}:
-    delete:
-      operationId: delete_customer_tax_id
-      parameters:
-      - in: path
-        name: customer_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - customers
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/customers/{id}:
     get:
       operationId: customers_retrieve
@@ -2462,86 +2744,6 @@ paths:
       parameters:
       - in: path
         name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - customers
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/v1/customers/{id}/tax-ids:
-    post:
-      operationId: create_customer_tax_id
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - customers
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TaxIdCreate'
-        required: true
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TaxId'
-          description: ''
-  /api/v1/customers/{id}/tax-rates:
-    post:
-      operationId: assign_customer_tax_rate
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - customers
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CustomerTaxRateAssign'
-        required: true
-      security:
-      - cookieAuth: []
-      - tokenAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Customer'
-          description: ''
-  /api/v1/customers/{id}/tax-rates/{tax_rate_id}:
-    delete:
-      operationId: remove_customer_tax_rate
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - in: path
-        name: tax_rate_id
         schema:
           type: string
           format: uuid
@@ -5089,6 +5291,136 @@ paths:
               schema:
                 $ref: '#/components/schemas/Search'
           description: ''
+  /api/v1/shipping-profiles:
+    get:
+      operationId: shipping_profiles_list
+      parameters:
+      - in: query
+        name: customer_id
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - shipping-profiles
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShippingProfileList'
+          description: ''
+    post:
+      operationId: create_shipping_profile
+      tags:
+      - shipping-profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingProfileCreate'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingProfile'
+          description: ''
+  /api/v1/shipping-profiles/{id}:
+    get:
+      operationId: shipping_profiles_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - shipping-profiles
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingProfile'
+          description: ''
+    put:
+      operationId: update_shipping_profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - shipping-profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingProfileUpdate'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingProfile'
+          description: ''
+    delete:
+      operationId: delete_shipping_profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - shipping-profiles
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/shipping-rates:
     get:
       operationId: shipping_rates_list
@@ -6162,20 +6494,9 @@ components:
           format: uuid
         name:
           type: string
-        legal_name:
-          type: string
-          nullable: true
-        legal_number:
-          type: string
-          nullable: true
         email:
           type: string
           format: email
-        phone:
-          type: string
-          nullable: true
-        address:
-          $ref: '#/components/schemas/Address'
         country:
           $ref: '#/components/schemas/CountryEnum'
         default_currency:
@@ -6209,11 +6530,8 @@ components:
           type: string
           format: uri
           nullable: true
-        tax_ids:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaxId'
-          readOnly: true
+        default_business_profile:
+          $ref: '#/components/schemas/BusinessProfile'
         created_at:
           type: string
           format: date-time
@@ -6222,26 +6540,22 @@ components:
           format: date-time
           nullable: true
       required:
-      - address
       - country
       - created_at
       - credit_note_numbering_system_id
+      - default_business_profile
       - default_currency
       - email
       - id
       - invoice_footer
       - invoice_numbering_system_id
       - language
-      - legal_name
-      - legal_number
       - logo_id
       - logo_url
       - metadata
       - name
       - net_payment_term
-      - phone
       - subscription
-      - tax_ids
       - updated_at
     AccountCreate:
       type: object
@@ -6249,20 +6563,14 @@ components:
         name:
           type: string
           maxLength: 255
-        legal_name:
-          type: string
-          nullable: true
-          maxLength: 255
-        legal_number:
-          type: string
-          nullable: true
-          maxLength: 255
         email:
           type: string
           format: email
           maxLength: 255
         country:
           $ref: '#/components/schemas/CountryEnum'
+        business_profile:
+          $ref: '#/components/schemas/BusinessProfileCreate'
       required:
       - country
       - email
@@ -6273,24 +6581,10 @@ components:
         name:
           type: string
           maxLength: 255
-        legal_name:
-          type: string
-          nullable: true
-          maxLength: 255
-        legal_number:
-          type: string
-          nullable: true
-          maxLength: 255
         email:
           type: string
           format: email
           maxLength: 255
-        phone:
-          type: string
-          nullable: true
-          maxLength: 255
-        address:
-          $ref: '#/components/schemas/Address'
         country:
           $ref: '#/components/schemas/CountryEnum'
         default_currency:
@@ -6317,6 +6611,9 @@ components:
           type: string
           format: uuid
           nullable: true
+        default_business_profile_id:
+          type: string
+          format: uuid
     Address:
       type: object
       properties:
@@ -6343,6 +6640,274 @@ components:
         country:
           allOf:
           - $ref: '#/components/schemas/CountryEnum'
+          nullable: true
+    BillingProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        legal_name:
+          type: string
+          nullable: true
+        legal_number:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          $ref: '#/components/schemas/Address'
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          nullable: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          nullable: true
+        net_payment_term:
+          type: integer
+          minimum: 0
+          nullable: true
+        invoice_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        credit_note_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        tax_rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxRate'
+          readOnly: true
+        tax_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxId'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - address
+      - created_at
+      - credit_note_numbering_system_id
+      - currency
+      - email
+      - id
+      - invoice_numbering_system_id
+      - language
+      - legal_name
+      - legal_number
+      - net_payment_term
+      - phone
+      - tax_ids
+      - tax_rates
+      - updated_at
+    BillingProfileCreate:
+      type: object
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+        legal_name:
+          type: string
+          nullable: true
+          maxLength: 255
+        legal_number:
+          type: string
+          nullable: true
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          maxLength: 255
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          nullable: true
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          nullable: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          nullable: true
+        net_payment_term:
+          type: integer
+          minimum: 0
+          nullable: true
+        invoice_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        credit_note_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        tax_rates:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+      - customer_id
+    BillingProfileUpdate:
+      type: object
+      properties:
+        legal_name:
+          type: string
+          nullable: true
+          maxLength: 255
+        legal_number:
+          type: string
+          nullable: true
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          maxLength: 255
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          nullable: true
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          nullable: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          nullable: true
+        net_payment_term:
+          type: integer
+          minimum: 0
+          nullable: true
+        invoice_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        credit_note_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        tax_rates:
+          type: array
+          items:
+            type: string
+            format: uuid
+    BusinessProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        legal_name:
+          type: string
+          nullable: true
+        legal_number:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          $ref: '#/components/schemas/Address'
+        tax_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxId'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - address
+      - created_at
+      - email
+      - id
+      - legal_name
+      - legal_number
+      - phone
+      - tax_ids
+      - updated_at
+    BusinessProfileCreate:
+      type: object
+      properties:
+        legal_name:
+          type: string
+          nullable: true
+          maxLength: 255
+        legal_number:
+          type: string
+          nullable: true
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          maxLength: 255
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          nullable: true
+    BusinessProfileUpdate:
+      type: object
+      properties:
+        legal_name:
+          type: string
+          nullable: true
+          maxLength: 255
+        legal_number:
+          type: string
+          nullable: true
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          maxLength: 255
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
           nullable: true
     ClientErrorEnum:
       type: string
@@ -7074,13 +7639,13 @@ components:
           type: string
           format: uuid
           nullable: true
-        customer:
+        billing_profile:
           allOf:
-          - $ref: '#/components/schemas/CreditNoteCustomer'
+          - $ref: '#/components/schemas/BillingProfile'
           readOnly: true
-        account:
+        business_profile:
           allOf:
-          - $ref: '#/components/schemas/CreditNoteAccount'
+          - $ref: '#/components/schemas/BusinessProfile'
           readOnly: true
         lines:
           type: array
@@ -7098,10 +7663,10 @@ components:
             $ref: '#/components/schemas/CreditNoteTaxBreakdownItem'
           readOnly: true
       required:
-      - account
+      - billing_profile
+      - business_profile
       - created_at
       - currency
-      - customer
       - delivery_method
       - id
       - invoice_id
@@ -7125,47 +7690,6 @@ components:
       - total_tax_amount
       - updated_at
       - voided_at
-    CreditNoteAccount:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        legal_name:
-          type: string
-          nullable: true
-        legal_number:
-          type: string
-          nullable: true
-        email:
-          type: string
-          nullable: true
-        phone:
-          type: string
-          nullable: true
-        address:
-          $ref: '#/components/schemas/Address'
-        logo_id:
-          type: string
-          format: uuid
-          nullable: true
-        tax_ids:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaxId'
-          readOnly: true
-      required:
-      - address
-      - email
-      - id
-      - legal_name
-      - legal_number
-      - logo_id
-      - name
-      - phone
-      - tax_ids
     CreditNoteCreate:
       type: object
       properties:
@@ -7193,51 +7717,6 @@ components:
             format: email
       required:
       - invoice_id
-    CreditNoteCustomer:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        legal_name:
-          type: string
-          nullable: true
-        legal_number:
-          type: string
-          nullable: true
-        email:
-          type: string
-          nullable: true
-        phone:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        address:
-          $ref: '#/components/schemas/Address'
-        logo_id:
-          type: string
-          format: uuid
-          nullable: true
-        tax_ids:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaxId'
-          readOnly: true
-      required:
-      - address
-      - description
-      - email
-      - id
-      - legal_name
-      - legal_number
-      - logo_id
-      - name
-      - phone
-      - tax_ids
     CreditNoteIssue:
       type: object
       properties:
@@ -8112,59 +8591,16 @@ components:
           format: uuid
         name:
           type: string
-        legal_name:
-          type: string
-          nullable: true
-        legal_number:
-          type: string
-          nullable: true
-        email:
-          type: string
-          format: email
-          nullable: true
-        phone:
-          type: string
-          nullable: true
-        currency:
-          allOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          nullable: true
-        language:
-          allOf:
-          - $ref: '#/components/schemas/LanguageEnum'
-          nullable: true
-        net_payment_term:
-          type: integer
-          minimum: 0
-          nullable: true
-        invoice_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
-        credit_note_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
         description:
           type: string
           nullable: true
         metadata: {}
-        address:
-          $ref: '#/components/schemas/Address'
-        shipping:
+        default_billing_profile:
+          $ref: '#/components/schemas/BillingProfile'
+        default_shipping_profile:
           allOf:
-          - $ref: '#/components/schemas/CustomerShipping'
+          - $ref: '#/components/schemas/ShippingProfile'
           nullable: true
-        tax_rates:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaxRate'
-          readOnly: true
-        tax_ids:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaxId'
-          readOnly: true
         logo_id:
           type: string
           format: uuid
@@ -8182,90 +8618,89 @@ components:
           nullable: true
       required:
       - account_id
-      - address
       - created_at
-      - credit_note_numbering_system_id
-      - currency
+      - default_billing_profile
+      - default_shipping_profile
       - description
-      - email
       - id
-      - invoice_numbering_system_id
-      - language
-      - legal_name
-      - legal_number
       - logo_id
       - logo_url
       - metadata
       - name
-      - net_payment_term
-      - phone
-      - shipping
-      - tax_ids
-      - tax_rates
       - updated_at
+    CustomerBillingProfileCreate:
+      type: object
+      properties:
+        legal_name:
+          type: string
+          nullable: true
+          maxLength: 255
+        legal_number:
+          type: string
+          nullable: true
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          maxLength: 255
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          nullable: true
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          nullable: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          nullable: true
+        net_payment_term:
+          type: integer
+          minimum: 0
+          nullable: true
+        invoice_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        credit_note_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        tax_rates:
+          type: array
+          items:
+            type: string
+            format: uuid
     CustomerCreate:
       type: object
       properties:
         name:
           type: string
           maxLength: 255
-        legal_name:
-          type: string
+        billing_profile:
+          $ref: '#/components/schemas/CustomerBillingProfileCreate'
+        shipping_profile:
+          allOf:
+          - $ref: '#/components/schemas/CustomerShippingProfileCreate'
           nullable: true
-          maxLength: 255
-        legal_number:
-          type: string
-          nullable: true
-          maxLength: 255
-        email:
-          type: string
-          format: email
-          nullable: true
-          maxLength: 255
-        phone:
-          type: string
-          nullable: true
-          maxLength: 255
         description:
           type: string
           nullable: true
           maxLength: 600
-        currency:
-          allOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          nullable: true
-        language:
-          allOf:
-          - $ref: '#/components/schemas/LanguageEnum'
-          nullable: true
-        net_payment_term:
-          type: integer
-          minimum: 0
-          nullable: true
-        invoice_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
-        credit_note_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
         metadata: {}
-        address:
-          allOf:
-          - $ref: '#/components/schemas/Address'
-          nullable: true
-        shipping:
-          allOf:
-          - $ref: '#/components/schemas/CustomerShipping'
-          nullable: true
         logo_id:
           type: string
           format: uuid
           nullable: true
       required:
       - name
-    CustomerShipping:
+    CustomerShippingProfileCreate:
       type: object
       properties:
         name:
@@ -8278,74 +8713,27 @@ components:
           allOf:
           - $ref: '#/components/schemas/Address'
           nullable: true
-    CustomerTaxRateAssign:
-      type: object
-      properties:
-        tax_rate_id:
-          type: string
-          format: uuid
-      required:
-      - tax_rate_id
     CustomerUpdate:
       type: object
       properties:
         name:
           type: string
           maxLength: 255
-        legal_name:
-          type: string
-          nullable: true
-          maxLength: 255
-        legal_number:
-          type: string
-          nullable: true
-          maxLength: 255
-        email:
-          type: string
-          format: email
-          nullable: true
-          maxLength: 255
-        phone:
-          type: string
-          nullable: true
-          maxLength: 255
         description:
           type: string
           nullable: true
           maxLength: 600
-        currency:
-          allOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          nullable: true
-        language:
-          allOf:
-          - $ref: '#/components/schemas/LanguageEnum'
-          nullable: true
-        net_payment_term:
-          type: integer
-          minimum: 0
-          nullable: true
-        invoice_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
-        credit_note_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
         metadata: {}
-        address:
-          allOf:
-          - $ref: '#/components/schemas/Address'
-          nullable: true
-        shipping:
-          allOf:
-          - $ref: '#/components/schemas/CustomerShipping'
-          nullable: true
         logo_id:
           type: string
           format: uuid
           nullable: true
+        default_billing_profile_id:
+          type: string
+          format: uuid
+        default_shipping_profile_id:
+          type: string
+          format: uuid
     DefaultPrice:
       type: object
       properties:
@@ -8578,13 +8966,13 @@ components:
           items:
             type: string
             format: email
-        customer:
+        billing_profile:
           allOf:
-          - $ref: '#/components/schemas/InvoiceCustomer'
+          - $ref: '#/components/schemas/BillingProfile'
           readOnly: true
-        account:
+        business_profile:
           allOf:
-          - $ref: '#/components/schemas/InvoiceAccount'
+          - $ref: '#/components/schemas/BusinessProfile'
           readOnly: true
         metadata: {}
         subtotal_amount:
@@ -8689,11 +9077,11 @@ components:
           items:
             $ref: '#/components/schemas/InvoiceTax'
       required:
-      - account
+      - billing_profile
+      - business_profile
       - coupons
       - created_at
       - currency
-      - customer
       - delivery_method
       - discounts
       - documents
@@ -8729,45 +9117,16 @@ components:
       - total_taxes
       - updated_at
       - voided_at
-    InvoiceAccount:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        legal_name:
-          type: string
-          nullable: true
-        legal_number:
-          type: string
-          nullable: true
-        email:
-          type: string
-          nullable: true
-        phone:
-          type: string
-          nullable: true
-        address:
-          $ref: '#/components/schemas/Address'
-        logo_id:
-          type: string
-          format: uuid
-          nullable: true
-      required:
-      - address
-      - email
-      - id
-      - legal_name
-      - legal_number
-      - logo_id
-      - name
-      - phone
     InvoiceCreate:
       type: object
       properties:
         customer_id:
+          type: string
+          format: uuid
+        billing_profile_id:
+          type: string
+          format: uuid
+        business_profile_id:
           type: string
           format: uuid
         number:
@@ -8829,45 +9188,6 @@ components:
           nullable: true
       required:
       - customer_id
-    InvoiceCustomer:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        legal_name:
-          type: string
-          nullable: true
-        legal_number:
-          type: string
-          nullable: true
-        email:
-          type: string
-          nullable: true
-        phone:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        address:
-          $ref: '#/components/schemas/Address'
-        logo_id:
-          type: string
-          format: uuid
-          nullable: true
-      required:
-      - address
-      - description
-      - email
-      - id
-      - legal_name
-      - legal_number
-      - logo_id
-      - name
-      - phone
     InvoiceDiscount:
       type: object
       properties:
@@ -9150,6 +9470,12 @@ components:
     InvoiceRevisionCreate:
       type: object
       properties:
+        billing_profile_id:
+          type: string
+          format: uuid
+        business_profile_id:
+          type: string
+          format: uuid
         number:
           type: string
           nullable: true
@@ -9210,15 +9536,9 @@ components:
     InvoiceShipping:
       type: object
       properties:
-        name:
-          type: string
-          nullable: true
-        phone:
-          type: string
-          nullable: true
-        address:
+        profile:
           allOf:
-          - $ref: '#/components/schemas/Address'
+          - $ref: '#/components/schemas/ShippingProfile'
           nullable: true
         amount:
           type: string
@@ -9253,10 +9573,8 @@ components:
           items:
             $ref: '#/components/schemas/InvoiceTax'
       required:
-      - address
       - amount
-      - name
-      - phone
+      - profile
       - shipping_rate_id
       - tax_rates
       - total_amount
@@ -9270,6 +9588,10 @@ components:
         shipping_rate_id:
           type: string
           format: uuid
+        shipping_profile_id:
+          type: string
+          format: uuid
+          nullable: true
         tax_rates:
           type: array
           items:
@@ -9314,6 +9636,12 @@ components:
       type: object
       properties:
         customer_id:
+          type: string
+          format: uuid
+        billing_profile_id:
+          type: string
+          format: uuid
+        business_profile_id:
           type: string
           format: uuid
         number:
@@ -9561,6 +9889,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Account'
+    PaginatedBillingProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingProfile'
+    PaginatedBusinessProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BusinessProfile'
     PaginatedCommentList:
       type: object
       required:
@@ -9906,6 +10280,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Quote'
+    PaginatedShippingProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShippingProfile'
     PaginatedShippingRateList:
       type: object
       required:
@@ -10168,7 +10565,6 @@ components:
           format: uuid
         name:
           type: string
-          nullable: true
         legal_name:
           type: string
           nullable: true
@@ -10655,13 +11051,13 @@ components:
           type: string
           format: date
           nullable: true
-        customer:
+        billing_profile:
           allOf:
-          - $ref: '#/components/schemas/QuoteCustomer'
+          - $ref: '#/components/schemas/BillingProfile'
           readOnly: true
-        account:
+        business_profile:
           allOf:
-          - $ref: '#/components/schemas/QuoteAccount'
+          - $ref: '#/components/schemas/BusinessProfile'
           readOnly: true
         metadata: {}
         custom_fields: {}
@@ -10738,12 +11134,12 @@ components:
           readOnly: true
       required:
       - accepted_at
-      - account
+      - billing_profile
+      - business_profile
       - canceled_at
       - created_at
       - currency
       - custom_fields
-      - customer
       - delivery_method
       - discounts
       - footer
@@ -10765,45 +11161,16 @@ components:
       - total_discount_amount
       - total_tax_amount
       - updated_at
-    QuoteAccount:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        legal_name:
-          type: string
-          nullable: true
-        legal_number:
-          type: string
-          nullable: true
-        email:
-          type: string
-          nullable: true
-        phone:
-          type: string
-          nullable: true
-        address:
-          $ref: '#/components/schemas/Address'
-        logo_id:
-          type: string
-          format: uuid
-          nullable: true
-      required:
-      - address
-      - email
-      - id
-      - legal_name
-      - legal_number
-      - logo_id
-      - name
-      - phone
     QuoteCreate:
       type: object
       properties:
         customer_id:
+          type: string
+          format: uuid
+        billing_profile_id:
+          type: string
+          format: uuid
+        business_profile_id:
           type: string
           format: uuid
         number:
@@ -10839,45 +11206,6 @@ components:
             format: email
       required:
       - customer_id
-    QuoteCustomer:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        legal_name:
-          type: string
-          nullable: true
-        legal_number:
-          type: string
-          nullable: true
-        email:
-          type: string
-          nullable: true
-        phone:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        address:
-          $ref: '#/components/schemas/Address'
-        logo_id:
-          type: string
-          format: uuid
-          nullable: true
-      required:
-      - address
-      - description
-      - email
-      - id
-      - legal_name
-      - legal_number
-      - logo_id
-      - name
-      - phone
     QuoteDiscount:
       type: object
       properties:
@@ -11137,6 +11465,12 @@ components:
         customer_id:
           type: string
           format: uuid
+        billing_profile_id:
+          type: string
+          format: uuid
+        business_profile_id:
+          type: string
+          format: uuid
         number:
           type: string
           nullable: true
@@ -11189,6 +11523,65 @@ components:
       type: string
       enum:
       - server_error
+    ShippingProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          $ref: '#/components/schemas/Address'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - address
+      - created_at
+      - id
+      - name
+      - phone
+      - updated_at
+    ShippingProfileCreate:
+      type: object
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          nullable: true
+      required:
+      - customer_id
+    ShippingProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          nullable: true
     ShippingRate:
       type: object
       properties:

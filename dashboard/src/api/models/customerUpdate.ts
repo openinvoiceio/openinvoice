@@ -5,57 +5,18 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { CustomerUpdateAddress } from "./customerUpdateAddress";
-import type { CustomerUpdateCurrency } from "./customerUpdateCurrency";
-import type { CustomerUpdateLanguage } from "./customerUpdateLanguage";
-import type { CustomerUpdateShipping } from "./customerUpdateShipping";
 
 export interface CustomerUpdate {
   /** @maxLength 255 */
   name?: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
-  legal_name?: string | null;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  legal_number?: string | null;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  email?: string | null;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  phone?: string | null;
-  /**
    * @maxLength 600
    * @nullable
    */
   description?: string | null;
-  /** @nullable */
-  currency?: CustomerUpdateCurrency;
-  /** @nullable */
-  language?: CustomerUpdateLanguage;
-  /**
-   * @minimum 0
-   * @nullable
-   */
-  net_payment_term?: number | null;
-  /** @nullable */
-  invoice_numbering_system_id?: string | null;
-  /** @nullable */
-  credit_note_numbering_system_id?: string | null;
   metadata?: unknown;
   /** @nullable */
-  address?: CustomerUpdateAddress;
-  /** @nullable */
-  shipping?: CustomerUpdateShipping;
-  /** @nullable */
   logo_id?: string | null;
+  default_billing_profile_id?: string;
+  default_shipping_profile_id?: string;
 }

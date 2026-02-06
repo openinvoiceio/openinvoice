@@ -6,23 +6,15 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { AccountSubscription } from "./accountSubscription";
-import type { Address } from "./address";
+import type { BusinessProfile } from "./businessProfile";
 import type { CountryEnum } from "./countryEnum";
 import type { CurrencyEnum } from "./currencyEnum";
 import type { LanguageEnum } from "./languageEnum";
-import type { TaxId } from "./taxId";
 
 export interface Account {
   id: string;
   name: string;
-  /** @nullable */
-  legal_name: string | null;
-  /** @nullable */
-  legal_number: string | null;
   email: string;
-  /** @nullable */
-  phone: string | null;
-  address: Address;
   country: CountryEnum;
   default_currency: CurrencyEnum;
   language: LanguageEnum;
@@ -41,7 +33,7 @@ export interface Account {
   logo_id: string | null;
   /** @nullable */
   logo_url: string | null;
-  readonly tax_ids: readonly TaxId[];
+  default_business_profile: BusinessProfile;
   created_at: string;
   /** @nullable */
   updated_at: string | null;

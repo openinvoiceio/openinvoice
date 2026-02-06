@@ -5,7 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { LanguageEnum } from "./languageEnum";
 
-export interface CustomerTaxRateAssign {
-  tax_rate_id: string;
-}
+/**
+ * @nullable
+ */
+export type BillingProfileLanguage = LanguageEnum | null;

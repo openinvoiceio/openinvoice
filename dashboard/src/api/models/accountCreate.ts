@@ -5,22 +5,14 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { BusinessProfileCreate } from "./businessProfileCreate";
 import type { CountryEnum } from "./countryEnum";
 
 export interface AccountCreate {
   /** @maxLength 255 */
   name: string;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  legal_name?: string | null;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  legal_number?: string | null;
   /** @maxLength 255 */
   email: string;
   country: CountryEnum;
+  business_profile?: BusinessProfileCreate;
 }

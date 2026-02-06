@@ -11,8 +11,7 @@ import type { TaxId } from "./taxId";
 
 export interface PortalCustomer {
   id: string;
-  /** @nullable */
-  name: string | null;
+  name: string;
   /** @nullable */
   legal_name: string | null;
   /** @nullable */

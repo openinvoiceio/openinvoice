@@ -5,10 +5,10 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { BillingProfile } from "./billingProfile";
+import type { BusinessProfile } from "./businessProfile";
 import type { CurrencyEnum } from "./currencyEnum";
 import type { DeliveryMethodEnum } from "./deliveryMethodEnum";
-import type { QuoteAccount } from "./quoteAccount";
-import type { QuoteCustomer } from "./quoteCustomer";
 import type { QuoteDiscount } from "./quoteDiscount";
 import type { QuoteLine } from "./quoteLine";
 import type { QuoteStatusEnum } from "./quoteStatusEnum";
@@ -24,8 +24,8 @@ export interface Quote {
   currency: CurrencyEnum;
   /** @nullable */
   issue_date: string | null;
-  readonly customer: QuoteCustomer;
-  readonly account: QuoteAccount;
+  readonly billing_profile: BillingProfile;
+  readonly business_profile: BusinessProfile;
   metadata: unknown;
   custom_fields: unknown;
   /** @nullable */

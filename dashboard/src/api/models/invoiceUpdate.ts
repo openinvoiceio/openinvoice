@@ -13,6 +13,8 @@ import type { TaxBehaviorEnum } from "./taxBehaviorEnum";
 
 export interface InvoiceUpdate {
   customer_id?: string;
+  billing_profile_id?: string;
+  business_profile_id?: string;
   /**
    * @maxLength 255
    * @nullable

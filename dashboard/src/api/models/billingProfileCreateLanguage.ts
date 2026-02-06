@@ -10,4 +10,4 @@ import type { LanguageEnum } from "./languageEnum";
 /**
  * @nullable
  */
-export type CustomerCreateLanguage = LanguageEnum | null;
+export type BillingProfileCreateLanguage = LanguageEnum | null;

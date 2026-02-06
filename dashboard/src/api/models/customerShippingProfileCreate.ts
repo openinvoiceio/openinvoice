@@ -5,13 +5,13 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { CustomerShippingAddress } from "./customerShippingAddress";
+import type { CustomerShippingProfileCreateAddress } from "./customerShippingProfileCreateAddress";
 
-export interface CustomerShipping {
+export interface CustomerShippingProfileCreate {
   /** @nullable */
   name?: string | null;
   /** @nullable */
   phone?: string | null;
   /** @nullable */
-  address?: CustomerShippingAddress;
+  address?: CustomerShippingProfileCreateAddress;
 }

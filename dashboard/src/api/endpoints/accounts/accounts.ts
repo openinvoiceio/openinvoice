@@ -33,8 +33,6 @@ import type {
   Member,
   PaginatedAccountList,
   PaginatedMemberList,
-  TaxId,
-  TaxIdCreate,
 } from "../../models";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -1106,85 +1104,6 @@ export const useDeleteMember = <
 
   return useMutation(mutationOptions, queryClient);
 };
-export const deleteAccountTaxId = (
-  accountId: string,
-  id: string,
-  options?: SecondParameter<typeof axiosInstance>,
-) => {
-  return axiosInstance<void>(
-    { url: `/api/v1/accounts/${accountId}/tax-ids/${id}`, method: "DELETE" },
-    options,
-  );
-};
-
-export const getDeleteAccountTaxIdMutationOptions = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteAccountTaxId>>,
-    TError,
-    { accountId: string; id: string },
-    TContext
-  >;
-  request?: SecondParameter<typeof axiosInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof deleteAccountTaxId>>,
-  TError,
-  { accountId: string; id: string },
-  TContext
-> => {
-  const mutationKey = ["deleteAccountTaxId"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteAccountTaxId>>,
-    { accountId: string; id: string }
-  > = (props) => {
-    const { accountId, id } = props ?? {};
-
-    return deleteAccountTaxId(accountId, id, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type DeleteAccountTaxIdMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteAccountTaxId>>
->;
-
-export type DeleteAccountTaxIdMutationError = ErrorType<unknown>;
-
-export const useDeleteAccountTaxId = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof deleteAccountTaxId>>,
-      TError,
-      { accountId: string; id: string },
-      TContext
-    >;
-    request?: SecondParameter<typeof axiosInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof deleteAccountTaxId>>,
-  TError,
-  { accountId: string; id: string },
-  TContext
-> => {
-  const mutationOptions = getDeleteAccountTaxIdMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
 export const accountsRetrieve = (
   id: string,
   options?: SecondParameter<typeof axiosInstance>,
@@ -1711,92 +1630,6 @@ export const useSwitchAccount = <
   TContext
 > => {
   const mutationOptions = getSwitchAccountMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-export const createAccountTaxId = (
-  id: string,
-  taxIdCreate: TaxIdCreate,
-  options?: SecondParameter<typeof axiosInstance>,
-  signal?: AbortSignal,
-) => {
-  return axiosInstance<TaxId>(
-    {
-      url: `/api/v1/accounts/${id}/tax-ids`,
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      data: taxIdCreate,
-      signal,
-    },
-    options,
-  );
-};
-
-export const getCreateAccountTaxIdMutationOptions = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createAccountTaxId>>,
-    TError,
-    { id: string; data: TaxIdCreate },
-    TContext
-  >;
-  request?: SecondParameter<typeof axiosInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof createAccountTaxId>>,
-  TError,
-  { id: string; data: TaxIdCreate },
-  TContext
-> => {
-  const mutationKey = ["createAccountTaxId"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createAccountTaxId>>,
-    { id: string; data: TaxIdCreate }
-  > = (props) => {
-    const { id, data } = props ?? {};
-
-    return createAccountTaxId(id, data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type CreateAccountTaxIdMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createAccountTaxId>>
->;
-export type CreateAccountTaxIdMutationBody = TaxIdCreate;
-export type CreateAccountTaxIdMutationError = ErrorType<unknown>;
-
-export const useCreateAccountTaxId = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof createAccountTaxId>>,
-      TError,
-      { id: string; data: TaxIdCreate },
-      TContext
-    >;
-    request?: SecondParameter<typeof axiosInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof createAccountTaxId>>,
-  TError,
-  { id: string; data: TaxIdCreate },
-  TContext
-> => {
-  const mutationOptions = getCreateAccountTaxIdMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

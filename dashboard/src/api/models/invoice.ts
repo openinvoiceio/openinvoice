@@ -5,11 +5,11 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { BillingProfile } from "./billingProfile";
+import type { BusinessProfile } from "./businessProfile";
 import type { Coupon } from "./coupon";
 import type { CurrencyEnum } from "./currencyEnum";
 import type { DeliveryMethodEnum } from "./deliveryMethodEnum";
-import type { InvoiceAccount } from "./invoiceAccount";
-import type { InvoiceCustomer } from "./invoiceCustomer";
 import type { InvoiceDiscount } from "./invoiceDiscount";
 import type { InvoiceDocument } from "./invoiceDocument";
 import type { InvoiceLine } from "./invoiceLine";
@@ -37,8 +37,8 @@ export interface Invoice {
   net_payment_term: number;
   delivery_method: DeliveryMethodEnum;
   recipients: string[];
-  readonly customer: InvoiceCustomer;
-  readonly account: InvoiceAccount;
+  readonly billing_profile: BillingProfile;
+  readonly business_profile: BusinessProfile;
   metadata: unknown;
   /** @pattern ^-?\d{0,17}(?:\.\d{0,2})?$ */
   subtotal_amount: string;

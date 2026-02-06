@@ -5,9 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { LanguageEnum } from "./languageEnum";
+import type { Address } from "./address";
 
 /**
  * @nullable
  */
-export type CustomerUpdateLanguage = LanguageEnum | null;
+export type ShippingProfileCreateAddress = Address | null;

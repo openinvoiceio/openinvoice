@@ -7,20 +7,14 @@
  */
 import type { Address } from "./address";
 
-export interface InvoiceCustomer {
+export interface ShippingProfile {
   id: string;
-  name: string;
   /** @nullable */
-  legal_name: string | null;
-  /** @nullable */
-  legal_number: string | null;
-  /** @nullable */
-  email: string | null;
+  name: string | null;
   /** @nullable */
   phone: string | null;
-  /** @nullable */
-  description: string | null;
   address: Address;
+  created_at: string;
   /** @nullable */
-  logo_id: string | null;
+  updated_at: string | null;
 }

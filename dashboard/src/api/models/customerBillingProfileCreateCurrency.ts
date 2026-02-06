@@ -5,9 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { CustomerShipping } from "./customerShipping";
+import type { CurrencyEnum } from "./currencyEnum";
 
 /**
  * @nullable
  */
-export type CustomerShippingProperty = CustomerShipping | null;
+export type CustomerBillingProfileCreateCurrency = CurrencyEnum | null;

@@ -8,9 +8,8 @@
 import type { Address } from "./address";
 import type { TaxId } from "./taxId";
 
-export interface CreditNoteAccount {
+export interface BusinessProfile {
   id: string;
-  name: string;
   /** @nullable */
   legal_name: string | null;
   /** @nullable */
@@ -20,7 +19,8 @@ export interface CreditNoteAccount {
   /** @nullable */
   phone: string | null;
   address: Address;
-  /** @nullable */
-  logo_id: string | null;
   readonly tax_ids: readonly TaxId[];
+  created_at: string;
+  /** @nullable */
+  updated_at: string | null;
 }

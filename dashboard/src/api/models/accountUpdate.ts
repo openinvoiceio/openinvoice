@@ -5,7 +5,6 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { Address } from "./address";
 import type { CountryEnum } from "./countryEnum";
 import type { CurrencyEnum } from "./currencyEnum";
 import type { LanguageEnum } from "./languageEnum";
@@ -13,24 +12,8 @@ import type { LanguageEnum } from "./languageEnum";
 export interface AccountUpdate {
   /** @maxLength 255 */
   name?: string;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  legal_name?: string | null;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  legal_number?: string | null;
   /** @maxLength 255 */
   email?: string;
-  /**
-   * @maxLength 255
-   * @nullable
-   */
-  phone?: string | null;
-  address?: Address;
   country?: CountryEnum;
   default_currency?: CurrencyEnum;
   language?: LanguageEnum;
@@ -48,4 +31,5 @@ export interface AccountUpdate {
   metadata?: unknown;
   /** @nullable */
   logo_id?: string | null;
+  default_business_profile_id?: string;
 }

@@ -5,46 +5,19 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { Address } from "./address";
-import type { CustomerCurrency } from "./customerCurrency";
-import type { CustomerLanguage } from "./customerLanguage";
-import type { CustomerShippingProperty } from "./customerShippingProperty";
-import type { TaxId } from "./taxId";
-import type { TaxRate } from "./taxRate";
+import type { BillingProfile } from "./billingProfile";
+import type { CustomerDefaultShippingProfile } from "./customerDefaultShippingProfile";
 
 export interface Customer {
   id: string;
   account_id: string;
   name: string;
   /** @nullable */
-  legal_name: string | null;
-  /** @nullable */
-  legal_number: string | null;
-  /** @nullable */
-  email: string | null;
-  /** @nullable */
-  phone: string | null;
-  /** @nullable */
-  currency: CustomerCurrency;
-  /** @nullable */
-  language: CustomerLanguage;
-  /**
-   * @minimum 0
-   * @nullable
-   */
-  net_payment_term: number | null;
-  /** @nullable */
-  invoice_numbering_system_id: string | null;
-  /** @nullable */
-  credit_note_numbering_system_id: string | null;
-  /** @nullable */
   description: string | null;
   metadata: unknown;
-  address: Address;
+  default_billing_profile: BillingProfile;
   /** @nullable */
-  shipping: CustomerShippingProperty;
-  readonly tax_rates: readonly TaxRate[];
-  readonly tax_ids: readonly TaxId[];
+  default_shipping_profile: CustomerDefaultShippingProfile;
   /** @nullable */
   logo_id: string | null;
   /** @nullable */

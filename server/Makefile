@@ -1,7 +1,5 @@
 .DEFAULT_GOAL := all
-
-settings:
-	export DJANGO_SETTINGS_MODULE=config.settings.development
+export DJANGO_SETTINGS_MODULE := config.settings.development
 
 .PHONY: install
 install:
@@ -24,15 +22,15 @@ test:
 	uv run pytest
 
 .PHONY: openapi
-openapi: settings
+openapi:
 	uv run manage.py spectacular --file ../dashboard/openapi.yaml --format openapi
 
 .PHONY: migrations
-migrations: settings
+migrations:
 	uv run manage.py makemigrations
 
 .PHONY: messages
-messages: settings
+messages:
 	uv run manage.py makemessages -a
 
 .PHONY: all

@@ -8,5 +8,7 @@
 
 export interface InvoiceShippingAdd {
   shipping_rate_id: string;
+  /** @nullable */
+  shipping_profile_id?: string | null;
   tax_rates?: string[];
 }
