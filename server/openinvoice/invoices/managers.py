@@ -70,16 +70,16 @@ class InvoiceManager(models.Manager):
 
         billing_profile = billing_profile or customer.default_billing_profile
         business_profile = business_profile or account.default_business_profile
-        currency = currency or billing_profile.currency or account.default_currency
+        currency = currency or customer.currency or account.default_currency
         resolved_numbering_system = None
         if number is None:
             resolved_numbering_system = (
-                numbering_system or billing_profile.invoice_numbering_system or account.invoice_numbering_system
+                numbering_system or customer.invoice_numbering_system or account.invoice_numbering_system
             )
 
-        net_payment_term = net_payment_term or billing_profile.net_payment_term or account.net_payment_term
+        net_payment_term = net_payment_term or customer.net_payment_term or account.net_payment_term
         default_recipients = [billing_profile.email] if billing_profile.email else []
-        language = billing_profile.language or account.language or settings.LANGUAGE_CODE
+        language = customer.language or account.language or settings.LANGUAGE_CODE
 
         head = InvoiceHead.objects.create(root=None)
         invoice = self.create(
@@ -115,7 +115,7 @@ class InvoiceManager(models.Manager):
         head.root = invoice
         head.save(update_fields=["root"])
 
-        invoice.set_tax_rates(billing_profile.tax_rates.active())
+        invoice.set_tax_rates(customer.tax_rates.active())
 
         invoice.documents.create_document(
             invoice=invoice,
@@ -154,7 +154,7 @@ class InvoiceManager(models.Manager):
             resolved_numbering_system = (
                 numbering_system
                 or previous_revision.numbering_system
-                or billing_profile.invoice_numbering_system
+                or previous_revision.customer.invoice_numbering_system
                 or account.invoice_numbering_system
             )
 

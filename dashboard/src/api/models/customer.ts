@@ -6,8 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { BillingProfile } from "./billingProfile";
+import type { CustomerCurrency } from "./customerCurrency";
 import type { CustomerDefaultShippingProfile } from "./customerDefaultShippingProfile";
+import type { CustomerLanguage } from "./customerLanguage";
 import type { TaxId } from "./taxId";
+import type { TaxRate } from "./taxRate";
 
 export interface Customer {
   id: string;
@@ -16,6 +19,19 @@ export interface Customer {
   /** @nullable */
   description: string | null;
   metadata: unknown;
+  /** @nullable */
+  currency: CustomerCurrency;
+  /** @nullable */
+  language: CustomerLanguage;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  net_payment_term: number | null;
+  /** @nullable */
+  invoice_numbering_system_id: string | null;
+  /** @nullable */
+  credit_note_numbering_system_id: string | null;
   default_billing_profile: BillingProfile;
   /** @nullable */
   default_shipping_profile: CustomerDefaultShippingProfile;
@@ -23,6 +39,7 @@ export interface Customer {
   logo_id: string | null;
   /** @nullable */
   logo_url: string | null;
+  readonly tax_rates: readonly TaxRate[];
   readonly tax_ids: readonly TaxId[];
   created_at: string;
   /** @nullable */

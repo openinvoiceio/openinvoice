@@ -6,10 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Address } from "./address";
-import type { BillingProfileCurrency } from "./billingProfileCurrency";
-import type { BillingProfileLanguage } from "./billingProfileLanguage";
 import type { TaxId } from "./taxId";
-import type { TaxRate } from "./taxRate";
 
 export interface BillingProfile {
   id: string;
@@ -22,20 +19,6 @@ export interface BillingProfile {
   /** @nullable */
   phone: string | null;
   address: Address;
-  /** @nullable */
-  currency: BillingProfileCurrency;
-  /** @nullable */
-  language: BillingProfileLanguage;
-  /**
-   * @minimum 0
-   * @nullable
-   */
-  net_payment_term: number | null;
-  /** @nullable */
-  invoice_numbering_system_id: string | null;
-  /** @nullable */
-  credit_note_numbering_system_id: string | null;
-  readonly tax_rates: readonly TaxRate[];
   readonly tax_ids: readonly TaxId[];
   created_at: string;
   /** @nullable */

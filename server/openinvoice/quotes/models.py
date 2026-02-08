@@ -301,7 +301,7 @@ class Quote(models.Model):
         resolved_numbering_system: NumberingSystem | None = None
         if number is None:
             resolved_numbering_system = (
-                numbering_system or billing_profile.invoice_numbering_system or self.account.invoice_numbering_system
+                numbering_system or customer.invoice_numbering_system or self.account.invoice_numbering_system
             )
 
         # TODO: remove lines if customer is changed?

@@ -147,11 +147,6 @@ class BillingProfileFactory(DjangoModelFactory):
     email = "customer@example.com"
     phone = "123456789"
     address = SubFactory(AddressFactory)
-    currency = "PLN"
-    language = "en-us"
-    net_payment_term = 0
-    invoice_numbering_system = None
-    credit_note_numbering_system = None
 
 
 class CustomerFactory(DjangoModelFactory):
@@ -166,6 +161,11 @@ class CustomerFactory(DjangoModelFactory):
     logo = None
     default_billing_profile = SubFactory(BillingProfileFactory)
     default_shipping_profile = None
+    currency = "PLN"
+    language = "en-us"
+    net_payment_term = 0
+    invoice_numbering_system = None
+    credit_note_numbering_system = None
 
     @post_generation
     def billing_profiles(self, create, extracted, **_):
@@ -300,7 +300,7 @@ class InvoiceFactory(DjangoModelFactory):
     business_profile = LazyAttribute(lambda obj: obj.account.default_business_profile)
     number = Sequence(lambda n: f"INV-{n}")
     numbering_system = None
-    currency = LazyAttribute(lambda obj: obj.billing_profile.currency or obj.account.default_currency)
+    currency = LazyAttribute(lambda obj: obj.customer.currency or obj.account.default_currency)
     status = InvoiceStatus.DRAFT
     issue_date = None
     due_date = LazyFunction(lambda: timezone.now().date())
@@ -444,7 +444,7 @@ class QuoteFactory(DjangoModelFactory):
     customer = SubFactory(CustomerFactory, account=SelfAttribute("..account"))
     number = None
     numbering_system = None
-    currency = LazyAttribute(lambda obj: obj.billing_profile.currency or obj.account.default_currency)
+    currency = LazyAttribute(lambda obj: obj.customer.currency or obj.account.default_currency)
     status = QuoteStatus.DRAFT
     issue_date = LazyFunction(lambda: timezone.now().date())
     billing_profile = LazyAttribute(lambda obj: obj.customer.default_billing_profile)
@@ -473,7 +473,7 @@ class QuoteFactory(DjangoModelFactory):
         kwargs["customer"] = customer
         kwargs.setdefault("billing_profile", customer.default_billing_profile)
         kwargs.setdefault("business_profile", account.default_business_profile)
-        kwargs.setdefault("currency", customer.default_billing_profile.currency or account.default_currency)
+        kwargs.setdefault("currency", customer.currency or account.default_currency)
 
         return super()._create(model_class, *args, **kwargs)
 

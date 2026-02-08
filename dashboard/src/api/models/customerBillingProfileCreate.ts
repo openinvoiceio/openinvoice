@@ -6,8 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CustomerBillingProfileCreateAddress } from "./customerBillingProfileCreateAddress";
-import type { CustomerBillingProfileCreateCurrency } from "./customerBillingProfileCreateCurrency";
-import type { CustomerBillingProfileCreateLanguage } from "./customerBillingProfileCreateLanguage";
 
 export interface CustomerBillingProfileCreate {
   /**
@@ -32,18 +30,4 @@ export interface CustomerBillingProfileCreate {
   phone?: string | null;
   /** @nullable */
   address?: CustomerBillingProfileCreateAddress;
-  /** @nullable */
-  currency?: CustomerBillingProfileCreateCurrency;
-  /** @nullable */
-  language?: CustomerBillingProfileCreateLanguage;
-  /**
-   * @minimum 0
-   * @nullable
-   */
-  net_payment_term?: number | null;
-  /** @nullable */
-  invoice_numbering_system_id?: string | null;
-  /** @nullable */
-  credit_note_numbering_system_id?: string | null;
-  tax_rates?: string[];
 }

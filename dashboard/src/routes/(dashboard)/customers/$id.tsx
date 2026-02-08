@@ -226,7 +226,7 @@ function RouteComponent() {
   const defaultShippingProfileId =
     customer.default_shipping_profile?.id ?? null;
   const defaultBillingProfile = customer.default_billing_profile;
-  const defaultBillingTaxRates = defaultBillingProfile?.tax_rates ?? [];
+  const customerTaxRates = customer.tax_rates ?? [];
   const customerTaxIds = customer.tax_ids ?? [];
 
   return (
@@ -669,7 +669,7 @@ function RouteComponent() {
                 <SectionHeader>
                   <SectionTitle>Tax rates</SectionTitle>
                 </SectionHeader>
-                {defaultBillingTaxRates.length !== 0 ? (
+                {customerTaxRates.length !== 0 ? (
                   <div className="overflow-hidden rounded-md border">
                     <Table>
                       <TableHeader>
@@ -683,7 +683,7 @@ function RouteComponent() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {defaultBillingTaxRates.map((taxRate) => (
+                        {customerTaxRates.map((taxRate) => (
                           <TableRow key={taxRate.id}>
                             <TableCell className="font-medium">
                               {taxRate.name}

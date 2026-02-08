@@ -6,8 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { BillingProfileUpdateAddress } from "./billingProfileUpdateAddress";
-import type { BillingProfileUpdateCurrency } from "./billingProfileUpdateCurrency";
-import type { BillingProfileUpdateLanguage } from "./billingProfileUpdateLanguage";
 
 export interface BillingProfileUpdate {
   /**
@@ -32,19 +30,5 @@ export interface BillingProfileUpdate {
   phone?: string | null;
   /** @nullable */
   address?: BillingProfileUpdateAddress;
-  /** @nullable */
-  currency?: BillingProfileUpdateCurrency;
-  /** @nullable */
-  language?: BillingProfileUpdateLanguage;
-  /**
-   * @minimum 0
-   * @nullable
-   */
-  net_payment_term?: number | null;
-  /** @nullable */
-  invoice_numbering_system_id?: string | null;
-  /** @nullable */
-  credit_note_numbering_system_id?: string | null;
-  tax_rates?: string[];
   tax_ids?: string[];
 }

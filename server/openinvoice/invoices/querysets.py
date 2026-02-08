@@ -57,7 +57,7 @@ class InvoiceQuerySet(models.QuerySet):
             Prefetch("shipping__tax_allocations", queryset=InvoiceTaxAllocation.objects.annotate_position()),
             Prefetch("documents", queryset=InvoiceDocument.objects.select_related("file").order_by("created_at")),
             "billing_profile__tax_ids",
-            "billing_profile__tax_rates",
+            "customer__tax_rates",
             "business_profile__tax_ids",
         )
 

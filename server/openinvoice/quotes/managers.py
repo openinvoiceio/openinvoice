@@ -34,7 +34,7 @@ class QuoteManager(models.Manager):
     ):
         billing_profile = billing_profile or customer.default_billing_profile
         business_profile = business_profile or account.default_business_profile
-        currency = currency or billing_profile.currency or account.default_currency
+        currency = currency or customer.currency or account.default_currency
         resolved_numbering_system = None
 
         if number is None:
@@ -68,7 +68,7 @@ class QuoteManager(models.Manager):
             recipients=recipients or default_recipients,
         )
 
-        for tax_rate in billing_profile.tax_rates.active():
+        for tax_rate in customer.tax_rates.active():
             quote.add_tax(tax_rate)
 
         return quote

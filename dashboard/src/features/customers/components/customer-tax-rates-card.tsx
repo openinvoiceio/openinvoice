@@ -1,8 +1,7 @@
 import {
-  getBillingProfilesListQueryKey,
-  useUpdateBillingProfile,
-} from "@/api/endpoints/billing-profiles/billing-profiles";
-import { getCustomersRetrieveQueryKey } from "@/api/endpoints/customers/customers";
+  getCustomersRetrieveQueryKey,
+  useUpdateCustomer,
+} from "@/api/endpoints/customers/customers";
 import { TaxRatesListStatus, type Customer } from "@/api/models";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,20 +45,16 @@ export function CustomerTaxRatesCard({
   ...props
 }: React.ComponentProps<typeof FormCard> & { customer: Customer }) {
   const queryClient = useQueryClient();
-  const defaultBillingProfile = customer.default_billing_profile;
-  const taxRates = defaultBillingProfile?.tax_rates ?? [];
+  const taxRates = customer.tax_rates ?? [];
   const limitReached = taxRates.length >= MAX_CUSTOMER_TAX_RATES;
 
-  const updateBillingProfile = useUpdateBillingProfile({
+  const updateCustomer = useUpdateCustomer({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getBillingProfilesListQueryKey(),
-        });
-        await queryClient.invalidateQueries({
           queryKey: getCustomersRetrieveQueryKey(customer.id),
         });
-        toast.success("Billing profile updated");
+        toast.success("Customer updated");
       },
       onError: (error) => {
         const { message, description } = getErrorSummary(error);
@@ -67,7 +62,7 @@ export function CustomerTaxRatesCard({
       },
     },
   });
-  const isPending = updateBillingProfile.isPending;
+  const isPending = updateCustomer.isPending;
 
   return (
     <FormCard {...props}>
@@ -78,17 +73,7 @@ export function CustomerTaxRatesCard({
         </FormCardDescription>
       </FormCardHeader>
       <FormCardContent>
-        {!defaultBillingProfile && (
-          <Empty className="border border-dashed">
-            <EmptyHeader>
-              <EmptyTitle>No default billing profile</EmptyTitle>
-              <EmptyDescription>
-                Set a default billing profile to manage tax rates.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-        {defaultBillingProfile && taxRates.length > 0 ? (
+        {taxRates.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -114,9 +99,8 @@ export function CustomerTaxRatesCard({
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        defaultBillingProfile &&
-                        updateBillingProfile.mutateAsync({
-                          id: defaultBillingProfile.id,
+                        updateCustomer.mutateAsync({
+                          id: customer.id,
                           data: {
                             tax_rates: taxRates
                               .filter((rate) => rate.id !== taxRate.id)
@@ -133,7 +117,7 @@ export function CustomerTaxRatesCard({
               ))}
             </TableBody>
           </Table>
-        ) : defaultBillingProfile ? (
+        ) : (
           <Empty className="border border-dashed">
             <EmptyHeader>
               <EmptyTitle>No tax rates assigned</EmptyTitle>
@@ -142,7 +126,7 @@ export function CustomerTaxRatesCard({
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
-        ) : null}
+        )}
       </FormCardContent>
       <FormCardFooter>
         <Tooltip>
@@ -152,9 +136,9 @@ export function CustomerTaxRatesCard({
                 align="end"
                 status={TaxRatesListStatus.active}
                 onSelect={async (taxRate) => {
-                  if (!taxRate || !defaultBillingProfile) return;
-                  await updateBillingProfile.mutateAsync({
-                    id: defaultBillingProfile.id,
+                  if (!taxRate) return;
+                  await updateCustomer.mutateAsync({
+                    id: customer.id,
                     data: {
                       tax_rates: [
                         ...taxRates.map((rate) => rate.id),
@@ -164,10 +148,7 @@ export function CustomerTaxRatesCard({
                   });
                 }}
               >
-                <Button
-                  type="button"
-                  disabled={isPending || limitReached || !defaultBillingProfile}
-                >
+                <Button type="button" disabled={isPending || limitReached}>
                   Assign
                 </Button>
               </TaxRateCombobox>

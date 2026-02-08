@@ -175,8 +175,7 @@ class InvoiceCreateSerializer(serializers.Serializer):
 
     def validate(self, data):
         customer = data["customer"]
-        billing_profile = data.get("billing_profile") or customer.default_billing_profile
-        currency = data.get("currency") or billing_profile.currency or customer.account.default_currency
+        currency = data.get("currency") or customer.currency or customer.account.default_currency
 
         if data.get("coupons"):
             validate_coupons_currency(data["coupons"], currency)

@@ -587,13 +587,11 @@ class Invoice(models.Model):  # type: ignore[django-manager-missing]
         tax_behavior: InvoiceTaxBehavior | None = None,
     ) -> None:
         original_currency = self.currency
-        currency = currency or billing_profile.currency or self.account.default_currency
+        currency = currency or customer.currency or self.account.default_currency
         resolved_numbering_system: NumberingSystem | None = None
         if number is None:
             resolved_numbering_system = (
-                numbering_system
-                or billing_profile.invoice_numbering_system
-                or customer.account.invoice_numbering_system
+                numbering_system or customer.invoice_numbering_system or self.account.invoice_numbering_system
             )
 
         self.number = number

@@ -93,6 +93,12 @@ def test_search_all(api_client, user, account):
                 "name": customer_alpha.name,
                 "description": customer_alpha.description,
                 "metadata": customer_alpha.metadata,
+                "currency": customer_alpha.currency,
+                "language": customer_alpha.language,
+                "net_payment_term": customer_alpha.net_payment_term,
+                "invoice_numbering_system_id": customer_alpha.invoice_numbering_system_id,
+                "credit_note_numbering_system_id": customer_alpha.credit_note_numbering_system_id,
+                "tax_rates": [],
                 "tax_ids": [],
                 "default_billing_profile": {
                     "id": str(customer_alpha.default_billing_profile.id),
@@ -108,14 +114,6 @@ def test_search_all(api_client, user, account):
                         "postal_code": customer_alpha.default_billing_profile.address.postal_code,
                         "country": str(customer_alpha.default_billing_profile.address.country),
                     },
-                    "currency": customer_alpha.default_billing_profile.currency,
-                    "language": customer_alpha.default_billing_profile.language,
-                    "net_payment_term": customer_alpha.default_billing_profile.net_payment_term,
-                    "invoice_numbering_system_id": customer_alpha.default_billing_profile.invoice_numbering_system_id,
-                    "credit_note_numbering_system_id": (
-                        customer_alpha.default_billing_profile.credit_note_numbering_system_id
-                    ),
-                    "tax_rates": [],
                     "tax_ids": [],
                     "created_at": ANY,
                     "updated_at": ANY,
@@ -130,6 +128,7 @@ def test_search_all(api_client, user, account):
         "invoices": [
             {
                 "id": str(invoice_alpha.id),
+                "customer_id": str(invoice_alpha.customer.id),
                 "status": invoice_alpha.status,
                 "number": invoice_alpha.number,
                 "numbering_system_id": None,
@@ -152,12 +151,6 @@ def test_search_all(api_client, user, account):
                         "postal_code": invoice_alpha.billing_profile.address.postal_code,
                         "country": str(invoice_alpha.billing_profile.address.country),
                     },
-                    "currency": invoice_alpha.billing_profile.currency,
-                    "language": invoice_alpha.billing_profile.language,
-                    "net_payment_term": invoice_alpha.billing_profile.net_payment_term,
-                    "invoice_numbering_system_id": invoice_alpha.billing_profile.invoice_numbering_system_id,
-                    "credit_note_numbering_system_id": invoice_alpha.billing_profile.credit_note_numbering_system_id,
-                    "tax_rates": [],
                     "tax_ids": [],
                     "created_at": ANY,
                     "updated_at": ANY,

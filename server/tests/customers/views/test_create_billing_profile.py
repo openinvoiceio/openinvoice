@@ -3,13 +3,12 @@ from unittest.mock import ANY
 
 import pytest
 
-from tests.factories import CustomerFactory, TaxRateFactory
+from tests.factories import CustomerFactory
 
 pytestmark = pytest.mark.django_db
 
 
-def test_create_billing_profile_with_tax_rates(api_client, user, account):
-    tax_rate = TaxRateFactory(account=account)
+def test_create_billing_profile(api_client, user, account):
     customer = CustomerFactory(account=account)
 
     api_client.force_login(user)
@@ -18,8 +17,6 @@ def test_create_billing_profile_with_tax_rates(api_client, user, account):
         "/api/v1/billing-profiles",
         {
             "customer_id": str(customer.id),
-            "currency": "USD",
-            "tax_rates": [str(tax_rate.id)],
         },
     )
 
@@ -38,25 +35,6 @@ def test_create_billing_profile_with_tax_rates(api_client, user, account):
             "postal_code": None,
             "country": None,
         },
-        "currency": "USD",
-        "language": None,
-        "net_payment_term": None,
-        "invoice_numbering_system_id": None,
-        "credit_note_numbering_system_id": None,
-        "tax_rates": [
-            {
-                "id": str(tax_rate.id),
-                "account_id": str(tax_rate.account_id),
-                "name": tax_rate.name,
-                "description": tax_rate.description,
-                "percentage": f"{tax_rate.percentage:.2f}",
-                "country": str(tax_rate.country) if tax_rate.country else None,
-                "status": tax_rate.status,
-                "created_at": ANY,
-                "updated_at": ANY,
-                "archived_at": tax_rate.archived_at,
-            }
-        ],
         "tax_ids": [],
         "created_at": ANY,
         "updated_at": ANY,
@@ -72,7 +50,6 @@ def test_create_billing_profile_customer_not_found(api_client, user, account):
         "/api/v1/billing-profiles",
         {
             "customer_id": str(customer_id),
-            "currency": "USD",
         },
     )
 
@@ -98,7 +75,6 @@ def test_create_billing_profile_customer_foreign_account(api_client, user, accou
         "/api/v1/billing-profiles",
         {
             "customer_id": str(customer.id),
-            "currency": "USD",
         },
     )
 
@@ -120,7 +96,6 @@ def test_create_billing_profile_requires_authentication(api_client):
         "/api/v1/billing-profiles",
         {
             "customer_id": str(uuid.uuid4()),
-            "currency": "USD",
         },
     )
 
@@ -143,7 +118,6 @@ def test_create_billing_profile_requires_account(api_client, user):
         "/api/v1/billing-profiles",
         {
             "customer_id": str(uuid.uuid4()),
-            "currency": "USD",
         },
     )
 

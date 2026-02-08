@@ -80,18 +80,15 @@ export function InvoiceCreateDialog({
     resolver: zodResolver(schema),
     defaultValues: {
       customer_id: defaultCustomer?.id || "",
-      currency:
-        defaultCustomer?.default_billing_profile?.currency ||
-        account.default_currency,
+      currency: defaultCustomer?.currency || account.default_currency,
       numbering_system_id:
-        defaultCustomer?.default_billing_profile?.invoice_numbering_system_id ||
+        defaultCustomer?.invoice_numbering_system_id ||
         account.invoice_numbering_system_id,
       coupon_id: null,
-      tax_rate_id:
-        defaultCustomer?.default_billing_profile?.tax_rates?.[0]?.id || null,
+      tax_rate_id: defaultCustomer?.tax_rates?.[0]?.id || null,
       net_payment_term:
-        defaultCustomer?.default_billing_profile?.net_payment_term != null
-          ? defaultCustomer.default_billing_profile.net_payment_term
+        defaultCustomer?.net_payment_term != null
+          ? defaultCustomer.net_payment_term
           : account.net_payment_term,
     },
   });
@@ -151,23 +148,17 @@ export function InvoiceCreateDialog({
     if (!customer) return;
 
     form.setValue("customer_id", customer.id);
-    form.setValue(
-      "currency",
-      customer.default_billing_profile?.currency || account.default_currency,
-    );
+    form.setValue("currency", customer.currency || account.default_currency);
     form.setValue(
       "numbering_system_id",
-      customer.default_billing_profile?.invoice_numbering_system_id ||
+      customer.invoice_numbering_system_id ||
         account.invoice_numbering_system_id,
     );
-    form.setValue(
-      "tax_rate_id",
-      customer.default_billing_profile?.tax_rates?.[0]?.id || null,
-    );
+    form.setValue("tax_rate_id", customer.tax_rates?.[0]?.id || null);
     form.setValue(
       "net_payment_term",
-      customer.default_billing_profile?.net_payment_term != null
-        ? customer.default_billing_profile.net_payment_term
+      customer.net_payment_term != null
+        ? customer.net_payment_term
         : account.net_payment_term,
     );
   }

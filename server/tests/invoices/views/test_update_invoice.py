@@ -47,6 +47,7 @@ def test_update_invoice(api_client, user, account):
     invoice.refresh_from_db()
     assert response.data == {
         "id": str(invoice.id),
+        "customer_id": str(invoice.customer.id),
         "status": invoice.status,
         "number": invoice.effective_number,
         "numbering_system_id": None,
@@ -69,12 +70,6 @@ def test_update_invoice(api_client, user, account):
                 "postal_code": invoice.billing_profile.address.postal_code,
                 "country": str(invoice.billing_profile.address.country),
             },
-            "currency": invoice.billing_profile.currency,
-            "language": invoice.billing_profile.language,
-            "net_payment_term": invoice.billing_profile.net_payment_term,
-            "invoice_numbering_system_id": invoice.billing_profile.invoice_numbering_system_id,
-            "credit_note_numbering_system_id": invoice.billing_profile.credit_note_numbering_system_id,
-            "tax_rates": [],
             "tax_ids": [],
             "created_at": ANY,
             "updated_at": ANY,

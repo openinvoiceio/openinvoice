@@ -36,6 +36,12 @@ def test_list_customers(api_client, user, account):
             "name": customer.name,
             "description": customer.description,
             "metadata": customer.metadata,
+            "currency": customer.currency,
+            "language": customer.language,
+            "net_payment_term": customer.net_payment_term,
+            "invoice_numbering_system_id": customer.invoice_numbering_system_id,
+            "credit_note_numbering_system_id": customer.credit_note_numbering_system_id,
+            "tax_rates": [],
             "tax_ids": [],
             "default_billing_profile": {
                 "id": str(customer.default_billing_profile.id),
@@ -51,12 +57,6 @@ def test_list_customers(api_client, user, account):
                     "postal_code": customer.default_billing_profile.address.postal_code,
                     "country": str(customer.default_billing_profile.address.country),
                 },
-                "currency": customer.default_billing_profile.currency,
-                "language": customer.default_billing_profile.language,
-                "net_payment_term": customer.default_billing_profile.net_payment_term,
-                "invoice_numbering_system_id": customer.default_billing_profile.invoice_numbering_system_id,
-                "credit_note_numbering_system_id": customer.default_billing_profile.credit_note_numbering_system_id,
-                "tax_rates": [],
                 "tax_ids": [],
                 "created_at": ANY,
                 "updated_at": ANY,
@@ -107,9 +107,9 @@ def test_list_customers_requires_authentication(api_client, account):
 
 
 def test_list_customers_filter_by_currency(api_client, user, account):
-    usd = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="USD"))
-    CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="EUR"))
-    pln = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="PLN"))
+    usd = CustomerFactory(account=account, currency="USD")
+    CustomerFactory(account=account, currency="EUR")
+    pln = CustomerFactory(account=account, currency="PLN")
 
     api_client.force_login(user)
     api_client.force_account(account)

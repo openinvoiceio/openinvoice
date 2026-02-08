@@ -12,7 +12,6 @@ from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentA
 from openinvoice.invoices.models import Invoice
 from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
-    BillingProfileFactory,
     CouponFactory,
     CustomerFactory,
     InvoiceDocumentFactory,
@@ -28,7 +27,7 @@ pytestmark = pytest.mark.django_db
 
 def test_create_invoice_revision(api_client, user, account):
     original_issue_date = date(2024, 1, 5)
-    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="USD"))
+    customer = CustomerFactory(account=account, currency="USD")
     invoice = InvoiceFactory(
         account=account,
         customer=customer,
@@ -47,10 +46,11 @@ def test_create_invoice_revision(api_client, user, account):
     document = revision.documents.get(audience__contains=[InvoiceDocumentAudience.CUSTOMER])
     assert response.data == {
         "id": response.data["id"],
+        "customer_id": str(customer.id),
         "status": InvoiceStatus.DRAFT,
         "number": None,
         "numbering_system_id": None,
-        "currency": customer.default_billing_profile.currency,
+        "currency": customer.currency,
         "tax_behavior": "automatic",
         "issue_date": None,
         "due_date": None,
@@ -69,12 +69,6 @@ def test_create_invoice_revision(api_client, user, account):
                 "postal_code": customer.default_billing_profile.address.postal_code,
                 "country": str(customer.default_billing_profile.address.country),
             },
-            "currency": customer.default_billing_profile.currency,
-            "language": customer.default_billing_profile.language,
-            "net_payment_term": customer.default_billing_profile.net_payment_term,
-            "invoice_numbering_system_id": customer.default_billing_profile.invoice_numbering_system_id,
-            "credit_note_numbering_system_id": customer.default_billing_profile.credit_note_numbering_system_id,
-            "tax_rates": [],
             "tax_ids": [],
             "created_at": ANY,
             "updated_at": ANY,
@@ -560,7 +554,7 @@ def test_create_invoice_revision_with_coupons(api_client, user, account):
     currency = "USD"
     coupon1 = CouponFactory(account=account, currency=currency)
     coupon2 = CouponFactory(account=account, currency=currency)
-    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency=currency))
+    customer = CustomerFactory(account=account, currency=currency)
     invoice = InvoiceFactory(account=account, customer=customer, currency=currency, status=InvoiceStatus.OPEN)
 
     api_client.force_login(user)
@@ -602,7 +596,7 @@ def test_create_invoice_revision_with_coupons_invalid_currency(api_client, user,
 
 def test_create_invoice_revision_with_duplicate_coupons(api_client, user, account):
     coupon = CouponFactory(account=account, currency="USD")
-    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="USD"))
+    customer = CustomerFactory(account=account, currency="USD")
     invoice = InvoiceFactory(account=account, customer=customer, status=InvoiceStatus.OPEN)
 
     api_client.force_login(user)
@@ -629,7 +623,7 @@ def test_create_invoice_revision_with_foreign_coupon(api_client, user, account):
     currency = "USD"
     coupon1 = CouponFactory(account=account, currency=currency)
     coupon2 = CouponFactory(currency=currency)  # Not linked to the account
-    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency=currency))
+    customer = CustomerFactory(account=account, currency=currency)
     invoice = InvoiceFactory(account=account, customer=customer, status=InvoiceStatus.OPEN)
 
     api_client.force_login(user)
@@ -657,7 +651,7 @@ def test_create_invoice_revision_coupons_limit_exceeded(api_client, user, accoun
     currency = "USD"
     coupon1 = CouponFactory(account=account, currency=currency)
     coupon2 = CouponFactory(account=account, currency=currency)
-    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency=currency))
+    customer = CustomerFactory(account=account, currency=currency)
     invoice = InvoiceFactory(account=account, customer=customer, status=InvoiceStatus.OPEN)
 
     api_client.force_login(user)

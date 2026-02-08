@@ -5,7 +5,6 @@ from django.template.loader import render_to_string
 
 from tests.factories import (
     AccountFactory,
-    BillingProfileFactory,
     CouponFactory,
     CustomerFactory,
     CustomerShippingFactory,
@@ -118,7 +117,7 @@ def test_invoice_pdf_template_with_shipping_and_discount_summary():
     customer_shipping = CustomerShippingFactory()
     customer = CustomerFactory(
         account=account,
-        default_billing_profile=BillingProfileFactory(currency=account.default_currency),
+        currency=account.default_currency,
         shipping=customer_shipping,
     )
     invoice = InvoiceFactory(account=account, customer=customer)

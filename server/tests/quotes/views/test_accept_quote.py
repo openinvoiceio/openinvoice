@@ -8,7 +8,6 @@ from freezegun import freeze_time
 
 from openinvoice.quotes.choices import QuoteDeliveryMethod, QuoteStatus
 from tests.factories import (
-    BillingProfileFactory,
     CustomerFactory,
     PriceFactory,
     QuoteFactory,
@@ -23,7 +22,7 @@ def test_accept_quote(api_client, user, account):
     customer = CustomerFactory(
         account=account,
         name="Acme Corp",
-        default_billing_profile=BillingProfileFactory(legal_name="Acme Corp", currency="USD"),
+        currency="USD",
     )
     price = PriceFactory(account=account, amount=Decimal("120.00"), currency="USD")
 
@@ -73,12 +72,6 @@ def test_accept_quote(api_client, user, account):
                 "postal_code": customer.default_billing_profile.address.postal_code,
                 "country": str(customer.default_billing_profile.address.country),
             },
-            "currency": customer.default_billing_profile.currency,
-            "language": customer.default_billing_profile.language,
-            "net_payment_term": customer.default_billing_profile.net_payment_term,
-            "invoice_numbering_system_id": customer.default_billing_profile.invoice_numbering_system_id,
-            "credit_note_numbering_system_id": customer.default_billing_profile.credit_note_numbering_system_id,
-            "tax_rates": [],
             "tax_ids": [],
             "created_at": ANY,
             "updated_at": ANY,

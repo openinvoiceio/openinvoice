@@ -24,6 +24,11 @@ class CustomerManager(models.Manager):
         metadata: dict | None = None,
         logo: File | None = None,
         default_shipping_profile: ShippingProfile | None = None,
+        currency: str | None = None,
+        language: str | None = None,
+        net_payment_term: int | None = None,
+        invoice_numbering_system: NumberingSystem | None = None,
+        credit_note_numbering_system: NumberingSystem | None = None,
     ) -> Customer:
         return self.create(
             account=account,
@@ -33,6 +38,11 @@ class CustomerManager(models.Manager):
             logo=logo,
             default_billing_profile=default_billing_profile,
             default_shipping_profile=default_shipping_profile,
+            currency=currency,
+            language=language,
+            net_payment_term=net_payment_term,
+            invoice_numbering_system=invoice_numbering_system,
+            credit_note_numbering_system=credit_note_numbering_system,
         )
 
 
@@ -44,11 +54,6 @@ class BillingProfileManager(models.Manager):
         email: str | None = None,
         phone: str | None = None,
         address_data: dict | None = None,
-        currency: str | None = None,
-        language: str | None = None,
-        net_payment_term: int | None = None,
-        invoice_numbering_system: NumberingSystem | None = None,
-        credit_note_numbering_system: NumberingSystem | None = None,
     ) -> BillingProfile:
         address = Address.objects.create_address(**(address_data or {}))
         return self.create(
@@ -57,11 +62,6 @@ class BillingProfileManager(models.Manager):
             email=email,
             phone=phone,
             address=address,
-            currency=currency,
-            language=language,
-            net_payment_term=net_payment_term,
-            invoice_numbering_system=invoice_numbering_system,
-            credit_note_numbering_system=credit_note_numbering_system,
         )
 
 

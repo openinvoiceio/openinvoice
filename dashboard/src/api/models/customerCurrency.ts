@@ -10,4 +10,4 @@ import type { CurrencyEnum } from "./currencyEnum";
 /**
  * @nullable
  */
-export type CustomerBillingProfileCreateCurrency = CurrencyEnum | null;
+export type CustomerCurrency = CurrencyEnum | null;

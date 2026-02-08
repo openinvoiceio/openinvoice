@@ -20,12 +20,6 @@ class BillingProfileSerializer(serializers.Serializer):
     email = serializers.EmailField(allow_null=True)
     phone = serializers.CharField(allow_null=True)
     address = AddressSerializer()
-    currency = CurrencyField(allow_null=True)
-    language = LanguageField(allow_null=True)
-    net_payment_term = serializers.IntegerField(allow_null=True, min_value=0)
-    invoice_numbering_system_id = serializers.UUIDField(allow_null=True)
-    credit_note_numbering_system_id = serializers.UUIDField(allow_null=True)
-    tax_rates = TaxRateSerializer(many=True, read_only=True)
     tax_ids = TaxIdSerializer(many=True, read_only=True)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
@@ -38,22 +32,6 @@ class BillingProfileCreateSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
     phone = serializers.CharField(max_length=255, allow_null=True, required=False)
     address = AddressSerializer(allow_null=True, required=False)
-    currency = CurrencyField(allow_null=True, required=False)
-    language = LanguageField(allow_null=True, required=False)
-    net_payment_term = serializers.IntegerField(allow_null=True, min_value=0, required=False)
-    invoice_numbering_system_id = NumberingSystemRelatedField(
-        source="invoice_numbering_system",
-        applies_to=NumberingSystemAppliesTo.INVOICE,
-        allow_null=True,
-        required=False,
-    )
-    credit_note_numbering_system_id = NumberingSystemRelatedField(
-        source="credit_note_numbering_system",
-        applies_to=NumberingSystemAppliesTo.CREDIT_NOTE,
-        allow_null=True,
-        required=False,
-    )
-    tax_rates = TaxRateRelatedField(many=True, required=False)
     tax_ids = CustomerTaxIdRelatedField(many=True, required=False)
 
 
@@ -63,22 +41,6 @@ class CustomerBillingProfileCreateSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
     phone = serializers.CharField(max_length=255, allow_null=True, required=False)
     address = AddressSerializer(allow_null=True, required=False)
-    currency = CurrencyField(allow_null=True, required=False)
-    language = LanguageField(allow_null=True, required=False)
-    net_payment_term = serializers.IntegerField(allow_null=True, min_value=0, required=False)
-    invoice_numbering_system_id = NumberingSystemRelatedField(
-        source="invoice_numbering_system",
-        applies_to=NumberingSystemAppliesTo.INVOICE,
-        allow_null=True,
-        required=False,
-    )
-    credit_note_numbering_system_id = NumberingSystemRelatedField(
-        source="credit_note_numbering_system",
-        applies_to=NumberingSystemAppliesTo.CREDIT_NOTE,
-        allow_null=True,
-        required=False,
-    )
-    tax_rates = TaxRateRelatedField(many=True, required=False)
 
 
 class BillingProfileUpdateSerializer(serializers.Serializer):
@@ -87,22 +49,6 @@ class BillingProfileUpdateSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
     phone = serializers.CharField(max_length=255, allow_null=True, required=False)
     address = AddressSerializer(allow_null=True, required=False)
-    currency = CurrencyField(allow_null=True, required=False)
-    language = LanguageField(allow_null=True, required=False)
-    net_payment_term = serializers.IntegerField(allow_null=True, min_value=0, required=False)
-    invoice_numbering_system_id = NumberingSystemRelatedField(
-        source="invoice_numbering_system",
-        applies_to=NumberingSystemAppliesTo.INVOICE,
-        allow_null=True,
-        required=False,
-    )
-    credit_note_numbering_system_id = NumberingSystemRelatedField(
-        source="credit_note_numbering_system",
-        applies_to=NumberingSystemAppliesTo.CREDIT_NOTE,
-        allow_null=True,
-        required=False,
-    )
-    tax_rates = TaxRateRelatedField(many=True, required=False)
     tax_ids = CustomerTaxIdRelatedField(many=True, required=False)
 
 
@@ -140,10 +86,16 @@ class CustomerSerializer(serializers.Serializer):
     name = serializers.CharField()
     description = serializers.CharField(allow_null=True)
     metadata = MetadataField()
+    currency = CurrencyField(allow_null=True)
+    language = LanguageField(allow_null=True)
+    net_payment_term = serializers.IntegerField(allow_null=True, min_value=0)
+    invoice_numbering_system_id = serializers.UUIDField(allow_null=True)
+    credit_note_numbering_system_id = serializers.UUIDField(allow_null=True)
     default_billing_profile = BillingProfileSerializer()
     default_shipping_profile = ShippingProfileSerializer(allow_null=True)
     logo_id = serializers.UUIDField(allow_null=True)
     logo_url = serializers.FileField(allow_null=True, use_url=True, source="logo.data")
+    tax_rates = TaxRateSerializer(many=True, read_only=True)
     tax_ids = TaxIdSerializer(many=True, read_only=True)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
@@ -156,6 +108,22 @@ class CustomerCreateSerializer(serializers.Serializer):
     description = serializers.CharField(max_length=600, allow_null=True, required=False)
     metadata = MetadataField(required=False)
     logo_id = FileRelatedField(source="logo", allow_null=True, required=False)
+    currency = CurrencyField(allow_null=True, required=False)
+    language = LanguageField(allow_null=True, required=False)
+    net_payment_term = serializers.IntegerField(allow_null=True, min_value=0, required=False)
+    invoice_numbering_system_id = NumberingSystemRelatedField(
+        source="invoice_numbering_system",
+        applies_to=NumberingSystemAppliesTo.INVOICE,
+        allow_null=True,
+        required=False,
+    )
+    credit_note_numbering_system_id = NumberingSystemRelatedField(
+        source="credit_note_numbering_system",
+        applies_to=NumberingSystemAppliesTo.CREDIT_NOTE,
+        allow_null=True,
+        required=False,
+    )
+    tax_rates = TaxRateRelatedField(many=True, required=False)
 
 
 class CustomerUpdateSerializer(serializers.Serializer):
@@ -163,6 +131,22 @@ class CustomerUpdateSerializer(serializers.Serializer):
     description = serializers.CharField(max_length=600, allow_null=True, required=False)
     metadata = MetadataField(required=False)
     logo_id = FileRelatedField(source="logo", allow_null=True, required=False)
+    currency = CurrencyField(allow_null=True, required=False)
+    language = LanguageField(allow_null=True, required=False)
+    net_payment_term = serializers.IntegerField(allow_null=True, min_value=0, required=False)
+    invoice_numbering_system_id = NumberingSystemRelatedField(
+        source="invoice_numbering_system",
+        applies_to=NumberingSystemAppliesTo.INVOICE,
+        allow_null=True,
+        required=False,
+    )
+    credit_note_numbering_system_id = NumberingSystemRelatedField(
+        source="credit_note_numbering_system",
+        applies_to=NumberingSystemAppliesTo.CREDIT_NOTE,
+        allow_null=True,
+        required=False,
+    )
+    tax_rates = TaxRateRelatedField(many=True, required=False)
     default_billing_profile_id = BillingProfileRelatedField(
         source="default_billing_profile",
         required=False,

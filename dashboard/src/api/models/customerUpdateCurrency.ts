@@ -5,9 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { LanguageEnum } from "./languageEnum";
+import type { CurrencyEnum } from "./currencyEnum";
 
 /**
  * @nullable
  */
-export type BillingProfileUpdateLanguage = LanguageEnum | null;
+export type CustomerUpdateCurrency = CurrencyEnum | null;

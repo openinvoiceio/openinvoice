@@ -21,7 +21,7 @@ class CustomerQuerySet(models.QuerySet):
             "logo",
         ).prefetch_related(
             "tax_ids",
-            "default_billing_profile__tax_rates",
+            "tax_rates",
             "default_billing_profile__tax_ids",
         )
 

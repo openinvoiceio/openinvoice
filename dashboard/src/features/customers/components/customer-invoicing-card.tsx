@@ -1,8 +1,7 @@
 import {
-  getBillingProfilesListQueryKey,
-  useUpdateBillingProfile,
-} from "@/api/endpoints/billing-profiles/billing-profiles";
-import { getCustomersRetrieveQueryKey } from "@/api/endpoints/customers/customers";
+  getCustomersRetrieveQueryKey,
+  useUpdateCustomer,
+} from "@/api/endpoints/customers/customers";
 import { useNumberingSystemsRetrieve } from "@/api/endpoints/numbering-systems/numbering-systems";
 import {
   CurrencyEnum,
@@ -67,13 +66,11 @@ export function CustomerInvoicingCard({
   const form = useForm<FormValuesInput, any, FormValuesOutput>({
     resolver: zodResolver(schema),
     defaultValues: {
-      currency: customer.default_billing_profile.currency ?? undefined,
-      invoiceNumberingSystemId:
-        customer.default_billing_profile.invoice_numbering_system_id || null,
+      currency: customer.currency ?? undefined,
+      invoiceNumberingSystemId: customer.invoice_numbering_system_id || null,
       creditNoteNumberingSystemId:
-        customer.default_billing_profile.credit_note_numbering_system_id ||
-        null,
-      netPaymentTerm: customer.default_billing_profile.net_payment_term ?? "",
+        customer.credit_note_numbering_system_id || null,
+      netPaymentTerm: customer.net_payment_term ?? "",
     },
   });
   const invoiceNumberingSystemId = form.watch("invoiceNumberingSystemId");
@@ -86,16 +83,13 @@ export function CustomerInvoicingCard({
     creditNoteNumberingSystemId || "",
     { query: { enabled: !!creditNoteNumberingSystemId } },
   );
-  const { mutateAsync, isPending } = useUpdateBillingProfile({
+  const { mutateAsync, isPending } = useUpdateCustomer({
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: getBillingProfilesListQueryKey(),
-        });
-        await queryClient.invalidateQueries({
           queryKey: getCustomersRetrieveQueryKey(customer.id),
         });
-        toast.success("Billing profile updated");
+        toast.success("Customer updated");
       },
       onError: (error) => {
         const { message, description } = getErrorSummary(error);
@@ -107,7 +101,7 @@ export function CustomerInvoicingCard({
   async function onSubmit(values: FormValuesOutput) {
     if (isPending) return;
     await mutateAsync({
-      id: customer.default_billing_profile.id,
+      id: customer.id,
       data: {
         currency: values.currency || null,
         invoice_numbering_system_id: values.invoiceNumberingSystemId || null,

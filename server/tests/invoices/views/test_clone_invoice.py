@@ -12,7 +12,6 @@ from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentA
 from openinvoice.invoices.models import Invoice
 from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
-    BillingProfileFactory,
     CouponFactory,
     CustomerFactory,
     InvoiceDocumentFactory,
@@ -28,11 +27,11 @@ pytestmark = pytest.mark.django_db
 
 
 def test_clone_invoice(api_client, user, account):
-    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="USD"))
+    customer = CustomerFactory(account=account, currency="USD")
     numbering_system = NumberingSystemFactory(account=account)
     shipping_rate = ShippingRateFactory(
         account=account,
-        currency=customer.default_billing_profile.currency,
+        currency=customer.currency,
         amount=Decimal("10"),
     )
     shipping = InvoiceShippingFactory(shipping_rate=shipping_rate, amount=Decimal("10"))
@@ -88,6 +87,7 @@ def test_clone_invoice(api_client, user, account):
     assert response.status_code == 201
     assert response.data == {
         "id": response.data["id"],
+        "customer_id": str(customer.id),
         "status": InvoiceStatus.DRAFT,
         "number": "INV-2",
         "numbering_system_id": str(numbering_system.id),
@@ -110,12 +110,6 @@ def test_clone_invoice(api_client, user, account):
                 "postal_code": customer.default_billing_profile.address.postal_code,
                 "country": str(customer.default_billing_profile.address.country),
             },
-            "currency": customer.default_billing_profile.currency,
-            "language": customer.default_billing_profile.language,
-            "net_payment_term": customer.default_billing_profile.net_payment_term,
-            "invoice_numbering_system_id": customer.default_billing_profile.invoice_numbering_system_id,
-            "credit_note_numbering_system_id": customer.default_billing_profile.credit_note_numbering_system_id,
-            "tax_rates": [],
             "tax_ids": [],
             "created_at": ANY,
             "updated_at": ANY,

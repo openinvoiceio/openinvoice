@@ -5,6 +5,8 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { CustomerUpdateCurrency } from "./customerUpdateCurrency";
+import type { CustomerUpdateLanguage } from "./customerUpdateLanguage";
 
 export interface CustomerUpdate {
   /** @maxLength 255 */
@@ -17,6 +19,20 @@ export interface CustomerUpdate {
   metadata?: unknown;
   /** @nullable */
   logo_id?: string | null;
+  /** @nullable */
+  currency?: CustomerUpdateCurrency;
+  /** @nullable */
+  language?: CustomerUpdateLanguage;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  net_payment_term?: number | null;
+  /** @nullable */
+  invoice_numbering_system_id?: string | null;
+  /** @nullable */
+  credit_note_numbering_system_id?: string | null;
+  tax_rates?: string[];
   default_billing_profile_id?: string;
   default_shipping_profile_id?: string;
 }

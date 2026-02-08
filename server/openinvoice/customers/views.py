@@ -63,13 +63,7 @@ class CustomerListCreateAPIView(generics.ListAPIView):
             email=billing_data.get("email"),
             phone=billing_data.get("phone"),
             address_data=billing_data.get("address"),
-            currency=billing_data.get("currency"),
-            language=billing_data.get("language"),
-            net_payment_term=billing_data.get("net_payment_term"),
-            invoice_numbering_system=billing_data.get("invoice_numbering_system"),
-            credit_note_numbering_system=billing_data.get("credit_note_numbering_system"),
         )
-        billing_profile.tax_rates.set(billing_data.get("tax_rates", []))
 
         shipping_profile = None
         if "shipping_profile" in data:
@@ -88,7 +82,13 @@ class CustomerListCreateAPIView(generics.ListAPIView):
             logo=data.get("logo"),
             default_billing_profile=billing_profile,
             default_shipping_profile=shipping_profile,
+            currency=data.get("currency"),
+            language=data.get("language"),
+            net_payment_term=data.get("net_payment_term"),
+            invoice_numbering_system=data.get("invoice_numbering_system"),
+            credit_note_numbering_system=data.get("credit_note_numbering_system"),
         )
+        customer.tax_rates.set(data.get("tax_rates", []))
         customer.billing_profiles.add(billing_profile)
         if shipping_profile:
             customer.shipping_profiles.add(shipping_profile)
@@ -130,7 +130,17 @@ class CustomerRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             logo=data.get("logo", customer.logo),
             default_billing_profile=data.get("default_billing_profile", customer.default_billing_profile),
             default_shipping_profile=data.get("default_shipping_profile", customer.default_shipping_profile),
+            currency=data.get("currency", customer.currency),
+            language=data.get("language", customer.language),
+            net_payment_term=data.get("net_payment_term", customer.net_payment_term),
+            invoice_numbering_system=data.get("invoice_numbering_system", customer.invoice_numbering_system),
+            credit_note_numbering_system=data.get(
+                "credit_note_numbering_system",
+                customer.credit_note_numbering_system,
+            ),
         )
+        if "tax_rates" in data:
+            customer.tax_rates.set(data["tax_rates"])
         logger.info("Customer updated", account_id=request.account.id, customer_id=customer.id)
 
         serializer = self.get_serializer(customer)
@@ -186,13 +196,7 @@ class BillingProfileListCreateAPIView(generics.ListAPIView):
             email=data.get("email"),
             phone=data.get("phone"),
             address_data=data.get("address"),
-            currency=data.get("currency"),
-            language=data.get("language"),
-            net_payment_term=data.get("net_payment_term"),
-            invoice_numbering_system=data.get("invoice_numbering_system"),
-            credit_note_numbering_system=data.get("credit_note_numbering_system"),
         )
-        billing_profile.tax_rates.set(data.get("tax_rates", []))
         billing_profile.tax_ids.set(data.get("tax_ids", []))
         customer.billing_profiles.add(billing_profile)
         logger.info("Billing profile created", billing_profile_id=billing_profile.id)
@@ -228,15 +232,8 @@ class BillingProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             legal_number=data.get("legal_number", profile.legal_number),
             email=data.get("email", profile.email),
             phone=data.get("phone", profile.phone),
-            currency=data.get("currency", profile.currency),
-            language=data.get("language", profile.language),
-            net_payment_term=data.get("net_payment_term", profile.net_payment_term),
-            invoice_numbering_system=data.get("invoice_numbering_system", profile.invoice_numbering_system),
-            credit_note_numbering_system=data.get("credit_note_numbering_system", profile.credit_note_numbering_system),
             address_data=data.get("address"),
         )
-        if "tax_rates" in data:
-            profile.tax_rates.set(data["tax_rates"])
         if "tax_ids" in data:
             profile.tax_ids.set(data["tax_ids"])
         logger.info("Billing profile updated", billing_profile_id=profile.id)

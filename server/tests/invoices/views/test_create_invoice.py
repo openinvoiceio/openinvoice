@@ -10,7 +10,6 @@ from openinvoice.invoices.choices import InvoiceDeliveryMethod, InvoiceDocumentA
 from openinvoice.invoices.models import Invoice
 from openinvoice.tax_rates.choices import TaxRateStatus
 from tests.factories import (
-    BillingProfileFactory,
     CouponFactory,
     CustomerFactory,
     ShippingRateFactory,
@@ -36,14 +35,15 @@ def test_create_invoice(api_client, user, account):
     document = invoice.documents.get(audience__contains=[InvoiceDocumentAudience.CUSTOMER])
     assert response.data == {
         "id": response.data["id"],
+        "customer_id": str(customer.id),
         "status": InvoiceStatus.DRAFT,
         "number": None,
         "numbering_system_id": None,
-        "currency": customer.default_billing_profile.currency,
+        "currency": customer.currency,
         "tax_behavior": "automatic",
         "issue_date": None,
         "due_date": None,
-        "net_payment_term": 0,
+        "net_payment_term": customer.net_payment_term,
         "billing_profile": {
             "id": str(customer.default_billing_profile.id),
             "legal_name": customer.default_billing_profile.legal_name,
@@ -58,12 +58,6 @@ def test_create_invoice(api_client, user, account):
                 "postal_code": customer.default_billing_profile.address.postal_code,
                 "country": str(customer.default_billing_profile.address.country),
             },
-            "currency": customer.default_billing_profile.currency,
-            "language": customer.default_billing_profile.language,
-            "net_payment_term": customer.default_billing_profile.net_payment_term,
-            "invoice_numbering_system_id": customer.default_billing_profile.invoice_numbering_system_id,
-            "credit_note_numbering_system_id": customer.default_billing_profile.credit_note_numbering_system_id,
-            "tax_rates": [],
             "tax_ids": [],
             "created_at": ANY,
             "updated_at": ANY,
@@ -138,7 +132,7 @@ def test_create_invoice(api_client, user, account):
 def test_create_invoice_with_customer_tax_rates(api_client, user, account):
     tax_rate = TaxRateFactory(account=account)
     customer = CustomerFactory(account=account)
-    customer.default_billing_profile.tax_rates.add(tax_rate)
+    customer.tax_rates.add(tax_rate)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -155,7 +149,7 @@ def test_create_invoice_ignores_archived_customer_tax_rates(api_client, user, ac
     active_rate = TaxRateFactory(account=account, status=TaxRateStatus.ACTIVE)
     archived_rate = TaxRateFactory(account=account, status=TaxRateStatus.ARCHIVED)
     customer = CustomerFactory(account=account)
-    customer.default_billing_profile.tax_rates.add(active_rate, archived_rate)
+    customer.tax_rates.add(active_rate, archived_rate)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -412,7 +406,7 @@ def test_create_invoice_shipping_tax_rates_limit_exceeded(api_client, user, acco
     tax_rate1 = TaxRateFactory(account=account)
     tax_rate2 = TaxRateFactory(account=account)
     customer = CustomerFactory(account=account)
-    shipping_rate = ShippingRateFactory(account=account, currency=customer.default_billing_profile.currency)
+    shipping_rate = ShippingRateFactory(account=account, currency=customer.currency)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -681,8 +675,8 @@ def test_create_invoice_limit_exceeded(api_client, user, account, settings):
 
 def test_create_invoice_with_coupons(api_client, user, account):
     customer = CustomerFactory(account=account)
-    coupon1 = CouponFactory(account=account, currency=customer.default_billing_profile.currency)
-    coupon2 = CouponFactory(account=account, currency=customer.default_billing_profile.currency)
+    coupon1 = CouponFactory(account=account, currency=customer.currency)
+    coupon2 = CouponFactory(account=account, currency=customer.currency)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -701,7 +695,7 @@ def test_create_invoice_with_coupons(api_client, user, account):
 def test_create_invoice_with_coupons_invalid_currency(api_client, user, account):
     coupon1 = CouponFactory(account=account, currency="USD")
     coupon2 = CouponFactory(account=account, currency="EUR")
-    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="USD"))
+    customer = CustomerFactory(account=account, currency="USD")
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -728,7 +722,7 @@ def test_create_invoice_with_coupons_invalid_currency(api_client, user, account)
 
 def test_create_invoice_with_duplicate_coupons(api_client, user, account):
     coupon = CouponFactory(account=account, currency="USD")
-    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency="USD"))
+    customer = CustomerFactory(account=account, currency="USD")
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -757,7 +751,7 @@ def test_create_invoice_with_foreign_coupon(api_client, user, account):
     currency = "USD"
     coupon1 = CouponFactory(account=account, currency=currency)
     coupon2 = CouponFactory(currency=currency)  # Not linked to the account
-    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency=currency))
+    customer = CustomerFactory(account=account, currency=currency)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -787,7 +781,7 @@ def test_create_invoice_coupons_limit_exceeded(api_client, user, account, settin
     currency = "USD"
     coupon1 = CouponFactory(account=account, currency=currency)
     coupon2 = CouponFactory(account=account, currency=currency)
-    customer = CustomerFactory(account=account, default_billing_profile=BillingProfileFactory(currency=currency))
+    customer = CustomerFactory(account=account, currency=currency)
 
     api_client.force_login(user)
     api_client.force_account(account)

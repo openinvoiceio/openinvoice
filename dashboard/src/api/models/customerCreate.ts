@@ -6,6 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CustomerBillingProfileCreate } from "./customerBillingProfileCreate";
+import type { CustomerCreateCurrency } from "./customerCreateCurrency";
+import type { CustomerCreateLanguage } from "./customerCreateLanguage";
 import type { CustomerCreateShippingProfile } from "./customerCreateShippingProfile";
 
 export interface CustomerCreate {
@@ -22,4 +24,18 @@ export interface CustomerCreate {
   metadata?: unknown;
   /** @nullable */
   logo_id?: string | null;
+  /** @nullable */
+  currency?: CustomerCreateCurrency;
+  /** @nullable */
+  language?: CustomerCreateLanguage;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  net_payment_term?: number | null;
+  /** @nullable */
+  invoice_numbering_system_id?: string | null;
+  /** @nullable */
+  credit_note_numbering_system_id?: string | null;
+  tax_rates?: string[];
 }

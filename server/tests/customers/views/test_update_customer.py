@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from tests.factories import BillingProfileFactory, CustomerFactory, ShippingProfileFactory
+from tests.factories import BillingProfileFactory, CustomerFactory, ShippingProfileFactory, TaxRateFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -29,6 +29,12 @@ def test_update_customer(api_client, user, account):
         "name": customer.name,
         "description": "New description",
         "metadata": {"key": "value"},
+        "currency": customer.currency,
+        "language": customer.language,
+        "net_payment_term": customer.net_payment_term,
+        "invoice_numbering_system_id": customer.invoice_numbering_system_id,
+        "credit_note_numbering_system_id": customer.credit_note_numbering_system_id,
+        "tax_rates": [],
         "tax_ids": [],
         "default_billing_profile": {
             "id": str(customer.default_billing_profile.id),
@@ -44,12 +50,6 @@ def test_update_customer(api_client, user, account):
                 "postal_code": customer.default_billing_profile.address.postal_code,
                 "country": str(customer.default_billing_profile.address.country),
             },
-            "currency": customer.default_billing_profile.currency,
-            "language": customer.default_billing_profile.language,
-            "net_payment_term": customer.default_billing_profile.net_payment_term,
-            "invoice_numbering_system_id": customer.default_billing_profile.invoice_numbering_system_id,
-            "credit_note_numbering_system_id": customer.default_billing_profile.credit_note_numbering_system_id,
-            "tax_rates": [],
             "tax_ids": [],
             "created_at": ANY,
             "updated_at": ANY,
@@ -76,6 +76,37 @@ def test_update_customer(api_client, user, account):
         "created_at": ANY,
         "updated_at": ANY,
     }
+
+
+def test_update_customer_tax_rates(api_client, user, account):
+    tax_rate = TaxRateFactory(account=account)
+    customer = CustomerFactory(account=account)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/customers/{customer.id}",
+        {"tax_rates": [str(tax_rate.id)]},
+    )
+
+    assert response.status_code == 200
+    assert [tax_rate_data["id"] for tax_rate_data in response.data["tax_rates"]] == [str(tax_rate.id)]
+
+
+def test_update_customer_clears_tax_rates(api_client, user, account):
+    tax_rate = TaxRateFactory(account=account)
+    customer = CustomerFactory(account=account)
+    customer.tax_rates.add(tax_rate)
+
+    api_client.force_login(user)
+    api_client.force_account(account)
+    response = api_client.put(
+        f"/api/v1/customers/{customer.id}",
+        {"tax_rates": []},
+    )
+
+    assert response.status_code == 200
+    assert response.data["tax_rates"] == []
 
 
 def test_update_customer_logo_not_found(api_client, user, account):

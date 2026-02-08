@@ -6699,31 +6699,6 @@ components:
           nullable: true
         address:
           $ref: '#/components/schemas/Address'
-        currency:
-          allOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          nullable: true
-        language:
-          allOf:
-          - $ref: '#/components/schemas/LanguageEnum'
-          nullable: true
-        net_payment_term:
-          type: integer
-          minimum: 0
-          nullable: true
-        invoice_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
-        credit_note_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
-        tax_rates:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaxRate'
-          readOnly: true
         tax_ids:
           type: array
           items:
@@ -6739,18 +6714,12 @@ components:
       required:
       - address
       - created_at
-      - credit_note_numbering_system_id
-      - currency
       - email
       - id
-      - invoice_numbering_system_id
-      - language
       - legal_name
       - legal_number
-      - net_payment_term
       - phone
       - tax_ids
-      - tax_rates
       - updated_at
     BillingProfileCreate:
       type: object
@@ -6779,31 +6748,6 @@ components:
           allOf:
           - $ref: '#/components/schemas/Address'
           nullable: true
-        currency:
-          allOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          nullable: true
-        language:
-          allOf:
-          - $ref: '#/components/schemas/LanguageEnum'
-          nullable: true
-        net_payment_term:
-          type: integer
-          minimum: 0
-          nullable: true
-        invoice_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
-        credit_note_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
-        tax_rates:
-          type: array
-          items:
-            type: string
-            format: uuid
         tax_ids:
           type: array
           items:
@@ -6835,31 +6779,6 @@ components:
           allOf:
           - $ref: '#/components/schemas/Address'
           nullable: true
-        currency:
-          allOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          nullable: true
-        language:
-          allOf:
-          - $ref: '#/components/schemas/LanguageEnum'
-          nullable: true
-        net_payment_term:
-          type: integer
-          minimum: 0
-          nullable: true
-        invoice_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
-        credit_note_numbering_system_id:
-          type: string
-          format: uuid
-          nullable: true
-        tax_rates:
-          type: array
-          items:
-            type: string
-            format: uuid
         tax_ids:
           type: array
           items:
@@ -8652,6 +8571,26 @@ components:
           type: string
           nullable: true
         metadata: {}
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          nullable: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          nullable: true
+        net_payment_term:
+          type: integer
+          minimum: 0
+          nullable: true
+        invoice_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        credit_note_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
         default_billing_profile:
           $ref: '#/components/schemas/BillingProfile'
         default_shipping_profile:
@@ -8666,6 +8605,11 @@ components:
           type: string
           format: uri
           nullable: true
+        tax_rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxRate'
+          readOnly: true
         tax_ids:
           type: array
           items:
@@ -8681,15 +8625,21 @@ components:
       required:
       - account_id
       - created_at
+      - credit_note_numbering_system_id
+      - currency
       - default_billing_profile
       - default_shipping_profile
       - description
       - id
+      - invoice_numbering_system_id
+      - language
       - logo_id
       - logo_url
       - metadata
       - name
+      - net_payment_term
       - tax_ids
+      - tax_rates
       - updated_at
     CustomerBillingProfileCreate:
       type: object
@@ -8714,6 +8664,27 @@ components:
         address:
           allOf:
           - $ref: '#/components/schemas/Address'
+          nullable: true
+    CustomerCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        billing_profile:
+          $ref: '#/components/schemas/CustomerBillingProfileCreate'
+        shipping_profile:
+          allOf:
+          - $ref: '#/components/schemas/CustomerShippingProfileCreate'
+          nullable: true
+        description:
+          type: string
+          nullable: true
+          maxLength: 600
+        metadata: {}
+        logo_id:
+          type: string
+          format: uuid
           nullable: true
         currency:
           allOf:
@@ -8740,27 +8711,6 @@ components:
           items:
             type: string
             format: uuid
-    CustomerCreate:
-      type: object
-      properties:
-        name:
-          type: string
-          maxLength: 255
-        billing_profile:
-          $ref: '#/components/schemas/CustomerBillingProfileCreate'
-        shipping_profile:
-          allOf:
-          - $ref: '#/components/schemas/CustomerShippingProfileCreate'
-          nullable: true
-        description:
-          type: string
-          nullable: true
-          maxLength: 600
-        metadata: {}
-        logo_id:
-          type: string
-          format: uuid
-          nullable: true
       required:
       - name
     CustomerShippingProfileCreate:
@@ -8791,6 +8741,31 @@ components:
           type: string
           format: uuid
           nullable: true
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          nullable: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          nullable: true
+        net_payment_term:
+          type: integer
+          minimum: 0
+          nullable: true
+        invoice_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        credit_note_numbering_system_id:
+          type: string
+          format: uuid
+          nullable: true
+        tax_rates:
+          type: array
+          items:
+            type: string
+            format: uuid
         default_billing_profile_id:
           type: string
           format: uuid

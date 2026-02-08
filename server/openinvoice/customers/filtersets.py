@@ -6,7 +6,7 @@ from .models import BillingProfile, Customer, ShippingProfile
 
 
 class CustomerFilterSet(django_filters.FilterSet):
-    currency = CharInFilter(field_name="default_billing_profile__currency")
+    currency = CharInFilter(field_name="currency")
     created_at_after = django_filters.IsoDateTimeFilter(field_name="created_at", lookup_expr="gte")
     created_at_before = django_filters.IsoDateTimeFilter(field_name="created_at", lookup_expr="lte")
 

@@ -82,12 +82,18 @@ export function CustomerCreateSheet({
 
   async function onSubmit(values: FormValues) {
     if (isPending) return;
+    const billingProfile =
+      values.legal_name || values.legal_number || values.email
+        ? {
+            legal_name: values.legal_name || null,
+            legal_number: values.legal_number || null,
+            email: values.email,
+          }
+        : undefined;
     await mutateAsync({
       data: {
         name: values.name,
-        legal_name: values.legal_name || null,
-        legal_number: values.legal_number || null,
-        email: values.email,
+        billing_profile: billingProfile,
         currency: values.currency,
       },
     });
