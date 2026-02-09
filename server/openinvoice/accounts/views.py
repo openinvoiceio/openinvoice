@@ -1,5 +1,6 @@
 import structlog
 from django.conf import settings
+from django.db.models.deletion import ProtectedError
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
@@ -7,6 +8,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from openinvoice.addresses.models import Address
+from openinvoice.addresses.serializers import AddressDetailSerializer, AddressSerializer
 from openinvoice.tax_ids.models import TaxId
 from openinvoice.tax_ids.serializers import TaxIdCreateSerializer, TaxIdSerializer
 
@@ -14,11 +17,11 @@ from .mail import send_invitation_email
 from .models import Account, BusinessProfile, Invitation, Member
 from .permissions import IsAccountMember, MaxAccountsLimit
 from .serializers import (
+    AccountBusinessProfileSerializer,
     AccountCreateSerializer,
     AccountSerializer,
     AccountUpdateSerializer,
     BusinessProfileCreateSerializer,
-    BusinessProfileSerializer,
     BusinessProfileUpdateSerializer,
     InvitationAcceptSerializer,
     InvitationCreateSerializer,
@@ -55,7 +58,6 @@ class AccountListCreateAPIView(generics.ListAPIView):
             legal_number=business_data.get("legal_number"),
             email=business_data.get("email", data["email"]),
             phone=business_data.get("phone"),
-            address_data=business_data.get("address"),
         )
         account = Account.objects.create_account(
             name=data["name"],
@@ -206,7 +208,7 @@ class AccountTaxIdDestroyAPIView(generics.GenericAPIView):
 @extend_schema_view(list=extend_schema(operation_id="list_business_profiles"))
 class BusinessProfileListCreateAPIView(generics.ListAPIView):
     queryset = BusinessProfile.objects.none()
-    serializer_class = BusinessProfileSerializer
+    serializer_class = AccountBusinessProfileSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_account(self):
@@ -219,7 +221,7 @@ class BusinessProfileListCreateAPIView(generics.ListAPIView):
     @extend_schema(
         operation_id="create_business_profile",
         request=BusinessProfileCreateSerializer,
-        responses={201: BusinessProfileSerializer},
+        responses={201: AccountBusinessProfileSerializer},
     )
     def post(self, request, **_):
         account = self.get_account()
@@ -232,7 +234,7 @@ class BusinessProfileListCreateAPIView(generics.ListAPIView):
             legal_number=data.get("legal_number"),
             email=data.get("email"),
             phone=data.get("phone"),
-            address_data=data.get("address"),
+            address=data.get("address"),
         )
         account.business_profiles.add(profile)
         if "tax_ids" in data:
@@ -246,7 +248,7 @@ class BusinessProfileListCreateAPIView(generics.ListAPIView):
 @extend_schema_view(retrieve=extend_schema(operation_id="retrieve_business_profile"))
 class BusinessProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     queryset = BusinessProfile.objects.none()
-    serializer_class = BusinessProfileSerializer
+    serializer_class = AccountBusinessProfileSerializer
     permission_classes = [IsAuthenticated, IsAccountMember]
 
     def get_account(self):
@@ -259,7 +261,7 @@ class BusinessProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
     @extend_schema(
         operation_id="update_business_profile",
         request=BusinessProfileUpdateSerializer,
-        responses={200: BusinessProfileSerializer},
+        responses={200: AccountBusinessProfileSerializer},
     )
     def put(self, request, **_):
         profile = self.get_object()
@@ -272,7 +274,7 @@ class BusinessProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
             legal_number=data.get("legal_number", profile.legal_number),
             email=data.get("email", profile.email),
             phone=data.get("phone", profile.phone),
-            address_data=data.get("address"),
+            address=data.get("address", profile.address),
         )
         if "tax_ids" in data:
             profile.tax_ids.set(data["tax_ids"])
@@ -291,6 +293,94 @@ class BusinessProfileRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
         profile.delete()
         logger.info("Business profile deleted", business_profile_id=pk)
 
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema_view(list=extend_schema(operation_id="list_account_addresses"))
+class AccountAddressListCreateAPIView(generics.ListAPIView):
+    queryset = Address.objects.none()
+    serializer_class = AddressDetailSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_account(self):
+        return get_object_or_404(self.request.accounts, id=self.kwargs["account_id"])
+
+    def get_queryset(self):
+        account = self.get_account()
+        return account.addresses.order_by("-created_at")
+
+    @extend_schema(
+        operation_id="create_account_address",
+        request=AddressSerializer,
+        responses={201: AddressDetailSerializer},
+    )
+    def post(self, request, **_):
+        account = self.get_account()
+        serializer = AddressSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        address = Address.objects.create_address(
+            line1=data.get("line1"),
+            line2=data.get("line2"),
+            locality=data.get("locality"),
+            state=data.get("state"),
+            postal_code=data.get("postal_code"),
+            country=data.get("country"),
+        )
+        account.addresses.add(address)
+        logger.info("Account address created", address_id=address.id)
+
+        serializer = AddressDetailSerializer(address)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@extend_schema_view(retrieve=extend_schema(operation_id="retrieve_account_address"))
+class AccountAddressRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView):
+    queryset = Address.objects.none()
+    serializer_class = AddressDetailSerializer
+    permission_classes = [IsAuthenticated, IsAccountMember]
+
+    def get_account(self):
+        return get_object_or_404(self.request.accounts, id=self.kwargs["account_id"])
+
+    def get_queryset(self):
+        account = self.get_account()
+        return account.addresses.all()
+
+    @extend_schema(
+        operation_id="update_account_address",
+        request=AddressSerializer,
+        responses={200: AddressDetailSerializer},
+    )
+    def put(self, request, **_):
+        address = self.get_object()
+        serializer = AddressSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        address.update(
+            line1=data.get("line1", address.line1),
+            line2=data.get("line2", address.line2),
+            locality=data.get("locality", address.locality),
+            state=data.get("state", address.state),
+            postal_code=data.get("postal_code", address.postal_code),
+            country=data.get("country", address.country),
+        )
+        logger.info("Account address updated", address_id=address.id)
+
+        serializer = AddressDetailSerializer(address)
+        return Response(serializer.data)
+
+    @extend_schema(operation_id="delete_account_address", request=None, responses={204: None})
+    def delete(self, _request, **_):
+        address = self.get_object()
+        try:
+            address.delete()
+        except ProtectedError as exc:
+            raise ValidationError("This object cannot be deleted because it has related data.") from exc
+
+        logger.info("Account address deleted", address_id=address.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

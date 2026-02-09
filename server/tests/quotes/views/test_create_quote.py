@@ -56,7 +56,6 @@ def test_create_quote(api_client, user, account):
             "updated_at": ANY,
         },
         "business_profile": {
-            "id": str(account.default_business_profile.id),
             "legal_name": account.default_business_profile.legal_name,
             "legal_number": account.default_business_profile.legal_number,
             "email": account.default_business_profile.email,
@@ -70,8 +69,6 @@ def test_create_quote(api_client, user, account):
                 "country": str(account.default_business_profile.address.country),
             },
             "tax_ids": [],
-            "created_at": ANY,
-            "updated_at": ANY,
         },
         "metadata": {"channel": "partner"},
         "custom_fields": {"po_number": "PO-9001"},

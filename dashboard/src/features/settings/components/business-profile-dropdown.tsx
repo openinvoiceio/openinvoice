@@ -5,7 +5,7 @@ import {
   useDeleteBusinessProfile,
   useUpdateAccount,
 } from "@/api/endpoints/accounts/accounts";
-import type { BusinessProfile } from "@/api/models";
+import type { AccountBusinessProfile } from "@/api/models";
 import { popModal, pushModal } from "@/components/push-modals";
 import {
   ActionDropdown,
@@ -21,7 +21,7 @@ function useEditBusinessProfileAction({
   accountId,
 }: {
   accountId: string;
-}): DropdownAction<BusinessProfile> {
+}): DropdownAction<AccountBusinessProfile> {
   return {
     key: "edit",
     label: "Edit",
@@ -39,7 +39,7 @@ function useSetDefaultBusinessProfileAction({
 }: {
   accountId: string;
   defaultProfileId: string | null;
-}): DropdownAction<BusinessProfile> {
+}): DropdownAction<AccountBusinessProfile> {
   const queryClient = useQueryClient();
   const { mutateAsync } = useUpdateAccount({
     mutation: {
@@ -85,7 +85,7 @@ function useDeleteBusinessProfileAction({
 }: {
   accountId: string;
   defaultProfileId: string | null;
-}): DropdownAction<BusinessProfile> {
+}): DropdownAction<AccountBusinessProfile> {
   const queryClient = useQueryClient();
   const { mutateAsync } = useDeleteBusinessProfile({
     mutation: {
@@ -131,10 +131,10 @@ export function BusinessProfileDropdown({
   actions,
   ...props
 }: Omit<
-  ActionDropdownProps<BusinessProfile>,
+  ActionDropdownProps<AccountBusinessProfile>,
   "data" | "sections" | "actions"
 > & {
-  profile: BusinessProfile;
+  profile: AccountBusinessProfile;
   accountId: string;
   defaultProfileId: string | null;
   actions?:

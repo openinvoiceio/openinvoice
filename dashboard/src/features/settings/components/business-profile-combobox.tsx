@@ -1,5 +1,5 @@
 import { useAccountsBusinessProfilesList } from "@/api/endpoints/accounts/accounts";
-import type { BusinessProfile } from "@/api/models";
+import type { AccountBusinessProfile } from "@/api/models";
 import {
   Command,
   CommandEmpty,
@@ -18,11 +18,11 @@ import { cn } from "@/lib/utils";
 import { CheckIcon } from "lucide-react";
 import React, { useMemo, useState } from "react";
 
-function getProfileLabel(profile: BusinessProfile) {
+function getProfileLabel(profile: AccountBusinessProfile) {
   return profile.legal_name || profile.email || "Untitled";
 }
 
-function getProfileHint(profile: BusinessProfile) {
+function getProfileHint(profile: AccountBusinessProfile) {
   return profile.legal_name ? profile.email || profile.phone || "" : "";
 }
 
@@ -35,8 +35,8 @@ export function BusinessProfileCombobox({
   ...props
 }: Omit<React.ComponentProps<typeof PopoverContent>, "onSelect"> & {
   accountId: string;
-  selected?: BusinessProfile | null;
-  onSelect?: (profile: BusinessProfile | null) => Promise<void> | void;
+  selected?: AccountBusinessProfile | null;
+  onSelect?: (profile: AccountBusinessProfile | null) => Promise<void> | void;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");

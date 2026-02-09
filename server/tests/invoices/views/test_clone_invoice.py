@@ -115,7 +115,6 @@ def test_clone_invoice(api_client, user, account):
             "updated_at": ANY,
         },
         "business_profile": {
-            "id": str(account.default_business_profile.id),
             "legal_name": account.default_business_profile.legal_name,
             "legal_number": account.default_business_profile.legal_number,
             "email": account.default_business_profile.email,
@@ -129,8 +128,6 @@ def test_clone_invoice(api_client, user, account):
                 "country": str(account.default_business_profile.address.country),
             },
             "tax_ids": [],
-            "created_at": ANY,
-            "updated_at": ANY,
         },
         "metadata": {},
         "delivery_method": invoice.delivery_method,

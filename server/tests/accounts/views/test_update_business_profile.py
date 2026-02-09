@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from tests.factories import AccountFactory, BusinessProfileFactory, TaxIdFactory
+from tests.factories import AccountFactory, AddressFactory, BusinessProfileFactory, TaxIdFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -11,8 +11,9 @@ pytestmark = pytest.mark.django_db
 def test_update_business_profile(api_client, user, account):
     profile = BusinessProfileFactory(legal_name="Old")
     account.business_profiles.add(profile)
-    line2 = profile.address.line2
-    state = profile.address.state
+    account.addresses.add(profile.address)
+    address = AddressFactory(line1="Main", locality="Town", postal_code="123", country="US")
+    account.addresses.add(address)
 
     api_client.force_login(user)
     api_client.force_account(account)
@@ -22,12 +23,7 @@ def test_update_business_profile(api_client, user, account):
             "legal_name": "New",
             "email": "info@example.com",
             "phone": "555",
-            "address": {
-                "line1": "Main",
-                "locality": "Town",
-                "postal_code": "123",
-                "country": "US",
-            },
+            "address_id": str(address.id),
         },
     )
 
@@ -39,12 +35,15 @@ def test_update_business_profile(api_client, user, account):
         "email": "info@example.com",
         "phone": "555",
         "address": {
-            "line1": "Main",
-            "line2": line2,
-            "locality": "Town",
-            "state": state,
-            "postal_code": "123",
-            "country": "US",
+            "id": str(address.id),
+            "line1": address.line1,
+            "line2": address.line2,
+            "locality": address.locality,
+            "state": address.state,
+            "postal_code": address.postal_code,
+            "country": str(address.country),
+            "created_at": ANY,
+            "updated_at": ANY,
         },
         "tax_ids": [],
         "created_at": ANY,
@@ -55,6 +54,7 @@ def test_update_business_profile(api_client, user, account):
 def test_update_business_profile_tax_ids(api_client, user, account):
     profile = BusinessProfileFactory()
     account.business_profiles.add(profile)
+    account.addresses.add(profile.address)
     tax_id = TaxIdFactory()
     account.tax_ids.add(tax_id)
 
@@ -75,12 +75,15 @@ def test_update_business_profile_tax_ids(api_client, user, account):
         "email": profile.email,
         "phone": profile.phone,
         "address": {
+            "id": str(profile.address.id),
             "line1": profile.address.line1,
             "line2": profile.address.line2,
             "locality": profile.address.locality,
             "state": profile.address.state,
             "postal_code": profile.address.postal_code,
             "country": str(profile.address.country),
+            "created_at": ANY,
+            "updated_at": ANY,
         },
         "tax_ids": [
             {

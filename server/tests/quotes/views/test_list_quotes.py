@@ -71,7 +71,6 @@ def test_list_quotes(api_client, user, account):
         assert result["billing_profile"]["legal_name"] == customer.default_billing_profile.legal_name
         assert result["billing_profile"]["email"] == customer.default_billing_profile.email
         assert result["billing_profile"]["tax_ids"] == []
-        assert result["business_profile"]["id"] == str(account.default_business_profile.id)
         assert result["business_profile"]["legal_name"] == account.default_business_profile.legal_name
         assert result["business_profile"]["email"] == account.default_business_profile.email
         assert result["business_profile"]["tax_ids"] == []

@@ -1,6 +1,8 @@
 from django.urls import path
 
 from .views import (
+    AccountAddressListCreateAPIView,
+    AccountAddressRetrieveUpdateDestroyAPIView,
     AccountListCreateAPIView,
     AccountRetrieveUpdateDestroyAPIView,
     AccountSwitchAPIView,
@@ -23,6 +25,11 @@ urlpatterns = [
     path(
         "accounts/<uuid:account_id>/tax-ids/<uuid:pk>",
         AccountTaxIdDestroyAPIView.as_view(),
+    ),
+    path("accounts/<uuid:account_id>/addresses", AccountAddressListCreateAPIView.as_view()),
+    path(
+        "accounts/<uuid:account_id>/addresses/<uuid:pk>",
+        AccountAddressRetrieveUpdateDestroyAPIView.as_view(),
     ),
     path("accounts/<uuid:account_id>/business-profiles", BusinessProfileListCreateAPIView.as_view()),
     path(

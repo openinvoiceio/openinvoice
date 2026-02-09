@@ -56,6 +56,7 @@ class Account(models.Model):
     )
     tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="accounts")
     business_profiles = models.ManyToManyField("BusinessProfile", related_name="accounts")
+    addresses = models.ManyToManyField("addresses.Address", related_name="accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -117,10 +118,11 @@ class BusinessProfile(models.Model):
     legal_number = models.CharField(max_length=255, null=True)
     email = models.EmailField(max_length=255, null=True)
     phone = models.CharField(max_length=255, null=True)
-    address = models.OneToOneField(
+    address = models.ForeignKey(
         "addresses.Address",
         on_delete=models.PROTECT,
-        related_name="business_profile_address",
+        related_name="business_profiles",
+        null=True,
     )
     tax_ids = models.ManyToManyField("tax_ids.TaxId", related_name="business_profiles")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -129,12 +131,13 @@ class BusinessProfile(models.Model):
     objects = BusinessProfileManager.from_queryset(BusinessProfileQuerySet)()
 
     def clone(self) -> BusinessProfile:
+        address = Address.objects.from_address(self.address) if self.address else None
         new_profile = BusinessProfile.objects.create(
             legal_name=self.legal_name,
             legal_number=self.legal_number,
             email=self.email,
             phone=self.phone,
-            address=Address.objects.from_address(self.address),
+            address=address,
         )
         new_profile.tax_ids.set(self.tax_ids.clone())
         return new_profile
@@ -145,14 +148,14 @@ class BusinessProfile(models.Model):
         legal_number: str | None,
         email: str | None,
         phone: str | None,
-        address_data: dict | None,
+        address: Address | None,
     ) -> None:
         self.legal_name = legal_name
         self.legal_number = legal_number
         self.email = email
         self.phone = phone
+        self.address = address
         self.save()
-        self.address.update(**(address_data or {}))
 
 
 class Member(models.Model):

@@ -156,7 +156,6 @@ def test_search_all(api_client, user, account):
                     "updated_at": ANY,
                 },
                 "business_profile": {
-                    "id": str(invoice_alpha.business_profile.id),
                     "legal_name": invoice_alpha.business_profile.legal_name,
                     "legal_number": invoice_alpha.business_profile.legal_number,
                     "email": invoice_alpha.business_profile.email,
@@ -170,8 +169,6 @@ def test_search_all(api_client, user, account):
                         "country": str(invoice_alpha.business_profile.address.country),
                     },
                     "tax_ids": [],
-                    "created_at": ANY,
-                    "updated_at": ANY,
                 },
                 "metadata": invoice_alpha.metadata,
                 "delivery_method": invoice_alpha.delivery_method,

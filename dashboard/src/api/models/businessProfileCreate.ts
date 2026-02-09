@@ -5,7 +5,6 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { BusinessProfileCreateAddress } from "./businessProfileCreateAddress";
 
 export interface BusinessProfileCreate {
   /**
@@ -29,6 +28,6 @@ export interface BusinessProfileCreate {
    */
   phone?: string | null;
   /** @nullable */
-  address?: BusinessProfileCreateAddress;
+  address_id?: string | null;
   tax_ids?: string[];
 }

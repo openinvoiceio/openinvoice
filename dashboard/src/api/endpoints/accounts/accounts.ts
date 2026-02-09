@@ -26,17 +26,21 @@ import { axiosInstance } from "../../../lib/api/client";
 import type { ErrorType } from "../../../lib/api/client";
 import type {
   Account,
+  AccountBusinessProfile,
   AccountCreate,
+  AccountsAddressesListParams,
   AccountsBusinessProfilesListParams,
   AccountsListParams,
   AccountsMembersListParams,
   AccountUpdate,
-  BusinessProfile,
+  Address,
+  AddressDetail,
   BusinessProfileCreate,
   BusinessProfileUpdate,
   Member,
+  PaginatedAccountBusinessProfileList,
   PaginatedAccountList,
-  PaginatedBusinessProfileList,
+  PaginatedAddressDetailList,
   PaginatedMemberList,
   TaxId,
   TaxIdCreate,
@@ -392,13 +396,907 @@ export const useCreateAccount = <
 
   return useMutation(mutationOptions, queryClient);
 };
+export const accountsAddressesList = (
+  accountId: string,
+  params?: AccountsAddressesListParams,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<PaginatedAddressDetailList>(
+    {
+      url: `/api/v1/accounts/${accountId}/addresses`,
+      method: "GET",
+      params,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getAccountsAddressesListQueryKey = (
+  accountId?: string,
+  params?: AccountsAddressesListParams,
+) => {
+  return [
+    `/api/v1/accounts/${accountId}/addresses`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getAccountsAddressesListQueryOptions = <
+  TData = Awaited<ReturnType<typeof accountsAddressesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsAddressesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAccountsAddressesListQueryKey(accountId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof accountsAddressesList>>
+  > = ({ signal }) =>
+    accountsAddressesList(accountId, params, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!accountId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof accountsAddressesList>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AccountsAddressesListQueryResult = NonNullable<
+  Awaited<ReturnType<typeof accountsAddressesList>>
+>;
+export type AccountsAddressesListQueryError = ErrorType<unknown>;
+
+export function useAccountsAddressesList<
+  TData = Awaited<ReturnType<typeof accountsAddressesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params: undefined | AccountsAddressesListParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof accountsAddressesList>>,
+          TError,
+          Awaited<ReturnType<typeof accountsAddressesList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsAddressesList<
+  TData = Awaited<ReturnType<typeof accountsAddressesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsAddressesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof accountsAddressesList>>,
+          TError,
+          Awaited<ReturnType<typeof accountsAddressesList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsAddressesList<
+  TData = Awaited<ReturnType<typeof accountsAddressesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsAddressesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useAccountsAddressesList<
+  TData = Awaited<ReturnType<typeof accountsAddressesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsAddressesListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAccountsAddressesListQueryOptions(
+    accountId,
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getAccountsAddressesListSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof accountsAddressesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsAddressesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAccountsAddressesListQueryKey(accountId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof accountsAddressesList>>
+  > = ({ signal }) =>
+    accountsAddressesList(accountId, params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof accountsAddressesList>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AccountsAddressesListSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof accountsAddressesList>>
+>;
+export type AccountsAddressesListSuspenseQueryError = ErrorType<unknown>;
+
+export function useAccountsAddressesListSuspense<
+  TData = Awaited<ReturnType<typeof accountsAddressesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params: undefined | AccountsAddressesListParams,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsAddressesListSuspense<
+  TData = Awaited<ReturnType<typeof accountsAddressesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsAddressesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsAddressesListSuspense<
+  TData = Awaited<ReturnType<typeof accountsAddressesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsAddressesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useAccountsAddressesListSuspense<
+  TData = Awaited<ReturnType<typeof accountsAddressesList>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  params?: AccountsAddressesListParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAccountsAddressesListSuspenseQueryOptions(
+    accountId,
+    params,
+    options,
+  );
+
+  const query = useSuspenseQuery(
+    queryOptions,
+    queryClient,
+  ) as UseSuspenseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const createAccountAddress = (
+  accountId: string,
+  address: Address,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<AddressDetail>(
+    {
+      url: `/api/v1/accounts/${accountId}/addresses`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: address,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getCreateAccountAddressMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAccountAddress>>,
+    TError,
+    { accountId: string; data: Address },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createAccountAddress>>,
+  TError,
+  { accountId: string; data: Address },
+  TContext
+> => {
+  const mutationKey = ["createAccountAddress"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createAccountAddress>>,
+    { accountId: string; data: Address }
+  > = (props) => {
+    const { accountId, data } = props ?? {};
+
+    return createAccountAddress(accountId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateAccountAddressMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createAccountAddress>>
+>;
+export type CreateAccountAddressMutationBody = Address;
+export type CreateAccountAddressMutationError = ErrorType<unknown>;
+
+export const useCreateAccountAddress = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createAccountAddress>>,
+      TError,
+      { accountId: string; data: Address },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createAccountAddress>>,
+  TError,
+  { accountId: string; data: Address },
+  TContext
+> => {
+  const mutationOptions = getCreateAccountAddressMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const accountsAddressesRetrieve = (
+  accountId: string,
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return axiosInstance<AddressDetail>(
+    {
+      url: `/api/v1/accounts/${accountId}/addresses/${id}`,
+      method: "GET",
+      signal,
+    },
+    options,
+  );
+};
+
+export const getAccountsAddressesRetrieveQueryKey = (
+  accountId?: string,
+  id?: string,
+) => {
+  return [`/api/v1/accounts/${accountId}/addresses/${id}`] as const;
+};
+
+export const getAccountsAddressesRetrieveQueryOptions = <
+  TData = Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAccountsAddressesRetrieveQueryKey(accountId, id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof accountsAddressesRetrieve>>
+  > = ({ signal }) =>
+    accountsAddressesRetrieve(accountId, id, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!(accountId && id),
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AccountsAddressesRetrieveQueryResult = NonNullable<
+  Awaited<ReturnType<typeof accountsAddressesRetrieve>>
+>;
+export type AccountsAddressesRetrieveQueryError = ErrorType<unknown>;
+
+export function useAccountsAddressesRetrieve<
+  TData = Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+          TError,
+          Awaited<ReturnType<typeof accountsAddressesRetrieve>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsAddressesRetrieve<
+  TData = Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+          TError,
+          Awaited<ReturnType<typeof accountsAddressesRetrieve>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsAddressesRetrieve<
+  TData = Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useAccountsAddressesRetrieve<
+  TData = Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAccountsAddressesRetrieveQueryOptions(
+    accountId,
+    id,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getAccountsAddressesRetrieveSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAccountsAddressesRetrieveQueryKey(accountId, id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof accountsAddressesRetrieve>>
+  > = ({ signal }) =>
+    accountsAddressesRetrieve(accountId, id, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AccountsAddressesRetrieveSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof accountsAddressesRetrieve>>
+>;
+export type AccountsAddressesRetrieveSuspenseQueryError = ErrorType<unknown>;
+
+export function useAccountsAddressesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsAddressesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAccountsAddressesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useAccountsAddressesRetrieveSuspense<
+  TData = Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+  TError = ErrorType<unknown>,
+>(
+  accountId: string,
+  id: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof accountsAddressesRetrieve>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseSuspenseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAccountsAddressesRetrieveSuspenseQueryOptions(
+    accountId,
+    id,
+    options,
+  );
+
+  const query = useSuspenseQuery(
+    queryOptions,
+    queryClient,
+  ) as UseSuspenseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const updateAccountAddress = (
+  accountId: string,
+  id: string,
+  address: Address,
+  options?: SecondParameter<typeof axiosInstance>,
+) => {
+  return axiosInstance<AddressDetail>(
+    {
+      url: `/api/v1/accounts/${accountId}/addresses/${id}`,
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      data: address,
+    },
+    options,
+  );
+};
+
+export const getUpdateAccountAddressMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAccountAddress>>,
+    TError,
+    { accountId: string; id: string; data: Address },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateAccountAddress>>,
+  TError,
+  { accountId: string; id: string; data: Address },
+  TContext
+> => {
+  const mutationKey = ["updateAccountAddress"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateAccountAddress>>,
+    { accountId: string; id: string; data: Address }
+  > = (props) => {
+    const { accountId, id, data } = props ?? {};
+
+    return updateAccountAddress(accountId, id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateAccountAddressMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateAccountAddress>>
+>;
+export type UpdateAccountAddressMutationBody = Address;
+export type UpdateAccountAddressMutationError = ErrorType<unknown>;
+
+export const useUpdateAccountAddress = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateAccountAddress>>,
+      TError,
+      { accountId: string; id: string; data: Address },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateAccountAddress>>,
+  TError,
+  { accountId: string; id: string; data: Address },
+  TContext
+> => {
+  const mutationOptions = getUpdateAccountAddressMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const deleteAccountAddress = (
+  accountId: string,
+  id: string,
+  options?: SecondParameter<typeof axiosInstance>,
+) => {
+  return axiosInstance<void>(
+    { url: `/api/v1/accounts/${accountId}/addresses/${id}`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getDeleteAccountAddressMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAccountAddress>>,
+    TError,
+    { accountId: string; id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof axiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteAccountAddress>>,
+  TError,
+  { accountId: string; id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteAccountAddress"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteAccountAddress>>,
+    { accountId: string; id: string }
+  > = (props) => {
+    const { accountId, id } = props ?? {};
+
+    return deleteAccountAddress(accountId, id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteAccountAddressMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteAccountAddress>>
+>;
+
+export type DeleteAccountAddressMutationError = ErrorType<unknown>;
+
+export const useDeleteAccountAddress = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteAccountAddress>>,
+      TError,
+      { accountId: string; id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof axiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteAccountAddress>>,
+  TError,
+  { accountId: string; id: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteAccountAddressMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
 export const accountsBusinessProfilesList = (
   accountId: string,
   params?: AccountsBusinessProfilesListParams,
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return axiosInstance<PaginatedBusinessProfileList>(
+  return axiosInstance<PaginatedAccountBusinessProfileList>(
     {
       url: `/api/v1/accounts/${accountId}/business-profiles`,
       method: "GET",
@@ -722,7 +1620,7 @@ export const createBusinessProfile = (
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return axiosInstance<BusinessProfile>(
+  return axiosInstance<AccountBusinessProfile>(
     {
       url: `/api/v1/accounts/${accountId}/business-profiles`,
       method: "POST",
@@ -808,7 +1706,7 @@ export const accountsBusinessProfilesRetrieve = (
   options?: SecondParameter<typeof axiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return axiosInstance<BusinessProfile>(
+  return axiosInstance<AccountBusinessProfile>(
     {
       url: `/api/v1/accounts/${accountId}/business-profiles/${id}`,
       method: "GET",
@@ -1129,7 +2027,7 @@ export const updateBusinessProfile = (
   businessProfileUpdate: BusinessProfileUpdate,
   options?: SecondParameter<typeof axiosInstance>,
 ) => {
-  return axiosInstance<BusinessProfile>(
+  return axiosInstance<AccountBusinessProfile>(
     {
       url: `/api/v1/accounts/${accountId}/business-profiles/${id}`,
       method: "PUT",

@@ -19,6 +19,8 @@ import { ProductCreateSheet } from "@/features/products/components/product-creat
 import { ProductEditSheet } from "@/features/products/components/product-edit-sheet";
 import { QuoteCreateDialog } from "@/features/quotes/components/quote-create-dialog.tsx";
 import { QuotePreviewDialog } from "@/features/quotes/components/quote-preview-dialog.tsx";
+import { AccountAddressCreateSheet } from "@/features/settings/components/account-address-create-sheet";
+import { AccountAddressEditSheet } from "@/features/settings/components/account-address-edit-sheet";
 import { AccountCreateDialog } from "@/features/settings/components/account-create-dialog";
 import { AccountTaxIdCreateSheet } from "@/features/settings/components/account-tax-id-create-sheet";
 import { BusinessProfileCreateSheet } from "@/features/settings/components/business-profile-create-sheet";
@@ -33,6 +35,8 @@ import { createPushModal } from "pushmodal";
 export const { pushModal, popModal, ModalProvider } = createPushModal({
   modals: {
     AccountCreateDialog,
+    AccountAddressCreateSheet,
+    AccountAddressEditSheet,
     AccountTaxIdCreateSheet,
     CouponCreateSheet,
     CouponEditSheet,

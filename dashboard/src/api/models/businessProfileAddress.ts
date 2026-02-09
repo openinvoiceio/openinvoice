@@ -10,4 +10,4 @@ import type { Address } from "./address";
 /**
  * @nullable
  */
-export type BusinessProfileCreateAddress = Address | null;
+export type BusinessProfileAddress = Address | null;

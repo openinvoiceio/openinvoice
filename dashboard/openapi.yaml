@@ -64,6 +64,161 @@ paths:
               schema:
                 $ref: '#/components/schemas/Account'
           description: ''
+  /api/v1/accounts/{account_id}/addresses:
+    get:
+      operationId: accounts_addresses_list
+      parameters:
+      - in: path
+        name: account_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - accounts
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAddressDetailList'
+          description: ''
+    post:
+      operationId: create_account_address
+      parameters:
+      - in: path
+        name: account_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressDetail'
+          description: ''
+  /api/v1/accounts/{account_id}/addresses/{id}:
+    get:
+      operationId: accounts_addresses_retrieve
+      parameters:
+      - in: path
+        name: account_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - accounts
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressDetail'
+          description: ''
+    put:
+      operationId: update_account_address
+      parameters:
+      - in: path
+        name: account_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressDetail'
+          description: ''
+    delete:
+      operationId: delete_account_address
+      parameters:
+      - in: path
+        name: account_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - accounts
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/accounts/{account_id}/business-profiles:
     get:
       operationId: accounts_business_profiles_list
@@ -108,7 +263,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedBusinessProfileList'
+                $ref: '#/components/schemas/PaginatedAccountBusinessProfileList'
           description: ''
     post:
       operationId: create_business_profile
@@ -134,7 +289,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BusinessProfile'
+                $ref: '#/components/schemas/AccountBusinessProfile'
           description: ''
   /api/v1/accounts/{account_id}/business-profiles/{id}:
     get:
@@ -162,7 +317,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BusinessProfile'
+                $ref: '#/components/schemas/AccountBusinessProfile'
           description: ''
     put:
       operationId: update_business_profile
@@ -194,7 +349,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BusinessProfile'
+                $ref: '#/components/schemas/AccountBusinessProfile'
           description: ''
     delete:
       operationId: delete_business_profile
@@ -6567,7 +6722,7 @@ components:
             $ref: '#/components/schemas/TaxId'
           readOnly: true
         default_business_profile:
-          $ref: '#/components/schemas/BusinessProfile'
+          $ref: '#/components/schemas/AccountBusinessProfile'
         created_at:
           type: string
           format: date-time
@@ -6592,6 +6747,51 @@ components:
       - name
       - net_payment_term
       - subscription
+      - tax_ids
+      - updated_at
+    AccountBusinessProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        legal_name:
+          type: string
+          nullable: true
+        legal_number:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          allOf:
+          - $ref: '#/components/schemas/AddressDetail'
+          nullable: true
+        tax_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxId'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - address
+      - created_at
+      - email
+      - id
+      - legal_name
+      - legal_number
+      - phone
       - tax_ids
       - updated_at
     AccountCreate:
@@ -6678,6 +6878,46 @@ components:
           allOf:
           - $ref: '#/components/schemas/CountryEnum'
           nullable: true
+    AddressDetail:
+      type: object
+      properties:
+        line1:
+          type: string
+          nullable: true
+          maxLength: 255
+        line2:
+          type: string
+          nullable: true
+          maxLength: 255
+        locality:
+          type: string
+          nullable: true
+          maxLength: 255
+        state:
+          type: string
+          nullable: true
+          maxLength: 255
+        postal_code:
+          type: string
+          nullable: true
+          maxLength: 255
+        country:
+          allOf:
+          - $ref: '#/components/schemas/CountryEnum'
+          nullable: true
+        id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - created_at
+      - id
+      - updated_at
     BillingProfile:
       type: object
       properties:
@@ -6787,9 +7027,6 @@ components:
     BusinessProfile:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
         legal_name:
           type: string
           nullable: true
@@ -6804,29 +7041,21 @@ components:
           type: string
           nullable: true
         address:
-          $ref: '#/components/schemas/Address'
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          nullable: true
         tax_ids:
           type: array
           items:
             $ref: '#/components/schemas/TaxId'
           readOnly: true
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-          nullable: true
       required:
       - address
-      - created_at
       - email
-      - id
       - legal_name
       - legal_number
       - phone
       - tax_ids
-      - updated_at
     BusinessProfileCreate:
       type: object
       properties:
@@ -6847,9 +7076,9 @@ components:
           type: string
           nullable: true
           maxLength: 255
-        address:
-          allOf:
-          - $ref: '#/components/schemas/Address'
+        address_id:
+          type: string
+          format: uuid
           nullable: true
         tax_ids:
           type: array
@@ -6876,9 +7105,9 @@ components:
           type: string
           nullable: true
           maxLength: 255
-        address:
-          allOf:
-          - $ref: '#/components/schemas/Address'
+        address_id:
+          type: string
+          format: uuid
           nullable: true
         tax_ids:
           type: array
@@ -9908,6 +10137,29 @@ components:
       - date
       - invoice_ids
       - total_amount
+    PaginatedAccountBusinessProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountBusinessProfile'
     PaginatedAccountList:
       type: object
       required:
@@ -9931,6 +10183,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Account'
+    PaginatedAddressDetailList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddressDetail'
     PaginatedBillingProfileList:
       type: object
       required:
@@ -9954,29 +10229,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingProfile'
-    PaginatedBusinessProfileList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/BusinessProfile'
     PaginatedCommentList:
       type: object
       required:

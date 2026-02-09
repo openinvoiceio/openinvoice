@@ -5,10 +5,11 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { BusinessProfileAddress } from "./businessProfileAddress";
+import type { AccountBusinessProfileAddress } from "./accountBusinessProfileAddress";
 import type { TaxId } from "./taxId";
 
-export interface BusinessProfile {
+export interface AccountBusinessProfile {
+  id: string;
   /** @nullable */
   legal_name: string | null;
   /** @nullable */
@@ -18,6 +19,9 @@ export interface BusinessProfile {
   /** @nullable */
   phone: string | null;
   /** @nullable */
-  address: BusinessProfileAddress;
+  address: AccountBusinessProfileAddress;
   readonly tax_ids: readonly TaxId[];
+  created_at: string;
+  /** @nullable */
+  updated_at: string | null;
 }

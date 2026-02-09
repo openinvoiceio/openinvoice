@@ -5,8 +5,8 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
+import type { AccountBusinessProfile } from "./accountBusinessProfile";
 import type { AccountSubscription } from "./accountSubscription";
-import type { BusinessProfile } from "./businessProfile";
 import type { CountryEnum } from "./countryEnum";
 import type { CurrencyEnum } from "./currencyEnum";
 import type { LanguageEnum } from "./languageEnum";
@@ -35,7 +35,7 @@ export interface Account {
   /** @nullable */
   logo_url: string | null;
   readonly tax_ids: readonly TaxId[];
-  default_business_profile: BusinessProfile;
+  default_business_profile: AccountBusinessProfile;
   created_at: string;
   /** @nullable */
   updated_at: string | null;

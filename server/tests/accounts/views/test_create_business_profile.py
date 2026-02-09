@@ -3,12 +3,14 @@ from unittest.mock import ANY
 
 import pytest
 
-from tests.factories import AccountFactory
+from tests.factories import AccountFactory, AddressFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def test_create_business_profile(api_client, user, account):
+    address = AddressFactory(line1="Main", country="US")
+    account.addresses.add(address)
     api_client.force_login(user)
     api_client.force_account(account)
     response = api_client.post(
@@ -17,7 +19,7 @@ def test_create_business_profile(api_client, user, account):
             "legal_name": "New Business",
             "email": "info@example.com",
             "phone": "123",
-            "address": {"line1": "Main", "country": "US"},
+            "address_id": str(address.id),
         },
     )
 
@@ -29,12 +31,15 @@ def test_create_business_profile(api_client, user, account):
         "email": "info@example.com",
         "phone": "123",
         "address": {
-            "line1": "Main",
-            "line2": None,
-            "locality": None,
-            "state": None,
-            "postal_code": None,
-            "country": "US",
+            "id": str(address.id),
+            "line1": address.line1,
+            "line2": address.line2,
+            "locality": address.locality,
+            "state": address.state,
+            "postal_code": address.postal_code,
+            "country": str(address.country),
+            "created_at": ANY,
+            "updated_at": ANY,
         },
         "tax_ids": [],
         "created_at": ANY,

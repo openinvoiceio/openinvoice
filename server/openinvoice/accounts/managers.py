@@ -61,9 +61,8 @@ class BusinessProfileManager(models.Manager):
         legal_number: str | None = None,
         email: str | None = None,
         phone: str | None = None,
-        address_data: dict | None = None,
+        address: Address | None = None,
     ):
-        address = Address.objects.create_address(**(address_data or {}))
         return self.create(
             legal_name=legal_name,
             legal_number=legal_number,

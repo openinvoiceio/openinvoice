@@ -18,6 +18,8 @@ class Address(models.Model):
     state = models.CharField(max_length=255, null=True)
     postal_code = models.CharField(max_length=255, null=True)
     country = CountryField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = AddressManager()
 

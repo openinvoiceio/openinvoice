@@ -5,9 +5,9 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { Address } from "./address";
+import type { AddressDetail } from "./addressDetail";
 
 /**
  * @nullable
  */
-export type BusinessProfileUpdateAddress = Address | null;
+export type AccountBusinessProfileAddress = AddressDetail | null;

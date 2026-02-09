@@ -2,13 +2,7 @@ import {
   getAccountsBusinessProfilesListQueryKey,
   useCreateBusinessProfile,
 } from "@/api/endpoints/accounts/accounts";
-import { CountryEnum, type BusinessProfile } from "@/api/models";
-import { AddressCountryField } from "@/components/fields/address-country-field";
-import { AddressLine1Field } from "@/components/fields/address-line1-field";
-import { AddressLine2Field } from "@/components/fields/address-line2-field";
-import { AddressLocalityField } from "@/components/fields/address-locality-field";
-import { AddressPostalCodeField } from "@/components/fields/address-postal-code-field";
-import { AddressStateField } from "@/components/fields/address-state-field";
+import type { AccountBusinessProfile } from "@/api/models";
 import { popModal } from "@/components/push-modals";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,12 +18,12 @@ import {
   FormSheetDescription,
   FormSheetFooter,
   FormSheetGroup,
-  FormSheetGroupTitle,
   FormSheetHeader,
   FormSheetTitle,
 } from "@/components/ui/form-sheet";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { AccountAddressCombobox } from "@/features/settings/components/account-address-combobox";
 import { getErrorSummary } from "@/lib/api/errors";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
@@ -43,14 +37,7 @@ const schema = z.object({
   legal_number: z.string().optional(),
   email: z.email("Invalid email address").optional(),
   phone: z.string().optional(),
-  address: z.object({
-    line1: z.string().optional(),
-    line2: z.string().optional(),
-    locality: z.string().optional(),
-    state: z.string().optional(),
-    postalCode: z.string().optional(),
-    country: z.enum(CountryEnum).optional(),
-  }),
+  addressId: z.string().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -60,7 +47,7 @@ export function BusinessProfileCreateSheet({
   onSuccess,
 }: {
   accountId: string;
-  onSuccess?: (profile: BusinessProfile) => void;
+  onSuccess?: (profile: AccountBusinessProfile) => void;
 }) {
   const formId = useId();
   const queryClient = useQueryClient();
@@ -71,14 +58,7 @@ export function BusinessProfileCreateSheet({
       legal_number: "",
       email: "",
       phone: "",
-      address: {
-        line1: "",
-        line2: "",
-        locality: "",
-        state: "",
-        postalCode: "",
-        country: undefined,
-      },
+      addressId: null,
     },
   });
   const { mutateAsync, isPending } = useCreateBusinessProfile({
@@ -107,14 +87,7 @@ export function BusinessProfileCreateSheet({
         legal_number: values.legal_number || null,
         email: values.email || null,
         phone: values.phone || null,
-        address: {
-          line1: values.address.line1 || null,
-          line2: values.address.line2 || null,
-          locality: values.address.locality || null,
-          state: values.address.state || null,
-          postal_code: values.address.postalCode || null,
-          country: values.address.country || null,
-        },
+        address_id: values.addressId || null,
       },
     });
   }
@@ -157,9 +130,6 @@ export function BusinessProfileCreateSheet({
                 </FormItem>
               )}
             />
-          </FormSheetGroup>
-          <FormSheetGroup>
-            <FormSheetGroupTitle>Contact information</FormSheetGroupTitle>
             <FormField
               control={form.control}
               name="email"
@@ -193,17 +163,23 @@ export function BusinessProfileCreateSheet({
                 </FormItem>
               )}
             />
-          </FormSheetGroup>
-          <FormSheetGroup>
-            <FormSheetGroupTitle>Address</FormSheetGroupTitle>
-            <AddressLine1Field name="address.line1" />
-            <AddressLine2Field name="address.line2" />
-            <AddressLocalityField name="address.locality" />
-            <AddressPostalCodeField name="address.postalCode" />
-            <AddressCountryField name="address.country" />
-            <AddressStateField
-              name="address.state"
-              countryName="address.country"
+            <FormField
+              control={form.control}
+              name="addressId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <AccountAddressCombobox
+                      accountId={accountId}
+                      value={field.value ?? null}
+                      onChange={field.onChange}
+                      placeholder="Select address"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </FormSheetGroup>
         </form>

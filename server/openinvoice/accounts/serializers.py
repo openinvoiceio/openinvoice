@@ -1,7 +1,7 @@
 from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
 
-from openinvoice.addresses.serializers import AddressSerializer
+from openinvoice.addresses.serializers import AddressDetailSerializer, AddressSerializer
 from openinvoice.core.fields import CurrencyField, LanguageField, MetadataField
 from openinvoice.files.fields import FileRelatedField
 from openinvoice.numbering_systems.choices import NumberingSystemAppliesTo
@@ -12,17 +12,26 @@ from openinvoice.tax_ids.serializers import TaxIdSerializer
 from openinvoice.users.serializers import UserSerializer
 
 from .choices import InvitationStatus, MemberRole
-from .fields import BusinessProfileRelatedField
+from .fields import AccountAddressRelatedField, BusinessProfileRelatedField
 from .models import Invitation
 
 
 class BusinessProfileSerializer(serializers.Serializer):
+    legal_name = serializers.CharField(allow_null=True)
+    legal_number = serializers.CharField(allow_null=True)
+    email = serializers.EmailField(allow_null=True)
+    phone = serializers.CharField(allow_null=True)
+    address = AddressSerializer(allow_null=True)
+    tax_ids = TaxIdSerializer(many=True, read_only=True)
+
+
+class AccountBusinessProfileSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     legal_name = serializers.CharField(allow_null=True)
     legal_number = serializers.CharField(allow_null=True)
     email = serializers.EmailField(allow_null=True)
     phone = serializers.CharField(allow_null=True)
-    address = AddressSerializer()
+    address = AddressDetailSerializer(allow_null=True)
     tax_ids = TaxIdSerializer(many=True, read_only=True)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
@@ -33,7 +42,7 @@ class BusinessProfileCreateSerializer(serializers.Serializer):
     legal_number = serializers.CharField(max_length=255, allow_null=True, required=False)
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
     phone = serializers.CharField(max_length=255, allow_null=True, required=False)
-    address = AddressSerializer(allow_null=True, required=False)
+    address_id = AccountAddressRelatedField(source="address", allow_null=True, required=False)
     tax_ids = TaxIdRelatedField(many=True, required=False)
 
 
@@ -42,7 +51,7 @@ class BusinessProfileUpdateSerializer(serializers.Serializer):
     legal_number = serializers.CharField(max_length=255, allow_null=True, required=False)
     email = serializers.EmailField(max_length=255, allow_null=True, required=False)
     phone = serializers.CharField(max_length=255, allow_null=True, required=False)
-    address = AddressSerializer(allow_null=True, required=False)
+    address_id = AccountAddressRelatedField(source="address", allow_null=True, required=False)
     tax_ids = TaxIdRelatedField(many=True, required=False)
 
 
@@ -62,7 +71,7 @@ class AccountSerializer(serializers.Serializer):
     logo_id = serializers.UUIDField(allow_null=True)
     logo_url = serializers.FileField(use_url=True, source="logo.data", allow_null=True)
     tax_ids = TaxIdSerializer(many=True, read_only=True)
-    default_business_profile = BusinessProfileSerializer()
+    default_business_profile = AccountBusinessProfileSerializer()
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField(allow_null=True)
 

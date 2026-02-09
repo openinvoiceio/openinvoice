@@ -12,6 +12,7 @@ def test_list_business_profiles(api_client, user, account):
     profile_1 = account.default_business_profile
     profile_2 = BusinessProfileFactory(legal_name="Second")
     account.business_profiles.add(profile_2)
+    account.addresses.add(profile_2.address)
     other_account = AccountFactory()
     other_profile = BusinessProfileFactory(legal_name="Other")
     other_account.business_profiles.add(other_profile)
@@ -33,12 +34,15 @@ def test_list_business_profiles(api_client, user, account):
                 "email": profile.email,
                 "phone": profile.phone,
                 "address": {
+                    "id": str(profile.address.id),
                     "line1": profile.address.line1,
                     "line2": profile.address.line2,
                     "locality": profile.address.locality,
                     "state": profile.address.state,
                     "postal_code": profile.address.postal_code,
                     "country": str(profile.address.country),
+                    "created_at": ANY,
+                    "updated_at": ANY,
                 },
                 "tax_ids": [],
                 "created_at": ANY,

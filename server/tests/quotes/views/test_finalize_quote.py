@@ -56,7 +56,6 @@ def test_finalize_quote(api_client, user, account, pdf_generator):
     assert response.data["billing_profile"]["legal_name"] == customer.default_billing_profile.legal_name
     assert response.data["billing_profile"]["email"] == customer.default_billing_profile.email
     assert response.data["billing_profile"]["tax_ids"] == []
-    assert response.data["business_profile"]["id"] != str(account.default_business_profile.id)
     assert response.data["business_profile"]["legal_name"] == account.default_business_profile.legal_name
     assert response.data["business_profile"]["email"] == account.default_business_profile.email
     assert response.data["business_profile"]["tax_ids"] == []

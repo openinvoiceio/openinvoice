@@ -6,6 +6,7 @@ import {
   SectionHeader,
   SectionTitle,
 } from "@/components/ui/section";
+import { AccountAddressesCard } from "@/features/settings/components/account-addresses-card";
 import { AccountBusinessProfilesCard } from "@/features/settings/components/account-business-profiles-card";
 import { AccountGeneralCard } from "@/features/settings/components/account-general-card";
 import { AccountInvoicingCard } from "@/features/settings/components/account-invoicing-card";
@@ -33,6 +34,7 @@ function RouteComponent() {
           <AccountGeneralCard account={account} />
           <AccountInvoicingCard account={account} />
           <AccountTaxIdsCard account={account} />
+          <AccountAddressesCard account={account} />
           <AccountBusinessProfilesCard account={account} />
           <AccountNumberingSystemsCard account={account} />
           <AccountMembersCard isLocked={!account.subscription} />

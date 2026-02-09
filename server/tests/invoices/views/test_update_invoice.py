@@ -75,7 +75,6 @@ def test_update_invoice(api_client, user, account):
             "updated_at": ANY,
         },
         "business_profile": {
-            "id": str(invoice.business_profile.id),
             "legal_name": invoice.business_profile.legal_name,
             "legal_number": invoice.business_profile.legal_number,
             "email": invoice.business_profile.email,
@@ -89,8 +88,6 @@ def test_update_invoice(api_client, user, account):
                 "country": str(invoice.business_profile.address.country),
             },
             "tax_ids": [],
-            "created_at": ANY,
-            "updated_at": ANY,
         },
         "metadata": {},
         "delivery_method": InvoiceDeliveryMethod.MANUAL,

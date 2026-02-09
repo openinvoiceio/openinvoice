@@ -3,13 +3,7 @@ import {
   useAccountsRetrieve,
   useUpdateBusinessProfile,
 } from "@/api/endpoints/accounts/accounts";
-import { CountryEnum, type BusinessProfile } from "@/api/models";
-import { AddressCountryField } from "@/components/fields/address-country-field";
-import { AddressLine1Field } from "@/components/fields/address-line1-field";
-import { AddressLine2Field } from "@/components/fields/address-line2-field";
-import { AddressLocalityField } from "@/components/fields/address-locality-field";
-import { AddressPostalCodeField } from "@/components/fields/address-postal-code-field";
-import { AddressStateField } from "@/components/fields/address-state-field";
+import type { AccountBusinessProfile } from "@/api/models";
 import { popModal } from "@/components/push-modals";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,12 +19,12 @@ import {
   FormSheetDescription,
   FormSheetFooter,
   FormSheetGroup,
-  FormSheetGroupTitle,
   FormSheetHeader,
   FormSheetTitle,
 } from "@/components/ui/form-sheet";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { AccountAddressCombobox } from "@/features/settings/components/account-address-combobox";
 import { AccountTaxIdsCombobox } from "@/features/settings/components/account-tax-ids-combobox";
 import { getErrorSummary } from "@/lib/api/errors";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,14 +39,7 @@ const schema = z.object({
   legal_number: z.string().optional(),
   email: z.email("Invalid email address").optional(),
   phone: z.string().optional(),
-  address: z.object({
-    line1: z.string().optional(),
-    line2: z.string().optional(),
-    locality: z.string().optional(),
-    state: z.string().optional(),
-    postalCode: z.string().optional(),
-    country: z.enum(CountryEnum).optional(),
-  }),
+  addressId: z.string().nullable().optional(),
   tax_ids: z.array(z.string()).optional(),
 });
 
@@ -62,7 +49,7 @@ export function BusinessProfileEditSheet({
   profile,
   accountId,
 }: {
-  profile: BusinessProfile;
+  profile: AccountBusinessProfile;
   accountId: string;
 }) {
   const formId = useId();
@@ -77,14 +64,7 @@ export function BusinessProfileEditSheet({
       legal_number: profile.legal_number || "",
       email: profile.email || "",
       phone: profile.phone || "",
-      address: {
-        line1: profile.address.line1 || "",
-        line2: profile.address.line2 || "",
-        locality: profile.address.locality || "",
-        state: profile.address.state || "",
-        postalCode: profile.address.postal_code || "",
-        country: profile.address.country || undefined,
-      },
+      addressId: profile.address?.id ?? null,
       tax_ids: profile.tax_ids?.map((taxId) => taxId.id) ?? [],
     },
   });
@@ -114,14 +94,7 @@ export function BusinessProfileEditSheet({
         legal_number: values.legal_number || null,
         email: values.email || null,
         phone: values.phone || null,
-        address: {
-          line1: values.address.line1 || null,
-          line2: values.address.line2 || null,
-          locality: values.address.locality || null,
-          state: values.address.state || null,
-          postal_code: values.address.postalCode || null,
-          country: values.address.country || null,
-        },
+        address_id: values.addressId || null,
         tax_ids: values.tax_ids ?? [],
       },
     });
@@ -164,9 +137,6 @@ export function BusinessProfileEditSheet({
                 </FormItem>
               )}
             />
-          </FormSheetGroup>
-          <FormSheetGroup>
-            <FormSheetGroupTitle>Contact information</FormSheetGroupTitle>
             <FormField
               control={form.control}
               name="email"
@@ -200,21 +170,24 @@ export function BusinessProfileEditSheet({
                 </FormItem>
               )}
             />
-          </FormSheetGroup>
-          <FormSheetGroup>
-            <FormSheetGroupTitle>Address</FormSheetGroupTitle>
-            <AddressLine1Field name="address.line1" />
-            <AddressLine2Field name="address.line2" />
-            <AddressLocalityField name="address.locality" />
-            <AddressPostalCodeField name="address.postalCode" />
-            <AddressCountryField name="address.country" />
-            <AddressStateField
-              name="address.state"
-              countryName="address.country"
+            <FormField
+              control={form.control}
+              name="addressId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <AccountAddressCombobox
+                      accountId={accountId}
+                      value={field.value ?? null}
+                      onChange={field.onChange}
+                      placeholder="Select address"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </FormSheetGroup>
-          <FormSheetGroup>
-            <FormSheetGroupTitle>Tax IDs</FormSheetGroupTitle>
             <FormField
               control={form.control}
               name="tax_ids"

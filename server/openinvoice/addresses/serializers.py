@@ -1,3 +1,5 @@
+from typing import Any
+
 from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
 
@@ -12,7 +14,15 @@ class AddressSerializer(serializers.Serializer):
     postal_code = serializers.CharField(allow_null=True, required=False, max_length=255)
     country = CountryField(allow_null=True, required=False)
 
-    def to_representation(self, instance: Address) -> dict:
+    def to_representation(self, instance: Address | None) -> Any:
+        if instance is None:
+            return None
         representation = super().to_representation(instance)
         representation["country"] = str(instance.country) if instance.country else None
         return representation
+
+
+class AddressDetailSerializer(AddressSerializer):
+    id = serializers.UUIDField()
+    created_at = serializers.DateTimeField()
+    updated_at = serializers.DateTimeField()

@@ -5,13 +5,13 @@
  * Description
  * OpenAPI spec version: 1.0.0
  */
-import type { BusinessProfile } from "./businessProfile";
+import type { AccountBusinessProfile } from "./accountBusinessProfile";
 
-export interface PaginatedBusinessProfileList {
+export interface PaginatedAccountBusinessProfileList {
   count: number;
   /** @nullable */
   next?: string | null;
   /** @nullable */
   previous?: string | null;
-  results: BusinessProfile[];
+  results: AccountBusinessProfile[];
 }
